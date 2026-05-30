@@ -88,7 +88,7 @@
                     <input type="password" id="reg-password" required class="w-full bg-slate-950 border border-slate-800 rounded-lg py-3 pl-10 pr-4 text-white placeholder-slate-600 focus:outline-none focus:border-cyberrose transition-colors" placeholder="••••••••">
                 </div>
             </div>
-            <button type="submit" class="w-full bg-cyberrose hover:bg-rose-600 text-white font-orbitron text-xs tracking-widest font-bold py-4 rounded-lg shadow-lg shadow-cyberrose/30 transition-all uppercase flex items-center justify-center gap-2">
+            <button type="submit" id="btn-register" class="w-full bg-cyberrose hover:bg-rose-600 text-white font-orbitron text-xs tracking-widest font-bold py-4 rounded-lg shadow-lg shadow-cyberrose/30 transition-all uppercase flex items-center justify-center gap-2">
                 CRIAR CREDENCIAL <i data-lucide="user-plus" class="w-4 h-4"></i>
             </button>
         </form>
@@ -188,6 +188,11 @@
                 return;
             }
             
+            const link = e.target;
+            const originalText = link.innerHTML;
+            link.innerHTML = 'Enviando... aguarde';
+            link.style.pointerEvents = 'none';
+            
             try {
                 const res = await fetch('/resend-verification', {
                     method: 'POST',
@@ -209,6 +214,13 @@
             e.preventDefault();
             const email = document.getElementById('reg-email').value;
             const password = document.getElementById('reg-password').value;
+            const btn = document.getElementById('btn-register');
+            
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = 'PROCESSANDO... <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
+            btn.disabled = true;
+            btn.classList.add('opacity-70');
+            lucide.createIcons();
             
             try {
                 const res = await fetch('/register', {
@@ -225,6 +237,11 @@
                 }
             } catch(err) {
                 showAlert('Erro de conexão com servidor.', true);
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+                btn.classList.remove('opacity-70');
+                lucide.createIcons();
             }
         }
         async function handleForgotPassword(e) {
