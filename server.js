@@ -1,5 +1,5 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const session = require('express-session');
@@ -19,23 +19,23 @@ app.use(session({
     saveUninitialized: false
 }));
 
-// Setup Database
-const db = new sqlite3.Database(path.join(__dirname, 'database.sqlite'), (err) => {
-    if (err) console.error('Database opening error: ', err);
+// Setup Database (PostgreSQL)
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
-db.serialize(() => {
-    db.run(`CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE,
-        password_hash TEXT,
+pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
         is_verified INTEGER DEFAULT 0,
-        verification_token TEXT
-    )`);
-    // Adiciona colunas para reset de senha (ignora erro se já existirem)
-    db.run(`ALTER TABLE users ADD COLUMN reset_token TEXT`, () => {});
-    db.run(`ALTER TABLE users ADD COLUMN reset_expires INTEGER`, () => {});
-});
+        verification_token TEXT,
+        reset_token TEXT,
+        reset_expires BIGINT
+    );
+`).catch(err => console.error('Error creating table:', err));
 
 // Setup Nodemailer (Gmail Real Account)
 const transporter = nodemailer.createTransport({
@@ -79,106 +79,120 @@ app.post('/register', async (req, res) => {
     
     if(!email || !password) return res.status(400).json({ error: 'Preencha todos os campos.' });
 
-    db.get('SELECT email FROM users WHERE email = ?', [email], async (err, row) => {
-        if (row) {
+    try {
+        const checkUser = await pool.query('SELECT email FROM users WHERE email = $1', [email]);
+        if (checkUser.rows.length > 0) {
             return res.status(400).json({ error: 'E-mail já cadastrado.' });
         }
         
-        try {
-            const salt = await bcrypt.genSalt(10);
-            const hash = await bcrypt.hash(password, salt);
-            const token = crypto.randomBytes(20).toString('hex');
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(password, salt);
+        const token = crypto.randomBytes(20).toString('hex');
+        
+        await pool.query(
+            'INSERT INTO users (email, password_hash, verification_token) VALUES ($1, $2, $3)', 
+            [email, hash, token]
+        );
             
-            db.run('INSERT INTO users (email, password_hash, verification_token) VALUES (?, ?, ?)', [email, hash, token], function(err) {
-                if (err) return res.status(500).json({ error: 'Erro no banco de dados' });
-                const verifyUrl = `${APP_URL}/verify-email?token=${token}`;
-                
-                const message = {
-                    from: '"ZHER KEYS" <noreply@zherkeys.com>',
-                    to: email,
-                    subject: 'Verifique seu e-mail na ZHER KEYS',
-                    text: `Por favor, clique no link para verificar seu e-mail: ${verifyUrl}`,
-                    html: `<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
-                            <h2>ZHER KEYS SECURE SYSTEM</h2>
-                            <p>Confirme sua credencial de acesso clicando no link abaixo:</p>
-                            <a href="${verifyUrl}" style="display:inline-block;padding:10px 20px;background:#3B82F6;color:white;text-decoration:none;border-radius:5px;">VERIFICAR ACESSO</a>
-                           </div>`
-                };
-                
-                transporter.sendMail(message, (err, info) => {
-                    if (err) {
-                        console.log('Error occurred. ' + err.message);
-                        return res.status(500).json({ error: 'Erro ao enviar e-mail.' });
-                    }
-                    console.log('\n======================================================');
-                    console.log('✅ E-MAIL DE VERIFICAÇÃO ENVIADO PARA: ' + email);
-                    console.log('======================================================\n');
-                    
-                    res.status(200).json({ message: 'verify your email, confery your spam too' });
-                });
-            });
-        } catch(e) {
-            res.status(500).json({ error: 'Erro no servidor' });
-        }
-    });
+        const verifyUrl = `${APP_URL}/verify-email?token=${token}`;
+        
+        const message = {
+            from: '"ZHER KEYS" <noreply@zherkeys.com>',
+            to: email,
+            subject: 'Verifique seu e-mail na ZHER KEYS',
+            text: `Por favor, clique no link para verificar seu e-mail: ${verifyUrl}`,
+            html: `<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
+                    <h2>ZHER KEYS SECURE SYSTEM</h2>
+                    <p>Confirme sua credencial de acesso clicando no link abaixo:</p>
+                    <a href="${verifyUrl}" style="display:inline-block;padding:10px 20px;background:#3B82F6;color:white;text-decoration:none;border-radius:5px;">VERIFICAR ACESSO</a>
+                   </div>`
+        };
+        
+        transporter.sendMail(message, (err, info) => {
+            if (err) {
+                console.log('Error occurred. ' + err.message);
+                return res.status(500).json({ error: 'Erro ao enviar e-mail.' });
+            }
+            console.log('\n======================================================');
+            console.log('✅ E-MAIL DE VERIFICAÇÃO ENVIADO PARA: ' + email);
+            console.log('======================================================\n');
+            
+            res.status(200).json({ message: 'verify your email, confery your spam too' });
+        });
+        
+    } catch(e) {
+        console.error(e);
+        res.status(500).json({ error: 'Erro no servidor' });
+    }
 });
 
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     
     if(!email || !password) return res.status(400).json({ error: 'Preencha todos os campos.' });
 
-    db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
-        if (!user) return res.status(400).json({ error: 'Credenciais inválidas.' });
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (result.rows.length === 0) return res.status(400).json({ error: 'Credenciais inválidas.' });
+        
+        const user = result.rows[0];
         
         const validPass = await bcrypt.compare(password, user.password_hash);
         if (!validPass) return res.status(400).json({ error: 'Credenciais inválidas.' });
         
-        if (!user.is_verified) return res.status(400).json({ error: 'Sua conta não está ativada. Verifique o e-mail.' });
+        if (user.is_verified === 0) return res.status(400).json({ error: 'Sua conta não está ativada. Verifique o e-mail.' });
         
         req.session.userId = user.id;
         res.status(200).json({ message: 'Acesso concedido.', redirect: '/' });
-    });
+    } catch(err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro no servidor' });
+    }
 });
 
-app.post('/resend-verification', (req, res) => {
+app.post('/resend-verification', async (req, res) => {
     const { email } = req.body;
     if(!email) return res.status(400).json({ error: 'Informe o e-mail.' });
 
-    db.get('SELECT * FROM users WHERE email = ?', [email], (err, user) => {
-        if (!user) return res.status(400).json({ error: 'Usuário não encontrado.' });
-        if (user.is_verified) return res.status(400).json({ error: 'Esta conta já está verificada.' });
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (result.rows.length === 0) return res.status(400).json({ error: 'Usuário não encontrado.' });
         
-        const token = require('crypto').randomBytes(20).toString('hex');
-        db.run('UPDATE users SET verification_token = ? WHERE email = ?', [token, email], function(err) {
-            if (err) return res.status(500).json({ error: 'Erro no banco de dados.' });
-            const verifyUrl = `${APP_URL}/verify-email?token=${token}`;
+        const user = result.rows[0];
+        if (user.is_verified === 1) return res.status(400).json({ error: 'Esta conta já está verificada.' });
+        
+        const token = crypto.randomBytes(20).toString('hex');
+        await pool.query('UPDATE users SET verification_token = $1 WHERE email = $2', [token, email]);
             
-            const message = {
-                from: '"ZHER KEYS" <noreply@zherkeys.com>',
-                to: email,
-                subject: 'Reenvio: Verifique seu e-mail na ZHER KEYS',
-                text: `Por favor, clique no link para verificar seu e-mail: ${verifyUrl}`,
-                html: `<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
-                        <h2>ZHER KEYS SECURE SYSTEM</h2>
-                        <p>Confirme sua credencial de acesso clicando no link abaixo:</p>
-                        <a href="${verifyUrl}" style="display:inline-block;padding:10px 20px;background:#3B82F6;color:white;text-decoration:none;border-radius:5px;">VERIFICAR ACESSO</a>
-                       </div>`
-            };
-            
-            transporter.sendMail(message, (err, info) => {
-                if (err) return res.status(500).json({ error: 'Erro ao reenviar e-mail.' });
-                res.status(200).json({ message: 'E-mail de verificação reenviado com sucesso!' });
-            });
+        const verifyUrl = `${APP_URL}/verify-email?token=${token}`;
+        
+        const message = {
+            from: '"ZHER KEYS" <noreply@zherkeys.com>',
+            to: email,
+            subject: 'Reenvio: Verifique seu e-mail na ZHER KEYS',
+            text: `Por favor, clique no link para verificar seu e-mail: ${verifyUrl}`,
+            html: `<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
+                    <h2>ZHER KEYS SECURE SYSTEM</h2>
+                    <p>Confirme sua credencial de acesso clicando no link abaixo:</p>
+                    <a href="${verifyUrl}" style="display:inline-block;padding:10px 20px;background:#3B82F6;color:white;text-decoration:none;border-radius:5px;">VERIFICAR ACESSO</a>
+                   </div>`
+        };
+        
+        transporter.sendMail(message, (err, info) => {
+            if (err) return res.status(500).json({ error: 'Erro ao reenviar e-mail.' });
+            res.status(200).json({ message: 'E-mail de verificação reenviado com sucesso!' });
         });
-    });
+    } catch(err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro no banco de dados.' });
+    }
 });
 
-app.get('/verify-email', (req, res) => {
+app.get('/verify-email', async (req, res) => {
     const { token } = req.query;
-    db.run('UPDATE users SET is_verified = 1 WHERE verification_token = ?', [token], function(err) {
-        if (err) return res.status(500).send('Erro interno.');
-        if (this.changes === 0) return res.status(400).send('<h1>Token inválido ou já verificado.</h1>');
+    try {
+        const result = await pool.query('UPDATE users SET is_verified = 1 WHERE verification_token = $1', [token]);
+        if (result.rowCount === 0) return res.status(400).send('<h1>Token inválido ou já verificado.</h1>');
         
         res.send(`
             <body style="background:#020617;color:white;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;">
@@ -189,67 +203,82 @@ app.get('/verify-email', (req, res) => {
                 </div>
             </body>
         `);
-    });
+    } catch(err) {
+        console.error(err);
+        res.status(500).send('Erro interno.');
+    }
 });
 
-app.post('/forgot-password', (req, res) => {
+app.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
     if(!email) return res.status(400).json({ error: 'Informe o e-mail.' });
     
-    db.get('SELECT * FROM users WHERE email = ?', [email], (err, user) => {
-        if (!user) return res.status(400).json({ error: 'Usuário não encontrado.' });
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (result.rows.length === 0) return res.status(400).json({ error: 'Usuário não encontrado.' });
         
-        const token = require('crypto').randomBytes(20).toString('hex');
+        const user = result.rows[0];
+        const token = crypto.randomBytes(20).toString('hex');
         const expires = Date.now() + 3600000; // 1 hora
         
-        db.run('UPDATE users SET reset_token = ?, reset_expires = ? WHERE id = ?', [token, expires, user.id], function(err) {
-            if (err) return res.status(500).json({ error: 'Erro no banco.' });
-            const resetUrl = `${APP_URL}/reset-password.html?token=${token}`;
+        await pool.query('UPDATE users SET reset_token = $1, reset_expires = $2 WHERE id = $3', [token, expires, user.id]);
             
-            const message = {
-                from: '"ZHER KEYS" <noreply@zherkeys.com>',
-                to: email,
-                subject: 'Redefinição de Senha - ZHER KEYS',
-                html: `<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
-                        <h2>REDEFINIÇÃO DE CREDENCIAL</h2>
-                        <p>Você solicitou a troca da sua senha.</p>
-                        <a href="${resetUrl}" style="display:inline-block;padding:10px 20px;background:#F43F5E;color:white;text-decoration:none;border-radius:5px;">CRIAR NOVA SENHA</a>
-                       </div>`
-            };
-            
-            transporter.sendMail(message, (err) => {
-                if (err) return res.status(500).json({ error: 'Erro ao enviar e-mail.' });
-                res.status(200).json({ message: 'E-mail de redefinição enviado! Verifique sua caixa de entrada.' });
-            });
+        const resetUrl = `${APP_URL}/reset-password.html?token=${token}`;
+        
+        const message = {
+            from: '"ZHER KEYS" <noreply@zherkeys.com>',
+            to: email,
+            subject: 'Redefinição de Senha - ZHER KEYS',
+            html: `<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
+                    <h2>REDEFINIÇÃO DE CREDENCIAL</h2>
+                    <p>Você solicitou a troca da sua senha.</p>
+                    <a href="${resetUrl}" style="display:inline-block;padding:10px 20px;background:#F43F5E;color:white;text-decoration:none;border-radius:5px;">CRIAR NOVA SENHA</a>
+                   </div>`
+        };
+        
+        transporter.sendMail(message, (err) => {
+            if (err) return res.status(500).json({ error: 'Erro ao enviar e-mail.' });
+            res.status(200).json({ message: 'E-mail de redefinição enviado! Verifique sua caixa de entrada.' });
         });
-    });
+    } catch(err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro no banco.' });
+    }
 });
 
 app.post('/reset-password', async (req, res) => {
     const { token, newPassword } = req.body;
     if(!token || !newPassword) return res.status(400).json({ error: 'Dados incompletos.' });
     
-    db.get('SELECT * FROM users WHERE reset_token = ? AND reset_expires > ?', [token, Date.now()], async (err, user) => {
-        if (!user) return res.status(400).json({ error: 'Token inválido ou expirado.' });
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE reset_token = $1 AND reset_expires > $2', [token, Date.now()]);
+        if (result.rows.length === 0) return res.status(400).json({ error: 'Token inválido ou expirado.' });
         
+        const user = result.rows[0];
         const salt = await bcrypt.genSalt(10);
         const hash = await bcrypt.hash(newPassword, salt);
         
-        db.run('UPDATE users SET password_hash = ?, reset_token = NULL, reset_expires = NULL WHERE id = ?', [hash, user.id], function(err) {
-            if (err) return res.status(500).json({ error: 'Erro no banco.' });
-            res.status(200).json({ message: 'Senha alterada com sucesso! Faça login.' });
-        });
-    });
+        await pool.query('UPDATE users SET password_hash = $1, reset_token = NULL, reset_expires = NULL WHERE id = $2', [hash, user.id]);
+        
+        res.status(200).json({ message: 'Senha alterada com sucesso! Faça login.' });
+    } catch(err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro no banco.' });
+    }
 });
 
-app.get('/api/me', requireAuth, (req, res) => {
-    db.get('SELECT email FROM users WHERE id = ?', [req.session.userId], (err, row) => {
-        if (row) {
-            res.json({ email: row.email });
+app.get('/api/me', requireAuth, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT email FROM users WHERE id = $1', [req.session.userId]);
+        if (result.rows.length > 0) {
+            res.json({ email: result.rows[0].email });
         } else {
             res.status(401).json({ error: 'Não autorizado' });
         }
-    });
+    } catch(err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro no banco' });
+    }
 });
 
 app.get('/logout', (req, res) => {
@@ -260,5 +289,5 @@ app.get('/logout', (req, res) => {
 // Start Server
 app.listen(port, () => {
     console.log(`🚀 ZHER KEYS SECURE SERVER INICIADO!`);
-    console.log(`🌐 Acesse o site localmente em: http://localhost:${port}`);
+    console.log(`🌐 Porta: ${port}`);
 });
