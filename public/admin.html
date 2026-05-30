@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHER KEYS | Painel Administrativo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { orbitron: ['Orbitron', 'sans-serif'], inter: ['Inter', 'sans-serif'] },
+                    colors: { obsidian: '#020617', cyberrose: '#F43F5E', electricblue: '#3B82F6', toxicgreen: '#10B981' },
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #020617; }
+        .mesh-bg {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(244, 63, 94, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.15) 0px, transparent 50%);
+        }
+    </style>
+</head>
+<body class="text-slate-200 antialiased mesh-bg min-h-screen flex flex-col">
+
+    <nav class="border-b border-slate-800 bg-obsidian/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-cyberrose to-red-600 flex items-center justify-center shadow-lg shadow-cyberrose/20">
+                    <i data-lucide="shield-alert" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-orbitron font-black text-xl tracking-widest text-white uppercase">PAINEL ADMIN</h1>
+                </div>
+            </a>
+            <div class="flex items-center gap-4">
+                <span class="text-xs font-orbitron tracking-widest text-cyberrose bg-cyberrose/10 px-3 py-1 rounded border border-cyberrose/30">NÍVEL: DEUS</span>
+                <a href="/logout" class="text-xs text-slate-400 hover:text-white transition-colors">SAIR</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-7xl mx-auto px-6 py-12 w-full">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Formulário de Novo Produto -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit sticky top-28">
+                <h3 class="font-orbitron font-bold text-white tracking-widest mb-6 border-b border-slate-800 pb-4 flex items-center gap-2">
+                    <i data-lucide="plus-square" class="w-5 h-5 text-toxicgreen"></i> NOVO PRODUTO
+                </h3>
+                
+                <form id="product-form" class="space-y-4">
+                    <input type="hidden" id="prod-id">
+                    
+                    <div>
+                        <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">TÍTULO (Ex: Zher Key Basic)</label>
+                        <input type="text" id="prod-title" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen focus:ring-1 focus:ring-toxicgreen transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">CATEGORIA (Ex: Vitalício)</label>
+                        <input type="text" id="prod-category" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">PREÇO (R$)</label>
+                        <input type="number" step="0.01" id="prod-price" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">LINK DA IMAGEM</label>
+                        <input type="url" id="prod-image" placeholder="https://..." required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">DESCRIÇÃO</label>
+                        <textarea id="prod-desc" rows="3" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all"></textarea>
+                    </div>
+
+                    <button type="submit" id="btn-save" class="w-full bg-toxicgreen hover:bg-emerald-500 text-obsidian font-orbitron font-bold tracking-widest py-3 rounded-lg transition-colors mt-4">
+                        SALVAR PRODUTO
+                    </button>
+                    <button type="button" id="btn-cancel" onclick="resetForm()" class="hidden w-full bg-slate-800 hover:bg-slate-700 text-white font-orbitron font-bold tracking-widest py-3 rounded-lg transition-colors mt-2">
+                        CANCELAR EDIÇÃO
+                    </button>
+                </form>
+            </div>
+
+            <!-- Lista de Produtos -->
+            <div class="lg:col-span-2 bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+                <h3 class="font-orbitron font-bold text-white tracking-widest mb-6 border-b border-slate-800 pb-4 flex items-center gap-2">
+                    <i data-lucide="database" class="w-5 h-5 text-electricblue"></i> COFRE DE PRODUTOS
+                </h3>
+                
+                <div id="products-list" class="space-y-4">
+                    <!-- Produtos carregados via JS -->
+                    <div class="text-center text-slate-500 py-10">Carregando catálogo seguro...</div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        // Autenticação básica no front
+        fetch('/api/me').then(res => res.json()).then(data => {
+            if(!data.isAdmin) {
+                alert("Acesso Negado.");
+                window.location.href = '/';
+            }
+        });
+
+        async function loadProducts() {
+            try {
+                const res = await fetch('/api/products');
+                const products = await res.json();
+                
+                const container = document.getElementById('products-list');
+                
+                if(products.length === 0) {
+                    container.innerHTML = '<div class="text-center text-slate-500 py-10">Nenhum produto cadastrado. O cofre está vazio.</div>';
+                    return;
+                }
+
+                let html = '';
+                products.forEach(p => {
+                    html += `
+                        <div class="flex flex-col sm:flex-row items-center gap-6 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                            <img src="${p.image}" class="w-24 h-24 object-cover rounded-lg shadow-lg">
+                            <div class="flex-grow text-center sm:text-left">
+                                <span class="bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[10px] px-2 py-0.5 rounded-full uppercase">${p.category}</span>
+                                <h4 class="text-white font-orbitron font-bold text-lg mt-1">${p.title}</h4>
+                                <span class="text-toxicgreen font-bold text-sm">R$ ${parseFloat(p.price).toFixed(2).replace('.', ',')}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick='editProduct(${JSON.stringify(p).replace(/'/g, "\\'")})' class="p-2 bg-slate-800 text-electricblue rounded hover:bg-slate-700 transition" title="Editar">
+                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="deleteProduct(${p.id})" class="p-2 bg-slate-800 text-cyberrose rounded hover:bg-slate-700 transition" title="Excluir">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+                lucide.createIcons();
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        document.getElementById('product-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('prod-id').value;
+            const payload = {
+                title: document.getElementById('prod-title').value,
+                category: document.getElementById('prod-category').value,
+                price: document.getElementById('prod-price').value,
+                image: document.getElementById('prod-image').value,
+                description: document.getElementById('prod-desc').value
+            };
+
+            const url = id ? '/api/admin/products/' + id : '/api/admin/products';
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if(res.ok) {
+                    resetForm();
+                    loadProducts();
+                } else {
+                    alert("Erro ao salvar.");
+                }
+            } catch(err) {
+                alert("Erro de rede.");
+            }
+        });
+
+        window.editProduct = (p) => {
+            document.getElementById('prod-id').value = p.id;
+            document.getElementById('prod-title').value = p.title;
+            document.getElementById('prod-category').value = p.category;
+            document.getElementById('prod-price').value = p.price;
+            document.getElementById('prod-image').value = p.image;
+            document.getElementById('prod-desc').value = p.description;
+            
+            document.getElementById('btn-save').innerText = "ATUALIZAR PRODUTO";
+            document.getElementById('btn-save').classList.replace('bg-toxicgreen', 'bg-electricblue');
+            document.getElementById('btn-cancel').classList.remove('hidden');
+            window.scrollTo(0,0);
+        };
+
+        window.resetForm = () => {
+            document.getElementById('product-form').reset();
+            document.getElementById('prod-id').value = '';
+            document.getElementById('btn-save').innerText = "SALVAR PRODUTO";
+            document.getElementById('btn-save').classList.replace('bg-electricblue', 'bg-toxicgreen');
+            document.getElementById('btn-cancel').classList.add('hidden');
+        };
+
+        window.deleteProduct = async (id) => {
+            if(!confirm("Tem certeza que deseja DELETAR este produto para sempre?")) return;
+            try {
+                await fetch('/api/admin/products/' + id, { method: 'DELETE' });
+                loadProducts();
+            } catch(e) {
+                alert("Erro ao deletar.");
+            }
+        };
+
+        // Init
+        loadProducts();
+    </script>
+</body>
+</html>

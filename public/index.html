@@ -605,60 +605,28 @@
         // ========================================
         // CATALOG E MODAL LOGIC
         // ========================================
-        const produtos = [
-            {
-                id: 1,
-                title: "Human: Fall Flat",
-                price: "R$ 7,79",
-                image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/477160/header.jpg",
-                description: "Human: Fall Flat é um jogo hilário e leve de plataforma baseado em física, ambientado em paisagens flutuantes e oníricas que podem ser jogadas solo ou com até 8 amigos online. Ativação via Steam.",
-                category: "STEAM KEY"
-            },
-            {
-                id: 2,
-                title: "Batman: Arkham Origins",
-                price: "R$ 8,09",
-                image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/209000/header.jpg",
-                description: "Batman: Arkham Origins apresenta uma Gotham City expandida e uma história original prequela ambientada vários anos antes dos eventos de Batman: Arkham Asylum e Batman: Arkham City.",
-                category: "STEAM KEY"
-            },
-            {
-                id: 3,
-                title: "LEGO The Incredibles",
-                price: "R$ 7,50",
-                image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/818320/header.jpg",
-                description: "Experimente as aventuras emocionantes da família Pera e use seus superpoderes para derrotar o crime e reviver momentos memoráveis dos filmes Os Incríveis e Os Incríveis 2 no mundo LEGO.",
-                category: "STEAM KEY"
-            },
-            {
-                id: 4,
-                title: "LEGO DC Super-Villains Deluxe",
-                price: "R$ 12,01",
-                image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/829110/header.jpg",
-                description: "É bom ser mau... Embarque em uma nova aventura da DC/LEGO tornando-se o melhor vilão que o universo já viu. A Deluxe Edition inclui conteúdo extra e DLCs exclusivos.",
-                category: "STEAM KEY"
-            },
-            {
-                id: 5,
-                title: "Middle-earth: Shadow of War Definitive",
-                price: "R$ 15,28",
-                image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/356190/header.jpg",
-                description: "Experimente um mundo épico aberto trazido à vida pelo Sistema Nêmesis premiado. Forje um novo Anel do Poder, conquiste Fortalezas e domine Mordor com seu próprio exército de orcs nesta Edição Definitiva completa.",
-                category: "STEAM KEY"
-            },
-            {
-                id: 6,
-                title: "The LEGO Movie Videogame",
-                price: "R$ 5,28",
-                image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/267530/header.jpg",
-                description: "Junte-se a Emmet e um grupo improvável de rebeldes em sua busca heroica para impedir o plano maligno do Senhor Negócios. Construa com peças de LEGO nesta incrível aventura em formato de jogo.",
-                category: "STEAM KEY"
-            }
-        ];
+        let produtos = [];
 
-        const grid = document.getElementById('product-grid');
-        if (grid) {
+        async function loadProducts() {
+            try {
+                const res = await fetch('/api/products');
+                if(!res.ok) throw new Error("Falha ao buscar produtos");
+                produtos = await res.json();
+                renderGrid();
+            } catch(e) {
+                console.error("Erro ao carregar produtos:", e);
+                document.getElementById('product-grid').innerHTML = '<div class="col-span-full text-center text-slate-400">Nenhum produto disponível no momento.</div>';
+            }
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('product-grid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
             produtos.forEach((p, index) => {
+                const precoFormatado = 'R$ ' + parseFloat(p.price).toFixed(2).replace('.', ',');
                 grid.innerHTML += `
                     <div class="advantage-card bg-slate-950/80 border border-slate-800/80 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all duration-300 cursor-pointer flex flex-col h-full" onclick="openModal(${p.id})">
                         <div class="h-48 w-full overflow-hidden relative">
@@ -669,7 +637,7 @@
                         <div class="p-6 flex flex-col flex-grow">
                             <h4 class="font-orbitron font-bold text-lg text-white mb-2 uppercase tracking-wide leading-tight">${p.title}</h4>
                             <div class="mt-auto flex items-center justify-between pt-4">
-                                <span class="font-orbitron font-black text-xl text-cyberrose">${p.price}</span>
+                                <span class="font-orbitron font-black text-xl text-cyberrose">${precoFormatado}</span>
                                 <button onclick="addAndShowCart(event, ${p.id})" class="w-8 h-8 rounded bg-electricblue/10 flex items-center justify-center text-electricblue hover:bg-electricblue hover:text-white transition-colors shadow-cyber z-10 relative">
                                     <i data-lucide="shopping-cart" class="w-4 h-4"></i>
                                 </button>
@@ -681,7 +649,6 @@
             });
             setTimeout(() => lucide.createIcons(), 100);
             
-            // GSAP Animation for new cards
             gsap.fromTo('#product-grid .advantage-card',
                 { opacity: 0, y: 30 },
                 {
@@ -697,6 +664,8 @@
                 }
             );
         }
+        
+        loadProducts();
 
         const modal = document.getElementById('product-modal');
         const modalContent = document.getElementById('modal-content');
@@ -708,7 +677,7 @@
             
             document.getElementById('modal-image').src = currentProduct.image;
             document.getElementById('modal-title').innerText = currentProduct.title;
-            document.getElementById('modal-price').innerText = currentProduct.price;
+            document.getElementById('modal-price').innerText = 'R$ ' + parseFloat(currentProduct.price).toFixed(2).replace('.', ',');
             document.getElementById('modal-description').innerText = currentProduct.description;
             
             modal.classList.remove('hidden');

@@ -136,7 +136,7 @@
                             <p class="text-slate-500 font-inter text-xs mt-1 truncate max-w-sm hidden sm:block">${item.description}</p>
                         </div>
                         <div class="flex items-center gap-6">
-                            <span class="text-cyberrose font-orbitron font-bold text-xl">${item.price}</span>
+                            <span class="text-cyberrose font-orbitron font-bold text-xl">R$ ${parseFloat(item.price).toFixed(2).replace('.', ',')}</span>
                             <button onclick="removeFromCart(${index})" class="w-10 h-10 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-red-400 hover:border-red-500 transition-colors" title="Remover">
                                 <i data-lucide="trash-2" class="w-5 h-5"></i>
                             </button>
@@ -158,8 +158,46 @@
             renderCartPage();
         };
 
-        window.finalizarCompra = () => {
-            alert("Processando checkout de " + cart.length + " itens...\nIsso abrirá a integração com MercadoPago/Stripe no futuro.");
+        window.finalizarCompra = async () => {
+            if(cart.length === 0) return;
+            
+            const btn = document.getElementById('btn-checkout');
+            btn.innerHTML = 'GERANDO PAGAMENTO... <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
+            btn.classList.add('opacity-50', 'pointer-events-none');
+            
+            try {
+                // Prepara itens no formato que o backend espera
+                const items = cart.map(item => ({ id: item.id, quantity: 1 }));
+                
+                const res = await fetch('/create-checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items })
+                });
+                
+                if(res.redirected && res.url.includes('login.html')) {
+                    alert('Você precisa fazer login para comprar.');
+                    window.location.href = '/login.html';
+                    return;
+                }
+                
+                const data = await res.json();
+                
+                if(res.ok && data.init_point) {
+                    window.location.href = data.init_point; // Redireciona para o MercadoPago
+                } else {
+                    alert('Erro no checkout: ' + (data.error || 'Desconhecido'));
+                    btn.innerHTML = 'FINALIZAR COMPRA <i data-lucide="zap" class="w-4 h-4"></i>';
+                    btn.classList.remove('opacity-50', 'pointer-events-none');
+                    lucide.createIcons();
+                }
+            } catch(e) {
+                console.error(e);
+                alert('Erro de rede ao conectar com MercadoPago.');
+                btn.innerHTML = 'FINALIZAR COMPRA <i data-lucide="zap" class="w-4 h-4"></i>';
+                btn.classList.remove('opacity-50', 'pointer-events-none');
+                lucide.createIcons();
+            }
         };
 
         // Init

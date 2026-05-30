@@ -4,10 +4,14 @@ const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const path = require('path');
 const crypto = require('crypto');
+const { MercadoPagoConfig, Preference } = require('mercadopago');
 
 const app = express();
 const port = process.env.PORT || 3000;
 const APP_URL = process.env.APP_URL || ('http://localhost:' + port);
+
+// Setup MercadoPago
+const mpClient = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN || 'TEST-12345' });
 
 // Setup Middleware
 app.use(express.json());
@@ -24,22 +28,103 @@ const pool = new Pool({
     ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
-pool.query(`
-    CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        email TEXT UNIQUE NOT NULL,
-        password_hash TEXT NOT NULL,
-        is_verified INTEGER DEFAULT 0,
-        verification_token TEXT,
-        reset_token TEXT,
-        reset_expires BIGINT
-    );
-`).catch(err => console.error('Error creating table:', err));
+async function initDB() {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                is_verified INTEGER DEFAULT 0,
+                verification_token TEXT,
+                reset_token TEXT,
+                reset_expires BIGINT
+            );
+            
+            CREATE TABLE IF NOT EXISTS products (
+                id SERIAL PRIMARY KEY,
+                title TEXT NOT NULL,
+                description TEXT NOT NULL,
+                price NUMERIC(10, 2) NOT NULL,
+                image TEXT NOT NULL,
+                category TEXT NOT NULL
+            );
+            
+            CREATE TABLE IF NOT EXISTS orders (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER,
+                mp_preference_id TEXT,
+                mp_payment_id TEXT,
+                status TEXT DEFAULT 'pending',
+                total_amount NUMERIC(10, 2),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Popular produtos iniciais se estiver vazio
+        const checkProducts = await pool.query('SELECT COUNT(*) FROM products');
+        if (parseInt(checkProducts.rows[0].count) === 0) {
+            const defaultProducts = [
+                {
+                    title: "Human: Fall Flat",
+                    price: 7.79,
+                    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/477160/header.jpg",
+                    description: "Human: Fall Flat é um jogo hilário e leve de plataforma baseado em física, ambientado em paisagens flutuantes e oníricas que podem ser jogadas solo ou com até 8 amigos online. Ativação via Steam.",
+                    category: "STEAM KEY"
+                },
+                {
+                    title: "Batman: Arkham Origins",
+                    price: 8.09,
+                    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/209000/header.jpg",
+                    description: "Batman: Arkham Origins apresenta uma Gotham City expandida e uma história original prequela ambientada vários anos antes dos eventos de Batman: Arkham Asylum e Batman: Arkham City.",
+                    category: "STEAM KEY"
+                },
+                {
+                    title: "LEGO The Incredibles",
+                    price: 7.50,
+                    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/818320/header.jpg",
+                    description: "Experimente as aventuras emocionantes da família Pera e use seus superpoderes para derrotar o crime e reviver momentos memoráveis dos filmes Os Incríveis e Os Incríveis 2 no mundo LEGO.",
+                    category: "STEAM KEY"
+                },
+                {
+                    title: "LEGO DC Super-Villains Deluxe",
+                    price: 12.01,
+                    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/829110/header.jpg",
+                    description: "É bom ser mau... Embarque em uma nova aventura da DC/LEGO tornando-se o melhor vilão que o universo já viu. A Deluxe Edition inclui conteúdo extra e DLCs exclusivos.",
+                    category: "STEAM KEY"
+                },
+                {
+                    title: "Middle-earth: Shadow of War Definitive",
+                    price: 15.28,
+                    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/356190/header.jpg",
+                    description: "Experimente um mundo épico aberto trazido à vida pelo Sistema Nêmesis premiado. Forje um novo Anel do Poder, conquiste Fortalezas e domine Mordor com seu próprio exército de orcs nesta Edição Definitiva completa.",
+                    category: "STEAM KEY"
+                },
+                {
+                    title: "The LEGO Movie Videogame",
+                    price: 5.28,
+                    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/267530/header.jpg",
+                    description: "Junte-se a Emmet e um grupo improvável de rebeldes em sua busca heroica para impedir o plano maligno do Senhor Negócios. Construa com peças de LEGO nesta incrível aventura em formato de jogo.",
+                    category: "STEAM KEY"
+                }
+            ];
+            
+            for (let p of defaultProducts) {
+                await pool.query('INSERT INTO products (title, description, price, image, category) VALUES ($1, $2, $3, $4, $5)', [p.title, p.description, p.price, p.image, p.category]);
+            }
+            console.log('✅ Produtos iniciais transferidos para o Banco de Dados.');
+        }
+    } catch(err) {
+        console.error('Error in initDB:', err);
+    }
+}
+initDB();
 
 // Setup Brevo API Key
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
 
 async function sendEmailViaBrevo(toEmail, subject, textContent, htmlContent) {
+    if(!BREVO_API_KEY) return console.warn("BREVO_API_KEY not found. Email not sent to " + toEmail);
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
@@ -64,16 +149,162 @@ async function sendEmailViaBrevo(toEmail, subject, textContent, htmlContent) {
 }
 console.log('Motor de E-mail configurado via Brevo API');
 
-// Auth Middleware
+// Middlewares
 const requireAuth = (req, res, next) => {
-    if (req.session.userId) {
-        next();
-    } else {
-        res.redirect('/login.html');
+    if (req.session.userId) next();
+    else res.redirect('/login.html');
+};
+
+const requireAdmin = async (req, res, next) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Não autorizado' });
+    try {
+        const result = await pool.query('SELECT email FROM users WHERE id = $1', [req.session.userId]);
+        if (result.rows.length > 0 && result.rows[0].email === 'zherkeys@gmail.com') {
+            next();
+        } else {
+            res.status(403).json({ error: 'Acesso negado. Apenas o dono pode acessar.' });
+        }
+    } catch(e) {
+        res.status(500).json({ error: 'Erro no banco' });
     }
 };
 
-// Serve specific static files that require Auth first
+// ========================
+// API DE PRODUTOS E ADMIN
+// ========================
+
+// Listar produtos (Público)
+app.get('/api/products', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM products ORDER BY id ASC');
+        res.json(result.rows);
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao buscar produtos' });
+    }
+});
+
+// Criar produto (Admin)
+app.post('/api/admin/products', requireAdmin, async (req, res) => {
+    const { title, description, price, image, category } = req.body;
+    try {
+        await pool.query(
+            'INSERT INTO products (title, description, price, image, category) VALUES ($1, $2, $3, $4, $5)',
+            [title, description, parseFloat(price), image, category]
+        );
+        res.status(201).json({ message: 'Produto adicionado' });
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao adicionar' });
+    }
+});
+
+// Editar produto (Admin)
+app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { title, description, price, image, category } = req.body;
+    try {
+        await pool.query(
+            'UPDATE products SET title=$1, description=$2, price=$3, image=$4, category=$5 WHERE id=$6',
+            [title, description, parseFloat(price), image, category, id]
+        );
+        res.json({ message: 'Produto atualizado' });
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao atualizar' });
+    }
+});
+
+// Deletar produto (Admin)
+app.delete('/api/admin/products/:id', requireAdmin, async (req, res) => {
+    try {
+        await pool.query('DELETE FROM products WHERE id=$1', [req.params.id]);
+        res.json({ message: 'Produto deletado' });
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao deletar' });
+    }
+});
+
+// ========================
+// CHECKOUT & MERCADOPAGO
+// ========================
+
+app.post('/create-checkout', requireAuth, async (req, res) => {
+    const { items } = req.body; // array of { id, quantity }
+    
+    if(!items || items.length === 0) return res.status(400).json({ error: 'Carrinho vazio' });
+    
+    try {
+        // Consultar banco para obter os preços REAIS para evitar fraudes
+        const ids = items.map(i => parseInt(i.id));
+        const result = await pool.query('SELECT * FROM products WHERE id = ANY($1::int[])', [ids]);
+        
+        const realProducts = result.rows;
+        if(realProducts.length === 0) return res.status(400).json({ error: 'Produtos não encontrados' });
+        
+        let totalAmount = 0;
+        const preferenceItems = [];
+        
+        items.forEach(cartItem => {
+            const dbProduct = realProducts.find(p => p.id === parseInt(cartItem.id));
+            if(dbProduct) {
+                totalAmount += parseFloat(dbProduct.price) * cartItem.quantity;
+                preferenceItems.push({
+                    id: dbProduct.id.toString(),
+                    title: dbProduct.title,
+                    unit_price: parseFloat(dbProduct.price),
+                    quantity: cartItem.quantity,
+                    currency_id: 'BRL',
+                    picture_url: dbProduct.image
+                });
+            }
+        });
+        
+        if(preferenceItems.length === 0) return res.status(400).json({ error: 'Erro nos itens do carrinho' });
+        
+        // Criar Preferência no MercadoPago
+        const preference = new Preference(mpClient);
+        const createdPref = await preference.create({
+            body: {
+                items: preferenceItems,
+                back_urls: {
+                    success: `${APP_URL}/carrinho.html?status=success`,
+                    failure: `${APP_URL}/carrinho.html?status=failure`,
+                    pending: `${APP_URL}/carrinho.html?status=pending`
+                },
+                auto_return: 'approved',
+                notification_url: `${APP_URL}/webhook`
+            }
+        });
+        
+        // Salvar pedido pendente no banco
+        await pool.query(
+            'INSERT INTO orders (user_id, mp_preference_id, total_amount) VALUES ($1, $2, $3)',
+            [req.session.userId, createdPref.id, totalAmount]
+        );
+        
+        // Retornar a URL de pagamento
+        res.json({ init_point: createdPref.init_point });
+        
+    } catch(e) {
+        console.error(e);
+        res.status(500).json({ error: 'Erro ao gerar checkout' });
+    }
+});
+
+app.post('/webhook', async (req, res) => {
+    const { topic, id } = req.query;
+    if (topic === 'payment' || req.query.type === 'payment') {
+        try {
+            console.log(`[WEBHOOK] Pagamento recebido! ID: ${id}`);
+        } catch(e) {
+            console.error('Erro no webhook:', e);
+        }
+    }
+    res.status(200).send('OK');
+});
+
+// ========================
+// FRONTEND ROUTES & AUTH
+// ========================
+
 app.get('/', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -87,10 +318,22 @@ app.get('/carrinho.html', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'carrinho.html'));
 });
 
-// Serve other static files (css, js, login.html) without auth
+// Admin Route Protected
+app.get('/admin.html', requireAuth, async (req, res, next) => {
+    try {
+        const result = await pool.query('SELECT email FROM users WHERE id = $1', [req.session.userId]);
+        if (result.rows.length > 0 && result.rows[0].email === 'zherkeys@gmail.com') {
+            res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+        } else {
+            res.status(403).send('Acesso restrito ao Administrador.');
+        }
+    } catch(e) {
+        res.status(500).send('Erro no banco');
+    }
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Routes
 app.post('/register', async (req, res) => {
     const { email, password } = req.body;
     
@@ -153,7 +396,12 @@ app.post('/login', async (req, res) => {
         if (user.is_verified === 0) return res.status(400).json({ error: 'Sua conta não está ativada. Verifique o e-mail.' });
         
         req.session.userId = user.id;
-        res.status(200).json({ message: 'Acesso concedido.', redirect: '/' });
+        
+        if (user.email === 'zherkeys@gmail.com') {
+            res.status(200).json({ message: 'Acesso de Admin concedido.', redirect: '/admin.html' });
+        } else {
+            res.status(200).json({ message: 'Acesso concedido.', redirect: '/' });
+        }
     } catch(err) {
         console.error(err);
         res.status(500).json({ error: 'Erro no servidor' });
@@ -274,7 +522,7 @@ app.get('/api/me', requireAuth, async (req, res) => {
     try {
         const result = await pool.query('SELECT email FROM users WHERE id = $1', [req.session.userId]);
         if (result.rows.length > 0) {
-            res.json({ email: result.rows[0].email });
+            res.json({ email: result.rows[0].email, isAdmin: result.rows[0].email === 'zherkeys@gmail.com' });
         } else {
             res.status(401).json({ error: 'Não autorizado' });
         }
