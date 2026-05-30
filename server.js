@@ -39,11 +39,14 @@ pool.query(`
 
 // Setup Nodemailer (Gmail Real Account)
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: {
         user: 'zherkeys@gmail.com',
         pass: 'calsnxdgdzhvpgaw' // App Password (sem espaços)
-    }
+    },
+    connectionTimeout: 10000 // 10 segundos de limite para não travar o frontend
 });
 console.log('Nodemailer configurado com Gmail: zherkeys@gmail.com');
 
