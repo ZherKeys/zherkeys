@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHER KEYS | Acesso Seguro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { orbitron: ['Orbitron', 'sans-serif'], inter: ['Inter', 'sans-serif'] },
+                    colors: { obsidian: '#020617', cyberrose: '#F43F5E', electricblue: '#3B82F6' },
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #020617; }
+        .mesh-bg {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.18) 0px, transparent 50%),
+                radial-gradient(at 90% 10%, rgba(244, 63, 94, 0.15) 0px, transparent 50%);
+        }
+    </style>
+</head>
+<body class="text-slate-200 antialiased mesh-bg min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-md bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+        
+        <div class="text-center mb-8">
+            <div class="w-12 h-12 mx-auto rounded-lg bg-gradient-to-tr from-electricblue to-cyberrose flex items-center justify-center shadow-lg mb-4">
+                <i data-lucide="shield-alert" class="w-6 h-6 text-white"></i>
+            </div>
+            <h2 class="font-orbitron font-black text-2xl tracking-widest text-white uppercase">ZHER KEYS</h2>
+            <p class="text-slate-400 text-xs font-orbitron tracking-widest mt-1">SECURE TERMINAL LOGIN</p>
+        </div>
+
+        <!-- Alertas -->
+        <div id="alert-box" class="hidden mb-6 p-3 rounded text-sm text-center font-bold"></div>
+
+        <!-- Tabs -->
+        <div class="flex mb-6 border-b border-slate-800">
+            <button id="tab-login" onclick="switchTab('login')" class="w-1/2 py-3 font-orbitron text-xs tracking-widest text-white border-b-2 border-electricblue transition-colors">LOGIN</button>
+            <button id="tab-register" onclick="switchTab('register')" class="w-1/2 py-3 font-orbitron text-xs tracking-widest text-slate-500 hover:text-white transition-colors">REGISTRO</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="space-y-5" onsubmit="handleLogin(event)">
+            <div>
+                <label class="block text-xs font-orbitron text-slate-400 mb-2 tracking-widest">E-MAIL</label>
+                <div class="relative">
+                    <i data-lucide="mail" class="w-5 h-5 absolute left-3 top-3 text-slate-500"></i>
+                    <input type="email" id="login-email" required class="w-full bg-slate-950 border border-slate-800 rounded-lg py-3 pl-10 pr-4 text-white placeholder-slate-600 focus:outline-none focus:border-electricblue transition-colors" placeholder="agente@zher.com">
+                </div>
+            </div>
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-xs font-orbitron text-slate-400 tracking-widest">SENHA</label>
+                    <a href="#" onclick="showForgotPassword(event)" class="text-[10px] text-slate-500 hover:text-white transition-colors font-inter underline">Esqueceu a senha?</a>
+                </div>
+                <div class="relative">
+                    <i data-lucide="lock" class="w-5 h-5 absolute left-3 top-3 text-slate-500"></i>
+                    <input type="password" id="login-password" required class="w-full bg-slate-950 border border-slate-800 rounded-lg py-3 pl-10 pr-4 text-white placeholder-slate-600 focus:outline-none focus:border-electricblue transition-colors" placeholder="••••••••">
+                </div>
+            </div>
+            <button type="submit" class="w-full bg-electricblue hover:bg-blue-600 text-white font-orbitron text-xs tracking-widest font-bold py-4 rounded-lg shadow-lg shadow-electricblue/30 transition-all uppercase flex items-center justify-center gap-2">
+                INICIAR SESSÃO <i data-lucide="log-in" class="w-4 h-4"></i>
+            </button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="register-form" class="space-y-5 hidden" onsubmit="handleRegister(event)">
+            <div>
+                <label class="block text-xs font-orbitron text-slate-400 mb-2 tracking-widest">E-MAIL</label>
+                <div class="relative">
+                    <i data-lucide="mail" class="w-5 h-5 absolute left-3 top-3 text-slate-500"></i>
+                    <input type="email" id="reg-email" required class="w-full bg-slate-950 border border-slate-800 rounded-lg py-3 pl-10 pr-4 text-white placeholder-slate-600 focus:outline-none focus:border-cyberrose transition-colors" placeholder="agente@zher.com">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-orbitron text-slate-400 mb-2 tracking-widest">CRIAR SENHA</label>
+                <div class="relative">
+                    <i data-lucide="key" class="w-5 h-5 absolute left-3 top-3 text-slate-500"></i>
+                    <input type="password" id="reg-password" required class="w-full bg-slate-950 border border-slate-800 rounded-lg py-3 pl-10 pr-4 text-white placeholder-slate-600 focus:outline-none focus:border-cyberrose transition-colors" placeholder="••••••••">
+                </div>
+            </div>
+            <button type="submit" class="w-full bg-cyberrose hover:bg-rose-600 text-white font-orbitron text-xs tracking-widest font-bold py-4 rounded-lg shadow-lg shadow-cyberrose/30 transition-all uppercase flex items-center justify-center gap-2">
+                CRIAR CREDENCIAL <i data-lucide="user-plus" class="w-4 h-4"></i>
+            </button>
+        </form>
+
+        <!-- Esqueci a Senha Form -->
+        <form id="forgot-form" class="space-y-5 hidden" onsubmit="handleForgotPassword(event)">
+            <p class="text-slate-400 text-sm text-center mb-4">Digite o e-mail associado à sua conta para receber um link de redefinição.</p>
+            <div>
+                <label class="block text-xs font-orbitron text-slate-400 mb-2 tracking-widest">E-MAIL DA CONTA</label>
+                <div class="relative">
+                    <i data-lucide="mail" class="w-5 h-5 absolute left-3 top-3 text-slate-500"></i>
+                    <input type="email" id="forgot-email" required class="w-full bg-slate-950 border border-slate-800 rounded-lg py-3 pl-10 pr-4 text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 transition-colors" placeholder="agente@zher.com">
+                </div>
+            </div>
+            <button type="submit" class="w-full bg-orange-600 hover:bg-orange-500 text-white font-orbitron text-xs tracking-widest font-bold py-4 rounded-lg shadow-lg shadow-orange-600/30 transition-all uppercase flex items-center justify-center gap-2">
+                ENVIAR RECUPERAÇÃO <i data-lucide="send" class="w-4 h-4"></i>
+            </button>
+            <div class="text-center mt-4">
+                <a href="#" onclick="switchTab('login')" class="text-xs font-orbitron text-slate-500 hover:text-white transition-colors tracking-widest underline">VOLTAR PARA LOGIN</a>
+            </div>
+        </form>
+
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function switchTab(tab) {
+            const loginForm = document.getElementById('login-form');
+            const regForm = document.getElementById('register-form');
+            const forgotForm = document.getElementById('forgot-form');
+            const tabLogin = document.getElementById('tab-login');
+            const tabReg = document.getElementById('tab-register');
+            const alertBox = document.getElementById('alert-box');
+            
+            alertBox.classList.add('hidden'); // clear alerts
+            forgotForm.classList.add('hidden');
+
+            if(tab === 'login') {
+                loginForm.classList.remove('hidden');
+                regForm.classList.add('hidden');
+                tabLogin.classList.add('border-b-2', 'border-electricblue', 'text-white');
+                tabLogin.classList.remove('text-slate-500');
+                tabReg.classList.remove('border-b-2', 'border-cyberrose', 'text-white');
+                tabReg.classList.add('text-slate-500');
+            } else {
+                regForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+                tabReg.classList.add('border-b-2', 'border-cyberrose', 'text-white');
+                tabReg.classList.remove('text-slate-500');
+                tabLogin.classList.remove('border-b-2', 'border-electricblue', 'text-white');
+                tabLogin.classList.add('text-slate-500');
+            }
+        }
+
+        function showAlert(msg, isError) {
+            const box = document.getElementById('alert-box');
+            box.innerHTML = msg;
+            box.className = `mb-6 p-3 rounded text-sm text-center font-bold ${isError ? 'bg-red-500/20 text-red-400 border border-red-500/50' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50'}`;
+            box.classList.remove('hidden');
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            try {
+                const res = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                
+                if(!res.ok) {
+                    if(data.error.includes('ativada')) {
+                        showAlert(data.error + '<br><a href="#" onclick="handleResend(event)" class="text-xs text-white underline mt-2 inline-block hover:text-electricblue transition-colors">Não recebeu o e-mail? Reenviar verificação</a>', true);
+                    } else {
+                        showAlert(data.error, true);
+                    }
+                }
+                else {
+                    showAlert(data.message, false);
+                    setTimeout(() => window.location.href = data.redirect, 1000);
+                }
+            } catch(err) {
+                showAlert('Erro de conexão com servidor.', true);
+            }
+        }
+
+        async function handleResend(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            if(!email) {
+                showAlert('Preencha o campo de e-mail para reenviar.', true);
+                return;
+            }
+            
+            try {
+                const res = await fetch('/resend-verification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                
+                if(!res.ok) showAlert(data.error, true);
+                else {
+                    showAlert(data.message, false);
+                }
+            } catch(err) {
+                showAlert('Erro de conexão com servidor.', true);
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            
+            try {
+                const res = await fetch('/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                
+                if(!res.ok) showAlert(data.error, true);
+                else {
+                    showAlert(data.message, false);
+                    document.getElementById('register-form').reset();
+                }
+            } catch(err) {
+                showAlert('Erro de conexão com servidor.', true);
+            }
+        }
+        async function handleForgotPassword(e) {
+            e.preventDefault();
+            const email = document.getElementById('forgot-email').value;
+            
+            try {
+                const res = await fetch('/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                
+                if(!res.ok) showAlert(data.error, true);
+                else {
+                    showAlert(data.message, false);
+                    document.getElementById('forgot-form').reset();
+                }
+            } catch(err) {
+                showAlert('Erro de conexão.', true);
+            }
+        }
+
+        function showForgotPassword(e) {
+            e.preventDefault();
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('register-form').classList.add('hidden');
+            document.getElementById('forgot-form').classList.remove('hidden');
+            
+            document.getElementById('tab-login').classList.remove('border-b-2', 'border-electricblue', 'text-white');
+            document.getElementById('tab-login').classList.add('text-slate-500');
+            document.getElementById('tab-register').classList.remove('border-b-2', 'border-cyberrose', 'text-white');
+            document.getElementById('tab-register').classList.add('text-slate-500');
+            document.getElementById('alert-box').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHER KEYS | Minha Conta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { orbitron: ['Orbitron', 'sans-serif'], inter: ['Inter', 'sans-serif'] },
+                    colors: { obsidian: '#020617', cyberrose: '#F43F5E', electricblue: '#3B82F6' },
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #020617; }
+        .mesh-bg {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.18) 0px, transparent 50%),
+                radial-gradient(at 90% 10%, rgba(244, 63, 94, 0.15) 0px, transparent 50%);
+        }
+    </style>
+</head>
+<body class="text-slate-200 antialiased mesh-bg min-h-screen">
+
+    <nav class="border-b border-slate-800 bg-obsidian/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-electricblue to-cyberrose flex items-center justify-center shadow-lg shadow-cyberrose/20 group-hover:shadow-electricblue/40 transition-all duration-300">
+                    <i data-lucide="key" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-orbitron font-black text-xl tracking-widest text-white uppercase">ZHER KEYS</h1>
+                </div>
+            </a>
+            
+            <div class="flex items-center gap-4">
+                <a href="/logout" class="text-slate-400 hover:text-cyberrose transition-colors flex items-center gap-2 font-orbitron text-xs tracking-widest" title="Desconectar">
+                    <i data-lucide="power" class="w-4 h-4"></i> SAIR
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row gap-8">
+        
+        <!-- Sidebar -->
+        <div class="w-full md:w-64 flex-shrink-0">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sticky top-28">
+                <div class="flex items-center gap-3 mb-6 p-2 border-b border-slate-800 pb-4">
+                    <div class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700">
+                        <i data-lucide="user" class="w-6 h-6 text-slate-400"></i>
+                    </div>
+                    <div>
+                        <p class="font-orbitron text-xs text-slate-500 tracking-widest">BEM-VINDO</p>
+                        <p id="user-email" class="text-sm font-semibold text-white truncate max-w-[150px]">carregando...</p>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <button onclick="switchTab('compras')" id="btn-compras" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-electricblue/10 text-electricblue font-orbitron text-xs tracking-widest transition-colors">
+                        <i data-lucide="shopping-bag" class="w-4 h-4"></i> MINHAS COMPRAS
+                    </button>
+                    <button onclick="switchTab('configuracoes')" id="btn-configuracoes" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-orbitron text-xs tracking-widest transition-colors">
+                        <i data-lucide="settings" class="w-4 h-4"></i> CONFIGURAÇÕES
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-grow">
+            <!-- Minhas Compras -->
+            <div id="tab-compras" class="bg-slate-900/50 border border-slate-800 rounded-2xl p-8 min-h-[400px]">
+                <h2 class="font-orbitron font-bold text-xl text-white mb-6 tracking-widest flex items-center gap-3">
+                    <i data-lucide="shopping-bag" class="text-electricblue"></i> SEUS JOGOS
+                </h2>
+                <div class="flex flex-col items-center justify-center text-center h-64 border-2 border-dashed border-slate-800 rounded-xl bg-slate-900/20">
+                    <i data-lucide="package-open" class="w-12 h-12 text-slate-600 mb-4"></i>
+                    <h3 class="text-lg font-bold text-slate-300">Nenhuma compra encontrada</h3>
+                    <p class="text-slate-500 text-sm mt-2 max-w-sm">Você ainda não possui jogos na sua biblioteca. Volte à vitrine e explore nossas ofertas!</p>
+                    <a href="/" class="mt-6 px-6 py-2 bg-electricblue hover:bg-blue-600 text-white rounded font-orbitron text-xs tracking-widest transition-colors">EXPLORAR CATÁLOGO</a>
+                </div>
+            </div>
+
+            <!-- Configurações -->
+            <div id="tab-configuracoes" class="hidden bg-slate-900/50 border border-slate-800 rounded-2xl p-8 min-h-[400px]">
+                <h2 class="font-orbitron font-bold text-xl text-white mb-6 tracking-widest flex items-center gap-3">
+                    <i data-lucide="settings" class="text-cyberrose"></i> CONFIGURAÇÕES DE SEGURANÇA
+                </h2>
+
+                <div id="settings-alert" class="hidden mb-6 p-4 rounded-lg text-sm font-bold border"></div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                    <h3 class="text-white font-bold mb-2">Redefinição de Senha</h3>
+                    <p class="text-slate-400 text-sm mb-6">Enviaremos um link seguro para o seu e-mail cadastrado. Clique no link para criar uma nova senha para a sua conta.</p>
+                    
+                    <button onclick="requestPasswordReset()" class="flex items-center gap-2 bg-slate-800 hover:bg-cyberrose text-white px-6 py-3 rounded-lg font-orbitron text-xs tracking-widest transition-colors border border-slate-700 hover:border-cyberrose">
+                        <i data-lucide="mail-warning" class="w-4 h-4"></i> ENVIAR LINK DE REDEFINIÇÃO
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Fetch User Data
+        fetch('/api/me')
+            .then(res => res.json())
+            .then(data => {
+                if(data.email) document.getElementById('user-email').innerText = data.email;
+            });
+
+        function switchTab(tab) {
+            const compras = document.getElementById('tab-compras');
+            const conf = document.getElementById('tab-configuracoes');
+            const btnCompras = document.getElementById('btn-compras');
+            const btnConf = document.getElementById('btn-configuracoes');
+
+            if(tab === 'compras') {
+                compras.classList.remove('hidden');
+                conf.classList.add('hidden');
+                btnCompras.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-electricblue/10 text-electricblue font-orbitron text-xs tracking-widest transition-colors";
+                btnConf.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-orbitron text-xs tracking-widest transition-colors";
+            } else {
+                conf.classList.remove('hidden');
+                compras.classList.add('hidden');
+                btnConf.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-cyberrose/10 text-cyberrose font-orbitron text-xs tracking-widest transition-colors";
+                btnCompras.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-orbitron text-xs tracking-widest transition-colors";
+            }
+        }
+
+        async function requestPasswordReset() {
+            const email = document.getElementById('user-email').innerText;
+            const alertBox = document.getElementById('settings-alert');
+            
+            try {
+                const res = await fetch('/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                
+                alertBox.classList.remove('hidden');
+                if(!res.ok) {
+                    alertBox.className = "mb-6 p-4 rounded-lg text-sm font-bold border bg-red-500/20 text-red-400 border-red-500/50";
+                    alertBox.innerText = data.error;
+                } else {
+                    alertBox.className = "mb-6 p-4 rounded-lg text-sm font-bold border bg-emerald-500/20 text-emerald-400 border-emerald-500/50";
+                    alertBox.innerText = data.message;
+                }
+            } catch(e) {
+                alertBox.classList.remove('hidden');
+                alertBox.className = "mb-6 p-4 rounded-lg text-sm font-bold border bg-red-500/20 text-red-400 border-red-500/50";
+                alertBox.innerText = "Erro de conexão.";
+            }
+        }
+    </script>
+</body>
+</html>

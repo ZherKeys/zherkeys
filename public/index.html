@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHER KEYS | Gaming & Keys Premium Marketplace</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        obsidian: '#020617',
+                        cyberrose: '#F43F5E',
+                        electricblue: '#3B82F6',
+                        surface: 'rgba(15, 23, 42, 0.8)',
+                    },
+                    boxShadow: {
+                        cyber: '0 0 20px rgba(59, 130, 246, 0.4)',
+                        roseGlow: '0 0 20px rgba(244, 63, 94, 0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            overflow-x: hidden;
+        }
+        
+        /* Custom Scanline Effect */
+        .scanline::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 99999;
+            opacity: 0.15;
+            pointer-events: none;
+            background-size: 100% 4px, 6px 100%;
+        }
+
+        /* Border Beam Animation CSS */
+        .border-beam-container {
+            position: relative;
+            border-radius: 0.75rem;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+        }
+
+        .border-beam-container::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: conic-gradient(from 0deg, transparent 30%, #3B82F6 50%, #F43F5E 70%, transparent 100%);
+            animation: rotateBeam 6s linear infinite;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .border-beam-inner {
+            position: relative;
+            z-index: 10;
+            background: #090d22;
+            height: 100%;
+            width: 100%;
+            border-radius: 11px;
+            margin: 1px;
+        }
+
+        @keyframes rotateBeam {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Mesh Gradient Background */
+        .mesh-bg {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.18) 0px, transparent 50%),
+                radial-gradient(at 90% 10%, rgba(244, 63, 94, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 80%, rgba(147, 51, 234, 0.12) 0px, transparent 50%);
+        }
+
+        /* Hide Scrollbars but keep functionality */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #020617;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3B82F6;
+        }
+    </style>
+</head>
+<body class="text-slate-200 antialiased mesh-bg scanline">
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-slate-950/70 backdrop-blur-xl border-b border-slate-800/60 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-electricblue to-cyberrose flex items-center justify-center shadow-cyber">
+                    <i data-lucide="shield-alert" class="w-6 h-6 text-white stroke-[2.5]"></i>
+                </div>
+                <span class="font-orbitron font-black text-xl tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">ZHER <span class="text-electricblue">KEYS</span></span>
+            </div>
+            
+            <div class="hidden md:flex items-center gap-8 font-orbitron text-xs tracking-widest text-slate-400">
+                <a href="#catalogo" class="relative py-2 transition-colors hover:text-white group">
+                    CATÁLOGO
+                    <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-electricblue transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#vantagens" class="relative py-2 transition-colors hover:text-white group">
+                    RECURSOS
+                    <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-electricblue transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#suporte" class="relative py-2 transition-colors hover:text-white group">
+                    SUPORTE
+                    <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-electricblue transition-all duration-300 group-hover:w-full"></span>
+                </a>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <a href="#" onclick="openMiniCart(event)" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-cyberrose hover:bg-slate-700 transition-all group" title="Carrinho">
+                    <i data-lucide="shopping-cart" class="w-5 h-5 text-slate-300 group-hover:text-white"></i>
+                    <span id="cart-badge" class="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 bg-cyberrose text-white text-[9px] font-bold rounded-full hidden">0</span>
+                </a>
+                <a href="/account.html" class="flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-electricblue hover:bg-slate-700 transition-all group" title="Minha Conta">
+                    <i data-lucide="user" class="w-5 h-5 text-slate-300 group-hover:text-white"></i>
+                </a>
+                <a href="#vitrine" class="magnetic-button inline-flex items-center gap-2 bg-slate-900 border border-slate-700/80 hover:border-electricblue text-white px-5 py-2.5 rounded-lg font-orbitron text-xs tracking-widest transition-all duration-300 shadow-lg shadow-black/40">
+                    <i data-lucide="terminal" class="w-4 h-4 text-electricblue"></i> ACCESS TERMINAL
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="relative min-h-screen pt-32 pb-20 flex items-center justify-center px-4 overflow-hidden">
+        <div class="absolute inset-0 z-0 opacity-40 mix-blend-screen pointer-events-none bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px]"></div>
+        <div class="max-w-4xl mx-auto text-center relative z-10 flex flex-col items-center">
+            
+            <div class="inline-flex items-center gap-2 bg-slate-950/80 border border-slate-800 px-4 py-1.5 rounded-full mb-8 backdrop-blur-md">
+                <span class="flex h-2 w-2 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyberrose opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-cyberrose"></span>
+                </span>
+                <span class="font-orbitron text-[10px] tracking-widest text-slate-400 uppercase">SERVER STATUS: SECURE & OPERATIONAL</span>
+            </div>
+
+            <!-- Main Heading with Terminal Hack animation fallback/trigger -->
+            <h1 id="hero-title" class="font-orbitron font-black text-4xl sm:text-6xl lg:text-7xl tracking-tighter text-white mb-6 uppercase leading-tight min-h-[120px] sm:min-h-[160px] md:min-h-0">
+                DESBLOQUEIE O PRÓXIMO NÍVEL.
+            </h1>
+
+            <p class="font-inter text-slate-400 text-base sm:text-xl max-w-2xl mb-12 font-light leading-relaxed">
+                Keys globais, contas exclusivas e acesso premium instantâneo. O menor preço do servidor, garantido por quem joga.
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center gap-4 w-full justify-center">
+                <button onclick="document.getElementById('vitrine').scrollIntoView({behavior:'smooth'})" class="magnetic-button w-full sm:w-auto bg-electricblue hover:bg-blue-600 text-white font-orbitron text-xs tracking-widest font-bold px-8 py-5 rounded-xl shadow-cyber transition-all duration-300 uppercase relative overflow-hidden group">
+                    <span class="relative z-10 flex items-center justify-center gap-2">
+                        EXPLORAR CATÁLOGO <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </span>
+                    <span class="absolute inset-0 bg-gradient-to-r from-purple-600 to-electricblue opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                </button>
+                
+                <button class="w-full sm:w-auto bg-slate-950/60 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-orbitron text-xs tracking-widest px-8 py-5 rounded-xl backdrop-blur-md transition-all duration-300 flex items-center justify-center gap-2">
+                    <i data-lucide="shield-check" class="w-4 h-4 text-cyberrose"></i> ANTI-BAN GUARANTEE
+                </button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- TRUST BAR -->
+    <section class="border-y border-slate-900 bg-slate-950/40 backdrop-blur-sm py-8 px-4 overflow-hidden">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-around gap-8 opacity-40 grayscale transition-all duration-500 hover:opacity-80 hover:grayscale-0">
+            <div class="flex items-center gap-2 font-orbitron font-bold tracking-wider text-xl text-slate-300">
+                <i data-lucide="gamepad-2" class="w-6 h-6 text-slate-400"></i> STEAM
+            </div>
+            <div class="flex items-center gap-2 font-orbitron font-bold tracking-wider text-xl text-slate-300">
+                <i data-lucide="clapperboard" class="w-6 h-6 text-slate-400"></i> EPIC GAMES
+            </div>
+            <div class="flex items-center gap-2 font-orbitron font-bold tracking-wider text-xl text-slate-300">
+                <i data-lucide="play" class="w-6 h-6 text-slate-400"></i> PLAYSTATION
+            </div>
+            <div class="flex items-center gap-2 font-orbitron font-bold tracking-wider text-xl text-slate-300">
+                <i data-lucide="box" class="w-6 h-6 text-slate-400"></i> XBOX NET
+            </div>
+        </div>
+    </section>
+
+    <!-- DROPS LENDÁRIOS DA SEMANA (BENTO GRID) -->
+    <section id="catalogo" class="py-24 px-4 max-w-7xl mx-auto scroll-mt-20">
+        <div class="text-center md:text-left mb-16 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+                <span class="font-orbitron text-xs tracking-widest text-cyberrose font-bold block mb-2 uppercase">// LIVE DISPATCH MARKET</span>
+                <h2 class="font-orbitron font-black text-3xl sm:text-4xl text-white uppercase tracking-tight">DROPS LENDÁRIOS DA SEMANA</h2>
+            </div>
+            <p class="font-inter text-slate-400 max-w-md text-sm font-light">
+                Lotes limitados com reabastecimento criptografado. Selecione sua categoria de privilégio abaixo.
+            </p>
+        </div>
+
+        <!-- Bento Grid Stack -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+            
+            <!-- Card 1: Game Keys -->
+            <div class="bento-card border-beam-container md:col-span-1 h-[420px] group">
+                <div class="border-beam-inner p-8 flex flex-col justify-between overflow-hidden relative">
+                    <div class="absolute inset-0 z-0 bg-[url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=600&auto=format&fit=crop')] bg-cover bg-center opacity-20 scale-100 group-hover:scale-110 transition-transform duration-700 pointer-events-none mix-blend-luminosity"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#090d22] via-[#090d22]/70 to-transparent z-0"></div>
+                    
+                    <div class="relative z-10 flex justify-between items-start">
+                        <div class="bg-slate-900/90 p-3 rounded-lg border border-slate-800">
+                            <i data-lucide="key-round" class="w-6 h-6 text-electricblue"></i>
+                        </div>
+                        <span class="bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[9px] tracking-widest px-2.5 py-1 rounded-full uppercase font-bold">REGIÃO GLOBAL</span>
+                    </div>
+
+                    <div class="relative z-10">
+                        <h3 class="font-orbitron font-bold text-xl text-white mb-2 uppercase tracking-wide">GAME KEYS</h3>
+                        <p class="font-inter text-slate-400 text-xs mb-6 font-light leading-relaxed">Títulos AAA e lançamentos mundiais em formato digital permanente. Ativação imediata nas principais launchers.</p>
+                        <button class="w-full bg-slate-900 border border-slate-800 group-hover:border-electricblue text-white group-hover:text-electricblue font-orbitron text-[11px] tracking-widest py-3.5 rounded-lg transition-all duration-300 flex items-center justify-center gap-2">
+                            ADQUIRIR AGORA — [ENTREGA INSTANTÂNEA]
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Contas High-End -->
+            <div class="bento-card border-beam-container md:col-span-2 h-[420px] group">
+                <div class="border-beam-inner p-8 flex flex-col justify-between overflow-hidden relative">
+                    <div class="absolute inset-0 z-0 bg-[url('https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center opacity-25 scale-100 group-hover:scale-110 transition-transform duration-700 pointer-events-none mix-blend-luminosity"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#090d22] via-[#090d22]/60 to-transparent z-0"></div>
+                    
+                    <div class="relative z-10 flex justify-between items-start">
+                        <div class="bg-slate-900/90 p-3 rounded-lg border border-slate-800">
+                            <i data-lucide="shield-check" class="w-6 h-6 text-cyberrose"></i>
+                        </div>
+                        <span class="bg-cyberrose/10 border border-cyberrose/30 text-cyberrose font-orbitron text-[9px] tracking-widest px-2.5 py-1 rounded-full uppercase font-bold">FULL ACCESS</span>
+                    </div>
+
+                    <div class="relative z-10 max-w-lg">
+                        <h3 class="font-orbitron font-bold text-xl text-white mb-2 uppercase tracking-wide">CONTAS HIGH-END</h3>
+                        <p class="font-inter text-slate-400 text-xs mb-6 font-light leading-relaxed">Progresso maximizado, skins raras, passes antigos e setups competitivos prontos para o lobby. Troca de e-mail inteiramente liberada.</p>
+                        <button class="w-full bg-slate-900 border border-slate-800 group-hover:border-cyberrose text-white group-hover:text-cyberrose font-orbitron text-[11px] tracking-widest py-3.5 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-lg">
+                            ADQUIRIR AGORA — [ENTREGA INSTANTÂNEA]
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Streaming & Gift Cards -->
+            <div class="bento-card border-beam-container md:col-span-3 h-[320px] group">
+                <div class="border-beam-inner p-8 flex flex-col justify-between overflow-hidden relative">
+                    <div class="absolute inset-0 z-0 bg-[url('https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1200&auto=format&fit=crop')] bg-cover bg-center opacity-15 scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#090d22] via-[#090d22]/90 to-transparent z-0"></div>
+                    
+                    <div class="relative z-10 flex justify-between items-start">
+                        <div class="bg-slate-900/90 p-3 rounded-lg border border-slate-800">
+                            <i data-lucide="tv" class="w-6 h-6 text-purple-400"></i>
+                        </div>
+                        <span class="bg-purple-400/10 border border-purple-400/30 text-purple-400 font-orbitron text-[9px] tracking-widest px-2.5 py-1 rounded-full uppercase font-bold">PREMIUM CRUNCH</span>
+                    </div>
+
+                    <div class="relative z-10 max-w-xl mt-auto">
+                        <h3 class="font-orbitron font-bold text-xl text-white mb-2 uppercase tracking-wide">STREAMING & GIFT CARDS</h3>
+                        <p class="font-inter text-slate-400 text-xs mb-6 font-light leading-relaxed">Assinaturas e créditos nas plataformas mais cobiçadas do mercado. Ultra 4K ativo, sem quedas e com garantia renovável.</p>
+                        <button class="w-full sm:w-auto px-8 bg-slate-900 border border-slate-800 group-hover:border-purple-400 text-white group-hover:text-purple-400 font-orbitron text-[11px] tracking-widest py-3.5 rounded-lg transition-all duration-300 flex items-center justify-center gap-2">
+                            ADQUIRIR AGORA — [ENTREGA INSTANTÂNEA]
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- VITRINE DE PRODUTOS -->
+    <section id="vitrine" class="py-24 px-4 max-w-7xl mx-auto scroll-mt-20">
+        <div class="text-center mb-16">
+            <span class="font-orbitron text-xs tracking-widest text-electricblue font-bold block mb-2 uppercase">// DESTAQUES DA LOJA</span>
+            <h2 class="font-orbitron font-black text-3xl sm:text-4xl text-white uppercase tracking-tight">JOGOS EM PROMOÇÃO</h2>
+        </div>
+        
+        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Produtos renderizados por JS -->
+        </div>
+    </section>
+
+    <!-- SECTION "POR QUE NÓS?" -->
+    <section id="vantagens" class="py-24 bg-slate-950/30 border-y border-slate-900/60 relative scroll-mt-20">
+        <div class="max-w-7xl mx-auto px-4">
+            
+            <div class="text-center mb-16">
+                <span class="font-orbitron text-xs tracking-widest text-electricblue font-bold block mb-2 uppercase">// VAULT CRYPTO PROTOCOLS</span>
+                <h2 class="font-orbitron font-black text-3xl sm:text-4xl text-white uppercase tracking-tight">POR QUE FAZEMOS A DIFERENÇA?</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Benefício 1 -->
+                <div class="advantage-card bg-slate-950/80 border border-slate-800/80 p-8 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all duration-300">
+                    <div class="w-12 h-12 rounded-lg bg-electricblue/10 border border-electricblue/20 flex items-center justify-center mb-6 text-electricblue">
+                        <i data-lucide="zap" class="w-6 h-6"></i>
+                    </div>
+                    <h4 class="font-orbitron font-bold text-lg text-white mb-3 uppercase tracking-wide">ENTREGA INSTANTÂNEA</h4>
+                    <p class="font-inter text-slate-400 text-sm font-light leading-relaxed">
+                        Nosso sistema automatizado dispara suas credenciais e chaves diretamente no painel e e-mail segundos após a confirmação.
+                    </p>
+                    <div class="absolute bottom-0 left-0 h-[2px] w-0 bg-electricblue transition-all duration-300 group-hover:w-full"></div>
+                </div>
+
+                <!-- Benefício 2 -->
+                <div class="advantage-card bg-slate-950/80 border border-slate-800/80 p-8 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all duration-300">
+                    <div class="w-12 h-12 rounded-lg bg-cyberrose/10 border border-cyberrose/20 flex items-center justify-center mb-6 text-cyberrose">
+                        <i data-lucide="headset" class="w-6 h-6"></i>
+                    </div>
+                    <h4 class="font-orbitron font-bold text-lg text-white mb-3 uppercase tracking-wide">SUPORTE TÁTICO 24/7</h4>
+                    <p class="font-inter text-slate-400 text-sm font-light leading-relaxed">
+                        Nada de robôs confusos. Nossa equipe técnica de suporte operacional está de prontidão no Discord e WhatsApp para qualquer dúvida.
+                    </p>
+                    <div class="absolute bottom-0 left-0 h-[2px] w-0 bg-cyberrose transition-all duration-300 group-hover:w-full"></div>
+                </div>
+
+                <!-- Benefício 3 -->
+                <div class="advantage-card bg-slate-950/80 border border-slate-800/80 p-8 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all duration-300">
+                    <div class="w-12 h-12 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-6 text-purple-400">
+                        <i data-lucide="activity" class="w-6 h-6"></i>
+                    </div>
+                    <h4 class="font-orbitron font-bold text-lg text-white mb-3 uppercase tracking-wide">GARANTIA VITALÍCIA</h4>
+                    <p class="font-inter text-slate-400 text-sm font-light leading-relaxed">
+                        Garantimos o funcionamento permanente ou a reposição integral de qualquer produto premium sob cobertura oficial.
+                    </p>
+                    <div class="absolute bottom-0 left-0 h-[2px] w-0 bg-purple-500 transition-all duration-300 group-hover:w-full"></div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer id="suporte" class="bg-slate-950 pt-16 pb-8 border-t border-slate-900 px-4">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+            
+            <div class="md:col-span-2">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-8 h-8 rounded-md bg-electricblue flex items-center justify-center">
+                        <i data-lucide="shield-alert" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <span class="font-orbitron font-black text-lg tracking-wider text-white">ZHER <span class="text-electricblue">KEYS</span></span>
+                </div>
+                <p class="font-inter text-slate-500 text-xs max-w-sm leading-relaxed mb-6">
+                    A plataforma definitiva de distribuição de bens digitais de luxo para entusiastas e e-sports competitivos.
+                </p>
+                <div class="flex items-center gap-4 text-slate-400">
+                    <a href="#" class="hover:text-white transition-colors"><i data-lucide="instagram" class="w-5 h-5"></i></a>
+                    <a href="#" class="hover:text-white transition-colors"><i data-lucide="twitch" class="w-5 h-5"></i></a>
+                    <a href="#" class="hover:text-white transition-colors"><i data-lucide="messages-square" class="w-5 h-5"></i></a>
+                </div>
+            </div>
+
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4">NAVEGAÇÃO SENSÍVEL</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5">
+                    <li><a href="#catalogo" class="hover:text-electricblue transition-colors">Drops Black</a></li>
+                    <li><a href="#vantagens" class="hover:text-electricblue transition-colors">Termos de Serviço</a></li>
+                    <li><a href="#vantagens" class="hover:text-electricblue transition-colors">Segurança Operacional</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4">SEGURANÇA INTERNA</h5>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2 bg-slate-900/60 border border-slate-800 px-3 py-2 rounded-lg">
+                        <i data-lucide="lock" class="w-4 h-4 text-emerald-400"></i>
+                        <span class="font-orbitron text-[9px] tracking-widest text-slate-300">SSL ENCRYPTED 256-BIT</span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-slate-900/60 border border-slate-800 px-3 py-2 rounded-lg">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-electricblue"></i>
+                        <span class="font-orbitron text-[9px] tracking-widest text-slate-300">PAGAMENTO 100% SEGURO</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="max-w-7xl mx-auto pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 font-inter text-[11px] text-slate-600">
+            <p>&copy; 2026 ZHER KEYS. Desenvolvido por Vibe Studio. Direitos Reservados.</p>
+            <p class="font-orbitron tracking-widest">BUILD V2.04_SECURE</p>
+        </div>
+    </footer>
+
+    <!-- PRODUCT MODAL -->
+    <div id="product-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 sm:p-6 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onclick="closeModal()"></div>
+        <div class="relative w-full max-w-2xl bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="modal-content">
+            <!-- Modal Body -->
+            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center bg-slate-950/60 hover:bg-cyberrose text-slate-300 hover:text-white rounded-full transition-colors backdrop-blur-sm">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            
+            <div class="h-64 sm:h-80 w-full relative">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent z-0"></div>
+                <img id="modal-image" src="" alt="Capa do Jogo" class="w-full h-full object-cover">
+            </div>
+            
+            <div class="p-6 sm:p-8 -mt-20 relative z-10">
+                <span id="modal-category" class="bg-electricblue/20 border border-electricblue/30 text-electricblue font-orbitron text-[10px] tracking-widest px-3 py-1 rounded-full uppercase font-bold backdrop-blur-md">STEAM KEY</span>
+                <h3 id="modal-title" class="font-orbitron font-black text-2xl sm:text-3xl text-white mt-4 mb-2 uppercase">Nome do Jogo</h3>
+                <div class="flex items-end gap-3 mb-6">
+                    <span id="modal-price" class="font-orbitron font-bold text-3xl text-cyberrose">R$ 0,00</span>
+                </div>
+                
+                <p id="modal-description" class="font-inter text-slate-300 text-sm leading-relaxed mb-8 font-light">
+                    Descrição do jogo aqui...
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 mt-6">
+                    <button onclick="addAndShowCart(null, currentProduct.id)" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl transition-all duration-300 uppercase flex items-center justify-center gap-2 border border-slate-700 hover:border-slate-500">
+                        <i data-lucide="shopping-cart" class="w-5 h-5"></i> ADICIONAR
+                    </button>
+                    <button onclick="comprarProduto()" class="w-full bg-gradient-to-r from-electricblue to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl shadow-cyber transition-all duration-300 uppercase flex items-center justify-center gap-2">
+                        <i data-lucide="zap" class="w-5 h-5"></i> COMPRAR AGORA
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MINI CART MODAL -->
+    <div id="mini-cart-modal" class="fixed inset-0 z-[110] hidden items-center justify-center sm:justify-end sm:items-start p-4 sm:p-6 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onclick="closeMiniCart()"></div>
+        <div class="relative w-full max-w-sm bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 sm:mt-20 sm:mr-4 flex flex-col" id="mini-cart-content" style="max-height: 80vh;">
+            
+            <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
+                <h3 class="font-orbitron font-bold text-white flex items-center gap-2"><i data-lucide="shopping-cart" class="w-5 h-5 text-electricblue"></i> CARRINHO</h3>
+                <button onclick="closeMiniCart()" class="text-slate-400 hover:text-white transition-colors bg-slate-800 hover:bg-cyberrose rounded-full p-1">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div id="mini-cart-items" class="p-4 flex-grow overflow-y-auto space-y-3">
+                <!-- items go here -->
+            </div>
+            
+            <div class="p-4 border-t border-slate-800 bg-slate-950/80">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-slate-400 text-xs font-orbitron tracking-widest">TOTAL</span>
+                    <span id="mini-cart-total" class="text-white font-bold font-orbitron text-lg">R$ 0,00</span>
+                </div>
+                <a href="/carrinho.html" class="w-full bg-electricblue hover:bg-blue-600 text-white font-orbitron text-xs tracking-widest font-bold py-4 rounded-xl shadow-cyber transition-all duration-300 uppercase flex items-center justify-center gap-2">
+                    VER CARRINHO <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- GSAP CORE + PLUGINS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"></script>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Register GSAP Plugins
+        gsap.registerPlugin(ScrollTrigger, TextPlugin);
+
+        // 1. Text Hack/Reveal Animation for Hero Title
+        const titleElement = document.getElementById('hero-title');
+        const originalText = titleElement.innerText.trim();
+        
+        // Clear immediately to prevent layout shifts
+        titleElement.innerText = '';
+
+        function scrambleText(element, targetText) {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_@#$*%";
+            let iterations = 0;
+            
+            const interval = setInterval(() => {
+                element.innerText = targetText
+                    .split("")
+                    .map((letter, index) => {
+                        if(index < iterations) {
+                            return targetText[index];
+                        }
+                        if(letter === " ") return " ";
+                        return chars[Math.floor(Math.random() * chars.length)];
+                    })
+                    .join("");
+                
+                if(iterations >= targetText.length) {
+                    clearInterval(interval);
+                }
+                
+                iterations += 1 / 3;
+            }, 30);
+        }
+
+        // Trigger text scramble on load
+        window.addEventListener('DOMContentLoaded', () => {
+            scrambleText(titleElement, originalText);
+            
+            // Fade-in other hero content softly
+            gsap.fromTo('.max-w-4xl > p, .max-w-4xl > div, .max-w-4xl > .inline-flex', 
+                { opacity: 0, y: 20 },
+                { opacity: 1, y: 0, duration: 1, delay: 0.5, ease: "power3.out", stagger: 0.15 }
+            );
+        });
+
+        // 2. ScrollTrigger: Fade In Up + Subtle 3D Rotation on Sections
+        const bentoCards = document.querySelectorAll('.bento-card');
+        bentoCards.forEach((card, index) => {
+            gsap.fromTo(card, 
+                { opacity: 0, y: 50, rotationX: 10, transformOrigin: "top center" },
+                { 
+                    opacity: 1, 
+                    y: 0, 
+                    rotationX: 0,
+                    duration: 0.8, 
+                    delay: index * 0.1,
+                    ease: "power2.out",
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 85%",
+                        toggleActions: "play none none none"
+                    }
+                }
+            );
+        });
+
+        const advantageCards = document.querySelectorAll('.advantage-card');
+        advantageCards.forEach((card, index) => {
+            gsap.fromTo(card,
+                { opacity: 0, y: 40 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.7,
+                    delay: index * 0.15,
+                    ease: "power2.out",
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 90%",
+                    }
+                }
+            );
+        });
+
+        // 3. Magnetic Buttons Implementation
+        const magneticButtons = document.querySelectorAll('.magnetic-button');
+        magneticButtons.forEach(btn => {
+            btn.addEventListener('mousemove', (e) => {
+                const rect = btn.getBoundingClientRect();
+                const x = e.clientX - rect.left - (rect.width / 2);
+                const y = e.clientY - rect.top - (rect.height / 2);
+                
+                // Pull button slightly towards cursor
+                gsap.to(btn, {
+                    x: x * 0.35,
+                    y: y * 0.35,
+                    duration: 0.3,
+                    ease: "power2.out"
+                });
+            });
+
+            btn.addEventListener('mouseleave', () => {
+                // Snap back smoothly
+                gsap.to(btn, {
+                    x: 0,
+                    y: 0,
+                    duration: 0.5,
+                    ease: "elastic.out(1, 0.3)"
+                });
+            });
+        });
+
+        // ========================================
+        // CATALOG E MODAL LOGIC
+        // ========================================
+        const produtos = [
+            {
+                id: 1,
+                title: "Human: Fall Flat",
+                price: "R$ 7,79",
+                image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/477160/header.jpg",
+                description: "Human: Fall Flat é um jogo hilário e leve de plataforma baseado em física, ambientado em paisagens flutuantes e oníricas que podem ser jogadas solo ou com até 8 amigos online. Ativação via Steam.",
+                category: "STEAM KEY"
+            },
+            {
+                id: 2,
+                title: "Batman: Arkham Origins",
+                price: "R$ 8,09",
+                image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/209000/header.jpg",
+                description: "Batman: Arkham Origins apresenta uma Gotham City expandida e uma história original prequela ambientada vários anos antes dos eventos de Batman: Arkham Asylum e Batman: Arkham City.",
+                category: "STEAM KEY"
+            },
+            {
+                id: 3,
+                title: "LEGO The Incredibles",
+                price: "R$ 7,50",
+                image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/818320/header.jpg",
+                description: "Experimente as aventuras emocionantes da família Pera e use seus superpoderes para derrotar o crime e reviver momentos memoráveis dos filmes Os Incríveis e Os Incríveis 2 no mundo LEGO.",
+                category: "STEAM KEY"
+            },
+            {
+                id: 4,
+                title: "LEGO DC Super-Villains Deluxe",
+                price: "R$ 12,01",
+                image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/829110/header.jpg",
+                description: "É bom ser mau... Embarque em uma nova aventura da DC/LEGO tornando-se o melhor vilão que o universo já viu. A Deluxe Edition inclui conteúdo extra e DLCs exclusivos.",
+                category: "STEAM KEY"
+            },
+            {
+                id: 5,
+                title: "Middle-earth: Shadow of War Definitive",
+                price: "R$ 15,28",
+                image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/356190/header.jpg",
+                description: "Experimente um mundo épico aberto trazido à vida pelo Sistema Nêmesis premiado. Forje um novo Anel do Poder, conquiste Fortalezas e domine Mordor com seu próprio exército de orcs nesta Edição Definitiva completa.",
+                category: "STEAM KEY"
+            },
+            {
+                id: 6,
+                title: "The LEGO Movie Videogame",
+                price: "R$ 5,28",
+                image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/267530/header.jpg",
+                description: "Junte-se a Emmet e um grupo improvável de rebeldes em sua busca heroica para impedir o plano maligno do Senhor Negócios. Construa com peças de LEGO nesta incrível aventura em formato de jogo.",
+                category: "STEAM KEY"
+            }
+        ];
+
+        const grid = document.getElementById('product-grid');
+        if (grid) {
+            produtos.forEach((p, index) => {
+                grid.innerHTML += `
+                    <div class="advantage-card bg-slate-950/80 border border-slate-800/80 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all duration-300 cursor-pointer flex flex-col h-full" onclick="openModal(${p.id})">
+                        <div class="h-48 w-full overflow-hidden relative">
+                            <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 to-transparent"></div>
+                            <span class="absolute top-3 right-3 bg-slate-900/80 border border-slate-700 text-slate-300 font-orbitron text-[9px] tracking-widest px-2 py-1 rounded backdrop-blur-md uppercase">${p.category}</span>
+                        </div>
+                        <div class="p-6 flex flex-col flex-grow">
+                            <h4 class="font-orbitron font-bold text-lg text-white mb-2 uppercase tracking-wide leading-tight">${p.title}</h4>
+                            <div class="mt-auto flex items-center justify-between pt-4">
+                                <span class="font-orbitron font-black text-xl text-cyberrose">${p.price}</span>
+                                <button onclick="addAndShowCart(event, ${p.id})" class="w-8 h-8 rounded bg-electricblue/10 flex items-center justify-center text-electricblue hover:bg-electricblue hover:text-white transition-colors shadow-cyber z-10 relative">
+                                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="absolute bottom-0 left-0 h-[2px] w-0 bg-electricblue transition-all duration-300 group-hover:w-full"></div>
+                    </div>
+                `;
+            });
+            setTimeout(() => lucide.createIcons(), 100);
+            
+            // GSAP Animation for new cards
+            gsap.fromTo('#product-grid .advantage-card',
+                { opacity: 0, y: 30 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.6,
+                    stagger: 0.1,
+                    ease: "power2.out",
+                    scrollTrigger: {
+                        trigger: "#product-grid",
+                        start: "top 85%"
+                    }
+                }
+            );
+        }
+
+        const modal = document.getElementById('product-modal');
+        const modalContent = document.getElementById('modal-content');
+        let currentProduct = null;
+
+        window.openModal = (id) => {
+            currentProduct = produtos.find(p => p.id === id);
+            if (!currentProduct) return;
+            
+            document.getElementById('modal-image').src = currentProduct.image;
+            document.getElementById('modal-title').innerText = currentProduct.title;
+            document.getElementById('modal-price').innerText = currentProduct.price;
+            document.getElementById('modal-description').innerText = currentProduct.description;
+            
+            modal.classList.remove('hidden');
+            // Allow display:flex to apply before animating opacity
+            setTimeout(() => {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+            
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeModal = () => {
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }, 300);
+        };
+
+        window.comprarProduto = () => {
+            if(currentProduct) {
+                alert("🛒 Indo para o checkout com: " + currentProduct.title + " por " + currentProduct.price);
+            }
+        };
+
+        // ========================================
+        // CART LOGIC
+        // ========================================
+        let cart = JSON.parse(localStorage.getItem('zher_cart')) || [];
+        
+        function updateCartBadge() {
+            const badge = document.getElementById('cart-badge');
+            if(cart.length > 0) {
+                badge.innerText = cart.length;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+        
+        window.addAndShowCart = (event, id) => {
+            if(event) event.stopPropagation(); // Evita abrir o modal se clicou no icone direto do card
+            
+            const product = produtos.find(p => p.id === id);
+            if(product) {
+                cart.push(product);
+                localStorage.setItem('zher_cart', JSON.stringify(cart));
+                updateCartBadge();
+                renderMiniCart();
+                openMiniCart();
+            }
+        };
+
+        window.openMiniCart = (event) => {
+            if(event) event.preventDefault();
+            renderMiniCart();
+            const modal = document.getElementById('mini-cart-modal');
+            const content = document.getElementById('mini-cart-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeMiniCart = () => {
+            const modal = document.getElementById('mini-cart-modal');
+            const content = document.getElementById('mini-cart-content');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }, 300);
+        };
+
+        window.removeFromMiniCart = (index) => {
+            cart.splice(index, 1);
+            localStorage.setItem('zher_cart', JSON.stringify(cart));
+            updateCartBadge();
+            renderMiniCart();
+        };
+
+        function renderMiniCart() {
+            const container = document.getElementById('mini-cart-items');
+            const totalEl = document.getElementById('mini-cart-total');
+            
+            if(cart.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-500 font-inter text-sm">Seu carrinho está vazio.</div>`;
+                totalEl.innerText = "R$ 0,00";
+                return;
+            }
+            
+            let html = '';
+            let total = 0;
+            
+            cart.forEach((item, index) => {
+                const priceNum = parseFloat(item.price.replace('R$ ', '').replace(',', '.'));
+                total += priceNum;
+                
+                html += `
+                    <div class="flex items-center gap-3 bg-slate-800/50 p-2 rounded-lg border border-slate-700/50">
+                        <img src="${item.image}" class="w-12 h-12 object-cover rounded">
+                        <div class="flex-grow">
+                            <h4 class="text-white text-xs font-bold truncate max-w-[150px]">${item.title}</h4>
+                            <span class="text-cyberrose text-xs font-bold">${item.price}</span>
+                        </div>
+                        <button onclick="removeFromMiniCart(${index})" class="p-2 text-slate-400 hover:text-red-400 transition-colors bg-slate-900 rounded border border-slate-700">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            totalEl.innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            if(window.lucide) window.lucide.createIcons();
+        }
+        
+        // Inicializa o badge de carrinho assim que a página carrega
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCartBadge();
+        });
+    </script>
+</body>
+</html>

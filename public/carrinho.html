@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHER KEYS | Carrinho de Compras</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { orbitron: ['Orbitron', 'sans-serif'], inter: ['Inter', 'sans-serif'] },
+                    colors: { obsidian: '#020617', cyberrose: '#F43F5E', electricblue: '#3B82F6' },
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #020617; }
+        .mesh-bg {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.18) 0px, transparent 50%),
+                radial-gradient(at 90% 10%, rgba(244, 63, 94, 0.15) 0px, transparent 50%);
+        }
+    </style>
+</head>
+<body class="text-slate-200 antialiased mesh-bg min-h-screen flex flex-col">
+
+    <nav class="border-b border-slate-800 bg-obsidian/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-electricblue to-cyberrose flex items-center justify-center shadow-lg shadow-cyberrose/20 group-hover:shadow-electricblue/40 transition-all duration-300">
+                    <i data-lucide="shield-alert" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-orbitron font-black text-xl tracking-widest text-white uppercase">ZHER KEYS</h1>
+                </div>
+            </a>
+            
+            <div class="flex items-center gap-4">
+                <a href="/account.html" class="flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-electricblue hover:bg-slate-700 transition-all group" title="Minha Conta">
+                    <i data-lucide="user" class="w-5 h-5 text-slate-300 group-hover:text-white"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-5xl mx-auto px-6 py-12 w-full">
+        <div class="mb-8">
+            <h2 class="font-orbitron font-black text-3xl text-white tracking-widest flex items-center gap-3 uppercase">
+                <i data-lucide="shopping-cart" class="text-electricblue w-8 h-8"></i> CARRINHO DE COMPRAS
+            </h2>
+            <p class="text-slate-400 font-inter text-sm mt-2">Revise seus itens antes de finalizar a transação segura.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Lista de Itens -->
+            <div class="lg:col-span-2 bg-slate-900/50 border border-slate-800 rounded-2xl p-6 min-h-[400px]">
+                <div id="cart-items-container" class="space-y-4">
+                    <!-- Javascript injeta os itens aqui -->
+                </div>
+            </div>
+
+            <!-- Resumo e Checkout -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit sticky top-28">
+                <h3 class="font-orbitron font-bold text-white tracking-widest mb-6 border-b border-slate-800 pb-4">RESUMO DO PEDIDO</h3>
+                
+                <div class="space-y-4 mb-6">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-400">Subtotal</span>
+                        <span id="summary-subtotal" class="text-white font-bold">R$ 0,00</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-400">Taxas de Processamento</span>
+                        <span class="text-emerald-400 font-bold font-orbitron text-[10px] bg-emerald-400/10 px-2 py-0.5 rounded">ISENTO</span>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-800 pt-4 mb-8 flex justify-between items-end">
+                    <span class="text-slate-400 font-orbitron text-xs tracking-widest">TOTAL</span>
+                    <span id="summary-total" class="text-cyberrose font-orbitron font-black text-3xl">R$ 0,00</span>
+                </div>
+
+                <button onclick="finalizarCompra()" id="btn-checkout" class="w-full bg-gradient-to-r from-electricblue to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all duration-300 uppercase flex items-center justify-center gap-2">
+                    FINALIZAR COMPRA <i data-lucide="zap" class="w-4 h-4"></i>
+                </button>
+                <div class="mt-4 flex items-center justify-center gap-2 text-slate-500 text-[10px] font-inter">
+                    <i data-lucide="lock" class="w-3 h-3"></i> Pagamento 100% Seguro (SSL)
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        let cart = JSON.parse(localStorage.getItem('zher_cart')) || [];
+
+        function renderCartPage() {
+            const container = document.getElementById('cart-items-container');
+            const subtotalEl = document.getElementById('summary-subtotal');
+            const totalEl = document.getElementById('summary-total');
+            const btnCheckout = document.getElementById('btn-checkout');
+
+            if(cart.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center text-center h-64 border-2 border-dashed border-slate-800 rounded-xl bg-slate-900/20">
+                        <i data-lucide="shopping-cart" class="w-12 h-12 text-slate-600 mb-4"></i>
+                        <h3 class="text-lg font-bold text-slate-300">Seu carrinho está vazio</h3>
+                        <p class="text-slate-500 text-sm mt-2">Volte para a loja e explore nossos drops limitados.</p>
+                        <a href="/" class="mt-6 px-6 py-2 bg-slate-800 hover:bg-electricblue text-white rounded font-orbitron text-xs tracking-widest transition-colors border border-slate-700">VOLTAR PARA A LOJA</a>
+                    </div>`;
+                subtotalEl.innerText = "R$ 0,00";
+                totalEl.innerText = "R$ 0,00";
+                btnCheckout.classList.add('opacity-50', 'pointer-events-none');
+                return;
+            }
+
+            btnCheckout.classList.remove('opacity-50', 'pointer-events-none');
+            let html = '';
+            let total = 0;
+
+            cart.forEach((item, index) => {
+                const priceNum = parseFloat(item.price.replace('R$ ', '').replace(',', '.'));
+                total += priceNum;
+
+                html += `
+                    <div class="flex flex-col sm:flex-row items-center gap-6 bg-slate-950/60 p-4 rounded-xl border border-slate-800/80 hover:border-slate-700 transition-colors">
+                        <img src="${item.image}" class="w-full sm:w-32 h-24 object-cover rounded-lg shadow-lg">
+                        <div class="flex-grow text-center sm:text-left">
+                            <span class="bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[8px] tracking-widest px-2 py-0.5 rounded-full uppercase">${item.category}</span>
+                            <h4 class="text-white font-orbitron font-bold text-lg mt-2 uppercase tracking-wide">${item.title}</h4>
+                            <p class="text-slate-500 font-inter text-xs mt-1 truncate max-w-sm hidden sm:block">${item.description}</p>
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <span class="text-cyberrose font-orbitron font-bold text-xl">${item.price}</span>
+                            <button onclick="removeFromCart(${index})" class="w-10 h-10 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-red-400 hover:border-red-500 transition-colors" title="Remover">
+                                <i data-lucide="trash-2" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            const formattedTotal = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            subtotalEl.innerText = formattedTotal;
+            totalEl.innerText = formattedTotal;
+            lucide.createIcons();
+        }
+
+        window.removeFromCart = (index) => {
+            cart.splice(index, 1);
+            localStorage.setItem('zher_cart', JSON.stringify(cart));
+            renderCartPage();
+        };
+
+        window.finalizarCompra = () => {
+            alert("Processando checkout de " + cart.length + " itens...\nIsso abrirá a integração com MercadoPago/Stripe no futuro.");
+        };
+
+        // Init
+        document.addEventListener('DOMContentLoaded', renderCartPage);
+
+    </script>
+</body>
+</html>
