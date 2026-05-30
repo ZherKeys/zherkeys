@@ -1,7 +1,6 @@
 const express = require('express');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
-const nodemailer = require('nodemailer');
 const session = require('express-session');
 const path = require('path');
 const crypto = require('crypto');
@@ -37,18 +36,33 @@ pool.query(`
     );
 `).catch(err => console.error('Error creating table:', err));
 
-// Setup Nodemailer (Gmail Real Account)
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-        user: 'zherkeys@gmail.com',
-        pass: 'calsnxdgdzhvpgaw' // App Password (sem espaços)
-    },
-    connectionTimeout: 10000 // 10 segundos de limite para não travar o frontend
-});
-console.log('Nodemailer configurado com Gmail: zherkeys@gmail.com');
+// Setup Brevo API Key
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+
+async function sendEmailViaBrevo(toEmail, subject, textContent, htmlContent) {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+            'accept': 'application/json',
+            'api-key': BREVO_API_KEY,
+            'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+            sender: { email: 'zherkeys@gmail.com', name: 'ZHER KEYS' },
+            to: [{ email: toEmail }],
+            subject: subject,
+            textContent: textContent,
+            htmlContent: htmlContent
+        })
+    });
+    
+    if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(JSON.stringify(errData));
+    }
+    return await response.json();
+}
+console.log('Motor de E-mail configurado via Brevo API');
 
 // Auth Middleware
 const requireAuth = (req, res, next) => {
@@ -99,29 +113,22 @@ app.post('/register', async (req, res) => {
             
         const verifyUrl = `${APP_URL}/verify-email?token=${token}`;
         
-        const message = {
-            from: '"ZHER KEYS" <noreply@zherkeys.com>',
-            to: email,
-            subject: 'Verifique seu e-mail na ZHER KEYS',
-            text: `Por favor, clique no link para verificar seu e-mail: ${verifyUrl}`,
-            html: `<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
-                    <h2>ZHER KEYS SECURE SYSTEM</h2>
-                    <p>Confirme sua credencial de acesso clicando no link abaixo:</p>
-                    <a href="${verifyUrl}" style="display:inline-block;padding:10px 20px;background:#3B82F6;color:white;text-decoration:none;border-radius:5px;">VERIFICAR ACESSO</a>
-                   </div>`
-        };
+        await sendEmailViaBrevo(
+            email,
+            'Verifique seu e-mail na ZHER KEYS',
+            `Por favor, clique no link para verificar seu e-mail: ${verifyUrl}`,
+            `<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
+                <h2>ZHER KEYS SECURE SYSTEM</h2>
+                <p>Confirme sua credencial de acesso clicando no link abaixo:</p>
+                <a href="${verifyUrl}" style="display:inline-block;padding:10px 20px;background:#3B82F6;color:white;text-decoration:none;border-radius:5px;">VERIFICAR ACESSO</a>
+               </div>`
+        );
         
-        transporter.sendMail(message, (err, info) => {
-            if (err) {
-                console.log('Error occurred. ' + err.message);
-                return res.status(500).json({ error: 'Erro ao enviar e-mail.' });
-            }
-            console.log('\n======================================================');
-            console.log('✅ E-MAIL DE VERIFICAÇÃO ENVIADO PARA: ' + email);
-            console.log('======================================================\n');
-            
-            res.status(200).json({ message: 'verify your email, confery your spam too' });
-        });
+        console.log('\n======================================================');
+        console.log('✅ E-MAIL DE VERIFICAÇÃO ENVIADO VIA BREVO PARA: ' + email);
+        console.log('======================================================\n');
+        
+        res.status(200).json({ message: 'verify your email, confery your spam too' });
         
     } catch(e) {
         console.error(e);
@@ -169,22 +176,18 @@ app.post('/resend-verification', async (req, res) => {
             
         const verifyUrl = `${APP_URL}/verify-email?token=${token}`;
         
-        const message = {
-            from: '"ZHER KEYS" <noreply@zherkeys.com>',
-            to: email,
-            subject: 'Reenvio: Verifique seu e-mail na ZHER KEYS',
-            text: `Por favor, clique no link para verificar seu e-mail: ${verifyUrl}`,
-            html: `<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
-                    <h2>ZHER KEYS SECURE SYSTEM</h2>
-                    <p>Confirme sua credencial de acesso clicando no link abaixo:</p>
-                    <a href="${verifyUrl}" style="display:inline-block;padding:10px 20px;background:#3B82F6;color:white;text-decoration:none;border-radius:5px;">VERIFICAR ACESSO</a>
-                   </div>`
-        };
+        await sendEmailViaBrevo(
+            email,
+            'Reenvio: Verifique seu e-mail na ZHER KEYS',
+            `Por favor, clique no link para verificar seu e-mail: ${verifyUrl}`,
+            `<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
+                <h2>ZHER KEYS SECURE SYSTEM</h2>
+                <p>Confirme sua credencial de acesso clicando no link abaixo:</p>
+                <a href="${verifyUrl}" style="display:inline-block;padding:10px 20px;background:#3B82F6;color:white;text-decoration:none;border-radius:5px;">VERIFICAR ACESSO</a>
+               </div>`
+        );
         
-        transporter.sendMail(message, (err, info) => {
-            if (err) return res.status(500).json({ error: 'Erro ao reenviar e-mail.' });
-            res.status(200).json({ message: 'E-mail de verificação reenviado com sucesso!' });
-        });
+        res.status(200).json({ message: 'E-mail de verificação reenviado com sucesso!' });
     } catch(err) {
         console.error(err);
         res.status(500).json({ error: 'Erro no banco de dados.' });
@@ -228,21 +231,18 @@ app.post('/forgot-password', async (req, res) => {
             
         const resetUrl = `${APP_URL}/reset-password.html?token=${token}`;
         
-        const message = {
-            from: '"ZHER KEYS" <noreply@zherkeys.com>',
-            to: email,
-            subject: 'Redefinição de Senha - ZHER KEYS',
-            html: `<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
-                    <h2>REDEFINIÇÃO DE CREDENCIAL</h2>
-                    <p>Você solicitou a troca da sua senha.</p>
-                    <a href="${resetUrl}" style="display:inline-block;padding:10px 20px;background:#F43F5E;color:white;text-decoration:none;border-radius:5px;">CRIAR NOVA SENHA</a>
-                   </div>`
-        };
+        await sendEmailViaBrevo(
+            email,
+            'Redefinição de Senha - ZHER KEYS',
+            `Você solicitou a troca da sua senha. Acesse: ${resetUrl}`,
+            `<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
+                <h2>REDEFINIÇÃO DE CREDENCIAL</h2>
+                <p>Você solicitou a troca da sua senha.</p>
+                <a href="${resetUrl}" style="display:inline-block;padding:10px 20px;background:#F43F5E;color:white;text-decoration:none;border-radius:5px;">CRIAR NOVA SENHA</a>
+               </div>`
+        );
         
-        transporter.sendMail(message, (err) => {
-            if (err) return res.status(500).json({ error: 'Erro ao enviar e-mail.' });
-            res.status(200).json({ message: 'E-mail de redefinição enviado! Verifique sua caixa de entrada.' });
-        });
+        res.status(200).json({ message: 'E-mail de redefinição enviado! Verifique sua caixa de entrada.' });
     } catch(err) {
         console.error(err);
         res.status(500).json({ error: 'Erro no banco.' });
