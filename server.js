@@ -6,6 +6,7 @@ const session = require('express-session');
 const path = require('path');
 const crypto = require('crypto');
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
+const speakeasy = require('speakeasy');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -67,6 +68,7 @@ async function initDB() {
             ALTER TABLE products ADD COLUMN IF NOT EXISTS restricted_countries TEXT;
             ALTER TABLE products ADD COLUMN IF NOT EXISTS genres TEXT;
             ALTER TABLE products ADD COLUMN IF NOT EXISTS old_price NUMERIC(10, 2);
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS gameflip_listing_id TEXT;
             
             CREATE TABLE IF NOT EXISTS order_items (
                 id SERIAL PRIMARY KEY,
@@ -241,11 +243,11 @@ app.get('/api/admin/products', requireAdmin, async (req, res) => {
 
 // Criar produto (Admin)
 app.post('/api/admin/products', requireAdmin, async (req, res) => {
-    const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres } = req.body;
+    const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id } = req.body;
     try {
         await pool.query(
-            'INSERT INTO products (title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
-            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, image, category, activation_key || '', is_global === false ? false : true, restricted_countries || '', genres || '']
+            'INSERT INTO products (title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
+            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, image, category, activation_key || '', is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '']
         );
         res.status(201).json({ message: 'Produto adicionado' });
     } catch(e) {
@@ -257,11 +259,11 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
 // Editar produto (Admin)
 app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
-    const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres } = req.body;
+    const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id } = req.body;
     try {
         await pool.query(
-            'UPDATE products SET title=$1, description=$2, price=$3, old_price=$4, image=$5, category=$6, activation_key=$7, in_stock=true, is_global=$8, restricted_countries=$9, genres=$10 WHERE id=$11',
-            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, image, category, activation_key || '', is_global === false ? false : true, restricted_countries || '', genres || '', id]
+            'UPDATE products SET title=$1, description=$2, price=$3, old_price=$4, image=$5, category=$6, activation_key=$7, in_stock=true, is_global=$8, restricted_countries=$9, genres=$10, gameflip_listing_id=$11 WHERE id=$12',
+            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, image, category, activation_key || '', is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '', id]
         );
         res.json({ message: 'Produto atualizado e retornado ao estoque' });
     } catch(e) {
@@ -474,6 +476,14 @@ app.post('/webhook', async (req, res) => {
                         const pIds = items.rows.map(r => r.product_id);
                         if (pIds.length > 0) {
                             await pool.query('UPDATE products SET in_stock = false WHERE id = ANY($1::int[])', [pIds]);
+                            
+                            // Delistar anúncio correspondente no Gameflip
+                            const productsRes = await pool.query('SELECT gameflip_listing_id FROM products WHERE id = ANY($1::int[])', [pIds]);
+                            for (let prod of productsRes.rows) {
+                                if (prod.gameflip_listing_id && prod.gameflip_listing_id.trim() !== '') {
+                                    markGameflipListingAsSold(prod.gameflip_listing_id.trim());
+                                }
+                            }
                         }
                     }
                 }
@@ -585,6 +595,14 @@ app.put('/api/admin/orders/:id/approve', requireAdmin, async (req, res) => {
         const pIds = items.rows.map(r => r.product_id);
         if (pIds.length > 0) {
             await pool.query('UPDATE products SET in_stock = false WHERE id = ANY($1::int[])', [pIds]);
+            
+            // Delistar anúncio correspondente no Gameflip
+            const productsRes = await pool.query('SELECT gameflip_listing_id FROM products WHERE id = ANY($1::int[])', [pIds]);
+            for (let prod of productsRes.rows) {
+                if (prod.gameflip_listing_id && prod.gameflip_listing_id.trim() !== '') {
+                    markGameflipListingAsSold(prod.gameflip_listing_id.trim());
+                }
+            }
         }
         
         res.json({ message: 'Pedido aprovado manualmente' });
@@ -894,6 +912,95 @@ app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/login.html?logout=1');
 });
+
+// ========================
+// GAMEFLIP INTEGRATION & SYNC
+// ========================
+
+// Função para gerar cabeçalhos de autenticação do Gameflip
+async function getGameflipHeaders() {
+    const token = speakeasy.totp({
+        secret: process.env.GAMEFLIP_TOTP_SECRET || '',
+        encoding: 'base32'
+    });
+    return {
+        'Authorization': `GFAPI ${process.env.GAMEFLIP_API_KEY || ''}:${token}`,
+        'Content-Type': 'application/json'
+    };
+}
+
+// Delistar anúncio no Gameflip (mudar para draft / fora de estoque)
+async function markGameflipListingAsSold(listingId) {
+    if (!process.env.GAMEFLIP_API_KEY || !process.env.GAMEFLIP_TOTP_SECRET) {
+        return console.warn("[GAMEFLIP] Credenciais do Gameflip não configuradas nas variáveis de ambiente. Pulando delisting.");
+    }
+    try {
+        const headers = await getGameflipHeaders();
+        const res = await fetch(`https://api.gameflip.com/api/v1/listing/${listingId}`, {
+            method: 'PATCH',
+            headers: headers,
+            body: JSON.stringify([
+                {
+                    op: 'replace',
+                    path: '/status',
+                    value: 'draft'
+                }
+            ])
+        });
+        if (!res.ok) {
+            const errText = await res.text();
+            console.error(`[GAMEFLIP] Erro ao delistar anúncio ${listingId}:`, errText);
+        } else {
+            console.log(`[GAMEFLIP] Anúncio ${listingId} delistado com sucesso no Gameflip (status=draft).`);
+        }
+    } catch (err) {
+        console.error(`[GAMEFLIP] Erro de rede ao delistar anúncio:`, err);
+    }
+}
+
+// Sincronização em segundo plano: Consultar anúncios locais e verificar se foram vendidos no Gameflip
+async function pollGameflipInventory() {
+    if (!process.env.GAMEFLIP_API_KEY || !process.env.GAMEFLIP_TOTP_SECRET) {
+        return; // Silenciosamente ignora se as credenciais do Gameflip não estiverem no .env
+    }
+    try {
+        // Busca produtos locais ativos que têm ID do Gameflip associado
+        const res = await pool.query("SELECT id, gameflip_listing_id, title FROM products WHERE in_stock = true AND gameflip_listing_id IS NOT NULL AND gameflip_listing_id != ''");
+        const activeProducts = res.rows;
+        
+        if (activeProducts.length === 0) return;
+        
+        const headers = await getGameflipHeaders();
+        
+        for (let prod of activeProducts) {
+            try {
+                const gfRes = await fetch(`https://api.gameflip.com/api/v1/listing/${prod.gameflip_listing_id}`, {
+                    method: 'GET',
+                    headers: headers
+                });
+                if (gfRes.ok) {
+                    const data = await gfRes.json();
+                    // Se o anúncio foi vendido no Gameflip (status 'sold'), esgotamos o produto localmente!
+                    if (data && data.status === 'sold') {
+                        await pool.query("UPDATE products SET in_stock = false WHERE id = $1", [prod.id]);
+                        console.log(`[GAMEFLIP-POLL] O anúncio do jogo "${prod.title}" foi vendido no Gameflip! Esgotado localmente na Zher Keys.`);
+                    }
+                } else if (gfRes.status === 404) {
+                    // Se o anúncio foi excluído no Gameflip, também consideramos esgotado no local
+                    await pool.query("UPDATE products SET in_stock = false WHERE id = $1", [prod.id]);
+                    console.log(`[GAMEFLIP-POLL] O anúncio "${prod.gameflip_listing_id}" do produto "${prod.title}" não foi encontrado no Gameflip. Marcado como esgotado localmente.`);
+                }
+            } catch (err) {
+                console.error(`[GAMEFLIP-POLL] Erro ao consultar anúncio ${prod.gameflip_listing_id}:`, err);
+            }
+        }
+    } catch (e) {
+        console.error("[GAMEFLIP-POLL] Erro geral na sincronização de estoque com o Gameflip:", e);
+    }
+}
+
+// Iniciar varredura de sincronização de estoque a cada 2 minutos
+setInterval(pollGameflipInventory, 2 * 60 * 1000);
 
 // Start Server
 app.listen(port, () => {

@@ -116,6 +116,12 @@
                     </div>
 
                     <div>
+                        <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">GAMEFLIP LISTING ID (Opcional - Sincronização)</label>
+                        <input type="text" id="prod-gameflip" placeholder="ex: 12345678-abcd-ef00-1234-56789abcdef0" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all placeholder-slate-700">
+                        <p class="text-[9px] text-slate-500 mt-1">Insira o ID do anúncio correspondente no Gameflip para ativar a sincronização de estoque bilateral automática.</p>
+                    </div>
+
+                    <div>
                         <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-2">GÊNEROS (Selecione vários)</label>
                         <div id="genres-container" class="max-h-32 overflow-y-auto bg-slate-950 border border-slate-800 rounded-lg p-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
                             <!-- Gerado via JS -->
@@ -386,6 +392,7 @@
                 image: imageVal,
                 description: document.getElementById('prod-desc').value,
                 activation_key: document.getElementById('prod-activation').value,
+                gameflip_listing_id: document.getElementById('prod-gameflip').value,
                 is_global: document.getElementById('prod-global').checked,
                 restricted_countries: checkedCountries,
                 genres: Array.from(document.querySelectorAll('.genre-checkbox:checked')).map(cb => cb.value).join(', ')
@@ -423,6 +430,7 @@
             document.getElementById('prod-image').value = p.image;
             document.getElementById('prod-desc').value = p.description;
             document.getElementById('prod-activation').value = p.activation_key || '';
+            document.getElementById('prod-gameflip').value = p.gameflip_listing_id || '';
             
             const genresListStr = (p.genres || '').split(',').map(s => s.trim());
             document.querySelectorAll('.genre-checkbox').forEach(cb => {
@@ -446,6 +454,7 @@
         window.resetForm = () => {
             document.getElementById('product-form').reset();
             document.getElementById('prod-id').value = '';
+            document.getElementById('prod-gameflip').value = '';
             document.getElementById('prod-global').checked = true;
             document.getElementById('div-restricted').classList.add('hidden');
             document.getElementById('upload-status').classList.add('hidden');

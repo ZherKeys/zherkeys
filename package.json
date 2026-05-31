@@ -17,6 +17,7 @@
     "express-session": "^1.19.0",
     "mercadopago": "^2.0.15",
     "nodemailer": "^8.0.10",
-    "pg": "^8.11.3"
+    "pg": "^8.11.3",
+    "speakeasy": "^2.0.0"
   }
 }
