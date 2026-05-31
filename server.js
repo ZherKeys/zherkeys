@@ -9,6 +9,7 @@ const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 const speakeasy = require('speakeasy');
 
 const app = express();
+app.disable('x-powered-by'); // Remove o cabeçalho X-Powered-By por segurança (evita vazamento de tecnologia)
 const port = process.env.PORT || 3000;
 const APP_URL = process.env.APP_URL || ('http://localhost:' + port);
 
