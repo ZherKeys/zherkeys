@@ -284,7 +284,7 @@ app.delete('/api/admin/products/:id', requireAdmin, async (req, res) => {
 // ========================
 
 app.post('/create-checkout', requireAuth, async (req, res) => {
-    const { items } = req.body; // array of { id, quantity }
+    const { items, method } = req.body; // array of { id, quantity }, method = 'pix' or 'card'
     
     if(!items || items.length === 0) return res.status(400).json({ error: 'Carrinho vazio' });
     
@@ -333,7 +333,34 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
             }
         }
 
-        // Criar Preferência no MercadoPago com external_reference = orderId
+        // Se o método for PIX, cria um pagamento nativo (transparente)
+        if (method === 'pix') {
+            const paymentClient = new Payment(mpClient);
+            
+            // Pega o email do usuário
+            const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [req.session.userId]);
+            const email = userRes.rows[0]?.email || 'guest@example.com';
+
+            const createdPayment = await paymentClient.create({
+                body: {
+                    transaction_amount: totalAmount,
+                    description: 'Compra Zher Keys',
+                    payment_method_id: 'pix',
+                    payer: { email: email },
+                    external_reference: orderId.toString(),
+                    notification_url: `${APP_URL}/webhook`
+                }
+            });
+
+            await pool.query('UPDATE orders SET mp_payment_id = $1 WHERE id = $2', [createdPayment.id, orderId]);
+
+            const qrCodeBase64 = createdPayment.point_of_interaction.transaction_data.qr_code_base64;
+            const qrCode = createdPayment.point_of_interaction.transaction_data.qr_code;
+
+            return res.json({ qr_code_base64: qrCodeBase64, qr_code: qrCode });
+        }
+
+        // Caso contrário, gera Preference para Cartão / Checkout Externo
         const preference = new Preference(mpClient);
         const createdPref = await preference.create({
             body: {
@@ -362,8 +389,9 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
 
 app.post('/webhook', async (req, res) => {
     const { topic, id } = req.query;
-    if (topic === 'payment' || req.query.type === 'payment') {
-        const paymentId = id || req.query['data.id'];
+    const type = req.query.type || req.body?.type;
+    if (topic === 'payment' || type === 'payment') {
+        const paymentId = id || req.query['data.id'] || req.body?.data?.id;
         if(paymentId) {
             try {
                 const paymentClient = new Payment(mpClient);

@@ -79,6 +79,22 @@
                     </div>
                 </div>
 
+                <div class="border-t border-slate-800 pt-4 mb-4">
+                    <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-3">MÉTODO DE PAGAMENTO</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center gap-3 p-3 rounded-lg border border-slate-700 bg-slate-800 cursor-pointer hover:border-toxicgreen transition-colors group">
+                            <input type="radio" name="payment_method" value="pix" checked class="w-4 h-4 text-toxicgreen bg-slate-900 border-slate-700 focus:ring-0">
+                            <i data-lucide="qr-code" class="w-5 h-5 text-slate-400 group-hover:text-toxicgreen transition-colors"></i>
+                            <span class="text-white font-orbitron text-sm font-bold">PIX (Nativo / Imediato)</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-lg border border-slate-700 bg-slate-800 cursor-pointer hover:border-electricblue transition-colors group">
+                            <input type="radio" name="payment_method" value="card" class="w-4 h-4 text-electricblue bg-slate-900 border-slate-700 focus:ring-0">
+                            <i data-lucide="credit-card" class="w-5 h-5 text-slate-400 group-hover:text-electricblue transition-colors"></i>
+                            <span class="text-white font-orbitron text-sm font-bold">Cartão de Crédito / Mercado Pago</span>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="border-t border-slate-800 pt-4 mb-8 flex justify-between items-end">
                     <span class="text-slate-400 font-orbitron text-xs tracking-widest">TOTAL</span>
                     <span id="summary-total" class="text-cyberrose font-orbitron font-black text-3xl">R$ 0,00</span>
@@ -92,7 +108,34 @@
                 </div>
             </div>
         </div>
+        </div>
     </main>
+
+    <!-- PIX MODAL -->
+    <div id="pix-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 sm:p-6 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md"></div>
+        <div class="relative w-full max-w-md bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 p-8 text-center" id="pix-modal-content">
+            <h3 class="font-orbitron font-black text-2xl text-toxicgreen mb-2">PAGAMENTO PIX GERADO!</h3>
+            <p class="text-slate-400 font-inter text-sm mb-6">Escaneie o QR Code abaixo pelo aplicativo do seu banco para aprovação imediata da sua Key.</p>
+            
+            <div class="bg-white p-4 rounded-xl mx-auto w-48 h-48 mb-6 flex items-center justify-center shadow-[0_0_30px_rgba(34,197,94,0.2)]">
+                <img id="pix-qr-img" src="" alt="QR Code PIX" class="w-full h-full object-contain">
+            </div>
+            
+            <p class="text-slate-500 font-orbitron text-xs tracking-widest mb-2">OU USE O CÓDIGO COPIA E COLA:</p>
+            <div class="flex gap-2">
+                <input type="text" id="pix-code-input" readonly class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-slate-300 focus:outline-none font-mono text-xs">
+                <button onclick="copyPixCode()" class="bg-slate-800 hover:bg-toxicgreen text-white hover:text-slate-900 px-4 rounded-lg font-orbitron font-bold transition-colors shadow-lg" title="Copiar PIX">
+                    <i data-lucide="copy" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p id="pix-copy-msg" class="text-toxicgreen text-[10px] mt-2 hidden font-orbitron tracking-widest">CÓDIGO COPIADO!</p>
+            
+            <a href="/account.html" class="mt-8 block w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl transition-colors uppercase">
+                ACOMPANHAR MEU PEDIDO
+            </a>
+        </div>
+    </div>
 
     <script>
         lucide.createIcons();
@@ -162,17 +205,18 @@
             if(cart.length === 0) return;
             
             const btn = document.getElementById('btn-checkout');
-            btn.innerHTML = 'GERANDO PAGAMENTO... <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
+            btn.innerHTML = 'PROCESSANDO... <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
             btn.classList.add('opacity-50', 'pointer-events-none');
             
             try {
                 // Prepara itens no formato que o backend espera
+                const method = document.querySelector('input[name="payment_method"]:checked').value;
                 const items = cart.map(item => ({ id: item.id, quantity: 1 }));
                 
                 const res = await fetch('/create-checkout', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ items })
+                    body: JSON.stringify({ items, method })
                 });
                 
                 if(res.redirected && res.url.includes('login.html')) {
@@ -184,20 +228,51 @@
                 const data = await res.json();
                 
                 if(res.ok && data.init_point) {
-                    window.location.href = data.init_point; // Redireciona para o MercadoPago
+                    window.location.href = data.init_point; // Redireciona para o MercadoPago (Cartão)
+                } else if(res.ok && data.qr_code_base64) {
+                    // Limpar carrinho pois o pedido foi gerado (PIX nativo)
+                    cart = [];
+                    localStorage.setItem('zher_cart', JSON.stringify(cart));
+                    renderCartPage();
+                    showPixModal(data.qr_code_base64, data.qr_code);
                 } else {
                     alert('Erro no checkout: ' + (data.error || 'Desconhecido'));
                     btn.innerHTML = 'FINALIZAR COMPRA <i data-lucide="zap" class="w-4 h-4"></i>';
                     btn.classList.remove('opacity-50', 'pointer-events-none');
-                    lucide.createIcons();
                 }
             } catch(e) {
-                console.error(e);
-                alert('Erro de rede ao conectar com MercadoPago.');
+                alert('Erro de conexão ao finalizar compra.');
                 btn.innerHTML = 'FINALIZAR COMPRA <i data-lucide="zap" class="w-4 h-4"></i>';
                 btn.classList.remove('opacity-50', 'pointer-events-none');
-                lucide.createIcons();
             }
+        };
+
+        window.showPixModal = (base64, code) => {
+            const modal = document.getElementById('pix-modal');
+            const modalContent = document.getElementById('pix-modal-content');
+            
+            document.getElementById('pix-qr-img').src = 'data:image/jpeg;base64,' + base64;
+            document.getElementById('pix-code-input').value = code;
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+            
+            lucide.createIcons();
+        };
+
+        window.copyPixCode = () => {
+            const input = document.getElementById('pix-code-input');
+            input.select();
+            input.setSelectionRange(0, 99999); 
+            navigator.clipboard.writeText(input.value);
+            
+            const msg = document.getElementById('pix-copy-msg');
+            msg.classList.remove('hidden');
+            setTimeout(() => msg.classList.add('hidden'), 3000);
         };
 
         // Init
