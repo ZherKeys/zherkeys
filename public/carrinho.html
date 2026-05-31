@@ -364,6 +364,24 @@
         let userBalance = 0;
         let isLoggedIn = false;
 
+        function syncCartWithServerAndRender() {
+            fetch('/api/products')
+                .then(res => res.json())
+                .then(latestProducts => {
+                    cart = cart.map(item => {
+                        const liveProduct = latestProducts.find(p => p.id === item.id);
+                        if (liveProduct) {
+                            item.in_stock = liveProduct.in_stock;
+                        }
+                        return item;
+                    });
+                    localStorage.setItem('zher_cart', JSON.stringify(cart));
+                    renderCartPage();
+                }).catch(() => {
+                    renderCartPage();
+                });
+        }
+
         function renderCartPage() {
             const container = document.getElementById('cart-items-container');
             const subtotalEl = document.getElementById('summary-subtotal');
@@ -396,7 +414,11 @@
 
             cart.forEach((item, index) => {
                 const priceNum = typeof item.price === 'string' ? parseFloat(item.price.replace('R$ ', '').replace(',', '.')) : parseFloat(item.price);
-                total += priceNum;
+                
+                const isSoldOut = item.in_stock === false;
+                if (!isSoldOut) {
+                    total += priceNum;
+                }
 
                 // Steam logo overlay if category is Steam Key
                 const isSteam = item.category === 'STEAM KEY';
@@ -409,19 +431,23 @@
                     </div>
                 ` : '';
 
+                const priceBadge = isSoldOut ? 
+                    `<span class="text-rose-500 font-orbitron font-bold text-xs bg-rose-500/10 border border-rose-500/30 px-3 py-1.5 rounded uppercase tracking-wider">${dict.sold_out || 'ESGOTADO'}</span>` : 
+                    `<span class="text-cyberrose font-orbitron font-bold text-lg sm:text-xl whitespace-nowrap">${formatPrice(priceNum)}</span>`;
+
                 html += `
                     <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 bg-slate-950/60 p-4 rounded-xl border border-slate-800/80 hover:border-slate-700 transition-colors">
                         <div class="relative w-full sm:w-32 h-32 sm:h-24 rounded-lg overflow-hidden flex-shrink-0">
                             ${steamBadge}
                             <img src="${item.image}" class="w-full h-full object-cover shadow-lg">
                         </div>
-                        <div class="flex-grow text-center sm:text-left overflow-hidden min-w-0 w-full">
+                        <div class="flex-grow text-center sm:text-left overflow-hidden min-w-0 w-full ${isSoldOut ? 'opacity-40' : ''}">
                             <span class="bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[8px] tracking-widest px-2 py-0.5 rounded-full uppercase inline-block mb-2">${item.category}</span>
                             <h4 class="text-white font-orbitron font-bold text-base sm:text-lg uppercase tracking-wide truncate w-full">${item.title}</h4>
                             <p class="text-slate-500 font-inter text-xs mt-1 truncate w-full hidden sm:block">${item.description}</p>
                         </div>
                         <div class="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto flex-shrink-0 mt-2 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-0 border-slate-800/50">
-                            <span class="text-cyberrose font-orbitron font-bold text-lg sm:text-xl whitespace-nowrap">${formatPrice(priceNum)}</span>
+                            ${priceBadge}
                             <button onclick="removeFromCart(${index})" class="w-10 h-10 flex-shrink-0 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-red-400 hover:border-red-500 transition-colors" title="Remover">
                                 <i data-lucide="trash-2" class="w-5 h-5"></i>
                             </button>
@@ -435,15 +461,34 @@
             subtotalEl.innerText = formattedTotal;
             totalEl.innerText = formattedTotal;
 
-            // Controle de Saldo de Créditos
-            if (window.selectedPaymentMethod === 'paypal') {
+            // Controle de Saldo de Créditos e Itens Esgotados
+            const hasSoldOut = cart.some(item => item.in_stock === false);
+            
+            if (hasSoldOut) {
+                btnCheckout.classList.add('opacity-50', 'pointer-events-none');
+                btnCheckout.innerHTML = `${dict.sold_out || 'ESGOTADO'} <i data-lucide="x-circle" class="w-4 h-4"></i>`;
+                if (warningBox) {
+                    warningBox.classList.remove('hidden');
+                    warningBox.querySelector('p').innerText = lang === 'en' ? 
+                        "One or more items in your cart are sold out! Please remove them to proceed." : 
+                        (lang === 'es' ? "¡Uno o más artículos de su carrito están agotados! Por favor elimínelos para continuar." : 
+                        "Um ou mais itens no seu carrinho estão esgotados! Por favor, remova-os para prosseguir.");
+                    const addCreditsBtn = warningBox.querySelector('a');
+                    if (addCreditsBtn) addCreditsBtn.classList.add('hidden');
+                }
+            } else if (window.selectedPaymentMethod === 'paypal') {
                 if (warningBox) warningBox.classList.add('hidden');
                 initPayPalCheckout();
             } else if (isLoggedIn) {
                 if (userBalance < total) {
                     btnCheckout.classList.add('opacity-50', 'pointer-events-none');
                     btnCheckout.innerHTML = `${dict.btn_checkout_insufficient} <i data-lucide="x-circle" class="w-4 h-4"></i>`;
-                    if (warningBox) warningBox.classList.remove('hidden');
+                    if (warningBox) {
+                        warningBox.classList.remove('hidden');
+                        warningBox.querySelector('p').innerText = dict.insufficient_balance;
+                        const addCreditsBtn = warningBox.querySelector('a');
+                        if (addCreditsBtn) addCreditsBtn.classList.remove('hidden');
+                    }
                 } else {
                     btnCheckout.classList.remove('opacity-50', 'pointer-events-none');
                     btnCheckout.innerHTML = `${dict.checkout_btn} <i data-lucide="zap" class="w-4 h-4"></i>`;
@@ -451,6 +496,8 @@
                 }
             } else {
                 if (warningBox) warningBox.classList.add('hidden');
+                btnCheckout.classList.remove('opacity-50', 'pointer-events-none');
+                btnCheckout.innerHTML = `${dict.checkout_btn} <i data-lucide="zap" class="w-4 h-4"></i>`;
             }
 
             lucide.createIcons();
@@ -849,7 +896,7 @@
                         if (balEl && isLoggedIn) {
                             balEl.innerText = formatPrice(userBalance);
                         }
-                        renderCartPage();
+                        syncCartWithServerAndRender();
                     });
                 }).catch(() => {
                     isLoggedIn = false;
@@ -863,7 +910,7 @@
                     
                     fetchExchangeRates().then(() => {
                         if (selectEl) selectEl.value = window.currentCurrency;
-                        renderCartPage();
+                        syncCartWithServerAndRender();
                     });
                 });
         });
