@@ -157,7 +157,7 @@
                     <p class="text-xs text-slate-400 font-inter max-w-md mx-auto">Selecione um minigame para hackear chaves e acumular milhares de **Z-Points** na sua carteira virtual!</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 w-full">
                     <!-- Card Jogo 1: Zher Hacker -->
                     <div onclick="selectAndStartGame('hacker')" class="bg-slate-900 border border-slate-800/80 hover:border-electricblue rounded-2xl p-6 flex flex-col gap-4 cursor-pointer hover:shadow-cyber transition-all duration-300 transform hover:-translate-y-1 group">
                         <div class="w-full aspect-video bg-slate-950 border border-slate-850 rounded-xl relative overflow-hidden flex items-center justify-center">
@@ -193,6 +193,114 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Card Jogo 3: Zher Clicker -->
+                    <div onclick="selectAndStartGame('clicker')" class="bg-slate-900 border border-slate-800/80 hover:border-toxicgreen rounded-2xl p-6 flex flex-col gap-4 cursor-pointer hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all duration-300 transform hover:-translate-y-1 group">
+                        <div class="w-full aspect-video bg-slate-950 border border-slate-850 rounded-xl relative overflow-hidden flex items-center justify-center">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-emerald-950/30 via-transparent to-slate-950"></div>
+                            <div class="w-14 h-14 rounded-xl bg-toxicgreen/10 border border-toxicgreen/20 text-toxicgreen flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                                <i data-lucide="mouse-pointer-click" class="w-8 h-8 flex-shrink-0"></i>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-toxicgreen transition-colors">🕹️ ZHER CLICKER</span>
+                            <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Clique no servidor central para descriptografar pacotes de dados. Quanto mais rápido clicar, mais ganha!</p>
+                            <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
+                                <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
+                                <span class="text-toxicgreen font-bold flex items-center gap-0.5">Jogar &raquo;</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Jogo 4: Zher Runner -->
+                    <div onclick="selectAndStartGame('runner')" class="bg-slate-900 border border-slate-800/80 hover:border-amber-500 rounded-2xl p-6 flex flex-col gap-4 cursor-pointer hover:shadow-[0_0_15px_rgba(245,158,11,0.4)] transition-all duration-300 transform hover:-translate-y-1 group">
+                        <div class="w-full aspect-video bg-slate-950 border border-slate-850 rounded-xl relative overflow-hidden flex items-center justify-center">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-amber-950/30 via-transparent to-slate-950"></div>
+                            <div class="w-14 h-14 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                                <i data-lucide="zap" class="w-8 h-8 flex-shrink-0"></i>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-amber-500 transition-colors">🕹️ ZHER RUNNER</span>
+                            <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Desvie dos picos de vírus de segurança correndo em alta velocidade pelo cabo de rede digital.</p>
+                            <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
+                                <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
+                                <span class="text-amber-500 font-bold flex items-center gap-0.5">Jogar &raquo;</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Jogo 5: Casino Fake -->
+                    <div onclick="selectAndStartGame('casino')" class="bg-slate-900 border border-slate-800/80 hover:border-purple-500 rounded-2xl p-6 flex flex-col gap-4 cursor-pointer hover:shadow-[0_0_15px_rgba(168,85,247,0.4)] transition-all duration-300 transform hover:-translate-y-1 group">
+                        <div class="w-full aspect-video bg-slate-950 border border-slate-850 rounded-xl relative overflow-hidden flex items-center justify-center">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-purple-950/30 via-transparent to-slate-950"></div>
+                            <div class="w-14 h-14 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-500 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                                <i data-lucide="dices" class="w-8 h-8 flex-shrink-0"></i>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-purple-500 transition-colors">🕹️ CASSINO FAKE</span>
+                            <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Tente a sorte nos caça-níqueis cibernéticos do Zher. Combine chaves e diamantes para bônus gigantescos!</p>
+                            <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
+                                <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
+                                <span class="text-purple-500 font-bold flex items-center gap-0.5">Jogar &raquo;</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Jogo 6: Quiz Gamer -->
+                    <div onclick="selectAndStartGame('quiz')" class="bg-slate-900 border border-slate-800/80 hover:border-indigo-500 rounded-2xl p-6 flex flex-col gap-4 cursor-pointer hover:shadow-[0_0_15px_rgba(99,102,241,0.4)] transition-all duration-300 transform hover:-translate-y-1 group">
+                        <div class="w-full aspect-video bg-slate-950 border border-slate-850 rounded-xl relative overflow-hidden flex items-center justify-center">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-indigo-950/30 via-transparent to-slate-950"></div>
+                            <div class="w-14 h-14 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                                <i data-lucide="help-circle" class="w-8 h-8 flex-shrink-0"></i>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-indigo-500 transition-colors">🕹️ QUIZ GAMER</span>
+                            <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Responda a perguntas do mundo dos games e da programação para provar que é um verdadeiro hacker!</p>
+                            <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
+                                <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
+                                <span class="text-indigo-500 font-bold flex items-center gap-0.5">Jogar &raquo;</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Jogo 7: Roleta -->
+                    <div onclick="selectAndStartGame('roulette')" class="bg-slate-900 border border-slate-800/80 hover:border-pink-500 rounded-2xl p-6 flex flex-col gap-4 cursor-pointer hover:shadow-[0_0_15px_rgba(236,72,153,0.4)] transition-all duration-300 transform hover:-translate-y-1 group">
+                        <div class="w-full aspect-video bg-slate-950 border border-slate-850 rounded-xl relative overflow-hidden flex items-center justify-center">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-pink-950/30 via-transparent to-slate-950"></div>
+                            <div class="w-14 h-14 rounded-xl bg-pink-500/10 border border-pink-500/20 text-pink-500 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                                <i data-lucide="disc" class="w-8 h-8 flex-shrink-0"></i>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-pink-500 transition-colors">🕹️ ROLETA CYBER</span>
+                            <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Gire a roleta de decodificação de chaves. Multiplique seus Z-Points ou desvie do vírus do sistema!</p>
+                            <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
+                                <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
+                                <span class="text-pink-500 font-bold flex items-center gap-0.5">Jogar &raquo;</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Jogo 8: Caça ao Tesouro -->
+                    <div onclick="selectAndStartGame('treasure')" class="bg-slate-900 border border-slate-800/80 hover:border-emerald-500 rounded-2xl p-6 flex flex-col gap-4 cursor-pointer hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all duration-300 transform hover:-translate-y-1 group">
+                        <div class="w-full aspect-video bg-slate-950 border border-slate-850 rounded-xl relative overflow-hidden flex items-center justify-center">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-emerald-950/30 via-transparent to-slate-950"></div>
+                            <div class="w-14 h-14 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                                <i data-lucide="gem" class="w-8 h-8 flex-shrink-0"></i>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-emerald-500 transition-colors">🕹️ CAÇA TESOURO</span>
+                            <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Vasculhe um banco de dados em grade atrás de drives de chaves ocultas. Cuidado para não ativar a segurança!</p>
+                            <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
+                                <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
+                                <span class="text-emerald-500 font-bold flex items-center gap-0.5">Jogar &raquo;</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -223,7 +331,7 @@
                     <!-- Barra de Instruções -->
                     <div class="w-full bg-slate-900/80 border-t border-slate-800 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs">
                         <span id="game-instructions-text" class="text-slate-400 flex items-center gap-1.5"><i data-lucide="keyboard" class="w-4 h-4 text-electricblue"></i> Use as setas ou clique e arraste para mover o Hacker</span>
-                        <span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">5 Z-Points</b> (com Multi-Boost)</span>
+                        <span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">250 Z-Points</b> (com Multi-Boost)</span>
                     </div>
                 </div>
                 
@@ -378,6 +486,45 @@
 
         let userPoints = 0;
         
+        // Clicker entities
+        let clickerNode;
+        let floatingTexts = [];
+
+        // Runner entities
+        let runnerPlayer;
+        let runnerSpikes = [];
+        let runnerSpawnTimer = 0;
+
+        // Casino entities
+        let casinoSymbols;
+        let casinoReels;
+        let casinoSpinning = false;
+        let casinoStatusText = '';
+        let casinoResultColor = '';
+
+        // Quiz entities
+        let quizQuestions;
+        let quizIndex = 0;
+        let quizActive;
+        let quizFinished = false;
+        let quizResultMsg = '';
+        let quizMsgColor = '';
+
+        // Roulette entities
+        let rouletteAngle = 0;
+        let rouletteSpeed = 0;
+        let rouletteSpinning = false;
+        let rouletteSectors = [];
+        let rouletteStatusText = '';
+        let rouletteResultColor = '';
+
+        // Treasure Hunt entities
+        let treasureGrid = [];
+        let treasureWinCount = 0;
+        let treasureTotalTreasures = 5;
+        let treasureStatusText = '';
+        let treasureResultColor = '';
+        
         // --- FETCH USER LIVE BALANCE AND POINTS ---
         async function fetchMe() {
             try {
@@ -526,7 +673,16 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             // Grid neon
-            ctx.strokeStyle = currentGame === 'flappy' ? 'rgba(244, 63, 94, 0.05)' : 'rgba(59, 130, 246, 0.05)';
+            let gridColor = 'rgba(59, 130, 246, 0.05)';
+            if (currentGame === 'flappy') gridColor = 'rgba(244, 63, 94, 0.05)';
+            else if (currentGame === 'clicker') gridColor = 'rgba(16, 185, 129, 0.05)';
+            else if (currentGame === 'runner') gridColor = 'rgba(245, 158, 11, 0.05)';
+            else if (currentGame === 'casino') gridColor = 'rgba(168, 85, 247, 0.05)';
+            else if (currentGame === 'quiz') gridColor = 'rgba(99, 102, 241, 0.05)';
+            else if (currentGame === 'roulette') gridColor = 'rgba(236, 72, 153, 0.05)';
+            else if (currentGame === 'treasure') gridColor = 'rgba(16, 185, 129, 0.05)';
+
+            ctx.strokeStyle = gridColor;
             for(let x=0; x<canvas.width; x+=30) {
                 ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
             }
@@ -543,12 +699,58 @@
                 ctx.roundRect(player.x, player.y, player.width, player.height, 6);
                 ctx.fill();
                 ctx.stroke();
-            } else {
+            } else if (currentGame === 'flappy') {
                 ctx.fillStyle = '#F43F5E';
                 ctx.strokeStyle = '#FDA4AF';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
                 ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            } else if (currentGame === 'clicker') {
+                ctx.fillStyle = '#10B981';
+                ctx.strokeStyle = '#6EE7B7';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, 75, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            } else if (currentGame === 'runner') {
+                ctx.fillStyle = '#FBBF24';
+                ctx.strokeStyle = '#FDE047';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(80, 350, 26, 26, 5);
+                ctx.fill();
+                ctx.stroke();
+            } else if (currentGame === 'casino') {
+                ctx.fillStyle = '#0F172A';
+                ctx.strokeStyle = '#A855F7';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.roundRect(50, 80, 400, 240, 16);
+                ctx.fill();
+                ctx.stroke();
+            } else if (currentGame === 'quiz') {
+                ctx.fillStyle = '#0F172A';
+                ctx.strokeStyle = '#6366F1';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.roundRect(40, 50, 420, 100, 12);
+                ctx.fill();
+                ctx.stroke();
+            } else if (currentGame === 'roulette') {
+                ctx.strokeStyle = '#3B82F6';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2 - 20, 140, 0, Math.PI * 2);
+                ctx.stroke();
+            } else if (currentGame === 'treasure') {
+                ctx.fillStyle = '#1E293B';
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(canvas.width / 2 - 32, canvas.height / 2 - 52, 65, 65, 8);
                 ctx.fill();
                 ctx.stroke();
             }
@@ -562,13 +764,37 @@
             ctx.textAlign = 'center';
             
             ctx.font = 'bold 24px Orbitron';
-            ctx.shadowColor = currentGame === 'flappy' ? '#F43F5E' : '#3B82F6';
-            ctx.shadowBlur = 10;
+            let titleColor = '#3B82F6';
+            let titleText = 'ZHER ARCADE';
             if (currentGame === 'hacker') {
-                ctx.fillText('ZHER HACKER', canvas.width / 2, canvas.height / 2 - 50);
-            } else {
-                ctx.fillText('ZHER BIRD (FLAPPY)', canvas.width / 2, canvas.height / 2 - 50);
+                titleText = 'ZHER HACKER';
+                titleColor = '#3B82F6';
+            } else if (currentGame === 'flappy') {
+                titleText = 'ZHER BIRD (FLAPPY)';
+                titleColor = '#F43F5E';
+            } else if (currentGame === 'clicker') {
+                titleText = 'ZHER CLICKER';
+                titleColor = '#10B981';
+            } else if (currentGame === 'runner') {
+                titleText = 'ZHER RUNNER';
+                titleColor = '#FBBF24';
+            } else if (currentGame === 'casino') {
+                titleText = 'ZHER CASINO (SLOTS)';
+                titleColor = '#A855F7';
+            } else if (currentGame === 'quiz') {
+                titleText = 'ZHER QUIZ GAMER';
+                titleColor = '#6366F1';
+            } else if (currentGame === 'roulette') {
+                titleText = 'ZHER CYBER ROLETA';
+                titleColor = '#EC4899';
+            } else if (currentGame === 'treasure') {
+                titleText = 'ZHER CAÇA AO TESOURO';
+                titleColor = '#10B981';
             }
+
+            ctx.shadowColor = titleColor;
+            ctx.shadowBlur = 10;
+            ctx.fillText(titleText, canvas.width / 2, canvas.height / 2 - 50);
             
             ctx.font = 'bold 14px Orbitron';
             ctx.fillStyle = '#10B981';
@@ -582,8 +808,20 @@
             ctx.fillStyle = '#94A3B8';
             if (currentGame === 'hacker') {
                 ctx.fillText('Capture chaves e moedas, desvie dos vírus vermelhos!', canvas.width / 2, canvas.height / 2 + 80);
-            } else {
+            } else if (currentGame === 'flappy') {
                 ctx.fillText('Desvie das paredes de firewall verde!', canvas.width / 2, canvas.height / 2 + 80);
+            } else if (currentGame === 'clicker') {
+                ctx.fillText('Descriptografe dados clicando no banco central!', canvas.width / 2, canvas.height / 2 + 80);
+            } else if (currentGame === 'runner') {
+                ctx.fillText('Corra e salte sobre as barreiras de picos vermelhos!', canvas.width / 2, canvas.height / 2 + 80);
+            } else if (currentGame === 'casino') {
+                ctx.fillText('Tire combinações de chaves e diamantes para lucrar!', canvas.width / 2, canvas.height / 2 + 80);
+            } else if (currentGame === 'quiz') {
+                ctx.fillText('Responda corretamente a questões de games!', canvas.width / 2, canvas.height / 2 + 80);
+            } else if (currentGame === 'roulette') {
+                ctx.fillText('Gire a roleta de códigos e multiplique pontos!', canvas.width / 2, canvas.height / 2 + 80);
+            } else if (currentGame === 'treasure') {
+                ctx.fillText('Vasculhe a grade em busca de dados encriptados!', canvas.width / 2, canvas.height / 2 + 80);
             }
         }
 
@@ -608,8 +846,20 @@
             const instEl = document.getElementById('game-instructions-text');
             if (gameName === 'hacker') {
                 instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-electricblue"></i> Use as setas ou clique e arraste para mover o Hacker`;
-            } else {
+            } else if (gameName === 'flappy') {
                 instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-cyberrose"></i> Pressione ESPAÇO, SETA PARA CIMA ou clique no canvas para voar`;
+            } else if (gameName === 'clicker') {
+                instEl.innerHTML = `<i data-lucide="mouse-pointer" class="w-4 h-4 text-toxicgreen"></i> Clique no Database central. Desvie dos vírus vermelhos!`;
+            } else if (gameName === 'runner') {
+                instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-amber-500"></i> Pressione ESPAÇO, SETA PARA CIMA ou clique para pular os vírus`;
+            } else if (gameName === 'casino') {
+                instEl.innerHTML = `<i data-lucide="dices" class="w-4 h-4 text-purple-500"></i> Clique no botão SPIN para testar os Slots. Evite os vírus!`;
+            } else if (gameName === 'quiz') {
+                instEl.innerHTML = `<i data-lucide="help-circle" class="w-4 h-4 text-indigo-500"></i> Clique na opção correta de A a D. Errar encerra o jogo!`;
+            } else if (gameName === 'roulette') {
+                instEl.innerHTML = `<i data-lucide="disc" class="w-4 h-4 text-pink-500"></i> Clique no botão SPIN central para girar a roleta. Evite a fatia de vírus!`;
+            } else if (gameName === 'treasure') {
+                instEl.innerHTML = `<i data-lucide="gem" class="w-4 h-4 text-emerald-500"></i> Clique nos nós para revelar encriptadores. Cuidado com os vírus!`;
             }
             lucide.createIcons();
             
@@ -624,10 +874,31 @@
             if (currentGame === 'hacker') {
                 player.x = 220;
                 player.targetX = 220;
-            } else {
+            } else if (currentGame === 'flappy') {
                 bird.y = 220;
                 bird.velocity = 0;
                 pipes = [];
+            } else if (currentGame === 'clicker') {
+                clickerNode = { x: canvas.width / 2, y: canvas.height / 2, radius: 75, pulse: 0 };
+            } else if (currentGame === 'runner') {
+                runnerPlayer = { x: 80, y: 350, width: 26, height: 26, vy: 0, gravity: 0.55, jumpPower: -10.5, isGrounded: false };
+            } else if (currentGame === 'casino') {
+                casinoSymbols = ['🔑', '💎', '💰', '❌'];
+                casinoReels = [{ symbol: '🔑' }, { symbol: '💎' }, { symbol: '💰' }];
+            } else if (currentGame === 'quiz') {
+                quizQuestions = [{ q: "Qual a porta padrao do HTTP?", a: ["80", "443", "21", "22"], correct: 0 }];
+                quizIndex = 0;
+                quizActive = quizQuestions[0];
+                quizFinished = false;
+            } else if (currentGame === 'roulette') {
+                rouletteAngle = 0;
+            } else if (currentGame === 'treasure') {
+                treasureGrid = [];
+                for (let r = 0; r < 5; r++) {
+                    for (let c = 0; c < 5; c++) {
+                        treasureGrid.push({ row: r, col: c, type: 'empty', revealed: false });
+                    }
+                }
             }
             
             // Desenha a tela inicial de "Clique para Começar"
@@ -692,9 +963,175 @@
                 handleStartTrigger();
                 return;
             }
-            if (gameActive && currentGame === 'flappy') {
-                bird.velocity = bird.jump;
-                synth.point();
+            if (gameActive) {
+                if (currentGame === 'flappy') {
+                    bird.velocity = bird.jump;
+                    synth.point();
+                } else if (currentGame === 'clicker') {
+                    const rect = canvas.getBoundingClientRect();
+                    const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
+                    const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+                    
+                    const dx = clickX - clickerNode.x;
+                    const dy = clickY - clickerNode.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if (dist <= clickerNode.radius + 5) {
+                        score += 1;
+                        synth.point();
+                        spawnParticles(clickX, clickY, '#10B981');
+                        floatingTexts.push({
+                            x: clickX,
+                            y: clickY,
+                            vy: -2,
+                            text: '+1 Z-Point',
+                            color: '#10B981',
+                            life: 30
+                        });
+                        clickerNode.pulse += 0.2;
+                    } else {
+                        for (let i = items.length - 1; i >= 0; i--) {
+                            const item = items[i];
+                            const idx = clickX - item.x;
+                            const idy = clickY - item.y;
+                            const idist = Math.sqrt(idx*idx + idy*idy);
+                            
+                            if (idist <= item.size + 5) {
+                                synth.hurt();
+                                endGame();
+                                return;
+                            }
+                        }
+                    }
+                } else if (currentGame === 'runner') {
+                    if (runnerPlayer.isGrounded) {
+                        runnerPlayer.vy = runnerPlayer.jumpPower;
+                        synth.point();
+                    }
+                } else if (currentGame === 'casino') {
+                    if (casinoSpinning) return;
+                    const rect = canvas.getBoundingClientRect();
+                    const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
+                    const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+                    
+                    if (clickX >= 175 && clickX <= 325 && clickY >= 345 && clickY <= 390) {
+                        casinoSpinning = true;
+                        casinoStatusText = 'PROCESSANDO DADOS DE REDE...';
+                        casinoResultColor = '#A855F7';
+                        synth.point();
+                        
+                        casinoReels[0].spinning = true;
+                        casinoReels[0].spinTime = 40 + Math.floor(Math.random() * 20);
+                        casinoReels[1].spinning = true;
+                        casinoReels[1].spinTime = 70 + Math.floor(Math.random() * 20);
+                        casinoReels[2].spinning = true;
+                        casinoReels[2].spinTime = 100 + Math.floor(Math.random() * 20);
+                    }
+                } else if (currentGame === 'quiz' && !quizFinished) {
+                    const rect = canvas.getBoundingClientRect();
+                    const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
+                    const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+                    const btnCoords = [
+                        { x: 50, y: 180, w: 180, h: 60 },
+                        { x: 270, y: 180, w: 180, h: 60 },
+                        { x: 50, y: 270, w: 180, h: 60 },
+                        { x: 270, y: 270, w: 180, h: 60 }
+                    ];
+
+                    let clickedOption = -1;
+                    for (let i = 0; i < 4; i++) {
+                        const btn = btnCoords[i];
+                        if (clickX >= btn.x && clickX <= btn.x + btn.w && clickY >= btn.y && clickY <= btn.y + btn.h) {
+                            clickedOption = i;
+                            break;
+                        }
+                    }
+
+                    if (clickedOption !== -1) {
+                        if (clickedOption === quizActive.correct) {
+                            score += 35;
+                            synth.bonus();
+                            spawnParticles(clickX, clickY, '#10B981');
+                            
+                            quizIndex++;
+                            if (quizIndex >= quizQuestions.length) {
+                                quizFinished = true;
+                            } else {
+                                quizActive = quizQuestions[quizIndex];
+                                quizResultMsg = 'RESPOSTA EXATA! +35 Z-POINTS OBTIDOS';
+                                quizMsgColor = '#10B981';
+                            }
+                        } else {
+                            synth.hurt();
+                            quizResultMsg = 'RESPOSTA INCORRETA! BLOQUEIO DE SEGURANÇA!';
+                            quizMsgColor = '#EF4444';
+                            setTimeout(() => { endGame(); }, 1200);
+                        }
+                    }
+                } else if (currentGame === 'roulette') {
+                    if (rouletteSpinning) return;
+                    const rect = canvas.getBoundingClientRect();
+                    const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
+                    const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+                    
+                    const cx = canvas.width / 2;
+                    const cy = canvas.height / 2 - 20;
+
+                    const dx = clickX - cx;
+                    const dy = clickY - cy;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+
+                    if (dist <= 38) {
+                        rouletteSpinning = true;
+                        rouletteSpeed = 0.35 + Math.random() * 0.25;
+                        rouletteStatusText = 'DECODIFICANDO CÓDIGOS DE ARQUIVOS...';
+                        rouletteResultColor = '#FB923C';
+                        synth.point();
+                    }
+                } else if (currentGame === 'treasure') {
+                    const rect = canvas.getBoundingClientRect();
+                    const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
+                    const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+                    
+                    const cellWidth = 65;
+                    const cellHeight = 65;
+                    const gap = 10;
+                    
+                    const startGridX = canvas.width / 2 - (5 * cellWidth + 4 * gap) / 2;
+                    const startGridY = canvas.height / 2 - (5 * cellHeight + 4 * gap) / 2 - 20;
+
+                    for (let i = 0; i < 25; i++) {
+                        const cell = treasureGrid[i];
+                        const cx = startGridX + cell.col * (cellWidth + gap);
+                        const cy = startGridY + cell.row * (cellHeight + gap);
+
+                        if (clickX >= cx && clickX <= cx + cellWidth && clickY >= cy && clickY <= cy + cellHeight) {
+                            if (cell.revealed) return;
+                            cell.revealed = true;
+                            
+                            if (cell.type === 'treasure') {
+                                score += 40;
+                                treasureWinCount++;
+                                synth.bonus();
+                                treasureStatusText = `💎 ENCRIPTADOR DE CHAVE DETECTADO (${treasureWinCount}/5). +40 PTS.`;
+                                treasureResultColor = '#10B981';
+                                spawnParticles(clickX + cellWidth/2, clickY + cellHeight/2, '#10B981');
+                            } else if (cell.type === 'virus') {
+                                synth.hurt();
+                                treasureStatusText = '❌ SISTEMA BLOQUEADO! ALERTA DE RASTREAMENTO VÍRUS!';
+                                treasureResultColor = '#EF4444';
+                                setTimeout(() => { endGame(); }, 1500);
+                            } else {
+                                score += 10;
+                                synth.point();
+                                treasureStatusText = 'NÓ LIMPO. ACESSO VERIFICADO. +10 PTS.';
+                                treasureResultColor = '#60A5FA';
+                            }
+                            break;
+                        }
+                    }
+                }
             }
         });
         canvas.addEventListener('touchstart', (e) => {
@@ -703,10 +1140,177 @@
                 handleStartTrigger();
                 return;
             }
-            if (gameActive && currentGame === 'flappy') {
+            if (gameActive) {
                 e.preventDefault();
-                bird.velocity = bird.jump;
-                synth.point();
+                const touch = e.touches[0];
+                if (currentGame === 'flappy') {
+                    bird.velocity = bird.jump;
+                    synth.point();
+                } else if (currentGame === 'clicker') {
+                    const rect = canvas.getBoundingClientRect();
+                    const clickX = (touch.clientX - rect.left) * (canvas.width / rect.width);
+                    const clickY = (touch.clientY - rect.top) * (canvas.height / rect.height);
+                    
+                    const dx = clickX - clickerNode.x;
+                    const dy = clickY - clickerNode.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if (dist <= clickerNode.radius + 5) {
+                        score += 1;
+                        synth.point();
+                        spawnParticles(clickX, clickY, '#10B981');
+                        floatingTexts.push({
+                            x: clickX,
+                            y: clickY,
+                            vy: -2,
+                            text: '+1 Z-Point',
+                            color: '#10B981',
+                            life: 30
+                        });
+                        clickerNode.pulse += 0.2;
+                    } else {
+                        for (let i = items.length - 1; i >= 0; i--) {
+                            const item = items[i];
+                            const idx = clickX - item.x;
+                            const idy = clickY - item.y;
+                            const idist = Math.sqrt(idx*idx + idy*idy);
+                            
+                            if (idist <= item.size + 5) {
+                                synth.hurt();
+                                endGame();
+                                return;
+                            }
+                        }
+                    }
+                } else if (currentGame === 'runner') {
+                    if (runnerPlayer.isGrounded) {
+                        runnerPlayer.vy = runnerPlayer.jumpPower;
+                        synth.point();
+                    }
+                } else if (currentGame === 'casino') {
+                    if (casinoSpinning) return;
+                    const rect = canvas.getBoundingClientRect();
+                    const clickX = (touch.clientX - rect.left) * (canvas.width / rect.width);
+                    const clickY = (touch.clientY - rect.top) * (canvas.height / rect.height);
+                    
+                    if (clickX >= 175 && clickX <= 325 && clickY >= 345 && clickY <= 390) {
+                        casinoSpinning = true;
+                        casinoStatusText = 'PROCESSANDO DADOS DE REDE...';
+                        casinoResultColor = '#A855F7';
+                        synth.point();
+                        
+                        casinoReels[0].spinning = true;
+                        casinoReels[0].spinTime = 40 + Math.floor(Math.random() * 20);
+                        casinoReels[1].spinning = true;
+                        casinoReels[1].spinTime = 70 + Math.floor(Math.random() * 20);
+                        casinoReels[2].spinning = true;
+                        casinoReels[2].spinTime = 100 + Math.floor(Math.random() * 20);
+                    }
+                } else if (currentGame === 'quiz' && !quizFinished) {
+                    const rect = canvas.getBoundingClientRect();
+                    const clickX = (touch.clientX - rect.left) * (canvas.width / rect.width);
+                    const clickY = (touch.clientY - rect.top) * (canvas.height / rect.height);
+
+                    const btnCoords = [
+                        { x: 50, y: 180, w: 180, h: 60 },
+                        { x: 270, y: 180, w: 180, h: 60 },
+                        { x: 50, y: 270, w: 180, h: 60 },
+                        { x: 270, y: 270, w: 180, h: 60 }
+                    ];
+
+                    let clickedOption = -1;
+                    for (let i = 0; i < 4; i++) {
+                        const btn = btnCoords[i];
+                        if (clickX >= btn.x && clickX <= btn.x + btn.w && clickY >= btn.y && clickY <= btn.y + btn.h) {
+                            clickedOption = i;
+                            break;
+                        }
+                    }
+
+                    if (clickedOption !== -1) {
+                        if (clickedOption === quizActive.correct) {
+                            score += 35;
+                            synth.bonus();
+                            spawnParticles(clickX, clickY, '#10B981');
+                            
+                            quizIndex++;
+                            if (quizIndex >= quizQuestions.length) {
+                                quizFinished = true;
+                            } else {
+                                quizActive = quizQuestions[quizIndex];
+                                quizResultMsg = 'RESPOSTA EXATA! +35 Z-POINTS OBTIDOS';
+                                quizMsgColor = '#10B981';
+                            }
+                        } else {
+                            synth.hurt();
+                            quizResultMsg = 'RESPOSTA INCORRETA! BLOQUEIO DE SEGURANÇA!';
+                            quizMsgColor = '#EF4444';
+                            setTimeout(() => { endGame(); }, 1200);
+                        }
+                    }
+                } else if (currentGame === 'roulette') {
+                    if (rouletteSpinning) return;
+                    const rect = canvas.getBoundingClientRect();
+                    const clickX = (touch.clientX - rect.left) * (canvas.width / rect.width);
+                    const clickY = (touch.clientY - rect.top) * (canvas.height / rect.height);
+                    
+                    const cx = canvas.width / 2;
+                    const cy = canvas.height / 2 - 20;
+
+                    const dx = clickX - cx;
+                    const dy = clickY - cy;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+
+                    if (dist <= 38) {
+                        rouletteSpinning = true;
+                        rouletteSpeed = 0.35 + Math.random() * 0.25;
+                        rouletteStatusText = 'DECODIFICANDO CÓDIGOS DE ARQUIVOS...';
+                        rouletteResultColor = '#FB923C';
+                        synth.point();
+                    }
+                } else if (currentGame === 'treasure') {
+                    const rect = canvas.getBoundingClientRect();
+                    const clickX = (touch.clientX - rect.left) * (canvas.width / rect.width);
+                    const clickY = (touch.clientY - rect.top) * (canvas.height / rect.height);
+                    
+                    const cellWidth = 65;
+                    const cellHeight = 65;
+                    const gap = 10;
+                    
+                    const startGridX = canvas.width / 2 - (5 * cellWidth + 4 * gap) / 2;
+                    const startGridY = canvas.height / 2 - (5 * cellHeight + 4 * gap) / 2 - 20;
+
+                    for (let i = 0; i < 25; i++) {
+                        const cell = treasureGrid[i];
+                        const cx = startGridX + cell.col * (cellWidth + gap);
+                        const cy = startGridY + cell.row * (cellHeight + gap);
+
+                        if (clickX >= cx && clickX <= cx + cellWidth && clickY >= cy && clickY <= cy + cellHeight) {
+                            if (cell.revealed) return;
+                            cell.revealed = true;
+                            
+                            if (cell.type === 'treasure') {
+                                score += 40;
+                                treasureWinCount++;
+                                synth.bonus();
+                                treasureStatusText = `💎 ENCRIPTADOR DE CHAVE DETECTADO (${treasureWinCount}/5). +40 PTS.`;
+                                treasureResultColor = '#10B981';
+                                spawnParticles(clickX + cellWidth/2, clickY + cellHeight/2, '#10B981');
+                            } else if (cell.type === 'virus') {
+                                synth.hurt();
+                                treasureStatusText = '❌ SISTEMA BLOQUEADO! ALERTA DE RASTREAMENTO VÍRUS!';
+                                treasureResultColor = '#EF4444';
+                                setTimeout(() => { endGame(); }, 1500);
+                            } else {
+                                score += 10;
+                                synth.point();
+                                treasureStatusText = 'NÓ LIMPO. ACESSO VERIFICADO. +10 PTS.';
+                                treasureResultColor = '#60A5FA';
+                            }
+                            break;
+                        }
+                    }
+                }
             }
         }, { passive: false });
 
@@ -720,13 +1324,123 @@
             particles = [];
             
             // Zher Hacker Setup
-            player.x = 220;
-            player.targetX = 220;
+            if (currentGame === 'hacker') {
+                player.x = 220;
+                player.targetX = 220;
+            }
 
             // Zher Bird Setup
-            bird.y = 220;
-            bird.velocity = 0;
-            pipes = [];
+            if (currentGame === 'flappy') {
+                bird.y = 220;
+                bird.velocity = 0;
+                pipes = [];
+            }
+            
+            // Zher Clicker Setup
+            if (currentGame === 'clicker') {
+                clickerNode = {
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    radius: 75,
+                    color: '#10B981',
+                    pulse: 0
+                };
+                floatingTexts = [];
+            }
+            
+            // Zher Runner Setup
+            if (currentGame === 'runner') {
+                runnerPlayer = {
+                    x: 80,
+                    y: 350,
+                    width: 26,
+                    height: 26,
+                    vy: 0,
+                    gravity: 0.55,
+                    jumpPower: -10.5,
+                    isGrounded: false,
+                    color: '#FBBF24'
+                };
+                runnerSpikes = [];
+                runnerSpawnTimer = 0;
+            }
+            
+            // Zher Casino Setup
+            if (currentGame === 'casino') {
+                casinoSymbols = ['🔑', '💎', '💰', '❌'];
+                casinoReels = [
+                    { symbol: '🔑', y: 0, targetY: 0, speed: 0, spinning: false, spinTime: 0 },
+                    { symbol: '💎', y: 0, targetY: 0, speed: 0, spinning: false, spinTime: 0 },
+                    { symbol: '💰', y: 0, targetY: 0, speed: 0, spinning: false, spinTime: 0 }
+                ];
+                casinoSpinning = false;
+                casinoStatusText = 'APERTE SPIN PARA COMEÇAR';
+                casinoResultColor = '#94A3B8';
+            }
+            
+            // Zher Quiz Setup
+            if (currentGame === 'quiz') {
+                quizQuestions = [
+                    { q: "Qual a porta padrao do HTTP?", a: ["80", "443", "21", "22"], correct: 0 },
+                    { q: "O que e HTML?", a: ["Marcacao de Texto", "Programacao", "Rede", "Compilador"], correct: 0 },
+                    { q: "Qual o maior buscador?", a: ["Yahoo", "Bing", "Google", "DuckDuckGo"], correct: 2 },
+                    { q: "O que e um malware?", a: ["Hardware bom", "Software nocivo", "Provedor", "Placa de Video"], correct: 1 },
+                    { q: "A extensao do JavaScript?", a: [".css", ".html", ".js", ".json"], correct: 2 },
+                    { q: "Qual a porta SSL do HTTPS?", a: ["80", "443", "8080", "23"], correct: 1 },
+                    { q: "Qual linguagem e compilada?", a: ["HTML", "Python", "C++", "PHP"], correct: 2 },
+                    { q: "Sigla CPU em hardware?", a: ["Central Process Unit", "Control Program", "Computer Power", "Core Processing"], correct: 0 }
+                ];
+                quizQuestions.sort(() => Math.random() - 0.5);
+                quizIndex = 0;
+                quizActive = quizQuestions[quizIndex];
+                quizFinished = false;
+                quizResultMsg = 'SELECIONE A ALTERNATIVA CORRETA';
+                quizMsgColor = '#60A5FA';
+            }
+            
+            // Zher Roulette Setup
+            if (currentGame === 'roulette') {
+                rouletteAngle = 0;
+                rouletteSpeed = 0;
+                rouletteSpinning = false;
+                rouletteSectors = [
+                    { label: '+50 Pts', val: 50, color: '#0F172A', txtColor: '#3B82F6' },
+                    { label: '+100 Pts', val: 100, color: '#1E293B', txtColor: '#A855F7' },
+                    { label: '+20 Pts', val: 20, color: '#0F172A', txtColor: '#60A5FA' },
+                    { label: 'VÍRUS', val: -1, color: '#EF4444', txtColor: '#FFFFFF' },
+                    { label: '+300 Pts', val: 300, color: '#0F172A', txtColor: '#FBBF24' },
+                    { label: '+10 Pts', val: 10, color: '#1E293B', txtColor: '#94A3B8' },
+                    { label: '+500 Pts', val: 500, color: '#0F172A', txtColor: '#10B981' },
+                    { label: 'VÍRUS', val: -1, color: '#EF4444', txtColor: '#FFFFFF' }
+                ];
+                rouletteStatusText = 'TOQUE NO BOTÃO SPIN PARA GIRAR A ROLETA';
+                rouletteResultColor = '#94A3B8';
+            }
+            
+            // Zher Treasure Setup
+            if (currentGame === 'treasure') {
+                treasureGrid = [];
+                const cellTypes = [];
+                for (let i = 0; i < 5; i++) cellTypes.push('treasure');
+                for (let i = 0; i < 3; i++) cellTypes.push('virus');
+                for (let i = 0; i < 17; i++) cellTypes.push('empty');
+                cellTypes.sort(() => Math.random() - 0.5);
+
+                for (let r = 0; r < 5; r++) {
+                    for (let c = 0; c < 5; c++) {
+                        treasureGrid.push({
+                            row: r,
+                            col: c,
+                            type: cellTypes[r * 5 + c],
+                            revealed: false
+                        });
+                    }
+                }
+                treasureWinCount = 0;
+                treasureTotalTreasures = 5;
+                treasureStatusText = 'SELECIONE NÓS PARA LOCALIZAR OS ENCRIPTADORES (5 TOTAL)';
+                treasureResultColor = '#60A5FA';
+            }
             
             // Loop do jogo
             requestAnimationFrame(gameLoop);
@@ -972,6 +1686,557 @@
                         pipes.splice(i, 1);
                     }
                 }
+            } else if (currentGame === 'clicker') {
+                // ==========================================
+                // LÓGICA DO JOGO: ZHER CLICKER
+                // ==========================================
+                
+                // Pulse central node slowly
+                clickerNode.pulse += 0.05;
+                const currentRadius = 75 + Math.sin(clickerNode.pulse) * 3;
+                
+                // Draw central server node
+                ctx.save();
+                ctx.shadowColor = clickerNode.color;
+                ctx.shadowBlur = 20;
+                ctx.fillStyle = '#091D17';
+                ctx.strokeStyle = clickerNode.color;
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, currentRadius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
+
+                // Draw central glowing emblem
+                ctx.fillStyle = '#10B981';
+                ctx.font = '900 16px Orbitron';
+                ctx.textAlign = 'center';
+                ctx.fillText('DATABASE', canvas.width / 2, canvas.height / 2 - 5);
+                ctx.font = 'bold 11px Orbitron';
+                ctx.fillStyle = '#6EE7B7';
+                ctx.fillText('CLIQUE!', canvas.width / 2, canvas.height / 2 + 15);
+
+                // Update and draw floating texts
+                for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                    const ft = floatingTexts[i];
+                    ft.y += ft.vy;
+                    ft.life--;
+                    if (ft.life <= 0) {
+                        floatingTexts.splice(i, 1);
+                        continue;
+                    }
+                    ctx.fillStyle = ft.color;
+                    ctx.font = 'bold 16px Orbitron';
+                    ctx.textAlign = 'center';
+                    ctx.globalAlpha = ft.life / 30;
+                    ctx.fillText(ft.text, ft.x, ft.y);
+                    ctx.globalAlpha = 1.0;
+                }
+
+                // Add random flying security virus spikes to click for extra points (clicker challenge)
+                if (Math.random() < 0.01 && items.length < 3) {
+                    items.push({
+                        x: Math.random() * (canvas.width - 60) + 30,
+                        y: -20,
+                        speed: Math.random() * 2 + 1,
+                        size: 15,
+                        color: '#EF4444',
+                        score: -15, // if virus is touched, score decreases
+                        type: 'clicker-virus'
+                    });
+                }
+                
+                // Update and draw flying viruses in clicker mode
+                for (let i = items.length - 1; i >= 0; i--) {
+                    const item = items[i];
+                    item.y += item.speed;
+                    if (item.y > canvas.height + 20) {
+                        items.splice(i, 1);
+                        continue;
+                    }
+                    ctx.fillStyle = item.color;
+                    ctx.shadowColor = item.color;
+                    ctx.shadowBlur = 8;
+                    ctx.beginPath();
+                    ctx.arc(item.x, item.y, item.size / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+
+            } else if (currentGame === 'runner') {
+                // ==========================================
+                // LÓGICA DO JOGO: ZHER RUNNER
+                // ==========================================
+
+                // Draw floor line
+                ctx.strokeStyle = '#3B82F6';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(0, 376);
+                ctx.lineTo(canvas.width, 376);
+                ctx.stroke();
+
+                // Apply gravity to runner
+                runnerPlayer.vy += runnerPlayer.gravity;
+                runnerPlayer.y += runnerPlayer.vy;
+
+                // Collision with floor
+                if (runnerPlayer.y >= 350) {
+                    runnerPlayer.y = 350;
+                    runnerPlayer.vy = 0;
+                    runnerPlayer.isGrounded = true;
+                } else {
+                    runnerPlayer.isGrounded = false;
+                }
+
+                // Draw runner player
+                ctx.save();
+                ctx.fillStyle = runnerPlayer.color;
+                ctx.strokeStyle = '#FDE047';
+                ctx.lineWidth = 2;
+                ctx.shadowColor = runnerPlayer.color;
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.roundRect(runnerPlayer.x, runnerPlayer.y, runnerPlayer.width, runnerPlayer.height, 5);
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
+
+                // Spawn obstacles
+                runnerSpawnTimer++;
+                if (runnerSpawnTimer > 90 + Math.random() * 60) {
+                    runnerSpawnTimer = 0;
+                    runnerSpikes.push({
+                        x: canvas.width,
+                        y: 346,
+                        width: 20,
+                        height: 30,
+                        speed: 4.5 + (score / 150),
+                        color: '#EF4444'
+                    });
+                }
+
+                // Update and draw spikes
+                for (let i = runnerSpikes.length - 1; i >= 0; i--) {
+                    const spike = runnerSpikes[i];
+                    spike.x -= spike.speed;
+
+                    // Collision checking
+                    if (runnerPlayer.x + runnerPlayer.width > spike.x && 
+                        runnerPlayer.x < spike.x + spike.width && 
+                        runnerPlayer.y + runnerPlayer.height > spike.y) {
+                        synth.hurt();
+                        endGame();
+                        return;
+                    }
+
+                    // Score point on cleared obstacle
+                    if (spike.x + spike.width < runnerPlayer.x && !spike.passed) {
+                        spike.passed = true;
+                        score += 15;
+                        synth.point();
+                        spawnParticles(spike.x + spike.width/2, spike.y + spike.height/2, '#10B981');
+                    }
+
+                    // Draw spikes (cyber threat firewall spike)
+                    ctx.save();
+                    ctx.fillStyle = spike.color;
+                    ctx.shadowColor = spike.color;
+                    ctx.shadowBlur = 8;
+                    ctx.beginPath();
+                    ctx.moveTo(spike.x, spike.y + spike.height);
+                    ctx.lineTo(spike.x + spike.width / 2, spike.y);
+                    ctx.lineTo(spike.x + spike.width, spike.y + spike.height);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+
+                    // Remove spikes off screen
+                    if (spike.x + spike.width < 0) {
+                        runnerSpikes.splice(i, 1);
+                    }
+                }
+
+            } else if (currentGame === 'casino') {
+                // ==========================================
+                // LÓGICA DO JOGO: CASSINO FAKE (SLOTS)
+                // ==========================================
+
+                // Draw slot machine frame
+                ctx.fillStyle = '#0F172A';
+                ctx.strokeStyle = '#A855F7';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.roundRect(50, 80, 400, 240, 16);
+                ctx.fill();
+                ctx.stroke();
+
+                // Draw columns separation line and reel content
+                const reelXPositions = [100, 220, 340];
+                for (let i = 0; i < 3; i++) {
+                    const reel = casinoReels[i];
+                    
+                    // Column background
+                    ctx.fillStyle = '#020617';
+                    ctx.strokeStyle = '#3B82F6';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.roundRect(reelXPositions[i] - 10, 110, 80, 150, 8);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Reel spin logic
+                    if (reel.spinning) {
+                        reel.spinTime--;
+                        // Cycle symbols rapidly to simulate slot spin
+                        if (Math.random() < 0.25) {
+                            reel.symbol = casinoSymbols[Math.floor(Math.random() * casinoSymbols.length)];
+                        }
+                        if (reel.spinTime <= 0) {
+                            reel.spinning = false;
+                            synth.bonus();
+                            // Final stop symbol
+                            reel.symbol = casinoSymbols[Math.floor(Math.random() * casinoSymbols.length)];
+                        }
+                    }
+
+                    // Render central symbol in neon
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.font = 'bold 36px Inter';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(reel.symbol, reelXPositions[i] + 30, 195);
+                    
+                    // Motion blur effect on spin
+                    if (reel.spinning) {
+                        ctx.fillStyle = 'rgba(59, 130, 246, 0.2)';
+                        ctx.fillRect(reelXPositions[i] - 10, 110, 80, 150);
+                    }
+                }
+
+                // Check outcomes when all reels stop spinning
+                if (casinoSpinning && !casinoReels[0].spinning && !casinoReels[1].spinning && !casinoReels[2].spinning) {
+                    casinoSpinning = false;
+                    const sym1 = casinoReels[0].symbol;
+                    const sym2 = casinoReels[1].symbol;
+                    const sym3 = casinoReels[2].symbol;
+
+                    if (sym1 === sym2 && sym2 === sym3) {
+                        if (sym1 === '❌') {
+                            synth.hurt();
+                            casinoStatusText = 'ERRO CRÍTICO: 3 VÍRUS DETECTADOS!';
+                            casinoResultColor = '#EF4444';
+                            setTimeout(() => { endGame(); }, 1500);
+                        } else {
+                            let bonus = 100;
+                            if (sym1 === '💎') bonus = 400;
+                            else if (sym1 === '🔑') bonus = 200;
+                            
+                            score += bonus;
+                            casinoStatusText = `💥 JACKPOT! TRES ${sym1} CONCEDEM +${bonus} PTS!`;
+                            casinoResultColor = '#10B981';
+                            synth.bonus();
+                            spawnParticles(canvas.width/2, canvas.height/2, '#10B981');
+                        }
+                    } else if (sym1 === sym2 || sym2 === sym3 || sym1 === sym3) {
+                        let matchSym = (sym1 === sym2) ? sym1 : sym3;
+                        if (matchSym === '❌') {
+                            score += 5;
+                            casinoStatusText = 'ALERTA DE VÍRUS (PAR). +5 PTS.';
+                            casinoResultColor = '#FB923C';
+                        } else {
+                            score += 30;
+                            casinoStatusText = `🎉 PAR DE ${matchSym}! GANHOU +30 PTS.`;
+                            casinoResultColor = '#3B82F6';
+                        }
+                    } else {
+                        score += 5;
+                        casinoStatusText = 'NENHUM COMBINADO. CRÉDITO +5 PTS.';
+                        casinoResultColor = '#94A3B8';
+                    }
+                }
+
+                // Render casino instruction message
+                ctx.fillStyle = casinoResultColor;
+                ctx.font = 'bold 12px Orbitron';
+                ctx.textAlign = 'center';
+                ctx.fillText(casinoStatusText, canvas.width / 2, 60);
+
+                // SPIN button on canvas
+                ctx.fillStyle = casinoSpinning ? '#334155' : '#8B5CF6';
+                ctx.strokeStyle = '#C084FC';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(175, 345, 150, 45, 12);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 14px Orbitron';
+                ctx.fillText(casinoSpinning ? 'GIRANDO...' : 'SPIN', canvas.width / 2, 372);
+
+            } else if (currentGame === 'quiz') {
+                // ==========================================
+                // LÓGICA DO JOGO: QUIZ GAMER
+                // ==========================================
+
+                if (quizFinished) {
+                    ctx.fillStyle = '#10B981';
+                    ctx.font = 'bold 16px Orbitron';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('PARABÉNS! VOCÊ COMPLETOU TODO O QUIZ!', canvas.width/2, 180);
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillText('Você é um autêntico hacker de dados!', canvas.width/2, 220);
+                    ctx.fillStyle = '#94A3B8';
+                    ctx.font = '12px Inter';
+                    ctx.fillText(`Pontuação total obtida: ${score} Z-Points`, canvas.width/2, 260);
+                    return;
+                }
+
+                // Question Box
+                ctx.fillStyle = '#0F172A';
+                ctx.strokeStyle = '#6366F1';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.roundRect(40, 50, 420, 100, 12);
+                ctx.fill();
+                ctx.stroke();
+
+                // Write question text inside box
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 13px Orbitron';
+                ctx.textAlign = 'center';
+                ctx.fillText(quizActive.q, canvas.width / 2, 105);
+
+                // Option buttons coords: we draw 4 option buttons
+                const btnCoords = [
+                    { x: 50, y: 180, w: 180, h: 60, label: 'A. ' },
+                    { x: 270, y: 180, w: 180, h: 60, label: 'B. ' },
+                    { x: 50, y: 270, w: 180, h: 60, label: 'C. ' },
+                    { x: 270, y: 270, w: 180, h: 60, label: 'D. ' }
+                ];
+
+                for (let i = 0; i < 4; i++) {
+                    const btn = btnCoords[i];
+                    ctx.fillStyle = '#1E293B';
+                    ctx.strokeStyle = '#475569';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.roundRect(btn.x, btn.y, btn.w, btn.h, 10);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Text of options
+                    ctx.fillStyle = '#E2E8F0';
+                    ctx.font = 'bold 11px Inter';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(btn.label + quizActive.a[i], btn.x + 15, btn.y + 35);
+                }
+
+                // Subtitle/Status message
+                ctx.fillStyle = quizMsgColor;
+                ctx.font = 'bold 11px Orbitron';
+                ctx.textAlign = 'center';
+                ctx.fillText(quizResultMsg, canvas.width / 2, 380);
+
+            } else if (currentGame === 'roulette') {
+                // ==========================================
+                // LÓGICA DO JOGO: ROLETA
+                // ==========================================
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2 - 20;
+                const radius = 140;
+
+                // Rotation physics
+                if (rouletteSpinning) {
+                    rouletteAngle += rouletteSpeed;
+                    rouletteSpeed *= 0.985; // friction
+                    
+                    if (rouletteSpeed < 0.005) {
+                        rouletteSpinning = false;
+                        rouletteSpeed = 0;
+                        
+                        const normAngle = (rouletteAngle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+                        const sectorAngleVal = (Math.PI * 2) / 8;
+                        const pointerAngle = (Math.PI * 1.5 - normAngle) % (Math.PI * 2);
+                        const finalIdx = Math.floor(((pointerAngle + Math.PI * 2) % (Math.PI * 2)) / sectorAngleVal);
+                        const sect = rouletteSectors[finalIdx];
+
+                        if (sect.val === -1) {
+                            synth.hurt();
+                            rouletteStatusText = 'VÍRUS ATIVADO! ACESSO AO SISTEMA NEGADO!';
+                            rouletteResultColor = '#EF4444';
+                            setTimeout(() => { endGame(); }, 1500);
+                        } else {
+                            score += sect.val;
+                            synth.bonus();
+                            rouletteStatusText = `🎉 SUCESSO! VOCÊ DECODIFICOU +${sect.val} Z-POINTS!`;
+                            rouletteResultColor = '#10B981';
+                            spawnParticles(cx, cy, '#10B981');
+                        }
+                    }
+                }
+
+                // Draw sectors
+                const sectorAngleVal = (Math.PI * 2) / 8;
+                for (let i = 0; i < 8; i++) {
+                    const startAng = rouletteAngle + i * sectorAngleVal;
+                    const endAng = startAng + sectorAngleVal;
+                    
+                    ctx.fillStyle = rouletteSectors[i].color;
+                    ctx.strokeStyle = '#475569';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy);
+                    ctx.arc(cx, cy, radius, startAng, endAng);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Text labels
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.rotate(startAng + sectorAngleVal / 2);
+                    ctx.fillStyle = rouletteSectors[i].txtColor;
+                    ctx.font = 'bold 11px Orbitron';
+                    ctx.textAlign = 'right';
+                    ctx.fillText(rouletteSectors[i].label, radius - 15, 5);
+                    ctx.restore();
+                }
+
+                // Draw central spinner dial (SPIN)
+                ctx.save();
+                ctx.shadowColor = '#F43F5E';
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = rouletteSpinning ? '#334155' : '#E11D48';
+                ctx.strokeStyle = '#FDA4AF';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(cx, cy, 35, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
+
+                // SPIN text inside center
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 11px Orbitron';
+                ctx.textAlign = 'center';
+                ctx.fillText(rouletteSpinning ? 'WAIT' : 'SPIN', cx, cy + 4);
+
+                // Pointer dial at top (12 o'clock pointer)
+                ctx.fillStyle = '#10B981';
+                ctx.beginPath();
+                ctx.moveTo(cx - 10, cy - radius - 10);
+                ctx.lineTo(cx + 10, cy - radius - 10);
+                ctx.lineTo(cx, cy - radius + 10);
+                ctx.closePath();
+                ctx.fill();
+
+                // Wheel outline highlight ring
+                ctx.strokeStyle = '#3B82F6';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Roulette Status Message Text
+                ctx.fillStyle = rouletteResultColor;
+                ctx.font = 'bold 11px Orbitron';
+                ctx.textAlign = 'center';
+                ctx.fillText(rouletteStatusText, canvas.width / 2, 385);
+
+            } else if (currentGame === 'treasure') {
+                // ==========================================
+                // LÓGICA DO JOGO: CAÇA AO TESOURO
+                // ==========================================
+                const cellWidth = 65;
+                const cellHeight = 65;
+                const gap = 10;
+                
+                const startGridX = canvas.width / 2 - (5 * cellWidth + 4 * gap) / 2;
+                const startGridY = canvas.height / 2 - (5 * cellHeight + 4 * gap) / 2 - 20;
+
+                for (let i = 0; i < 25; i++) {
+                    const cell = treasureGrid[i];
+                    const cx = startGridX + cell.col * (cellWidth + gap);
+                    const cy = startGridY + cell.row * (cellHeight + gap);
+
+                    ctx.save();
+                    if (!cell.revealed) {
+                        ctx.fillStyle = '#1E293B';
+                        ctx.strokeStyle = '#475569';
+                    } else {
+                        if (cell.type === 'treasure') {
+                            ctx.fillStyle = '#064E3B';
+                            ctx.strokeStyle = '#10B981';
+                            ctx.shadowColor = '#10B981';
+                            ctx.shadowBlur = 8;
+                        } else if (cell.type === 'virus') {
+                            ctx.fillStyle = '#7F1D1D';
+                            ctx.strokeStyle = '#EF4444';
+                            ctx.shadowColor = '#EF4444';
+                            ctx.shadowBlur = 8;
+                        } else {
+                            ctx.fillStyle = '#0F172A';
+                            ctx.strokeStyle = '#1E293B';
+                        }
+                    }
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.roundRect(cx, cy, cellWidth, cellHeight, 8);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+
+                    // Render inner icons on revealed cells
+                    if (cell.revealed) {
+                        ctx.textAlign = 'center';
+                        ctx.font = 'bold 22px Inter';
+                        if (cell.type === 'treasure') {
+                            ctx.fillText('💎', cx + cellWidth/2, cy + cellHeight/2 + 7);
+                        } else if (cell.type === 'virus') {
+                            ctx.fillText('❌', cx + cellWidth/2, cy + cellHeight/2 + 7);
+                        } else {
+                            ctx.fillStyle = '#64748B';
+                            ctx.font = 'bold 12px Orbitron';
+                            ctx.fillText('OK', cx + cellWidth/2, cy + cellHeight/2 + 4);
+                        }
+                    } else {
+                        ctx.fillStyle = '#475569';
+                        ctx.font = 'bold 11px Orbitron';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(`N-${cell.row * 5 + cell.col}`, cx + cellWidth/2, cy + cellHeight/2 + 4);
+                    }
+                }
+
+                // Win Condition Trigger
+                if (treasureWinCount === treasureTotalTreasures) {
+                    score += 250;
+                    synth.bonus();
+                    treasureWinCount = 0;
+                    
+                    const cellTypes = [];
+                    for (let i = 0; i < 5; i++) cellTypes.push('treasure');
+                    for (let i = 0; i < 3; i++) cellTypes.push('virus');
+                    for (let i = 0; i < 17; i++) cellTypes.push('empty');
+                    cellTypes.sort(() => Math.random() - 0.5);
+
+                    for (let r = 0; r < 5; r++) {
+                        for (let c = 0; c < 5; c++) {
+                            const gridIdx = r * 5 + c;
+                            treasureGrid[gridIdx].revealed = false;
+                            treasureGrid[gridIdx].type = cellTypes[gridIdx];
+                        }
+                    }
+                    treasureStatusText = '🔓 BANCO DESCRIPTOGRAFADO! +250 PTS! NOVO MAPA GENERADO!';
+                    treasureResultColor = '#10B981';
+                    spawnParticles(canvas.width/2, canvas.height/2, '#10B981');
+                }
+
+                ctx.fillStyle = treasureResultColor;
+                ctx.font = 'bold 11px Orbitron';
+                ctx.textAlign = 'center';
+                ctx.fillText(treasureStatusText, canvas.width / 2, 385);
             }
 
             // Atualiza e desenha partículas comuns
@@ -1017,9 +2282,9 @@
             const modal = document.getElementById('game-over-modal');
             const content = document.getElementById('game-over-content');
             
-            // Recompensas calculadas em Z-Points virtuais
-            const valBase = Math.round(score * 0.01); 
-            const valBoost = Math.round(score * 0.05); 
+            // Recompensas calculadas em Z-Points virtuais baseadas no fator real do servidor (0.5 e 2.5)
+            const valBase = Math.round(score * 0.5); 
+            const valBoost = Math.round(score * 2.5); 
             
             document.getElementById('final-score').innerText = score;
             document.getElementById('base-reward').innerText = `${valBase} Z-Points`;
