@@ -317,12 +317,12 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
                 items: preferenceItems,
                 external_reference: orderId.toString(),
                 back_urls: {
-                    success: \`\${APP_URL}/carrinho.html?status=success\`,
-                    failure: \`\${APP_URL}/carrinho.html?status=failure\`,
-                    pending: \`\${APP_URL}/carrinho.html?status=pending\`
+                    success: `${APP_URL}/carrinho.html?status=success`,
+                    failure: `${APP_URL}/carrinho.html?status=failure`,
+                    pending: `${APP_URL}/carrinho.html?status=pending`
                 },
                 auto_return: 'approved',
-                notification_url: \`\${APP_URL}/webhook\`
+                notification_url: `${APP_URL}/webhook`
             }
         });
         
@@ -354,7 +354,7 @@ app.post('/webhook', async (req, res) => {
                         'UPDATE orders SET status = $1, mp_payment_id = $2 WHERE id = $3',
                         [status, paymentId.toString(), parseInt(orderId)]
                     );
-                    console.log(\`[WEBHOOK] Pedido \${orderId} atualizado para: \${status}\`);
+                    console.log(`[WEBHOOK] Pedido ${orderId} atualizado para: ${status}`);
                 }
             } catch(e) {
                 console.error('Erro no webhook de pagamento:', e);
@@ -374,13 +374,13 @@ app.get('/api/my-orders', requireAuth, async (req, res) => {
         const orders = ordersRes.rows;
         
         for (let order of orders) {
-            const itemsRes = await pool.query(\`
+            const itemsRes = await pool.query(`
                 SELECT oi.quantity, oi.price, p.title, p.image, p.category, 
                 CASE WHEN $1 = 'approved' THEN p.activation_key ELSE NULL END as activation_key
                 FROM order_items oi
                 JOIN products p ON oi.product_id = p.id
                 WHERE oi.order_id = $2
-            \`, [order.status, order.id]);
+            `, [order.status, order.id]);
             order.items = itemsRes.rows;
         }
         res.json(orders);
@@ -417,21 +417,21 @@ app.post('/api/orders/:id/chat', requireAuth, async (req, res) => {
 // Admin Orders & Chat
 app.get('/api/admin/orders', requireAdmin, async (req, res) => {
     try {
-        const ordersRes = await pool.query(\`
+        const ordersRes = await pool.query(`
             SELECT o.*, u.email as user_email
             FROM orders o
             JOIN users u ON o.user_id = u.id
             ORDER BY o.id DESC
-        \`);
+        `);
         const orders = ordersRes.rows;
         
         for (let order of orders) {
-            const itemsRes = await pool.query(\`
+            const itemsRes = await pool.query(`
                 SELECT oi.quantity, oi.price, p.title
                 FROM order_items oi
                 JOIN products p ON oi.product_id = p.id
                 WHERE oi.order_id = $1
-            \`, [order.id]);
+            `, [order.id]);
             order.items = itemsRes.rows;
             
             const chatRes = await pool.query('SELECT * FROM order_chats WHERE order_id = $1 ORDER BY created_at ASC', [order.id]);
@@ -507,17 +507,17 @@ app.post('/register', async (req, res) => {
             [email, hash, token]
         );
             
-        const verifyUrl = \`\${APP_URL}/verify-email?token=\${token}\`;
+        const verifyUrl = `${APP_URL}/verify-email?token=${token}`;
         
         await sendEmailViaBrevo(
             email,
             'Verifique seu e-mail na ZHER KEYS',
-            \`Por favor, clique no link para verificar seu e-mail: \${verifyUrl}\`,
-            \`<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
+            `Por favor, clique no link para verificar seu e-mail: ${verifyUrl}`,
+            `<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
                 <h2>ZHER KEYS SECURE SYSTEM</h2>
                 <p>Confirme sua credencial de acesso clicando no link abaixo:</p>
-                <a href="\${verifyUrl}" style="display:inline-block;padding:10px 20px;background:#3B82F6;color:white;text-decoration:none;border-radius:5px;">VERIFICAR ACESSO</a>
-               </div>\`
+                <a href="${verifyUrl}" style="display:inline-block;padding:10px 20px;background:#3B82F6;color:white;text-decoration:none;border-radius:5px;">VERIFICAR ACESSO</a>
+               </div>`
         );
         
         res.status(200).json({ message: 'verify your email, confery your spam too' });
@@ -571,17 +571,17 @@ app.post('/resend-verification', async (req, res) => {
         const token = crypto.randomBytes(20).toString('hex');
         await pool.query('UPDATE users SET verification_token = $1 WHERE email = $2', [token, email]);
             
-        const verifyUrl = \`\${APP_URL}/verify-email?token=\${token}\`;
+        const verifyUrl = `${APP_URL}/verify-email?token=${token}`;
         
         await sendEmailViaBrevo(
             email,
             'Reenvio: Verifique seu e-mail na ZHER KEYS',
-            \`Por favor, clique no link para verificar seu e-mail: \${verifyUrl}\`,
-            \`<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
+            `Por favor, clique no link para verificar seu e-mail: ${verifyUrl}`,
+            `<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
                 <h2>ZHER KEYS SECURE SYSTEM</h2>
                 <p>Confirme sua credencial de acesso clicando no link abaixo:</p>
-                <a href="\${verifyUrl}" style="display:inline-block;padding:10px 20px;background:#3B82F6;color:white;text-decoration:none;border-radius:5px;">VERIFICAR ACESSO</a>
-               </div>\`
+                <a href="${verifyUrl}" style="display:inline-block;padding:10px 20px;background:#3B82F6;color:white;text-decoration:none;border-radius:5px;">VERIFICAR ACESSO</a>
+               </div>`
         );
         
         res.status(200).json({ message: 'E-mail de verificação reenviado com sucesso!' });
@@ -597,7 +597,7 @@ app.get('/verify-email', async (req, res) => {
         const result = await pool.query('UPDATE users SET is_verified = 1 WHERE verification_token = $1', [token]);
         if (result.rowCount === 0) return res.status(400).send('<h1>Token inválido ou já verificado.</h1>');
         
-        res.send(\`
+        res.send(`
             <body style="background:#020617;color:white;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;">
                 <div style="text-align:center;background:#0f172a;padding:40px;border-radius:10px;border:1px solid #3B82F6;box-shadow:0 0 20px rgba(59,130,246,0.3);">
                     <h1 style="color:#3B82F6;">ACESSO VERIFICADO</h1>
@@ -605,7 +605,7 @@ app.get('/verify-email', async (req, res) => {
                     <a href="/login.html" style="display:inline-block;margin-top:20px;padding:10px 20px;background:#F43F5E;color:white;text-decoration:none;border-radius:5px;font-weight:bold;">IR PARA O TERMINAL DE LOGIN</a>
                 </div>
             </body>
-        \`);
+        `);
     } catch(err) {
         console.error(err);
         res.status(500).send('Erro interno.');
@@ -626,17 +626,17 @@ app.post('/forgot-password', async (req, res) => {
         
         await pool.query('UPDATE users SET reset_token = $1, reset_expires = $2 WHERE id = $3', [token, expires, user.id]);
             
-        const resetUrl = \`\${APP_URL}/reset-password.html?token=\${token}\`;
+        const resetUrl = `${APP_URL}/reset-password.html?token=${token}`;
         
         await sendEmailViaBrevo(
             email,
             'Redefinição de Senha - ZHER KEYS',
-            \`Você solicitou a troca da sua senha. Acesse: \${resetUrl}\`,
-            \`<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
+            `Você solicitou a troca da sua senha. Acesse: ${resetUrl}`,
+            `<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
                 <h2>REDEFINIÇÃO DE CREDENCIAL</h2>
                 <p>Você solicitou a troca da sua senha.</p>
-                <a href="\${resetUrl}" style="display:inline-block;padding:10px 20px;background:#F43F5E;color:white;text-decoration:none;border-radius:5px;">CRIAR NOVA SENHA</a>
-               </div>\`
+                <a href="${resetUrl}" style="display:inline-block;padding:10px 20px;background:#F43F5E;color:white;text-decoration:none;border-radius:5px;">CRIAR NOVA SENHA</a>
+               </div>`
         );
         
         res.status(200).json({ message: 'E-mail de redefinição enviado! Verifique sua caixa de entrada.' });
@@ -688,6 +688,6 @@ app.get('/logout', (req, res) => {
 
 // Start Server
 app.listen(port, () => {
-    console.log(\`🚀 ZHER KEYS SECURE SERVER INICIADO!\`);
-    console.log(\`🌐 Porta: \${port}\`);
+    console.log(`🚀 ZHER KEYS SECURE SERVER INICIADO!`);
+    console.log(`🌐 Porta: ${port}`);
 });
