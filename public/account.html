@@ -54,11 +54,11 @@
                     </select>
                 </div>
 
-                <a id="nav-admin-btn" href="/admin.html" class="hidden text-slate-400 hover:text-toxicgreen transition-colors flex items-center gap-2 font-orbitron text-xs tracking-widest" title="Painel Admin">
-                    <i data-lucide="shield" class="w-4 h-4"></i> ADMIN
+                <a id="nav-admin-btn" href="/admin.html" class="hidden text-slate-400 hover:text-toxicgreen transition-colors flex items-center gap-2 font-orbitron text-xs tracking-widest" title="Painel Admin" data-i18n-attr="title" data-i18n="nav_admin">
+                    <i data-lucide="shield" class="w-4 h-4"></i> <span data-i18n="nav_admin">ADMIN</span>
                 </a>
-                <a href="/logout" class="text-slate-400 hover:text-cyberrose transition-colors flex items-center gap-2 font-orbitron text-xs tracking-widest" title="Desconectar">
-                    <i data-lucide="power" class="w-4 h-4"></i> SAIR
+                <a href="/logout" class="text-slate-400 hover:text-cyberrose transition-colors flex items-center gap-2 font-orbitron text-xs tracking-widest" title="Desconectar" data-i18n-attr="title" data-i18n="nav_logout">
+                    <i data-lucide="power" class="w-4 h-4"></i> <span data-i18n="nav_logout">SAIR</span>
                 </a>
             </div>
         </div>
@@ -74,8 +74,8 @@
                         <i data-lucide="user" class="w-6 h-6 text-slate-400"></i>
                     </div>
                     <div>
-                        <p class="font-orbitron text-xs text-slate-500 tracking-widest">BEM-VINDO</p>
-                        <p id="user-email" class="text-sm font-semibold text-white truncate max-w-[150px]">carregando...</p>
+                        <p class="font-orbitron text-xs text-slate-500 tracking-widest" data-i18n="welcome">BEM-VINDO</p>
+                        <p id="user-email" class="text-sm font-semibold text-white truncate max-w-[150px]" data-i18n="loading">carregando...</p>
                         <div class="mt-1 flex items-center gap-1 text-xs text-emerald-400 font-bold font-orbitron tracking-wide">
                             <i data-lucide="wallet" class="w-3.5 h-3.5"></i> <span id="user-credits">R$ 0,00</span>
                         </div>
@@ -84,13 +84,13 @@
 
                 <div class="space-y-2">
                     <button onclick="switchTab('compras')" id="btn-compras" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-electricblue/10 text-electricblue font-orbitron text-xs tracking-widest transition-colors">
-                        <i data-lucide="shopping-bag" class="w-4 h-4"></i> MINHAS COMPRAS
+                        <i data-lucide="shopping-bag" class="w-4 h-4"></i> <span data-i18n="tab_my_games">MINHAS COMPRAS</span>
                     </button>
                     <button onclick="switchTab('carteira')" id="btn-carteira" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-orbitron text-xs tracking-widest transition-colors">
-                        <i data-lucide="wallet" class="w-4 h-4"></i> MINHA CARTEIRA
+                        <i data-lucide="wallet" class="w-4 h-4"></i> <span data-i18n="tab_my_wallet">MINHA CARTEIRA</span>
                     </button>
                     <button onclick="switchTab('configuracoes')" id="btn-configuracoes" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-orbitron text-xs tracking-widest transition-colors">
-                        <i data-lucide="settings" class="w-4 h-4"></i> CONFIGURAÇÕES
+                        <i data-lucide="settings" class="w-4 h-4"></i> <span data-i18n="tab_settings">CONFIGURAÇÕES</span>
                     </button>
                 </div>
             </div>
@@ -101,13 +101,13 @@
             <!-- Minhas Compras -->
             <div id="tab-compras" class="bg-slate-900/50 border border-slate-800 rounded-2xl p-8 min-h-[400px]">
                 <h2 class="font-orbitron font-bold text-xl text-white mb-6 tracking-widest flex items-center justify-between">
-                    <span class="flex items-center gap-3"><i data-lucide="shopping-bag" class="text-electricblue"></i> SEUS JOGOS</span>
-                    <button onclick="loadMyOrders()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-500 transition-all"><i data-lucide="refresh-cw" class="w-4 h-4"></i> ATUALIZAR STATUS</button>
+                    <span class="flex items-center gap-3"><i data-lucide="shopping-bag" class="text-electricblue"></i> <span data-i18n="seus_jogos">SEUS JOGOS</span></span>
+                    <button onclick="loadMyOrders()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-500 transition-all"><i data-lucide="refresh-cw" class="w-4 h-4"></i> <span data-i18n="refresh_status">ATUALIZAR STATUS</span></button>
                 </h2>
                 
                 <div id="my-orders-list" class="space-y-6">
                     <div class="text-center text-slate-500 py-10">
-                        <i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2"></i> Buscando servidor seguro...
+                        <i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2"></i> <span data-i18n="fetching_server">Buscando servidor seguro...</span>
                     </div>
                 </div>
             </div>
@@ -115,25 +115,25 @@
             <!-- Carteira -->
             <div id="tab-carteira" class="hidden bg-slate-900/50 border border-slate-800 rounded-2xl p-8 min-h-[400px]">
                 <h2 class="font-orbitron font-bold text-xl text-white mb-6 tracking-widest flex items-center gap-3">
-                    <i data-lucide="wallet" class="text-emerald-400"></i> MINHA CARTEIRA DE CRÉDITOS
+                    <i data-lucide="wallet" class="text-emerald-400"></i> <span data-i18n="minha_carteira_credito">MINHA CARTEIRA DE CRÉDITOS</span>
                 </h2>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                     <!-- Painel de Saldo e Depósito -->
                     <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
-                        <p class="font-orbitron text-xs text-slate-500 tracking-widest mb-1">SALDO DISPONÍVEL</p>
+                        <p class="font-orbitron text-xs text-slate-500 tracking-widest mb-1" data-i18n="available_balance">SALDO DISPONÍVEL</p>
                         <h3 class="text-3xl font-orbitron font-black text-emerald-400 mb-6" id="wallet-balance-large">R$ 0,00</h3>
                         
-                        <h4 class="text-white font-bold font-orbitron text-xs tracking-widest mb-3 uppercase">Adicionar Créditos</h4>
+                        <h4 class="text-white font-bold font-orbitron text-xs tracking-widest mb-3 uppercase" data-i18n="add_credits">Adicionar Créditos</h4>
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-xs text-slate-400 mb-2">Valor do Depósito (R$)</label>
-                                <input type="number" id="deposit-amount" placeholder="Ex: 50.00" min="5" step="1" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-400 transition-all font-mono">
-                                <span class="text-[10px] text-slate-500 mt-1 block">Depósito mínimo: R$ 5,00. Processamento imediato.</span>
+                                <label class="block text-xs text-slate-400 mb-2" data-i18n="deposit_amount_label">Valor do Depósito (R$)</label>
+                                <input type="number" id="deposit-amount" placeholder="Ex: 50.00" data-i18n-attr="placeholder" data-i18n="deposit_placeholder" min="5" step="1" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-400 transition-all font-mono">
+                                <span class="text-[10px] text-slate-500 mt-1 block" data-i18n="min_deposit_instruction">Depósito mínimo: R$ 5,00. Processamento imediato.</span>
                             </div>
                             
                             <div>
-                                <label class="block text-xs text-slate-400 mb-2">Método de Pagamento</label>
+                                <label class="block text-xs text-slate-400 mb-2" data-i18n="payment_method">Método de Pagamento</label>
                                 <div class="grid grid-cols-2 gap-3">
                                     <label class="flex items-center gap-2 p-3 rounded-lg border border-slate-700 bg-slate-800 cursor-pointer hover:border-emerald-400 transition-colors group">
                                         <input type="radio" name="deposit_method" value="pix" checked class="w-4 h-4 text-emerald-400 bg-slate-900 border-slate-700 focus:ring-0">
@@ -147,7 +147,7 @@
                             </div>
                             
                             <button onclick="gerarDeposito()" id="btn-deposit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-xs tracking-widest font-bold py-3.5 rounded-xl shadow-lg transition-all duration-300 uppercase flex items-center justify-center gap-2">
-                                GERAR DEPÓSITO <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                                <span data-i18n="generate_deposit">GERAR DEPÓSITO</span> <i data-lucide="plus-circle" class="w-4 h-4"></i>
                             </button>
                         </div>
                     </div>
@@ -155,41 +155,41 @@
                     <!-- Informações / Ajuda -->
                     <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col justify-between">
                         <div>
-                            <h3 class="text-white font-bold mb-3 flex items-center gap-2"><i data-lucide="shield-check" class="text-emerald-400"></i> Pagamento 100% Protegido</h3>
-                            <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                            <h3 class="text-white font-bold mb-3 flex items-center gap-2"><i data-lucide="shield-check" class="text-emerald-400"></i> <span data-i18n="safe_payment_title">Pagamento 100% Protegido</span></h3>
+                            <p class="text-slate-400 text-sm leading-relaxed mb-4" data-i18n="safe_payment_desc">
                                 Toda a nossa infraestrutura de pagamentos é processada de forma segura através do gateway de pagamento oficial do Mercado Pago.
                             </p>
                             <ul class="text-slate-400 text-xs space-y-2">
-                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400"></i> PIX: saldo disponível em até 2 minutos</li>
-                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400"></i> Cartão de Crédito: aprovação imediata pelo emissor</li>
-                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400"></i> Sem taxas extras ou custos ocultos</li>
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400"></i> <span data-i18n="adv_pix">PIX: saldo disponível em até 2 minutos</span></li>
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400"></i> <span data-i18n="adv_card">Cartão de Crédito: aprovação imediata pelo emissor</span></li>
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400"></i> <span data-i18n="adv_no_fees">Sem taxas extras ou custos ocultos</span></li>
                             </ul>
                         </div>
                         
                         <div class="mt-6 p-3 bg-slate-950/60 border border-slate-800 rounded-lg text-[11px] text-slate-500 flex items-start gap-2 leading-relaxed">
                             <i data-lucide="info" class="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5"></i>
-                            <span>A Zher Keys preza pela segurança máxima das transações. Tentativas suspeitas ou de burla de saldo acarretarão no banimento permanente da credencial de acesso.</span>
+                            <span data-i18n="safety_warning">A Zher Keys preza pela segurança máxima das transações. Tentativas suspeitas ou de burla de saldo acarretarão no banimento permanente da credencial de acesso.</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Histórico de Transações (Extrato) -->
                 <div>
-                    <h3 class="font-orbitron font-bold text-sm text-slate-300 mb-4 tracking-widest uppercase">Extrato de Transações</h3>
+                    <h3 class="font-orbitron font-bold text-sm text-slate-300 mb-4 tracking-widest uppercase" data-i18n="statement_heading">Extrato de Transações</h3>
                     <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead>
                                     <tr class="bg-slate-950/80 border-b border-slate-800 text-[10px] font-orbitron tracking-widest text-slate-500">
-                                        <th class="p-4 uppercase">Data</th>
-                                        <th class="p-4 uppercase">Descrição</th>
-                                        <th class="p-4 uppercase">Tipo</th>
-                                        <th class="p-4 uppercase text-right">Valor</th>
+                                        <th class="p-4 uppercase" data-i18n="table_date">Data</th>
+                                        <th class="p-4 uppercase" data-i18n="table_desc">Descrição</th>
+                                        <th class="p-4 uppercase" data-i18n="table_type">Tipo</th>
+                                        <th class="p-4 uppercase text-right" data-i18n="table_value">Valor</th>
                                     </tr>
                                 </thead>
                                 <tbody id="wallet-transactions-list" class="text-sm font-inter">
                                     <tr>
-                                        <td colspan="4" class="p-8 text-center text-slate-500">Nenhuma transação registrada.</td>
+                                        <td colspan="4" class="p-8 text-center text-slate-500" data-i18n="no_transactions">Nenhuma transação registrada.</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -201,17 +201,17 @@
             <!-- Configurações -->
             <div id="tab-configuracoes" class="hidden bg-slate-900/50 border border-slate-800 rounded-2xl p-8 min-h-[400px]">
                 <h2 class="font-orbitron font-bold text-xl text-white mb-6 tracking-widest flex items-center gap-3">
-                    <i data-lucide="settings" class="text-cyberrose"></i> CONFIGURAÇÕES DE SEGURANÇA
+                    <i data-lucide="settings" class="text-cyberrose"></i> <span data-i18n="config_title">CONFIGURAÇÕES DE SEGURANÇA</span>
                 </h2>
 
                 <div id="settings-alert" class="hidden mb-6 p-4 rounded-lg text-sm font-bold border"></div>
 
                 <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
-                    <h3 class="text-white font-bold mb-2">Redefinição de Senha</h3>
-                    <p class="text-slate-400 text-sm mb-6">Enviaremos um link seguro para o seu e-mail cadastrado. Clique no link para criar uma nova senha para a sua conta.</p>
+                    <h3 class="text-white font-bold mb-2" data-i18n="reset_password_title">Redefinição de Senha</h3>
+                    <p class="text-slate-400 text-sm mb-6" data-i18n="reset_password_desc">Enviaremos um link seguro para o seu e-mail cadastrado. Clique no link para criar uma nova senha para a sua conta.</p>
                     
                     <button onclick="requestPasswordReset()" class="flex items-center gap-2 bg-slate-800 hover:bg-cyberrose text-white px-6 py-3 rounded-lg font-orbitron text-xs tracking-widest transition-colors border border-slate-700 hover:border-cyberrose">
-                        <i data-lucide="mail-warning" class="w-4 h-4"></i> ENVIAR LINK DE REDEFINIÇÃO
+                        <i data-lucide="mail-warning" class="w-4 h-4"></i> <span data-i18n="send_reset_link">ENVIAR LINK DE REDEFINIÇÃO</span>
                     </button>
                 </div>
             </div>
@@ -257,7 +257,7 @@
             <!-- Header -->
             <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
                 <div>
-                    <h3 class="font-orbitron font-black text-lg text-emerald-400 tracking-wider">RECIBO DE COMPRA</h3>
+                    <h3 class="font-orbitron font-black text-lg text-emerald-400 tracking-wider" data-i18n="receipt_modal_title">RECIBO DE COMPRA</h3>
                     <p class="text-[10px] text-slate-500 font-orbitron tracking-widest mt-0.5" id="receipt-order-id">#PEDIDO-000</p>
                 </div>
                 <button onclick="closeReceiptModal()" class="text-slate-400 hover:text-white transition-colors bg-slate-800 hover:bg-rose-900/50 rounded-full p-1.5 border border-slate-700">
@@ -270,18 +270,18 @@
                 <!-- Info Section -->
                 <div class="grid grid-cols-2 gap-4 bg-slate-950/40 p-4 border border-slate-800 rounded-xl text-xs">
                     <div>
-                        <span class="text-slate-500 block font-orbitron tracking-widest text-[9px] mb-1">DATA E HORA</span>
+                        <span class="text-slate-500 block font-orbitron tracking-widest text-[9px] mb-1" data-i18n="receipt_date_label">DATA E HORA</span>
                         <span class="text-slate-300 font-semibold" id="receipt-date">31/05/2026 02:00</span>
                     </div>
                     <div>
-                        <span class="text-slate-500 block font-orbitron tracking-widest text-[9px] mb-1">MÉTODO DE PAGAMENTO</span>
-                        <span class="text-slate-300 font-semibold">Carteira (Créditos)</span>
+                        <span class="text-slate-500 block font-orbitron tracking-widest text-[9px] mb-1" data-i18n="payment_method">MÉTODO DE PAGAMENTO</span>
+                        <span class="text-slate-300 font-semibold" data-i18n="credits_desc">Carteira (Créditos)</span>
                     </div>
                 </div>
                 
                 <!-- Items list -->
                 <div>
-                    <h4 class="text-[10px] font-orbitron font-bold text-slate-400 tracking-widest uppercase mb-3">ITENS ADQUIRIDOS</h4>
+                    <h4 class="text-[10px] font-orbitron font-bold text-slate-400 tracking-widest uppercase mb-3" data-i18n="receipt_items_label">ITENS ADQUIRIDOS</h4>
                     <div id="receipt-items-list" class="space-y-3">
                         <!-- Javascript injeção -->
                     </div>
@@ -289,7 +289,7 @@
                 
                 <!-- Summary -->
                 <div class="border-t border-slate-800 pt-4 flex justify-between items-center">
-                    <span class="font-orbitron text-xs text-slate-400 tracking-widest">TOTAL PAGO</span>
+                    <span class="font-orbitron text-xs text-slate-400 tracking-widest" data-i18n="total_paid">TOTAL PAGO</span>
                     <span class="font-orbitron font-black text-xl text-emerald-400" id="receipt-total">R$ 0,00</span>
                 </div>
             </div>
@@ -297,10 +297,10 @@
             <!-- Footer Actions -->
             <div class="p-6 border-t border-slate-800 bg-slate-950/50 flex gap-3">
                 <button onclick="downloadReceiptHTML()" class="flex-grow bg-emerald-500 hover:bg-emerald-400 text-obsidian font-orbitron text-xs tracking-widest font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2">
-                    <i data-lucide="download" class="w-4 h-4"></i> BAIXAR RECIBO
+                    <i data-lucide="download" class="w-4 h-4"></i> <span data-i18n="download_receipt_btn">BAIXAR RECIBO</span>
                 </button>
                 <button onclick="printReceipt()" class="bg-slate-800 hover:bg-slate-700 text-white font-orbitron text-xs tracking-widest font-bold px-5 py-3.5 rounded-xl transition-all border border-slate-700 flex items-center justify-center gap-2" title="Imprimir">
-                    <i data-lucide="printer" class="w-4 h-4"></i> IMPRIMIR
+                    <i data-lucide="printer" class="w-4 h-4"></i> <span data-i18n="print_receipt_btn">IMPRIMIR</span>
                 </button>
             </div>
         </div>
@@ -335,9 +335,300 @@
     </div>
 
     <script>
+        // --- TRANSLATIONS LOGIC ---
+        const TRANSLATIONS = {
+            pt: {
+                tab_my_games: "MINHAS COMPRAS",
+                tab_my_wallet: "MINHA CARTEIRA",
+                tab_settings: "CONFIGURAÇÕES",
+                nav_admin: "ADMIN",
+                nav_logout: "SAIR",
+                welcome: "BEM-VINDO",
+                loading: "carregando...",
+                seus_jogos: "SEUS JOGOS",
+                refresh_status: "ATUALIZAR STATUS",
+                fetching_server: "Buscando servidor seguro...",
+                minha_carteira_credito: "MINHA CARTEIRA DE CRÉDITOS",
+                available_balance: "SALDO DISPONÍVEL",
+                add_credits: "Adicionar Créditos",
+                deposit_amount_label: "Valor do Depósito (R$)",
+                deposit_placeholder: "Ex: 50.00",
+                min_deposit_instruction: "Depósito mínimo: R$ 5,00. Processamento imediato.",
+                payment_method: "Método de Pagamento",
+                generate_deposit: "GERAR DEPÓSITO",
+                safe_payment_title: "Pagamento 100% Protegido",
+                safe_payment_desc: "Toda a nossa infraestrutura de pagamentos é processada de forma segura através do gateway de pagamento oficial do Mercado Pago.",
+                adv_pix: "PIX: saldo disponível em até 2 minutos",
+                adv_card: "Cartão de Crédito: aprovação imediata pelo emissor",
+                adv_no_fees: "Sem taxas extras ou custos ocultos",
+                safety_warning: "A Zher Keys preza pela segurança máxima das transações. Tentativas suspeitas ou de burla de saldo acarretarão no banimento permanente da credencial de acesso.",
+                statement_heading: "Extrato de Transações",
+                table_date: "Data",
+                table_desc: "Descrição",
+                table_type: "Tipo",
+                table_value: "Valor",
+                no_transactions: "Nenhuma transação registrada.",
+                config_title: "CONFIGURAÇÕES DE SEGURANÇA",
+                reset_password_title: "Redefinição de Senha",
+                reset_password_desc: "Enviaremos um link seguro para o seu e-mail cadastrado. Clique no link para criar uma nova senha para a sua conta.",
+                send_reset_link: "ENVIAR LINK DE REDEFINIÇÃO",
+                receipt_modal_title: "RECIBO DE COMPRA",
+                receipt_date_label: "DATA E HORA",
+                credits_desc: "Carteira (Créditos)",
+                receipt_items_label: "ITENS ADQUIRIDOS",
+                total_paid: "TOTAL PAGO",
+                download_receipt_btn: "BAIXAR RECIBO",
+                print_receipt_btn: "IMPRIMIR",
+                support_title: "SUPORTE TÉCNICO",
+                chat_placeholder: "Escreva sua mensagem...",
+                chat_send: "ENVIAR",
+                
+                // Dynamic
+                no_orders: "Nenhuma compra encontrada",
+                no_orders_desc: "Você ainda não possui jogos na sua biblioteca.",
+                explore_catalog: "EXPLORAR CATÁLOGO",
+                order_id_lbl: "PEDIDO",
+                order_date_lbl: "REALIZADO EM",
+                order_status_lbl: "STATUS DO PAGAMENTO",
+                status_approved: "PAGO / APROVADO",
+                status_pending: "AGUARDANDO PAGAMENTO",
+                status_cancelled: "RECUSADO / CANCELADO",
+                view_details: "ver detalhes",
+                key_releasing: "Chave em liberação",
+                need_support: "SUPORTE DO PEDIDO",
+                chat_title_support: "SUPORTE TÉCNICO - PEDIDO #",
+                
+                // Receipt template strings
+                receipt_doc_title: "Recibo - Pedido #",
+                receipt_digital_official: "Recibo Digital Oficial",
+                order: "PEDIDO",
+                date_issued: "DATA DE EMISSÃO",
+                method: "MÉTODO",
+                credits_wallet: "Carteira de Créditos",
+                status: "STATUS",
+                paid_approved: "Pago / Aprovado",
+                item: "Item",
+                qty: "Qtd",
+                price: "Preço",
+                total_paid_doc: "TOTAL PAGO",
+                receipt_doc_footer: "Este recibo é emitido pela plataforma de chaves de ativação Zher Keys.<br>Obrigado pela sua compra! Acesse sua conta para gerenciar seus jogos.",
+                
+                // Wallet types
+                type_deposit: "DEPÓSITO",
+                type_purchase: "COMPRA",
+                type_adjustment: "AJUSTE",
+                
+                // Alerts & errors
+                min_deposit_error: "O valor mínimo de depósito é R$ 5,00.",
+                generating_payment: "GERANDO PAGAMENTO...",
+                deposit_error: "Erro ao gerar depósito: ",
+                deposit_conn_error: "Erro de conexão ao gerar depósito.",
+                pix_expired_msg: "O tempo para pagamento do PIX expirou! O depósito foi cancelado."
+            },
+            en: {
+                tab_my_games: "MY ORDERS",
+                tab_my_wallet: "MY WALLET",
+                tab_settings: "SETTINGS",
+                nav_admin: "ADMIN",
+                nav_logout: "LOGOUT",
+                welcome: "WELCOME",
+                loading: "loading...",
+                seus_jogos: "YOUR GAMES",
+                refresh_status: "REFRESH STATUS",
+                fetching_server: "Fetching secure server...",
+                minha_carteira_credito: "MY CREDITS WALLET",
+                available_balance: "AVAILABLE BALANCE",
+                add_credits: "Add Credits",
+                deposit_amount_label: "Deposit Amount ($)",
+                deposit_placeholder: "Ex: 50.00",
+                min_deposit_instruction: "Minimum deposit: $ 5.00. Immediate processing.",
+                payment_method: "Payment Method",
+                generate_deposit: "GENERATE DEPOSIT",
+                safe_payment_title: "100% Secured Payment",
+                safe_payment_desc: "All of our payment infrastructure is safely processed through the official Mercado Pago payment gateway.",
+                adv_pix: "PIX: balance available in up to 2 minutes",
+                adv_card: "Credit Card: immediate approval by the issuer",
+                adv_no_fees: "No extra fees or hidden costs",
+                safety_warning: "Zher Keys values maximum transaction security. Suspicious attempts or balance tampering will result in permanent access ban.",
+                statement_heading: "Transactions Statement",
+                table_date: "Date",
+                table_desc: "Description",
+                table_type: "Type",
+                table_value: "Amount",
+                no_transactions: "No transactions recorded.",
+                config_title: "SECURITY SETTINGS",
+                reset_password_title: "Password Reset",
+                reset_password_desc: "We will send a secure link to your registered email. Click the link to create a new password for your account.",
+                send_reset_link: "SEND RESET LINK",
+                receipt_modal_title: "PURCHASE RECEIPT",
+                receipt_date_label: "DATE AND TIME",
+                credits_desc: "Wallet (Credits)",
+                receipt_items_label: "PURCHASED ITEMS",
+                total_paid: "TOTAL PAID",
+                download_receipt_btn: "DOWNLOAD RECEIPT",
+                print_receipt_btn: "PRINT",
+                support_title: "TECHNICAL SUPPORT",
+                chat_placeholder: "Type your message...",
+                chat_send: "SEND",
+                
+                // Dynamic
+                no_orders: "No purchases found",
+                no_orders_desc: "You do not have any games in your library yet.",
+                explore_catalog: "EXPLORE CATALOG",
+                order_id_lbl: "ORDER",
+                order_date_lbl: "ORDERED ON",
+                order_status_lbl: "PAYMENT STATUS",
+                status_approved: "PAID / APPROVED",
+                status_pending: "AWAITING PAYMENT",
+                status_cancelled: "DECLINED / CANCELLED",
+                view_details: "view details",
+                key_releasing: "Key releasing",
+                need_support: "ORDER SUPPORT",
+                chat_title_support: "TECHNICAL SUPPORT - ORDER #",
+                
+                // Receipt template strings
+                receipt_doc_title: "Receipt - Order #",
+                receipt_digital_official: "Official Digital Receipt",
+                order: "ORDER",
+                date_issued: "DATE OF ISSUE",
+                method: "METHOD",
+                credits_wallet: "Credits Wallet",
+                status: "STATUS",
+                paid_approved: "Paid / Approved",
+                item: "Item",
+                qty: "Qty",
+                price: "Price",
+                total_paid_doc: "TOTAL PAID",
+                receipt_doc_footer: "This receipt is issued by the Zher Keys activation keys platform.<br>Thank you for your purchase! Access your account to manage your games.",
+                
+                // Wallet types
+                type_deposit: "DEPOSIT",
+                type_purchase: "PURCHASE",
+                type_adjustment: "ADJUSTMENT",
+                
+                // Alerts & errors
+                min_deposit_error: "The minimum deposit amount is BRL 5.00.",
+                generating_payment: "GENERATING PAYMENT...",
+                deposit_error: "Error generating deposit: ",
+                deposit_conn_error: "Connection error generating deposit.",
+                pix_expired_msg: "PIX payment time has expired! Deposit cancelled."
+            },
+            es: {
+                tab_my_games: "MIS COMPRAS",
+                tab_my_wallet: "MI CARTERA",
+                tab_settings: "CONFIGURACIÓN",
+                nav_admin: "ADMIN",
+                nav_logout: "SALIR",
+                welcome: "BIENVENIDO",
+                loading: "cargando...",
+                seus_jogos: "SUS JUEGOS",
+                refresh_status: "ACTUALIZAR ESTADO",
+                fetching_server: "Buscando servidor seguro...",
+                minha_carteira_credito: "MI CARTERA DE CRÉDITOS",
+                available_balance: "SALDO DISPONIBLE",
+                add_credits: "Agregar Créditos",
+                deposit_amount_label: "Monto del Depósito (€)",
+                deposit_placeholder: "Ej: 50.00",
+                min_deposit_instruction: "Depósito mínimo: € 5,00. Procesamiento inmediato.",
+                payment_method: "Método de Pago",
+                generate_deposit: "GENERAR DEPÓSITO",
+                safe_payment_title: "Pago 100% Protegido",
+                safe_payment_desc: "Toda nuestra infraestructura de pagos se procesa de forma segura a través de la pasarela de pago oficial de Mercado Pago.",
+                adv_pix: "PIX: saldo disponible en hasta 2 minutos",
+                adv_card: "Tarjeta de Crédito: aprobación inmediata por el emisor",
+                adv_no_fees: "Sin tasas adicionales ni costes ocultos",
+                safety_warning: "Zher Keys valora la máxima seguridad en las transacciones. Intentos sospechosos o manipulación de saldo resultarán en baneo permanente de la credencial de acceso.",
+                statement_heading: "Historial de Transacciones",
+                table_date: "Fecha",
+                table_desc: "Descripción",
+                table_type: "Tipo",
+                table_value: "Monto",
+                no_transactions: "No se registraron transacciones.",
+                config_title: "CONFIGURACIÓN DE SEGURANÇA",
+                reset_password_title: "Restablecimiento de Contraseña",
+                reset_password_desc: "Enviaremos un enlace seguro a su correo electrónico registrado. Haga clic en el enlace para crear una nueva contraseña para su cuenta.",
+                send_reset_link: "ENVIAR ENLACE DE RESTABLECIMIENTO",
+                receipt_modal_title: "RECIBO DE COMPRA",
+                receipt_date_label: "FECHA Y HORA",
+                credits_desc: "Cartera (Créditos)",
+                receipt_items_label: "ARTÍCULOS ADQUIRIDOS",
+                total_paid: "TOTAL PAGADO",
+                download_receipt_btn: "DESCARGAR RECIBO",
+                print_receipt_btn: "IMPRIMIR",
+                support_title: "SOPORTE TÉCNICO",
+                chat_placeholder: "Escribe tu mensaje...",
+                chat_send: "ENVIAR",
+                
+                // Dynamic
+                no_orders: "Ninguna compra encontrada",
+                no_orders_desc: "Aún no tienes ningún juego en tu biblioteca.",
+                explore_catalog: "EXPLORAR CATÁLOGO",
+                order_id_lbl: "PEDIDO",
+                order_date_lbl: "REALIZADO EL",
+                order_status_lbl: "ESTADO DE PAGO",
+                status_approved: "PAGO / APROBADO",
+                status_pending: "ESPERANDO PAGO",
+                status_cancelled: "RECHAZADO / CANCELADO",
+                view_details: "ver detalles",
+                key_releasing: "Clave en liberación",
+                need_support: "SOPORTE DEL PEDIDO",
+                chat_title_support: "SOPORTE TÉCNICO - PEDIDO #",
+                
+                // Receipt template strings
+                receipt_doc_title: "Recibo - Pedido #",
+                receipt_digital_official: "Recibo Digital Oficial",
+                order: "PEDIDO",
+                date_issued: "FECHA DE EMISIÓN",
+                method: "MÉTODO",
+                credits_wallet: "Cartera de Créditos",
+                status: "ESTADO",
+                paid_approved: "Pago / Aprobado",
+                item: "Artículo",
+                qty: "Cant",
+                price: "Precio",
+                total_paid_doc: "TOTAL PAGADO",
+                receipt_doc_footer: "Este recibo es emitido por la plataforma de llaves de activación Zher Keys.<br>¡Gracias por su compra! Acceda a su cuenta para gestionar sus juegos.",
+                
+                // Wallet types
+                type_deposit: "DEPÓSITO",
+                type_purchase: "COMPRA",
+                type_adjustment: "AJUSTE",
+                
+                // Alerts & errors
+                min_deposit_error: "El monto mínimo de depósito es BRL 5.00.",
+                generating_payment: "GENERANDO PAGO...",
+                deposit_error: "Error al generar el depósito: ",
+                deposit_conn_error: "Error de conexión al generar el depósito.",
+                pix_expired_msg: "¡El tiempo de pago de PIX ha expirado! Depósito cancelado."
+            }
+        };
+
+        function applyTranslations(lang) {
+            const dict = TRANSLATIONS[lang] || TRANSLATIONS['pt'];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                const translation = dict[key];
+                if (translation) {
+                    const attr = el.getAttribute('data-i18n-attr');
+                    if (attr) {
+                        el.setAttribute(attr, translation);
+                    } else {
+                        el.innerText = translation;
+                    }
+                }
+            });
+            document.documentElement.lang = lang === 'pt' ? 'pt-BR' : (lang === 'en' ? 'en' : 'es');
+        }
+
         // --- EXCHANGE & CURRENCY LOGIC ---
         window.currentCurrency = localStorage.getItem('zher_currency') || 'BRL';
         window.exchangeRates = { BRL: 1.0, USD: 0.19, EUR: 0.17 };
+
+        // Apply initial translation based on currency
+        let initialLang = 'pt';
+        if (window.currentCurrency === 'USD') initialLang = 'en';
+        else if (window.currentCurrency === 'EUR') initialLang = 'es';
+        applyTranslations(initialLang);
 
         async function fetchExchangeRates() {
             try {
@@ -373,6 +664,12 @@
             // Sync current select value
             const selectEl = document.getElementById('currency-select');
             if (selectEl) selectEl.value = cur;
+
+            // Map currency to language
+            let lang = 'pt';
+            if (cur === 'USD') lang = 'en';
+            else if (cur === 'EUR') lang = 'es';
+            applyTranslations(lang);
             
             // Re-render UI elements
             updateCreditsDisplay();
@@ -461,14 +758,18 @@
                 const orders = await res.json();
                 allUserOrders = orders;
                 
+                const cur = window.currentCurrency;
+                const lang = cur === 'USD' ? 'en' : (cur === 'EUR' ? 'es' : 'pt');
+                const dict = TRANSLATIONS[lang] || TRANSLATIONS['pt'];
+
                 const container = document.getElementById('my-orders-list');
                 if(orders.length === 0) {
                     container.innerHTML = `
                         <div class="flex flex-col items-center justify-center text-center h-64 border-2 border-dashed border-slate-800 rounded-xl bg-slate-900/20">
                             <i data-lucide="package-open" class="w-12 h-12 text-slate-600 mb-4"></i>
-                            <h3 class="text-lg font-bold text-slate-300">Nenhuma compra encontrada</h3>
-                            <p class="text-slate-500 text-sm mt-2 max-w-sm">Você ainda não possui jogos na sua biblioteca.</p>
-                            <a href="/" class="mt-6 px-6 py-2 bg-electricblue hover:bg-blue-600 text-white rounded font-orbitron text-xs tracking-widest transition-colors">EXPLORAR CATÁLOGO</a>
+                            <h3 class="text-lg font-bold text-slate-300">${dict.no_orders}</h3>
+                            <p class="text-slate-500 text-sm mt-2 max-w-sm">${dict.no_orders_desc}</p>
+                            <a href="/" class="mt-6 px-6 py-2 bg-electricblue hover:bg-blue-600 text-white rounded font-orbitron text-xs tracking-widest transition-colors">${dict.explore_catalog}</a>
                         </div>
                     `;
                     lucide.createIcons();
@@ -480,7 +781,15 @@
                     const isApproved = o.status === 'approved';
                     const statusColor = isApproved ? "bg-emerald-900/40 border-emerald-500 text-emerald-400" : "bg-slate-800 border-slate-600 text-slate-400";
                     const statusIcon = isApproved ? "check-circle" : "clock";
-                    const statusText = isApproved ? "PAGAMENTO APROVADO" : (o.status === 'rejected' ? "PAGAMENTO RECUSADO" : "AGUARDANDO PAGAMENTO");
+                    
+                    let statusText = '';
+                    if (isApproved) {
+                        statusText = dict.status_approved;
+                    } else if (o.status === 'rejected') {
+                        statusText = dict.status_cancelled;
+                    } else {
+                        statusText = dict.status_pending;
+                    }
 
                     let itemsHtml = '';
                     o.items.forEach(item => {
@@ -495,12 +804,12 @@
                                     </div>
                                     <div class="flex gap-2">
                                         <button onclick="toggleKeyVisibility('${keyId}', this)" class="text-xs text-emerald-500 hover:text-emerald-300 bg-emerald-900/30 px-2 py-1 rounded flex items-center justify-center" title="Mostrar/Ocultar"><i data-lucide="eye" class="w-4 h-4"></i></button>
-                                        <button onclick="copyToClipboard('${item.activation_key}')" class="text-xs text-emerald-500 hover:text-emerald-300 bg-emerald-900/30 px-2 py-1 rounded">COPIAR</button>
+                                        <button onclick="copyToClipboard('${item.activation_key}')" class="text-xs text-emerald-500 hover:text-emerald-300 bg-emerald-900/30 px-2 py-1 rounded">${lang === 'en' ? 'COPY' : 'COPIAR'}</button>
                                     </div>
                                 </div>
                             `;
                         } else if (isApproved) {
-                             keyBox = `<div class="mt-2 text-xs text-slate-500">Chave em processamento. Abra o suporte.</div>`;
+                             keyBox = `<div class="mt-2 text-xs text-slate-500">${dict.key_releasing}...</div>`;
                         }
 
                         // Steam logo overlay if category is Steam Key
@@ -535,15 +844,15 @@
                             
                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 pl-3">
                                 <div>
-                                    <span class="font-orbitron font-bold text-white text-lg">#PEDIDO-${o.id}</span>
+                                    <span class="font-orbitron font-bold text-white text-lg">${dict.order_id_lbl} - #${o.id}</span>
                                     <div class="text-sm font-bold text-cyberrose mt-1">${formatPrice(o.total_amount)}</div>
-                                    ${isApproved ? `<button onclick="showOrderDetails(${o.id})" class="text-[10px] text-slate-400 hover:text-emerald-400 underline block mt-1.5 transition-colors font-semibold">ver detalhes</button>` : ''}
+                                    ${isApproved ? `<button onclick="showOrderDetails(${o.id})" class="text-[10px] text-slate-400 hover:text-emerald-400 underline block mt-1.5 transition-colors font-semibold">${dict.view_details}</button>` : ''}
                                 </div>
                                 <div class="flex flex-col sm:items-end gap-2">
                                     <span class="flex items-center gap-2 font-orbitron text-[10px] tracking-widest px-3 py-1.5 rounded-full border ${statusColor}">
                                         <i data-lucide="${statusIcon}" class="w-3 h-3"></i> ${statusText}
                                     </span>
-                                    <button onclick="openChat(${o.id})" class="text-xs font-orbitron text-slate-400 hover:text-white flex items-center gap-1 hover:bg-slate-800 px-2 py-1 rounded transition-colors"><i data-lucide="message-square" class="w-3 h-3"></i> SUPORTE DO PEDIDO</button>
+                                    <button onclick="openChat(${o.id})" class="text-xs font-orbitron text-slate-400 hover:text-white flex items-center gap-1 hover:bg-slate-800 px-2 py-1 rounded transition-colors"><i data-lucide="message-square" class="w-3 h-3"></i> ${dict.need_support}</button>
                                 </div>
                             </div>
                             
@@ -749,6 +1058,10 @@
             const o = currentDetailedOrder;
             const dateStr = new Date(o.created_at).toLocaleString('pt-BR');
             
+            const cur = window.currentCurrency;
+            const lang = cur === 'USD' ? 'en' : (cur === 'EUR' ? 'es' : 'pt');
+            const dict = TRANSLATIONS[lang] || TRANSLATIONS['pt'];
+
             let itemsListHtml = '';
             o.items.forEach(item => {
                 itemsListHtml += `
@@ -763,7 +1076,7 @@
             const htmlContent = `
                 <html>
                 <head>
-                    <title>Recibo - Pedido #${o.id}</title>
+                    <title>${dict.receipt_doc_title} #${o.id}</title>
                     <style>
                         body { font-family: sans-serif; padding: 40px; color: #334155; background-color: #f1f5f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
                         .receipt-container { background: #ffffff; width: 100%; max-width: 600px; border: 1px solid #e2e8f0; padding: 40px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
@@ -786,34 +1099,34 @@
                     <div class="receipt-container">
                         <div class="logo-area">
                             <h1 class="logo-title">ZHER KEYS</h1>
-                            <div class="receipt-title">Recibo Digital de Compra</div>
+                            <div class="receipt-title">${dict.receipt_digital_official}</div>
                         </div>
                         
                         <div class="meta-grid">
                             <div class="meta-item">
-                                <span class="meta-label">PEDIDO</span>
+                                <span class="meta-label">${dict.order}</span>
                                 <span class="meta-value">#PEDIDO-${o.id}</span>
                             </div>
                             <div class="meta-item">
-                                <span class="meta-label">DATA DE EMISSÃO</span>
+                                <span class="meta-label">${dict.date_issued}</span>
                                 <span class="meta-value">${dateStr}</span>
                             </div>
                             <div class="meta-item">
-                                <span class="meta-label">MÉTODO</span>
-                                <span class="meta-value">Carteira de Créditos</span>
+                                <span class="meta-label">${dict.method}</span>
+                                <span class="meta-value">${dict.credits_wallet}</span>
                             </div>
                             <div class="meta-item">
-                                <span class="meta-label">STATUS</span>
-                                <span class="meta-value" style="color: #10B981;">Pago / Aprovado</span>
+                                <span class="meta-label">${dict.status}</span>
+                                <span class="meta-value" style="color: #10B981;">${dict.paid_approved}</span>
                             </div>
                         </div>
                         
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Item</th>
-                                    <th style="text-align: center;">Qtd</th>
-                                    <th style="text-align: right;">Preço</th>
+                                    <th>${dict.item}</th>
+                                    <th style="text-align: center;">${dict.qty}</th>
+                                    <th style="text-align: right;">${dict.price}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -822,13 +1135,12 @@
                         </table>
                         
                         <div class="total-row">
-                            <span class="total-label">TOTAL PAGO</span>
+                            <span class="total-label">${dict.total_paid_doc}</span>
                             <span class="total-value">${formatPrice(o.total_amount)}</span>
                         </div>
                         
                         <div class="footer">
-                            Este recibo é emitido pela plataforma de chaves de ativação Zher Keys.<br>
-                            Obrigado pela sua compra! Acesse sua conta para gerenciar seus jogos.
+                            ${dict.receipt_doc_footer}
                         </div>
                     </div>
                 </body>
@@ -851,6 +1163,10 @@
             const o = currentDetailedOrder;
             const dateStr = new Date(o.created_at).toLocaleString('pt-BR');
             
+            const cur = window.currentCurrency;
+            const lang = cur === 'USD' ? 'en' : (cur === 'EUR' ? 'es' : 'pt');
+            const dict = TRANSLATIONS[lang] || TRANSLATIONS['pt'];
+
             let itemsListHtml = '';
             o.items.forEach(item => {
                 itemsListHtml += `
@@ -866,7 +1182,7 @@
             printWindow.document.write(`
                 <html>
                 <head>
-                    <title>Recibo - Pedido #${o.id}</title>
+                    <title>${dict.receipt_doc_title} #${o.id}</title>
                     <style>
                         body { font-family: sans-serif; padding: 40px; color: #334155; }
                         .receipt-container { max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
@@ -889,34 +1205,34 @@
                     <div class="receipt-container">
                         <div class="logo-area">
                             <h1 class="logo-title">ZHER KEYS</h1>
-                            <div class="receipt-title">Recibo Digital Oficial</div>
+                            <div class="receipt-title">${dict.receipt_digital_official}</div>
                         </div>
                         
                         <div class="meta-grid">
                             <div class="meta-item">
-                                <span class="meta-label">PEDIDO</span>
+                                <span class="meta-label">${dict.order}</span>
                                 <span class="meta-value">#PEDIDO-${o.id}</span>
                             </div>
                             <div class="meta-item">
-                                <span class="meta-label">DATA DE EMISSÃO</span>
+                                <span class="meta-label">${dict.date_issued}</span>
                                 <span class="meta-value">${dateStr}</span>
                             </div>
                             <div class="meta-item">
-                                <span class="meta-label">MÉTODO</span>
-                                <span class="meta-value">Carteira de Créditos</span>
+                                <span class="meta-label">${dict.method}</span>
+                                <span class="meta-value">${dict.credits_wallet}</span>
                             </div>
                             <div class="meta-item">
-                                <span class="meta-label">STATUS</span>
-                                <span class="meta-value" style="color: #10B981;">Pago / Aprovado</span>
+                                <span class="meta-label">${dict.status}</span>
+                                <span class="meta-value" style="color: #10B981;">${dict.paid_approved}</span>
                             </div>
                         </div>
                         
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Item</th>
-                                    <th style="text-align: center;">Qtd</th>
-                                    <th style="text-align: right;">Preço</th>
+                                    <th>${dict.item}</th>
+                                    <th style="text-align: center;">${dict.qty}</th>
+                                    <th style="text-align: right;">${dict.price}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -925,13 +1241,12 @@
                         </table>
                         
                         <div class="total-row">
-                            <span class="total-label">TOTAL PAGO</span>
+                            <span class="total-label">${dict.total_paid_doc}</span>
                             <span class="total-value">${formatPrice(o.total_amount)}</span>
                         </div>
                         
                         <div class="footer">
-                            Este recibo é emitido pela plataforma de chaves de ativação Zher Keys.<br>
-                            Obrigado pela sua compra! Acesse sua conta para gerenciar seus jogos.
+                            ${dict.receipt_doc_footer}
                         </div>
                     </div>
                     <script>
@@ -985,6 +1300,10 @@
                     updateCreditsDisplay();
                 }
 
+                const cur = window.currentCurrency;
+                const lang = cur === 'USD' ? 'en' : (cur === 'EUR' ? 'es' : 'pt');
+                const dict = TRANSLATIONS[lang] || TRANSLATIONS['pt'];
+
                 // Carregar transações
                 const txRes = await fetch('/api/wallet/transactions');
                 const transactions = await txRes.json();
@@ -993,7 +1312,7 @@
                 if (transactions.length === 0) {
                     container.innerHTML = `
                         <tr>
-                            <td colspan="4" class="p-8 text-center text-slate-500 font-orbitron text-xs tracking-widest">Nenhuma transação registrada.</td>
+                            <td colspan="4" class="p-8 text-center text-slate-500 font-orbitron text-xs tracking-widest">${dict.no_transactions}</td>
                         </tr>
                     `;
                     return;
@@ -1009,13 +1328,13 @@
                     let typeText = '';
                     let typeBg = '';
                     if (t.type === 'deposit') {
-                        typeText = 'DEPÓSITO';
+                        typeText = dict.type_deposit;
                         typeBg = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
                     } else if (t.type === 'purchase') {
-                        typeText = 'COMPRA';
+                        typeText = dict.type_purchase;
                         typeBg = 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
                     } else {
-                        typeText = 'AJUSTE';
+                        typeText = dict.type_adjustment;
                         typeBg = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
                     }
 
@@ -1040,14 +1359,19 @@
         async function gerarDeposito() {
             const amountInput = document.getElementById('deposit-amount');
             const amount = parseFloat(amountInput.value);
+            
+            const cur = window.currentCurrency;
+            const lang = cur === 'USD' ? 'en' : (cur === 'EUR' ? 'es' : 'pt');
+            const dict = TRANSLATIONS[lang] || TRANSLATIONS['pt'];
+
             if (isNaN(amount) || amount < 5) {
-                alert('O valor mínimo de depósito é R$ 5,00.');
+                alert(dict.min_deposit_error || 'O valor mínimo de depósito é R$ 5,00.');
                 return;
             }
 
             const method = document.querySelector('input[name="deposit_method"]:checked').value;
             const btn = document.getElementById('btn-deposit');
-            btn.innerHTML = 'GERANDO PAGAMENTO... <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
+            btn.innerHTML = `${dict.generating_payment} <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>`;
             btn.classList.add('opacity-50', 'pointer-events-none');
             
             try {
@@ -1068,12 +1392,12 @@
                     amountInput.value = '';
                     showPixModal(data.qr_code_base64, data.qr_code);
                 } else {
-                    alert('Erro ao gerar depósito: ' + (data.error || 'Erro desconhecido.'));
+                    alert((dict.deposit_error || 'Erro ao gerar depósito: ') + (data.error || 'Erro desconhecido.'));
                 }
             } catch(e) {
-                alert('Erro de conexão ao gerar depósito.');
+                alert(dict.deposit_conn_error || 'Erro de conexão ao gerar depósito.');
             } finally {
-                btn.innerHTML = 'GERAR DEPÓSITO <i data-lucide="plus-circle" class="w-4 h-4"></i>';
+                btn.innerHTML = `${dict.generate_deposit} <i data-lucide="plus-circle" class="w-4 h-4"></i>`;
                 btn.classList.remove('opacity-50', 'pointer-events-none');
                 lucide.createIcons();
             }
@@ -1083,6 +1407,10 @@
             const modal = document.getElementById('pix-modal');
             const modalContent = document.getElementById('pix-modal-content');
             
+            const cur = window.currentCurrency;
+            const lang = cur === 'USD' ? 'en' : (cur === 'EUR' ? 'es' : 'pt');
+            const dict = TRANSLATIONS[lang] || TRANSLATIONS['pt'];
+
             document.getElementById('pix-qr-img').src = 'data:image/jpeg;base64,' + base64;
             document.getElementById('pix-code-input').value = code;
             
@@ -1106,7 +1434,7 @@
                     timerEl.innerText = "EXPIRADO";
                     timerContainer.classList.remove('bg-red-500/10', 'border-red-500/30', 'text-red-400');
                     timerContainer.classList.add('bg-slate-800', 'border-slate-700', 'text-slate-500');
-                    alert("O tempo para pagamento do PIX expirou! O depósito foi cancelado.");
+                    alert(dict.pix_expired_msg || "O tempo para pagamento do PIX expirou! O depósito foi cancelado.");
                     closePixModal();
                 } else {
                     const minutes = Math.floor(timeLeft / 60);

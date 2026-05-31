@@ -129,15 +129,15 @@
             </div>
             
             <div class="hidden md:flex items-center gap-8 font-orbitron text-xs tracking-widest text-slate-400">
-                <a href="#catalogo" class="relative py-2 transition-colors hover:text-white group">
+                <a href="#catalogo" data-i18n="nav_catalog" class="relative py-2 transition-colors hover:text-white group">
                     CATÁLOGO
                     <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-electricblue transition-all duration-300 group-hover:w-full"></span>
                 </a>
-                <a href="#vantagens" class="relative py-2 transition-colors hover:text-white group">
+                <a href="#vantagens" data-i18n="nav_features" class="relative py-2 transition-colors hover:text-white group">
                     RECURSOS
                     <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-electricblue transition-all duration-300 group-hover:w-full"></span>
                 </a>
-                <a href="#suporte" class="relative py-2 transition-colors hover:text-white group">
+                <a href="#suporte" data-i18n="nav_support" class="relative py-2 transition-colors hover:text-white group">
                     SUPORTE
                     <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-electricblue transition-all duration-300 group-hover:w-full"></span>
                 </a>
@@ -167,14 +167,13 @@
                     <i data-lucide="user" class="w-5 h-5 text-slate-300 group-hover:text-white"></i>
                 </a>
                 <a href="#vitrine" class="magnetic-button inline-flex items-center gap-2 bg-slate-900 border border-slate-700/80 hover:border-electricblue text-white px-5 py-2.5 rounded-lg font-orbitron text-xs tracking-widest transition-all duration-300 shadow-lg shadow-black/40">
-                    <i data-lucide="terminal" class="w-4 h-4 text-electricblue"></i> ACCESS TERMINAL
+                    <i data-lucide="terminal" class="w-4 h-4 text-electricblue"></i> <span data-i18n="nav_access">ACCESS TERMINAL</span>
                 </a>
             </div>
         </div>
     </nav>
 
-    <!-- HERO SECTION -->
-    <section class="relative min-h-screen pt-32 pb-20 flex items-center justify-center px-4 overflow-hidden">
+    <!-    <section class="relative min-h-screen pt-32 pb-20 flex items-center justify-center px-4 overflow-hidden">
         <div class="absolute inset-0 z-0 opacity-40 mix-blend-screen pointer-events-none bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px]"></div>
         <div class="max-w-4xl mx-auto text-center relative z-10 flex flex-col items-center">
             
@@ -183,28 +182,28 @@
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyberrose opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-2 w-2 bg-cyberrose"></span>
                 </span>
-                <span class="font-orbitron text-[10px] tracking-widest text-slate-400 uppercase">SERVER STATUS: SECURE & OPERATIONAL</span>
+                <span data-i18n="hero_status" class="font-orbitron text-[10px] tracking-widest text-slate-400 uppercase">SERVER STATUS: SECURE & OPERATIONAL</span>
             </div>
 
             <!-- Main Heading with Terminal Hack animation fallback/trigger -->
-            <h1 id="hero-title" class="font-orbitron font-black text-4xl sm:text-6xl lg:text-7xl tracking-tighter text-white mb-6 uppercase leading-tight min-h-[120px] sm:min-h-[160px] md:min-h-0">
+            <h1 id="hero-title" data-i18n="hero_title" class="font-orbitron font-black text-4xl sm:text-6xl lg:text-7xl tracking-tighter text-white mb-6 uppercase leading-tight min-h-[120px] sm:min-h-[160px] md:min-h-0">
                 DESBLOQUEIE O PRÓXIMO NÍVEL.
             </h1>
 
-            <p class="font-inter text-slate-400 text-base sm:text-xl max-w-2xl mb-12 font-light leading-relaxed">
+            <p data-i18n="hero_description" class="font-inter text-slate-400 text-base sm:text-xl max-w-2xl mb-12 font-light leading-relaxed">
                 Keys globais, contas exclusivas e acesso premium instantâneo. O menor preço do servidor, garantido por quem joga.
             </p>
 
             <div class="flex flex-col sm:flex-row items-center gap-4 w-full justify-center">
                 <button onclick="document.getElementById('vitrine').scrollIntoView({behavior:'smooth'})" class="magnetic-button w-full sm:w-auto bg-electricblue hover:bg-blue-600 text-white font-orbitron text-xs tracking-widest font-bold px-8 py-5 rounded-xl shadow-cyber transition-all duration-300 uppercase relative overflow-hidden group">
                     <span class="relative z-10 flex items-center justify-center gap-2">
-                        EXPLORAR CATÁLOGO <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        <span data-i18n="hero_explore">EXPLORAR CATÁLOGO</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </span>
                     <span class="absolute inset-0 bg-gradient-to-r from-purple-600 to-electricblue opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                 </button>
                 
                 <button class="w-full sm:w-auto bg-slate-950/60 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-orbitron text-xs tracking-widest px-8 py-5 rounded-xl backdrop-blur-md transition-all duration-300 flex items-center justify-center gap-2">
-                    <i data-lucide="shield-check" class="w-4 h-4 text-cyberrose"></i> ANTI-BAN GUARANTEE
+                    <i data-lucide="shield-check" class="w-4 h-4 text-cyberrose"></i> <span data-i18n="hero_guarantee">ANTI-BAN GUARANTEE</span>
                 </button>
             </div>
 
@@ -233,10 +232,10 @@
     <section id="catalogo" class="py-24 px-4 max-w-7xl mx-auto scroll-mt-20">
         <div class="text-center md:text-left mb-16 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-                <span class="font-orbitron text-xs tracking-widest text-cyberrose font-bold block mb-2 uppercase">// LIVE DISPATCH MARKET</span>
-                <h2 class="font-orbitron font-black text-3xl sm:text-4xl text-white uppercase tracking-tight">DROPS LENDÁRIOS DA SEMANA</h2>
+                <span data-i18n="bento_subtitle" class="font-orbitron text-xs tracking-widest text-cyberrose font-bold block mb-2 uppercase">// LIVE DISPATCH MARKET</span>
+                <h2 data-i18n="bento_title" class="font-orbitron font-black text-3xl sm:text-4xl text-white uppercase tracking-tight">DROPS LENDÁRIOS DA SEMANA</h2>
             </div>
-            <p class="font-inter text-slate-400 max-w-md text-sm font-light">
+            <p data-i18n="bento_desc" class="font-inter text-slate-400 max-w-md text-sm font-light">
                 Lotes limitados com reabastecimento criptografado. Selecione sua categoria de privilégio abaixo.
             </p>
         </div>
@@ -254,13 +253,13 @@
                         <div class="bg-slate-900/90 p-3 rounded-lg border border-slate-800">
                             <i data-lucide="key-round" class="w-6 h-6 text-electricblue"></i>
                         </div>
-                        <span class="bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[9px] tracking-widest px-2.5 py-1 rounded-full uppercase font-bold">REGIÃO GLOBAL</span>
+                        <span data-i18n="bento_c1_badge" class="bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[9px] tracking-widest px-2.5 py-1 rounded-full uppercase font-bold">REGIÃO GLOBAL</span>
                     </div>
 
                     <div class="relative z-10">
-                        <h3 class="font-orbitron font-bold text-xl text-white mb-2 uppercase tracking-wide">GAME KEYS</h3>
-                        <p class="font-inter text-slate-400 text-xs mb-6 font-light leading-relaxed">Títulos AAA e lançamentos mundiais em formato digital permanente. Ativação imediata nas principais launchers.</p>
-                        <button onclick="document.getElementById('vitrine').scrollIntoView({behavior:'smooth'})" class="w-full bg-slate-900 border border-slate-800 group-hover:border-electricblue text-white group-hover:text-electricblue font-orbitron text-[11px] tracking-widest py-3.5 rounded-lg transition-all duration-300 flex items-center justify-center gap-2">
+                        <h3 data-i18n="bento_c1_title" class="font-orbitron font-bold text-xl text-white mb-2 uppercase tracking-wide">GAME KEYS</h3>
+                        <p data-i18n="bento_c1_desc" class="font-inter text-slate-400 text-xs mb-6 font-light leading-relaxed">Títulos AAA e lançamentos mundiais em formato digital permanente. Ativação imediata nas principais launchers.</p>
+                        <button onclick="document.getElementById('vitrine').scrollIntoView({behavior:'smooth'})" data-i18n="bento_buy_now" class="w-full bg-slate-900 border border-slate-800 group-hover:border-electricblue text-white group-hover:text-electricblue font-orbitron text-[11px] tracking-widest py-3.5 rounded-lg transition-all duration-300 flex items-center justify-center gap-2">
                             ADQUIRIR AGORA — [ENTREGA INSTANTÂNEA]
                         </button>
                     </div>
@@ -277,13 +276,13 @@
                         <div class="bg-slate-900/90 p-3 rounded-lg border border-slate-800">
                             <i data-lucide="shield-check" class="w-6 h-6 text-cyberrose"></i>
                         </div>
-                        <span class="bg-cyberrose/10 border border-cyberrose/30 text-cyberrose font-orbitron text-[9px] tracking-widest px-2.5 py-1 rounded-full uppercase font-bold">FULL ACCESS</span>
+                        <span data-i18n="bento_c2_badge" class="bg-cyberrose/10 border border-cyberrose/30 text-cyberrose font-orbitron text-[9px] tracking-widest px-2.5 py-1 rounded-full uppercase font-bold">FULL ACCESS</span>
                     </div>
 
                     <div class="relative z-10 max-w-lg">
-                        <h3 class="font-orbitron font-bold text-xl text-white mb-2 uppercase tracking-wide">CONTAS HIGH-END</h3>
-                        <p class="font-inter text-slate-400 text-xs mb-6 font-light leading-relaxed">Progresso maximizado, skins raras, passes antigos e setups competitivos prontos para o lobby. Troca de e-mail inteiramente liberada.</p>
-                        <button onclick="document.getElementById('vitrine').scrollIntoView({behavior:'smooth'})" class="w-full bg-slate-900 border border-slate-800 group-hover:border-cyberrose text-white group-hover:text-cyberrose font-orbitron text-[11px] tracking-widest py-3.5 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-lg">
+                        <h3 data-i18n="bento_c2_title" class="font-orbitron font-bold text-xl text-white mb-2 uppercase tracking-wide">CONTAS HIGH-END</h3>
+                        <p data-i18n="bento_c2_desc" class="font-inter text-slate-400 text-xs mb-6 font-light leading-relaxed">Progresso maximizado, skins raras, passes antigos e setups competitivos prontos para o lobby. Troca de e-mail inteiramente liberada.</p>
+                        <button onclick="document.getElementById('vitrine').scrollIntoView({behavior:'smooth'})" data-i18n="bento_buy_now" class="w-full bg-slate-900 border border-slate-800 group-hover:border-cyberrose text-white group-hover:text-cyberrose font-orbitron text-[11px] tracking-widest py-3.5 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-lg">
                             ADQUIRIR AGORA — [ENTREGA INSTANTÂNEA]
                         </button>
                     </div>
@@ -300,27 +299,25 @@
                         <div class="bg-slate-900/90 p-3 rounded-lg border border-slate-800">
                             <i data-lucide="tv" class="w-6 h-6 text-purple-400"></i>
                         </div>
-                        <span class="bg-purple-400/10 border border-purple-400/30 text-purple-400 font-orbitron text-[9px] tracking-widest px-2.5 py-1 rounded-full uppercase font-bold">PREMIUM CRUNCH</span>
+                        <span data-i18n="bento_c3_badge" class="bg-purple-400/10 border border-purple-400/30 text-purple-400 font-orbitron text-[9px] tracking-widest px-2.5 py-1 rounded-full uppercase font-bold">PREMIUM CRUNCH</span>
                     </div>
 
                     <div class="relative z-10 max-w-xl mt-auto">
-                        <h3 class="font-orbitron font-bold text-xl text-white mb-2 uppercase tracking-wide">STREAMING & GIFT CARDS</h3>
-                        <p class="font-inter text-slate-400 text-xs mb-6 font-light leading-relaxed">Assinaturas e créditos nas plataformas mais cobiçadas do mercado. Ultra 4K ativo, sem quedas e com garantia renovável.</p>
-                        <button onclick="document.getElementById('vitrine').scrollIntoView({behavior:'smooth'})" class="w-full sm:w-auto px-8 bg-slate-900 border border-slate-800 group-hover:border-purple-400 text-white group-hover:text-purple-400 font-orbitron text-[11px] tracking-widest py-3.5 rounded-lg transition-all duration-300 flex items-center justify-center gap-2">
+                        <h3 data-i18n="bento_c3_title" class="font-orbitron font-bold text-xl text-white mb-2 uppercase tracking-wide">STREAMING & GIFT CARDS</h3>
+                        <p data-i18n="bento_c3_desc" class="font-inter text-slate-400 text-xs mb-6 font-light leading-relaxed">Assinaturas e créditos nas plataformas mais cobiçadas do mercado. Ultra 4K ativo, sem quedas e com garantia renovável.</p>
+                        <button onclick="document.getElementById('vitrine').scrollIntoView({behavior:'smooth'})" data-i18n="bento_buy_now" class="w-full sm:w-auto px-8 bg-slate-900 border border-slate-800 group-hover:border-purple-400 text-white group-hover:text-purple-400 font-orbitron text-[11px] tracking-widest py-3.5 rounded-lg transition-all duration-300 flex items-center justify-center gap-2">
                             ADQUIRIR AGORA — [ENTREGA INSTANTÂNEA]
                         </button>
                     </div>
                 </div>
             </div>
 
-        </div>
-    </section>
-
-    <!-- VITRINE DE PRODUTOS -->
+        </div>   </div>
+           <!-- VITRINE DE PRODUTOS -->
     <section id="vitrine" class="py-24 px-4 max-w-7xl mx-auto scroll-mt-20">
         <div class="text-center mb-16">
-            <span class="font-orbitron text-xs tracking-widest text-electricblue font-bold block mb-2 uppercase">// DESTAQUES DA LOJA</span>
-            <h2 class="font-orbitron font-black text-3xl sm:text-4xl text-white uppercase tracking-tight">JOGOS EM PROMOÇÃO</h2>
+            <span data-i18n="catalog_subtitle" class="font-orbitron text-xs tracking-widest text-electricblue font-bold block mb-2 uppercase">// DESTAQUES DA LOJA</span>
+            <h2 data-i18n="catalog_title" class="font-orbitron font-black text-3xl sm:text-4xl text-white uppercase tracking-tight">JOGOS EM PROMOÇÃO</h2>
         </div>
         
         <!-- SEARCH & FILTER BAR -->
@@ -328,21 +325,21 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="lg:col-span-2 relative">
                     <i data-lucide="search" class="w-5 h-5 absolute left-3 top-3 text-slate-500"></i>
-                    <input type="text" id="filter-search" oninput="renderGrid()" placeholder="Buscar jogos, contas..." class="w-full bg-slate-950 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-electricblue transition-colors text-sm font-inter">
+                    <input type="text" id="filter-search" oninput="renderGrid()" data-i18n="catalog_search" data-i18n-attr="placeholder" placeholder="Buscar jogos, contas..." class="w-full bg-slate-950 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-electricblue transition-colors text-sm font-inter">
                 </div>
                 
                 <div>
                     <select id="filter-category" onchange="renderGrid()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-300 focus:outline-none focus:border-electricblue transition-colors text-sm font-inter appearance-none">
-                        <option value="">Todas as Categorias</option>
-                        <option value="STEAM KEY">Steam Key</option>
-                        <option value="CONTA">Conta</option>
-                        <option value="GIFT CARD">Gift Card</option>
+                        <option value="" data-i18n="cat_all">Todas as Categorias</option>
+                        <option value="STEAM KEY" data-i18n="cat_steam">Steam Key</option>
+                        <option value="CONTA" data-i18n="cat_account">Conta</option>
+                        <option value="GIFT CARD" data-i18n="cat_giftcard">Gift Card</option>
                     </select>
                 </div>
 
                 <div>
                     <select id="filter-genre" onchange="renderGrid()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-300 focus:outline-none focus:border-electricblue transition-colors text-sm font-inter appearance-none">
-                        <option value="">Todos os Gêneros</option>
+                        <option value="" data-i18n="genre_all">Todos os Gêneros</option>
                         <option value="ação">Ação</option>
                         <option value="aventura">Aventura</option>
                         <option value="rpg">RPG</option>
@@ -357,34 +354,34 @@
                 <div>
                     <div class="relative">
                         <span class="absolute left-3 top-2.5 text-slate-500 font-bold text-sm">R$</span>
-                        <input type="number" id="filter-min" oninput="renderGrid()" placeholder="Preço Mínimo" class="w-full bg-slate-950 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-electricblue transition-colors text-sm font-inter">
+                        <input type="number" id="filter-min" oninput="renderGrid()" data-i18n="min_price_ph" data-i18n-attr="placeholder" placeholder="Preço Mínimo" class="w-full bg-slate-950 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-electricblue transition-colors text-sm font-inter">
                     </div>
                 </div>
 
                 <div>
                     <div class="relative">
                         <span class="absolute left-3 top-2.5 text-slate-500 font-bold text-sm">R$</span>
-                        <input type="number" id="filter-max" oninput="renderGrid()" placeholder="Preço Máximo" class="w-full bg-slate-950 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-electricblue transition-colors text-sm font-inter">
+                        <input type="number" id="filter-max" oninput="renderGrid()" data-i18n="max_price_ph" data-i18n-attr="placeholder" placeholder="Preço Máximo" class="w-full bg-slate-950 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-electricblue transition-colors text-sm font-inter">
                     </div>
                 </div>
 
                 <div>
                     <select id="filter-sort" onchange="renderGrid()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-300 focus:outline-none focus:border-electricblue transition-colors text-sm font-inter appearance-none">
-                        <option value="">Ordenar Por</option>
-                        <option value="lowest">Menor Preço</option>
-                        <option value="highest">Maior Preço</option>
-                        <option value="az">A - Z</option>
+                        <option value="" data-i18n="sort_all">Ordenar Por</option>
+                        <option value="lowest" data-i18n="sort_lowest">Menor Preço</option>
+                        <option value="highest" data-i18n="sort_highest">Maior Preço</option>
+                        <option value="az" data-i18n="sort_az">A - Z</option>
                     </select>
                 </div>
 
                 <div class="flex items-center gap-2 bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5">
                     <input type="checkbox" id="filter-global" onchange="renderGrid()" class="w-4 h-4 rounded text-electricblue bg-slate-900 border-slate-700 focus:ring-0">
-                    <label for="filter-global" class="text-xs font-orbitron tracking-widest text-slate-300 cursor-pointer">SOMENTE GLOBAIS</label>
+                    <label for="filter-global" data-i18n="only_globals" class="text-xs font-orbitron tracking-widest text-slate-300 cursor-pointer">SOMENTE GLOBAIS</label>
                 </div>
 
                 <div class="flex items-center gap-2 bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5">
                     <input type="checkbox" id="filter-favorites" onchange="renderGrid()" class="w-4 h-4 rounded text-cyberrose bg-slate-900 border-slate-700 focus:ring-0">
-                    <label for="filter-favorites" class="text-xs font-orbitron tracking-widest text-slate-300 cursor-pointer">SOMENTE FAVORITOS</label>
+                    <label for="filter-favorites" data-i18n="only_favorites" class="text-xs font-orbitron tracking-widest text-slate-300 cursor-pointer">SOMENTE FAVORITOS</label>
                 </div>
             </div>
         </div>
@@ -399,8 +396,8 @@
         <div class="max-w-7xl mx-auto px-4">
             
             <div class="text-center mb-16">
-                <span class="font-orbitron text-xs tracking-widest text-electricblue font-bold block mb-2 uppercase">// VAULT CRYPTO PROTOCOLS</span>
-                <h2 class="font-orbitron font-black text-3xl sm:text-4xl text-white uppercase tracking-tight">POR QUE FAZEMOS A DIFERENÇA?</h2>
+                <span data-i18n="why_subtitle" class="font-orbitron text-xs tracking-widest text-electricblue font-bold block mb-2 uppercase">// VAULT CRYPTO PROTOCOLS</span>
+                <h2 data-i18n="why_title" class="font-orbitron font-black text-3xl sm:text-4xl text-white uppercase tracking-tight">POR QUE FAZEMOS A DIFERENÇA?</h2>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -410,8 +407,8 @@
                     <div class="w-12 h-12 rounded-lg bg-electricblue/10 border border-electricblue/20 flex items-center justify-center mb-6 text-electricblue">
                         <i data-lucide="zap" class="w-6 h-6"></i>
                     </div>
-                    <h4 class="font-orbitron font-bold text-lg text-white mb-3 uppercase tracking-wide">ENTREGA INSTANTÂNEA</h4>
-                    <p class="font-inter text-slate-400 text-sm font-light leading-relaxed">
+                    <h4 data-i18n="why_c1_title" class="font-orbitron font-bold text-lg text-white mb-3 uppercase tracking-wide">ENTREGA INSTANTÂNEA</h4>
+                    <p data-i18n="why_c1_desc" class="font-inter text-slate-400 text-sm font-light leading-relaxed">
                         Nosso sistema automatizado dispara suas credenciais e chaves diretamente no painel e e-mail segundos após a confirmação.
                     </p>
                     <div class="absolute bottom-0 left-0 h-[2px] w-0 bg-electricblue transition-all duration-300 group-hover:w-full"></div>
@@ -422,8 +419,8 @@
                     <div class="w-12 h-12 rounded-lg bg-cyberrose/10 border border-cyberrose/20 flex items-center justify-center mb-6 text-cyberrose">
                         <i data-lucide="headset" class="w-6 h-6"></i>
                     </div>
-                    <h4 class="font-orbitron font-bold text-lg text-white mb-3 uppercase tracking-wide">SUPORTE TÁTICO 24/7</h4>
-                    <p class="font-inter text-slate-400 text-sm font-light leading-relaxed">
+                    <h4 data-i18n="why_c2_title" class="font-orbitron font-bold text-lg text-white mb-3 uppercase tracking-wide">SUPORTE TÁTICO 24/7</h4>
+                    <p data-i18n="why_c2_desc" class="font-inter text-slate-400 text-sm font-light leading-relaxed">
                         Nada de robôs confusos. Nossa equipe técnica de suporte operacional está de prontidão no Discord e WhatsApp para qualquer dúvida.
                     </p>
                     <div class="absolute bottom-0 left-0 h-[2px] w-0 bg-cyberrose transition-all duration-300 group-hover:w-full"></div>
@@ -434,8 +431,8 @@
                     <div class="w-12 h-12 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-6 text-purple-400">
                         <i data-lucide="activity" class="w-6 h-6"></i>
                     </div>
-                    <h4 class="font-orbitron font-bold text-lg text-white mb-3 uppercase tracking-wide">GARANTIA VITALÍCIA</h4>
-                    <p class="font-inter text-slate-400 text-sm font-light leading-relaxed">
+                    <h4 data-i18n="why_c3_title" class="font-orbitron font-bold text-lg text-white mb-3 uppercase tracking-wide">GARANTIA VITALÍCIA</h4>
+                    <p data-i18n="why_c3_desc" class="font-inter text-slate-400 text-sm font-light leading-relaxed">
                         Garantimos o funcionamento permanente ou a reposição integral de qualquer produto premium sob cobertura oficial.
                     </p>
                     <div class="absolute bottom-0 left-0 h-[2px] w-0 bg-purple-500 transition-all duration-300 group-hover:w-full"></div>
@@ -456,7 +453,7 @@
                     </div>
                     <span class="font-orbitron font-black text-lg tracking-wider text-white">ZHER <span class="text-electricblue">KEYS</span></span>
                 </div>
-                <p class="font-inter text-slate-500 text-xs max-w-sm leading-relaxed mb-6">
+                <p data-i18n="footer_description" class="font-inter text-slate-500 text-xs max-w-sm leading-relaxed mb-6">
                     A plataforma definitiva de distribuição de bens digitais de luxo para entusiastas e e-sports competitivos.
                 </p>
                 <div class="flex items-center gap-4 text-slate-400">
@@ -467,16 +464,16 @@
             </div>
 
             <div>
-                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4">NAVEGAÇÃO SENSÍVEL</h5>
+                <h5 data-i18n="footer_nav_title" class="font-orbitron text-xs tracking-widest text-white uppercase mb-4">NAVEGAÇÃO SENSÍVEL</h5>
                 <ul class="font-inter text-xs text-slate-400 space-y-2.5">
-                    <li><a href="#catalogo" class="hover:text-electricblue transition-colors">Drops Black</a></li>
-                    <li><a href="#vantagens" class="hover:text-electricblue transition-colors">Termos de Serviço</a></li>
-                    <li><a href="#vantagens" class="hover:text-electricblue transition-colors">Segurança Operacional</a></li>
+                    <li><a href="#catalogo" data-i18n="footer_nav_1" class="hover:text-electricblue transition-colors">Drops Black</a></li>
+                    <li><a href="#vantagens" data-i18n="footer_nav_2" class="hover:text-electricblue transition-colors">Termos de Serviço</a></li>
+                    <li><a href="#vantagens" data-i18n="footer_nav_3" class="hover:text-electricblue transition-colors">Segurança Operacional</a></li>
                 </ul>
             </div>
 
             <div>
-                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4">SEGURANÇA INTERNA</h5>
+                <h5 data-i18n="footer_sec_title" class="font-orbitron text-xs tracking-widest text-white uppercase mb-4">SEGURANÇA INTERNA</h5>
                 <div class="space-y-3">
                     <div class="flex items-center gap-2 bg-slate-900/60 border border-slate-800 px-3 py-2 rounded-lg">
                         <i data-lucide="lock" class="w-4 h-4 text-emerald-400"></i>
@@ -484,7 +481,7 @@
                     </div>
                     <div class="flex items-center gap-2 bg-slate-900/60 border border-slate-800 px-3 py-2 rounded-lg">
                         <i data-lucide="check-circle" class="w-4 h-4 text-electricblue"></i>
-                        <span class="font-orbitron text-[9px] tracking-widest text-slate-300">PAGAMENTO 100% SEGURO</span>
+                        <span data-i18n="footer_sec_desc" class="font-orbitron text-[9px] tracking-widest text-slate-300">PAGAMENTO 100% SEGURO</span>
                     </div>
                 </div>
             </div>
@@ -729,6 +726,231 @@
             }
         }
 
+        // --- TRANSLATIONS LOGIC ---
+        const TRANSLATIONS = {
+            pt: {
+                nav_catalog: "CATÁLOGO",
+                nav_features: "RECURSOS",
+                nav_support: "SUPORTE",
+                nav_access: "ACESSAR TERMINAL",
+                hero_status: "STATUS DO SERVIDOR: SEGURO & OPERACIONAL",
+                hero_title: "DESBLOQUEIE O PRÓXIMO NÍVEL.",
+                hero_description: "Keys globais, contas exclusivas e acesso premium instantâneo. O menor preço do servidor, garantido por quem joga.",
+                hero_explore: "EXPLORAR CATÁLOGO",
+                hero_guarantee: "GARANTIA ANTI-BAN",
+                bento_subtitle: "// LIVE DISPATCH MARKET",
+                bento_title: "DROPS LENDÁRIOS DA SEMANA",
+                bento_desc: "Lotes limitados com reabastecimento criptografado. Selecione sua categoria de privilégio abaixo.",
+                bento_c1_badge: "REGIÃO GLOBAL",
+                bento_c1_title: "GAME KEYS",
+                bento_c1_desc: "Títulos AAA e lançamentos mundiais em formato digital permanente. Ativação imediata nas principais launchers.",
+                bento_buy_now: "ADQUIRIR AGORA — [ENTREGA INSTANTÂNEA]",
+                bento_c2_badge: "ACESSO COMPLETO",
+                bento_c2_title: "CONTAS HIGH-END",
+                bento_c2_desc: "Progresso maximizado, skins raras, passes antigos e setups competitivos prontos para o lobby. Troca de e-mail inteiramente liberada.",
+                bento_c3_badge: "ASSINATURA PREMIUM",
+                bento_c3_title: "STREAMING & GIFT CARDS",
+                bento_c3_desc: "Assinaturas e créditos nas plataformas mais cobiçadas do mercado. Ultra 4K ativo, sem quedas e com garantia renovável.",
+                catalog_subtitle: "// DESTAQUES DA LOJA",
+                catalog_title: "JOGOS EM PROMOÇÃO",
+                catalog_search: "Buscar jogos, contas...",
+                cat_all: "Todas as Categorias",
+                cat_steam: "Steam Key",
+                cat_account: "Conta",
+                cat_giftcard: "Gift Card",
+                genre_all: "Todos os Gêneros",
+                min_price_ph: "Preço Mínimo",
+                max_price_ph: "Preço Máximo",
+                sort_all: "Ordenar Por",
+                sort_lowest: "Menor Preço",
+                sort_highest: "Maior Preço",
+                sort_az: "A - Z",
+                only_globals: "SOMENTE GLOBAIS",
+                only_favorites: "SOMENTE FAVORITOS",
+                why_subtitle: "// PROTOCOLOS CRYPTO",
+                why_title: "POR QUE FAZEMOS A DIFERENÇA?",
+                why_c1_title: "ENTREGA INSTANTÂNEA",
+                why_c1_desc: "Nosso sistema automatizado dispara suas credenciais e chaves diretamente no painel e e-mail segundos após a confirmação.",
+                why_c2_title: "SUPORTE TÁTICO 24/7",
+                why_c2_desc: "Nada de robôs confusos. Nossa equipe técnica de suporte operacional está de prontidão no Discord e WhatsApp para qualquer dúvida.",
+                why_c3_title: "GARANTIA VITALÍCIA",
+                why_c3_desc: "Garantimos o funcionamento permanente ou a reposição integral de qualquer produto premium sob cobertura oficial.",
+                footer_description: "A plataforma definitiva de distribuição de bens digitais de luxo para entusiastas e e-sports competitivos.",
+                footer_nav_title: "NAVEGAÇÃO SENSÍVEL",
+                footer_nav_1: "Drops Black",
+                footer_nav_2: "Termos de Serviço",
+                footer_nav_3: "Segurança Operacional",
+                footer_sec_title: "SEGURANÇA INTERNA",
+                footer_sec_desc: "PAGAMENTO 100% SEGURO",
+                support_title: "SUPORTE AO CLIENTE",
+                support_desc: "Converse diretamente com nossa equipe técnica.",
+                support_placeholder: "Digite sua mensagem...",
+                total: "TOTAL",
+                view_cart: "VER CARRINHO",
+                empty_cart: "Seu carrinho está vazio.",
+                no_products_found: "Nenhum produto encontrado com esses filtros.",
+                sold_out: "ESGOTADO",
+                add_to_cart: "ADICIONAR",
+                buy_now: "COMPRAR AGORA",
+                warning_restricted: "ATIVAÇÃO RESTRITA: Válido apenas para ",
+                already_in_cart: "⚠️ Você já adicionou esta chave ao carrinho! Só é possível comprar uma unidade de cada jogo por vez para garantir as keys.",
+                need_login: "Você precisa fazer login para falar com o suporte."
+            },
+            en: {
+                nav_catalog: "CATALOG",
+                nav_features: "FEATURES",
+                nav_support: "SUPPORT",
+                nav_access: "ACCESS TERMINAL",
+                hero_status: "SERVER STATUS: SECURE & OPERATIONAL",
+                hero_title: "UNLOCK THE NEXT LEVEL.",
+                hero_description: "Global keys, exclusive accounts, and instant premium access. The lowest prices on the server, guaranteed by gamers.",
+                hero_explore: "EXPLORE CATALOG",
+                hero_guarantee: "ANTI-BAN GUARANTEE",
+                bento_subtitle: "// LIVE DISPATCH MARKET",
+                bento_title: "LEGENDARY DROPS OF THE WEEK",
+                bento_desc: "Limited batches with encrypted restocking. Select your privilege category below.",
+                bento_c1_badge: "GLOBAL REGION",
+                bento_c1_title: "GAME KEYS",
+                bento_c1_desc: "AAA titles and worldwide releases in permanent digital format. Immediate activation on top launchers.",
+                bento_buy_now: "GET IT NOW — [INSTANT DELIVERY]",
+                bento_c2_badge: "FULL ACCESS",
+                bento_c2_title: "HIGH-END ACCOUNTS",
+                bento_c2_desc: "Maximized progress, rare skins, old battle passes, and competitive setups ready for the lobby. Email fully changeable.",
+                bento_c3_badge: "PREMIUM SUBSCRIPTION",
+                bento_c3_title: "STREAMING & GIFT CARDS",
+                bento_c3_desc: "Subscriptions and credits on the most coveted platforms. Active Ultra 4K, no drops, and renewable guarantee.",
+                catalog_subtitle: "// STORE HIGHLIGHTS",
+                catalog_title: "GAMES ON SALE",
+                catalog_search: "Search games, accounts...",
+                cat_all: "All Categories",
+                cat_steam: "Steam Key",
+                cat_account: "Account",
+                cat_giftcard: "Gift Card",
+                genre_all: "All Genres",
+                min_price_ph: "Min Price",
+                max_price_ph: "Max Price",
+                sort_all: "Sort By",
+                sort_lowest: "Lowest Price",
+                sort_highest: "Highest Price",
+                sort_az: "A - Z",
+                only_globals: "ONLY GLOBALS",
+                only_favorites: "ONLY FAVORITES",
+                why_subtitle: "// CRYPTO PROTOCOLS",
+                why_title: "WHY CHOOSE US?",
+                why_c1_title: "INSTANT DELIVERY",
+                why_c1_desc: "Our automated system delivers your credentials and keys directly to your panel and email seconds after confirmation.",
+                why_c2_title: "TACTICAL SUPPORT 24/7",
+                why_c2_desc: "No confusing bots. Our active technical operations support team is ready on Discord and WhatsApp for any questions.",
+                why_c3_title: "LIFETIME GUARANTEE",
+                why_c3_desc: "We guarantee permanent operation or a complete replacement of any premium product under official coverage.",
+                footer_description: "The ultimate digital luxury goods distribution platform for enthusiasts and competitive esports.",
+                footer_nav_title: "OPERATIONAL NAVIGATION",
+                footer_nav_1: "Black Drops",
+                footer_nav_2: "Terms of Service",
+                footer_nav_3: "Operational Safety",
+                footer_sec_title: "INTERNAL SECURITY",
+                footer_sec_desc: "100% SECURE PAYMENT",
+                support_title: "CUSTOMER SUPPORT",
+                support_desc: "Chat directly with our technical team.",
+                support_placeholder: "Type your message...",
+                total: "TOTAL",
+                view_cart: "VIEW CART",
+                empty_cart: "Your cart is empty.",
+                no_products_found: "No products found with these filters.",
+                sold_out: "SOLD OUT",
+                add_to_cart: "ADD TO CART",
+                buy_now: "BUY NOW",
+                warning_restricted: "RESTRICTED ACTIVATION: Only valid for ",
+                already_in_cart: "⚠️ You have already added this key to the cart! You can only buy one unit of each game at a time to guarantee the keys.",
+                need_login: "You need to log in to chat with support."
+            },
+            es: {
+                nav_catalog: "CATÁLOGO",
+                nav_features: "RECURSOS",
+                nav_support: "SOPORTE",
+                nav_access: "ACCEDER AL TERMINAL",
+                hero_status: "ESTADO DEL SERVIDOR: SEGURO Y OPERATIVO",
+                hero_title: "DESBLOQUEA EL SIGUIENTE NIVEL.",
+                hero_description: "Llaves globales, cuentas exclusivas y acceso premium instantáneo. El precio más bajo del servidor, garantizado por jugadores.",
+                hero_explore: "EXPLORAR CATÁLOGO",
+                hero_guarantee: "GARANTÍA ANTI-BAN",
+                bento_subtitle: "// LIVE DISPATCH MARKET",
+                bento_title: "DROPS LEGENDARIOS DE LA SEMANA",
+                bento_desc: "Lotes limitados con reabastecimiento cifrado. Seleccione su categoría de privilegio a continuación.",
+                bento_c1_badge: "REGIÓN GLOBAL",
+                bento_c1_title: "GAME KEYS",
+                bento_c1_desc: "Títulos AAA y lanzamientos mundiales en formato digital permanente. Activación inmediata en los principales lanzadores.",
+                bento_buy_now: "ADQUIRIR AHORA — [ENTREGA INSTANTÁNEA]",
+                bento_c2_badge: "ACCESO COMPLETO",
+                bento_c2_title: "CUENTAS HIGH-END",
+                bento_c2_desc: "Progreso maximizado, skins raras, pases antiguos y configuraciones competitivas listas para el lobby. Correo totalmente modificable.",
+                bento_c3_badge: "SUSCRIPCIÓN PREMIUM",
+                bento_c3_title: "STREAMING & GIFT CARDS",
+                bento_c3_desc: "Suscripciones y créditos en las plataformas más codiciadas del mercado. Ultra 4K activo, sin caídas y garantía de renovación.",
+                catalog_subtitle: "// DESTACADOS DE LA TIENDA",
+                catalog_title: "JUEGOS EN OFERTA",
+                catalog_search: "Buscar juegos, cuentas...",
+                cat_all: "Todas las Categorías",
+                cat_steam: "Steam Key",
+                cat_account: "Cuenta",
+                cat_giftcard: "Gift Card",
+                genre_all: "Todos los Géneros",
+                min_price_ph: "Precio Mínimo",
+                max_price_ph: "Precio Máximo",
+                sort_all: "Ordenar Por",
+                sort_lowest: "Menor Precio",
+                sort_highest: "Mayor Precio",
+                sort_az: "A - Z",
+                only_globals: "SOLO GLOBALES",
+                only_favorites: "SOLO FAVORITOS",
+                why_subtitle: "// PROTOCOLOS CRYPTO",
+                why_title: "¿POR QUÉ MARCAMOS LA DIFERENCIA?",
+                why_c1_title: "ENTREGA INSTANTÁNEA",
+                why_c1_desc: "Nuestro sistema automatizado envía sus credenciales y llaves directamente a su panel y correo segundos después de la confirmación.",
+                why_c2_title: "SOPORTE TÁCTICO 24/7",
+                why_c2_desc: "Sin bots confusos. Nuestro equipo técnico de soporte de operaciones está listo en Discord y WhatsApp para cualquier pregunta.",
+                why_c3_title: "GARANTÍA DE POR VIDA",
+                why_c3_desc: "Garantizamos el funcionamiento permanente o la reposición total de cualquier producto premium bajo cobertura oficial.",
+                footer_description: "La plataforma definitiva de distribución de bienes digitales de lujo para entusiastas y deportes electrónicos competitivos.",
+                footer_nav_title: "NAVEGACIÓN OPERATIVA",
+                footer_nav_1: "Drops Black",
+                footer_nav_2: "Términos de Servicio",
+                footer_nav_3: "Seguridad Operativa",
+                footer_sec_title: "SEGURIDAD INTERNA",
+                footer_sec_desc: "PAGO 100% SEGURO",
+                support_title: "SOPORTE AL CLIENTE",
+                support_desc: "Chatea directamente con nuestro equipo técnico.",
+                support_placeholder: "Escribe tu mensaje...",
+                total: "TOTAL",
+                view_cart: "VER CARRINHO",
+                empty_cart: "Su carrito está vacío.",
+                no_products_found: "No se encontraron productos con estos filtros.",
+                sold_out: "AGOTADO",
+                add_to_cart: "AÑADIR",
+                buy_now: "COMPRAR AHORA",
+                warning_restricted: "ACTIVACIÓN RESTRINGIDA: Válido solo para ",
+                already_in_cart: "⚠️ ¡Ya has añadido esta clave al carrito! Solo es posible comprar una unidad de cada juego a la vez para garantizar las llaves.",
+                need_login: "Necesitas iniciar sesión para hablar con soporte."
+            }
+        };
+
+        function applyTranslations(lang) {
+            const dict = TRANSLATIONS[lang] || TRANSLATIONS['pt'];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                const translation = dict[key];
+                if (translation) {
+                    const attr = el.getAttribute('data-i18n-attr');
+                    if (attr) {
+                        el.setAttribute(attr, translation);
+                    } else {
+                        el.innerText = translation;
+                    }
+                }
+            });
+            document.documentElement.lang = lang === 'pt' ? 'pt-BR' : (lang === 'en' ? 'en' : 'es');
+        }
+
         // --- EXCHANGE & CURRENCY LOGIC ---
         window.currentCurrency = localStorage.getItem('zher_currency') || 'BRL';
         window.exchangeRates = { BRL: 1.0, USD: 0.19, EUR: 0.17 };
@@ -763,6 +985,13 @@
         window.changeCurrency = (cur) => {
             window.currentCurrency = cur;
             localStorage.setItem('zher_currency', cur);
+            
+            // Map currency to language
+            let lang = 'pt';
+            if (cur === 'USD') lang = 'en';
+            else if (cur === 'EUR') lang = 'es';
+            applyTranslations(lang);
+            
             renderGrid();
             renderMiniCart();
         };
@@ -828,15 +1057,18 @@
             grid.innerHTML = '';
             const filteredProducts = getFilteredProducts();
 
+            const lang = window.currentCurrency === 'USD' ? 'en' : (window.currentCurrency === 'EUR' ? 'es' : 'pt');
+            const dict = TRANSLATIONS[lang] || TRANSLATIONS['pt'];
+
             if (filteredProducts.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center text-slate-400 py-10 border border-slate-800 rounded-xl bg-slate-900/30">Nenhum produto encontrado com esses filtros.</div>';
+                grid.innerHTML = `<div class="col-span-full text-center text-slate-400 py-10 border border-slate-800 rounded-xl bg-slate-900/30">${dict.no_products_found}</div>`;
                 return;
             }
             
             filteredProducts.forEach((p, index) => {
                 let precoFormatado = '';
                 if (p.in_stock === false) {
-                    precoFormatado = '<span class="text-rose-500 text-[10px] font-bold bg-rose-900/30 px-2 py-1 border border-rose-900/50 rounded tracking-widest">ESGOTADO</span>';
+                    precoFormatado = `<span class="text-rose-500 text-[10px] font-bold bg-rose-900/30 px-2 py-1 border border-rose-900/50 rounded tracking-widest">${dict.sold_out}</span>`;
                 } else {
                     const priceNum = parseFloat(p.price);
                     const oldPriceNum = p.old_price ? parseFloat(p.old_price) : 0;
@@ -859,7 +1091,7 @@
                 `;
 
                 const regionIcon = p.is_global === false ? 
-                    '<div class="flex items-center gap-1 text-[10px] text-slate-400 font-orbitron tracking-widest mt-1 mb-2" title="Restrita a alguns países"><div class="relative"><i data-lucide="globe" class="w-4 h-4 text-white opacity-50"></i><i data-lucide="lock" class="w-2.5 h-2.5 text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 drop-shadow-md"></i></div> RESTRITA</div>' : 
+                    `<div class="flex items-center gap-1 text-[10px] text-slate-400 font-orbitron tracking-widest mt-1 mb-2" title="Restrita a alguns países"><div class="relative"><i data-lucide="globe" class="w-4 h-4 text-white opacity-50"></i><i data-lucide="lock" class="w-2.5 h-2.5 text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 drop-shadow-md"></i></div> ${dict.warning_restricted.split(':')[0]}</div>` : 
                     '<div class="flex items-center gap-1 text-[10px] text-slate-400 font-orbitron tracking-widest mt-1 mb-2"><i data-lucide="globe" class="w-4 h-4 text-white opacity-80"></i> GLOBAL</div>';
 
                 const genresTags = p.genres ? p.genres.split(',').slice(0,2).map(g => `<span class="bg-slate-800 border border-slate-700 text-slate-300 font-orbitron text-[8px] tracking-widest px-2 py-0.5 rounded uppercase">${g.trim()}</span>`).join(' ') : '';
@@ -937,19 +1169,22 @@
             currentProduct = produtos.find(p => p.id === id);
             if (!currentProduct) return;
             
+            const lang = window.currentCurrency === 'USD' ? 'en' : (window.currentCurrency === 'EUR' ? 'es' : 'pt');
+            const dict = TRANSLATIONS[lang] || TRANSLATIONS['pt'];
+
             document.getElementById('modal-image').src = currentProduct.image;
             document.getElementById('modal-title').innerText = currentProduct.title;
             
             const warningEl = document.getElementById('modal-region-warning');
             if (currentProduct.is_global === false) {
-                warningEl.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500"></i> ATIVAÇÃO RESTRITA: Válido apenas para ${currentProduct.restricted_countries || 'alguns países especificados'}.`;
+                warningEl.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500"></i> ${dict.warning_restricted}${currentProduct.restricted_countries || 'alguns países especificados'}.`;
                 warningEl.classList.remove('hidden');
             } else {
                 warningEl.classList.add('hidden');
             }
 
             if (currentProduct.in_stock === false) {
-                document.getElementById('modal-price').innerHTML = 'ESGOTADO';
+                document.getElementById('modal-price').innerHTML = dict.sold_out;
             } else {
                 const priceNum = parseFloat(currentProduct.price);
                 const oldPriceNum = currentProduct.old_price ? parseFloat(currentProduct.old_price) : 0;
@@ -977,14 +1212,14 @@
             
             const actions = document.getElementById('modal-actions');
             if (currentProduct.in_stock === false) {
-                actions.innerHTML = '<div class="w-full text-center py-4 bg-slate-800/50 rounded-xl text-slate-500 font-orbitron text-xs tracking-widest font-bold border border-slate-800">PRODUTO INDISPONÍVEL NO MOMENTO</div>';
+                actions.innerHTML = `<div class="w-full text-center py-4 bg-slate-800/50 rounded-xl text-slate-500 font-orbitron text-xs tracking-widest font-bold border border-slate-800">${dict.sold_out}</div>`;
             } else {
                 actions.innerHTML = `
                     <button onclick="addAndShowCart(null, currentProduct.id)" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl transition-all duration-300 uppercase flex items-center justify-center gap-2 border border-slate-700 hover:border-slate-500">
-                        <i data-lucide="shopping-cart" class="w-5 h-5"></i> ADICIONAR
+                        <i data-lucide="shopping-cart" class="w-5 h-5"></i> ${dict.add_to_cart}
                     </button>
                     <button onclick="comprarProduto()" class="w-full bg-gradient-to-r from-electricblue to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl shadow-cyber transition-all duration-300 uppercase flex items-center justify-center gap-2">
-                        <i data-lucide="zap" class="w-5 h-5"></i> COMPRAR AGORA
+                        <i data-lucide="zap" class="w-5 h-5"></i> ${dict.buy_now}
                     </button>
                 `;
             }
