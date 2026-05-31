@@ -2141,15 +2141,15 @@ app.post('/api/minigames/claim', requireAuth, async (req, res) => {
         return res.status(400).json({ error: 'Pontuação inválida.' });
     }
     
-    // Cálculo seguro baseado no CPM de $ 0.10 USD (1 Z-Point = R$ 0.0001 BRL)
-    // Sem Ad: 1 ponto a cada 100 pontos de score (fator 0.01)
-    // Com Ad: 5 pontos a cada 100 pontos de score (fator 0.05)
-    const factor = adWatched ? 0.05 : 0.01;
+    // Cálculo ultra-fracionado baseado no CPM de $ 0.10 USD (1 Z-Point = R$ 0.000001 BRL)
+    // Sem Ad: 0.5 ponto por cada ponto de score (fator 0.5)
+    // Com Ad: 2.5 pontos por cada ponto de score (fator 2.5) -> Multi-Boost 5x
+    const factor = adWatched ? 2.5 : 0.5;
     let rewardPoints = Math.round(scorePoints * factor);
     
-    // Segurança contra exploits/bots: limitar recompensa máxima por partida a 30 pontos
-    if (rewardPoints > 30) {
-        rewardPoints = 30;
+    // Segurança contra exploits/bots: limitar recompensa máxima por partida a 1500 pontos
+    if (rewardPoints > 1500) {
+        rewardPoints = 1500;
     }
     
     if (rewardPoints <= 0) {
@@ -2162,7 +2162,7 @@ app.post('/api/minigames/claim', requireAuth, async (req, res) => {
     try {
         await client.query('BEGIN');
         
-        // 1. Verificar limite diário acumulado em dinheiro real convertido hoje (equivalente a 20.000 pontos = R$ 2,00)
+        // 1. Verificar limite diário acumulado em dinheiro real convertido hoje (equivalente a 2.000.000 pontos = R$ 2,00)
         const dailyRes = await client.query(
             "SELECT COALESCE(SUM(amount), 0) AS total FROM wallet_transactions WHERE user_id = $1 AND type = 'minigame' AND created_at >= CURRENT_DATE",
             [userId]
@@ -2205,7 +2205,7 @@ app.post('/api/minigames/claim', requireAuth, async (req, res) => {
     }
 });
 
-// Assistir anúncio rápido e ganhar 15 pontos fixos (Smartlink Direct Ad)
+// Assistir anúncio rápido e ganhar 250 pontos fixos (Smartlink Direct Ad)
 app.post('/api/minigames/watch-ad-points', requireAuth, async (req, res) => {
     const userId = req.session.userId;
     const client = await pool.connect();
@@ -2219,7 +2219,7 @@ app.post('/api/minigames/watch-ad-points', requireAuth, async (req, res) => {
             return res.status(404).json({ error: 'Usuário não encontrado.' });
         }
         
-        const rewardPoints = 15;
+        const rewardPoints = 250;
         const currentPoints = parseInt(userRes.rows[0].points || 0);
         const newPoints = currentPoints + rewardPoints;
         const balance = parseFloat(userRes.rows[0].balance || 0);
@@ -2243,13 +2243,13 @@ app.post('/api/minigames/watch-ad-points', requireAuth, async (req, res) => {
     }
 });
 
-// Converter pontos do Minigame em Saldo real de Carteira (100 pontos = R$ 0,01 BRL)
+// Converter pontos do Minigame em Saldo real de Carteira (10.000 pontos = R$ 0,01 BRL)
 app.post('/api/minigames/convert-points', requireAuth, async (req, res) => {
     const { pointsToConvert } = req.body;
     const pointsNum = parseInt(pointsToConvert);
     
-    if (isNaN(pointsNum) || pointsNum < 100 || pointsNum % 100 !== 0) {
-        return res.status(400).json({ error: 'Por favor, insira uma quantidade de pontos válida (múltiplos de 100).' });
+    if (isNaN(pointsNum) || pointsNum < 10000 || pointsNum % 10000 !== 0) {
+        return res.status(400).json({ error: 'Por favor, insira uma quantidade de pontos válida (mínimo de 10.000 pontos e em múltiplos de 10.000).' });
     }
     
     const userId = req.session.userId;
@@ -2270,8 +2270,8 @@ app.post('/api/minigames/convert-points', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'Pontos insuficientes para realizar a conversão.' });
         }
         
-        // Conversão: 100 pontos = R$ 0,01 BRL (10.000 pontos = R$ 1,00 BRL)
-        const convertedBRL = parseFloat((pointsNum / 10000).toFixed(2));
+        // Conversão: 10.000 pontos = R$ 0,01 BRL (1.000.000 pontos = R$ 1,00 BRL)
+        const convertedBRL = parseFloat((pointsNum / 1000000).toFixed(2));
         if (convertedBRL <= 0) {
             await client.query('ROLLBACK');
             return res.status(400).json({ error: 'Quantidade de pontos muito baixa para gerar saldo em reais.' });

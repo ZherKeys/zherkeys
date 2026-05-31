@@ -113,16 +113,16 @@
                     <span class="text-[9px] text-slate-500 font-orbitron tracking-widest uppercase">Ganhos Rápidos</span>
                     <span class="text-xs font-semibold text-white font-inter">Assista a um anúncio rápido e ganhe pontos fixos sem precisar jogar!</span>
                     <button onclick="watchQuickAdForPoints()" class="w-full bg-gradient-to-r from-electricblue to-blue-600 hover:from-blue-500 hover:to-blue-600 text-white font-orbitron text-[10px] tracking-widest font-bold py-2.5 rounded-lg shadow-lg shadow-blue-500/10 hover:scale-[1.01] transition-all uppercase flex items-center justify-center gap-2 cursor-pointer">
-                        ⚡ GANHAR +15 PONTOS <i data-lucide="zap" class="w-3.5 h-3.5 animate-pulse"></i>
+                        ⚡ GANHAR +250 PONTOS <i data-lucide="zap" class="w-3.5 h-3.5 animate-pulse"></i>
                     </button>
                 </div>
 
                 <!-- Conversor de Pontos -->
                 <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl flex flex-col gap-3">
                     <span class="text-[9px] text-slate-500 font-orbitron tracking-widest uppercase">Conversor Z-Points</span>
-                    <span class="text-[10px] text-slate-400 font-inter leading-relaxed">Taxa: <b class="text-toxicgreen font-orbitron">100 Pontos = R$ 0,01 BRL</b>. Digite em múltiplos de 100 para converter.</span>
+                    <span class="text-[10px] text-slate-400 font-inter leading-relaxed">Taxa: <b class="text-toxicgreen font-orbitron">10.000 Pontos = R$ 0,01 BRL</b>. Digite em múltiplos de 10.000 para converter.</span>
                     <div class="flex gap-2">
-                        <input type="number" id="convert-points-input" placeholder="Ex: 500" min="100" step="100" class="w-full bg-slate-900 border border-slate-800 text-white text-xs px-3 py-2 rounded-lg font-orbitron focus:outline-none focus:border-toxicgreen focus:ring-1 focus:ring-toxicgreen transition-all" />
+                        <input type="number" id="convert-points-input" placeholder="Ex: 10000" min="10000" step="10000" class="w-full bg-slate-900 border border-slate-800 text-white text-xs px-3 py-2 rounded-lg font-orbitron focus:outline-none focus:border-toxicgreen focus:ring-1 focus:ring-toxicgreen transition-all" />
                         <button onclick="convertPointsToCash()" class="bg-toxicgreen hover:bg-emerald-500 text-obsidian font-orbitron text-[10px] tracking-widest font-black px-4 py-2 rounded-lg transition-colors uppercase cursor-pointer">
                             TROCAR
                         </button>
@@ -145,53 +145,106 @@
                 
                 <!-- Dica para o Admin -->
                 <p class="text-[9px] text-slate-600 mt-4 leading-normal italic">Adsterra Banner Placeholder (300x250 ou 160x600). Substitua pelo script de sua rede de anúncios no código de minigames.html.</p>
-            </div>
-        </div>
-
-        <!-- ESPAÇO CENTRAL DO JOGO -->
+                  <!-- ESPAÇO CENTRAL DO JOGO -->
         <div class="lg:col-span-2 flex flex-col gap-6">
             
-            <!-- Painel de Status do Minigame -->
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex flex-col">
-                    <span class="text-[9px] text-slate-500 font-orbitron tracking-widest uppercase mb-1">LIMITE DIÁRIO PLAY-TO-EARN</span>
-                    <span id="daily-limit-display" class="text-white font-orbitron font-bold text-base text-toxicgreen">R$ 2,00 restantes</span>
+            <!-- ARCADE GAME SELECTION MENU -->
+            <div id="game-selection-menu" class="flex flex-col gap-6 w-full">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center">
+                    <h2 class="font-orbitron font-black text-2xl text-white tracking-wider mb-2 uppercase flex items-center justify-center gap-2">
+                        <i data-lucide="gamepad-2" class="text-electricblue w-7 h-7"></i> ZHER ARCADE
+                    </h2>
+                    <p class="text-xs text-slate-400 font-inter max-w-md mx-auto">Selecione um minigame para hackear chaves e acumular milhares de **Z-Points** na sua carteira virtual!</p>
                 </div>
-                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex flex-col">
-                    <span class="text-[9px] text-slate-500 font-orbitron tracking-widest uppercase mb-1">PONTOS NESTA SESSÃO</span>
-                    <span id="session-score-display" class="text-white font-orbitron font-bold text-base text-electricblue">0 Pts</span>
-                </div>
-            </div>
 
-            <!-- VIEWPORT DO JOGO -->
-            <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden relative shadow-cyber flex flex-col items-center">
-                <!-- Tela do Jogo Canvas -->
-                <canvas id="gameCanvas" class="w-full bg-[#050811]" width="500" height="500"></canvas>
-
-                <!-- Barra de Instruções -->
-                <div class="w-full bg-slate-900/80 border-t border-slate-800 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs">
-                    <span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="keyboard" class="w-4 h-4 text-electricblue"></i> Use as setas <b class="text-white">&larr; &rarr;</b> ou clique e arraste para mover o Hacker</span>
-                    <span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">5 Z-Points</b> (com Multi-Boost)</span>
-                </div>
-            </div>
-            
-            <!-- ANÚNCIO INFERIOR HORIZONTAL (BANNER 2) -->
-            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col items-center relative overflow-hidden">
-                <div class="absolute top-1 right-2 bg-slate-800 text-[8px] text-slate-500 font-bold px-1.5 py-0.5 rounded tracking-widest uppercase">Patrocínio Global</div>
-                <span class="text-[10px] text-slate-500 font-orbitron tracking-widest uppercase mb-3">Banner Horizontal</span>
-                
-                <!-- Mock Leaderboard Ad -->
-                <div class="w-full bg-slate-900/50 hover:bg-slate-850 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-4 cursor-pointer" onclick="window.open('https://gameflip.com')">
-                    <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-9 h-9 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-orbitron font-black text-sm flex-shrink-0">G</div>
-                        <div class="min-w-0">
-                            <span class="font-orbitron font-bold text-white text-xs block truncate uppercase">GAMEFLIP PARTNERS</span>
-                            <span class="text-[10px] text-slate-400 block truncate">Venda suas keys não utilizadas no maior mercado do mundo automaticamente.</span>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                    <!-- Card Jogo 1: Zher Hacker -->
+                    <div onclick="selectAndStartGame('hacker')" class="bg-slate-900 border border-slate-800/80 hover:border-electricblue rounded-2xl p-6 flex flex-col gap-4 cursor-pointer hover:shadow-cyber transition-all duration-300 transform hover:-translate-y-1 group">
+                        <div class="w-full aspect-video bg-slate-950 border border-slate-850 rounded-xl relative overflow-hidden flex items-center justify-center">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-blue-950/40 via-transparent to-slate-950"></div>
+                            <div class="w-14 h-14 rounded-xl bg-electricblue/10 border border-electricblue/20 text-electricblue flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                                <i data-lucide="shield-alert" class="w-8 h-8 flex-shrink-0"></i>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-electricblue transition-colors">🕹️ ZHER HACKER</span>
+                            <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Mova o terminal para capturar chaves digitais e moedas de ouro. Desvie dos vírus de rastreamento do sistema!</p>
+                            <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
+                                <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
+                                <span class="text-electricblue font-bold flex items-center gap-0.5">Jogar &raquo;</span>
+                            </div>
                         </div>
                     </div>
-                    <span class="text-[9px] text-toxicgreen font-bold tracking-widest uppercase flex-shrink-0 border border-toxicgreen/30 px-3 py-1.5 rounded bg-toxicgreen/5">Visitar &raquo;</span>
+
+                    <!-- Card Jogo 2: Zher Bird -->
+                    <div onclick="selectAndStartGame('flappy')" class="bg-slate-900 border border-slate-800/80 hover:border-cyberrose rounded-2xl p-6 flex flex-col gap-4 cursor-pointer hover:shadow-rose transition-all duration-300 transform hover:-translate-y-1 group">
+                        <div class="w-full aspect-video bg-slate-950 border border-slate-850 rounded-xl relative overflow-hidden flex items-center justify-center">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-rose-950/30 via-transparent to-slate-950"></div>
+                            <div class="w-14 h-14 rounded-xl bg-cyberrose/10 border border-cyberrose/20 text-cyberrose flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                                <i data-lucide="twitter" class="w-8 h-8 flex-shrink-0"></i>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-cyberrose transition-colors">🕹️ ZHER BIRD (FLAPPY)</span>
+                            <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Bata asas no ambiente neon cibernético desviando das paredes de firewall eletrônico sem colidir!</p>
+                            <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
+                                <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
+                                <span class="text-cyberrose font-bold flex items-center gap-0.5">Jogar &raquo;</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- ESPAÇO CENTRAL DO JOGO (OCULTO ANTES DE SELECIONAR) -->
+            <div id="arcade-game-container" class="hidden flex flex-col gap-6 w-full">
+                <!-- Botão de Voltar para o Menu Arcade -->
+                <button onclick="backToArcadeMenu()" class="w-fit px-4 py-2.5 bg-slate-900 border border-slate-800 hover:border-slate-600 hover:bg-slate-850 text-slate-300 font-orbitron text-[9px] tracking-widest font-bold rounded-xl transition-all uppercase flex items-center gap-1.5 cursor-pointer">
+                    &larr; VOLTAR PARA O ARCADE
+                </button>
+                
+                <!-- Painel de Status do Minigame -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex flex-col">
+                        <span class="text-[9px] text-slate-500 font-orbitron tracking-widest uppercase mb-1">LIMITE DIÁRIO PLAY-TO-EARN</span>
+                        <span id="daily-limit-display" class="text-white font-orbitron font-bold text-base text-toxicgreen">R$ 2,00 restantes</span>
+                    </div>
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex flex-col">
+                        <span class="text-[9px] text-slate-500 font-orbitron tracking-widest uppercase mb-1">PONTOS NESTA SESSÃO</span>
+                        <span id="session-score-display" class="text-white font-orbitron font-bold text-base text-electricblue">0 Pts</span>
+                    </div>
+                </div>
+
+                <!-- VIEWPORT DO JOGO -->
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden relative shadow-cyber flex flex-col items-center">
+                    <!-- Tela do Jogo Canvas -->
+                    <canvas id="gameCanvas" class="w-full bg-[#050811]" width="500" height="500"></canvas>
+
+                    <!-- Barra de Instruções -->
+                    <div class="w-full bg-slate-900/80 border-t border-slate-800 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs">
+                        <span id="game-instructions-text" class="text-slate-400 flex items-center gap-1.5"><i data-lucide="keyboard" class="w-4 h-4 text-electricblue"></i> Use as setas ou clique e arraste para mover o Hacker</span>
+                        <span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">5 Z-Points</b> (com Multi-Boost)</span>
+                    </div>
+                </div>
+                
+                <!-- ANÚNCIO INFERIOR HORIZONTAL (BANNER 2) -->
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col items-center relative overflow-hidden">
+                    <div class="absolute top-1 right-2 bg-slate-800 text-[8px] text-slate-500 font-bold px-1.5 py-0.5 rounded tracking-widest uppercase">Patrocínio Global</div>
+                    <span class="text-[10px] text-slate-500 font-orbitron tracking-widest uppercase mb-3">Banner Horizontal</span>
+                    
+                    <!-- Mock Leaderboard Ad -->
+                    <div class="w-full bg-slate-900/50 hover:bg-slate-850 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-4 cursor-pointer" onclick="window.open('https://gameflip.com')">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-9 h-9 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-orbitron font-black text-sm flex-shrink-0">G</div>
+                            <div class="min-w-0">
+                                <span class="font-orbitron font-bold text-white text-xs block truncate uppercase">GAMEFLIP PARTNERS</span>
+                                <span class="text-[10px] text-slate-400 block truncate">Venda suas keys não utilizadas no maior mercado do mundo automaticamente.</span>
+                            </div>
+                        </div>
+                        <span class="text-[9px] text-toxicgreen font-bold tracking-widest uppercase flex-shrink-0 border border-toxicgreen/30 px-3 py-1.5 rounded bg-toxicgreen/5">Visitar &raquo;</span>
+                    </div>
+                </div>
+            </div>            </div>
         </div>
 
         <!-- SIDEBAR DE ANÚNCIOS DIREITA -->
@@ -380,15 +433,16 @@
         };
 
         // ==========================================
-        // CANVAS GAME: ZHER HACKER (CYBER CATCHER)
+        // CANVAS GAMES: MULTI-ARCADE SYSTEM
         // ==========================================
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
         let gameActive = false;
         let score = 0;
-        
-        // Entidades
+        let currentGame = 'hacker'; // 'hacker' ou 'flappy'
+
+        // --- Entidades do Jogo 1: Zher Hacker ---
         const player = {
             x: 220,
             y: 430,
@@ -398,46 +452,43 @@
             color: '#3B82F6',
             targetX: 220
         };
-
         let items = [];
         let particles = [];
-        let keyImage = null;
 
-        // Movimento do Player (Teclado)
-        let keysPressed = {};
-        window.addEventListener('keydown', (e) => {
-            keysPressed[e.code] = true;
-            if(e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
-                e.preventDefault();
-            }
-        });
-        window.addEventListener('keyup', (e) => { keysPressed[e.code] = false; });
+        // --- Entidades do Jogo 2: Zher Bird (Flappy) ---
+        const bird = {
+            x: 100,
+            y: 250,
+            radius: 12,
+            velocity: 0,
+            gravity: 0.35,
+            jump: -6.0
+        };
+        let pipes = [];
+        const pipeWidth = 55;
+        const pipeGap = 145;
+        let pipeSpeed = 2.4;
 
-        // Movimento do Player (Mouse / Touch)
-        function updatePlayerX(clientX) {
-            const rect = canvas.getBoundingClientRect();
-            const relativeX = (clientX - rect.left) * (canvas.width / rect.width);
-            player.targetX = Math.max(0, Math.min(canvas.width - player.width, relativeX - player.width/2));
+        function spawnPipe() {
+            const minHeight = 50;
+            const maxHeight = canvas.height - pipeGap - minHeight;
+            const topHeight = Math.random() * (maxHeight - minHeight) + minHeight;
+            const bottomHeight = canvas.height - topHeight - pipeGap;
+            
+            pipes.push({
+                x: canvas.width,
+                topHeight,
+                bottomHeight,
+                passed: false
+            });
         }
 
-        canvas.addEventListener('mousemove', (e) => {
-            if(!gameActive) return;
-            updatePlayerX(e.clientX);
-        });
-        canvas.addEventListener('touchmove', (e) => {
-            if(!gameActive) return;
-            e.preventDefault();
-            if(e.touches.length > 0) {
-                updatePlayerX(e.touches[0].clientX);
-            }
-        }, { passive: false });
-
-        // Inicia o Canvas
+        // --- DESENHAR TELAS DO CANVAS ---
         function drawStartScreen() {
             ctx.fillStyle = '#050811';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Grid de fundo cyberpunk
+            // Grid background
             ctx.strokeStyle = 'rgba(59, 130, 246, 0.05)';
             ctx.lineWidth = 1;
             for(let x=0; x<canvas.width; x+=30) {
@@ -446,69 +497,264 @@
             for(let y=0; y<canvas.height; y+=30) {
                 ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
             }
-
-            ctx.fillStyle = '#F43F5E';
+            
+            // Title
+            ctx.fillStyle = '#FFFFFF';
             ctx.font = '900 32px Orbitron';
             ctx.textAlign = 'center';
-            ctx.shadowColor = '#F43F5E';
+            ctx.shadowColor = '#3B82F6';
             ctx.shadowBlur = 15;
-            ctx.fillText('ZHER HACKER', canvas.width / 2, 180);
+            ctx.fillText('ZHER ARCADE', canvas.width/2, canvas.height/2 - 40);
             
-            ctx.shadowBlur = 0;
+            // Subtitle
+            ctx.fillStyle = '#F43F5E';
+            ctx.font = '700 14px Orbitron';
+            ctx.shadowColor = '#F43F5E';
+            ctx.shadowBlur = 8;
+            ctx.fillText('SELECIONE UM JOGO NO MENU ACIMA', canvas.width/2, canvas.height/2 + 10);
+            
+            // Instructions
             ctx.fillStyle = '#94A3B8';
-            ctx.font = '500 12px Orbitron';
-            ctx.fillText('HACKEIE AS CHAVES PATROCINADAS E SAQUE SALDO', canvas.width / 2, 220);
-
-            // Botão "START HACK"
-            ctx.fillStyle = '#10B981';
-            ctx.shadowColor = '#10B981';
-            ctx.shadowBlur = 20;
-            ctx.beginPath();
-            ctx.roundRect(canvas.width/2 - 90, 270, 180, 50, 10);
-            ctx.fill();
-
+            ctx.font = '400 12px Inter';
             ctx.shadowBlur = 0;
-            ctx.fillStyle = '#020617';
-            ctx.font = 'bold 13px Orbitron';
-            ctx.fillText('INICIAR HACK', canvas.width / 2, 301);
+            ctx.fillText('Jogue para acumular Z-Points virtuais', canvas.width/2, canvas.height/2 + 50);
+            ctx.fillText('e troque por saldo real na sua carteira!', canvas.width/2, canvas.height/2 + 70);
         }
 
-        canvas.addEventListener('click', (e) => {
-            if(gameActive) return;
-            const rect = canvas.getBoundingClientRect();
-            const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
-            const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+        function drawGameReadyScreen() {
+            ctx.fillStyle = '#050811';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Se clicou no botão iniciar hack
-            if(clickX >= canvas.width/2 - 90 && clickX <= canvas.width/2 + 90 &&
-               clickY >= 270 && clickY <= 320) {
+            // Grid neon
+            ctx.strokeStyle = currentGame === 'flappy' ? 'rgba(244, 63, 94, 0.05)' : 'rgba(59, 130, 246, 0.05)';
+            for(let x=0; x<canvas.width; x+=30) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            for(let y=0; y<canvas.height; y+=30) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+            
+            // Desenha elementos estáticos do jogo como fundo
+            if (currentGame === 'hacker') {
+                ctx.fillStyle = player.color;
+                ctx.strokeStyle = '#60A5FA';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(player.x, player.y, player.width, player.height, 6);
+                ctx.fill();
+                ctx.stroke();
+            } else {
+                ctx.fillStyle = '#F43F5E';
+                ctx.strokeStyle = '#FDA4AF';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            }
+            
+            // Overlay escuro transparente
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.6)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Texto Central
+            ctx.fillStyle = '#FFFFFF';
+            ctx.textAlign = 'center';
+            
+            ctx.font = 'bold 24px Orbitron';
+            ctx.shadowColor = currentGame === 'flappy' ? '#F43F5E' : '#3B82F6';
+            ctx.shadowBlur = 10;
+            if (currentGame === 'hacker') {
+                ctx.fillText('ZHER HACKER', canvas.width / 2, canvas.height / 2 - 50);
+            } else {
+                ctx.fillText('ZHER BIRD (FLAPPY)', canvas.width / 2, canvas.height / 2 - 50);
+            }
+            
+            ctx.font = 'bold 14px Orbitron';
+            ctx.fillStyle = '#10B981';
+            ctx.shadowColor = '#10B981';
+            ctx.shadowBlur = 8;
+            ctx.fillText('CLIQUE NO CANVAS OU PRESSIONE UMA TECLA', canvas.width / 2, canvas.height / 2 + 10);
+            ctx.fillText('PARA INICIAR A PARTIDA', canvas.width / 2, canvas.height / 2 + 35);
+            
+            ctx.shadowBlur = 0;
+            ctx.font = '400 12px Inter';
+            ctx.fillStyle = '#94A3B8';
+            if (currentGame === 'hacker') {
+                ctx.fillText('Capture chaves e moedas, desvie dos vírus vermelhos!', canvas.width / 2, canvas.height / 2 + 80);
+            } else {
+                ctx.fillText('Desvie das paredes de firewall verde!', canvas.width / 2, canvas.height / 2 + 80);
+            }
+        }
+
+        let gameInitialized = false;
+
+        function handleStartTrigger() {
+            if (!gameActive && !gameInitialized) {
+                gameInitialized = true;
                 startGame();
             }
-        });
+        }
 
-        function startGame() {
-            synth.init();
-            gameActive = true;
+        // --- Gerenciador do Menu Arcade ---
+        function selectAndStartGame(gameName) {
+            currentGame = gameName;
+            
+            // Exibe o painel de jogo e oculta o menu arcade
+            document.getElementById('game-selection-menu').classList.add('hidden');
+            document.getElementById('arcade-game-container').classList.remove('hidden');
+            
+            // Altera instruções do rodapé do canvas
+            const instEl = document.getElementById('game-instructions-text');
+            if (gameName === 'hacker') {
+                instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-electricblue"></i> Use as setas ou clique e arraste para mover o Hacker`;
+            } else {
+                instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-cyberrose"></i> Pressione ESPAÇO, SETA PARA CIMA ou clique no canvas para voar`;
+            }
+            lucide.createIcons();
+            
+            // Coloca o jogo no estado "pronto para iniciar" mas não ativo
+            gameActive = false;
+            gameInitialized = false;
             score = 0;
             items = [];
             particles = [];
+            
+            // Setup base de posições para desenhar no preview
+            if (currentGame === 'hacker') {
+                player.x = 220;
+                player.targetX = 220;
+            } else {
+                bird.y = 220;
+                bird.velocity = 0;
+                pipes = [];
+            }
+            
+            // Desenha a tela inicial de "Clique para Começar"
+            drawGameReadyScreen();
+        }
+
+        function backToArcadeMenu() {
+            gameActive = false;
+            document.getElementById('arcade-game-container').classList.add('hidden');
+            document.getElementById('game-selection-menu').classList.remove('hidden');
+            
+            // Oculta modal de game over se estiver ativo
+            document.getElementById('game-over-modal').classList.add('hidden');
+        }
+
+        // --- Entrada de Controles (Teclado) ---
+        let keysPressed = {};
+        window.addEventListener('keydown', (e) => {
+            keysPressed[e.code] = true;
+            
+            // Se o painel do jogo está visível mas o jogo não começou, qualquer tecla inicia
+            const isGamePanelVisible = !document.getElementById('arcade-game-container').classList.contains('hidden');
+            if (isGamePanelVisible && !gameActive && !gameInitialized) {
+                e.preventDefault();
+                handleStartTrigger();
+                return;
+            }
+            
+            if(e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'Space' || e.code === 'ArrowUp') {
+                e.preventDefault();
+            }
+            // Ação de pulo no Flappy Bird
+            if (gameActive && currentGame === 'flappy' && (e.code === 'Space' || e.code === 'ArrowUp')) {
+                bird.velocity = bird.jump;
+                synth.point();
+            }
+        });
+        window.addEventListener('keyup', (e) => { keysPressed[e.code] = false; });
+
+        // --- Entrada de Controles (Mouse & Touch) ---
+        function updatePlayerX(clientX) {
+            const rect = canvas.getBoundingClientRect();
+            const relativeX = (clientX - rect.left) * (canvas.width / rect.width);
+            player.targetX = Math.max(0, Math.min(canvas.width - player.width, relativeX - player.width/2));
+        }
+
+        canvas.addEventListener('mousemove', (e) => {
+            if(!gameActive || currentGame !== 'hacker') return;
+            updatePlayerX(e.clientX);
+        });
+        canvas.addEventListener('touchmove', (e) => {
+            if(!gameActive || currentGame !== 'hacker') return;
+            e.preventDefault();
+            if(e.touches.length > 0) {
+                updatePlayerX(e.touches[0].clientX);
+            }
+        }, { passive: false });
+
+        // Pulo no Flappy Bird por cliques/toques no Canvas
+        canvas.addEventListener('mousedown', (e) => {
+            if (!gameActive && !gameInitialized) {
+                handleStartTrigger();
+                return;
+            }
+            if (gameActive && currentGame === 'flappy') {
+                bird.velocity = bird.jump;
+                synth.point();
+            }
+        });
+        canvas.addEventListener('touchstart', (e) => {
+            if (!gameActive && !gameInitialized) {
+                e.preventDefault();
+                handleStartTrigger();
+                return;
+            }
+            if (gameActive && currentGame === 'flappy') {
+                e.preventDefault();
+                bird.velocity = bird.jump;
+                synth.point();
+            }
+        }, { passive: false });
+
+        // --- Iniciar as Partidas ---
+        function startGame() {
+            synth.init();
+            gameActive = true;
+            gameInitialized = true;
+            score = 0;
+            items = [];
+            particles = [];
+            
+            // Zher Hacker Setup
             player.x = 220;
             player.targetX = 220;
+
+            // Zher Bird Setup
+            bird.y = 220;
+            bird.velocity = 0;
+            pipes = [];
             
             // Loop do jogo
             requestAnimationFrame(gameLoop);
         }
 
-        // Adiciona um item caindo
+        // Spawn de Partículas Neon
+        function spawnParticles(x, y, color) {
+            for(let i=0; i<8; i++) {
+                particles.push({
+                    x, y,
+                    vx: Math.random() * 4 - 2,
+                    vy: Math.random() * 4 - 2,
+                    size: Math.random() * 3 + 2,
+                    color,
+                    life: 20
+                });
+            }
+        }
+
+        // Spawn de itens (Zher Hacker)
         function spawnItem() {
             if (Math.random() < 0.05) {
                 const types = [
-                    { type: 'key', color: '#3B82F6', size: 14, score: 10, speed: Math.random() * 2 + 3 },       // Chave convencional
-                    { type: 'gold', color: '#FBBF24', size: 12, score: 25, speed: Math.random() * 2 + 4 },      // Moeda de Ouro
-                    { type: 'virus', color: '#EF4444', size: 15, score: -20, speed: Math.random() * 3 + 3 }     // Vírus (perde vida/score)
+                    { type: 'key', color: '#3B82F6', size: 14, score: 10, speed: Math.random() * 2 + 3 },
+                    { type: 'gold', color: '#FBBF24', size: 12, score: 25, speed: Math.random() * 2 + 4 },
+                    { type: 'virus', color: '#EF4444', size: 15, score: -20, speed: Math.random() * 3 + 3 }
                 ];
                 
-                // Distribuição ponderada
                 let rolled = types[0];
                 const rand = Math.random();
                 if (rand < 0.6) {
@@ -527,20 +773,7 @@
             }
         }
 
-        // Spawn de Partículas
-        function spawnParticles(x, y, color) {
-            for(let i=0; i<8; i++) {
-                particles.push({
-                    x, y,
-                    vx: Math.random() * 4 - 2,
-                    vy: Math.random() * 4 - 2,
-                    size: Math.random() * 3 + 2,
-                    color,
-                    life: 20
-                });
-            }
-        }
-
+        // (Removido script duplicado com erro de sintaxe)
         // Loop Principal
         function gameLoop() {
             if(!gameActive) return;
@@ -550,7 +783,7 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // Grid Neon
-            ctx.strokeStyle = 'rgba(59, 130, 246, 0.03)';
+            ctx.strokeStyle = currentGame === 'flappy' ? 'rgba(244, 63, 94, 0.03)' : 'rgba(59, 130, 246, 0.03)';
             for(let x=0; x<canvas.width; x+=30) {
                 ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
             }
@@ -558,96 +791,190 @@
                 ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
             }
 
-            // Movimento do Player por teclado (Interpolação de teclado)
-            if(keysPressed['ArrowLeft']) {
-                player.targetX = Math.max(0, player.x - player.speed * 1.5);
-            }
-            if(keysPressed['ArrowRight']) {
-                player.targetX = Math.min(canvas.width - player.width, player.x + player.speed * 1.5);
-            }
-
-            // Suaviza a movimentação do player
-            player.x += (player.targetX - player.x) * 0.25;
-
-            // Desenha o Player (Hacker Deck)
-            ctx.fillStyle = player.color;
-            ctx.strokeStyle = '#60A5FA';
-            ctx.lineWidth = 2;
-            ctx.shadowColor = '#3B82F6';
-            ctx.shadowBlur = 10;
-            ctx.beginPath();
-            ctx.roundRect(player.x, player.y, player.width, player.height, 6);
-            ctx.fill();
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-
-            // Spawn de Itens caindo
-            spawnItem();
-
-            // Atualiza e desenha itens caindo
-            for(let i = items.length - 1; i >= 0; i--) {
-                const item = items[i];
-                item.y += item.speed;
-
-                // Colisão com o Player
-                if (item.y + item.size >= player.y &&
-                    item.y <= player.y + player.height &&
-                    item.x + item.size >= player.x &&
-                    item.x <= player.x + player.width) {
-                    
-                    // Colidiu!
-                    score += item.score;
-                    if(score < 0) score = 0;
-                    
-                    spawnParticles(item.x + item.size/2, item.y + item.size/2, item.color);
-                    
-                    if(item.type === 'key') synth.point();
-                    else if(item.type === 'gold') synth.bonus();
-                    else {
-                        synth.hurt();
-                        // Se atingiu o vírus, o jogo acaba (Game Over clássico!)
-                        endGame();
-                        return;
-                    }
-
-                    items.splice(i, 1);
-                    continue;
+            if (currentGame === 'hacker') {
+                // ==========================================
+                // LÓGICA DO JOGO: ZHER HACKER
+                // ==========================================
+                
+                // Movimento do Player por teclado (Interpolação de teclado)
+                if(keysPressed['ArrowLeft']) {
+                    player.targetX = Math.max(0, player.x - player.speed * 1.5);
+                }
+                if(keysPressed['ArrowRight']) {
+                    player.targetX = Math.min(canvas.width - player.width, player.x + player.speed * 1.5);
                 }
 
-                // Passou da tela (perdeu ponto se for chave)
-                if (item.y > canvas.height) {
-                    if (item.type === 'key') {
-                        // Não penaliza excessivamente para deixar divertido
-                    }
-                    items.splice(i, 1);
-                    continue;
-                }
+                // Suaviza a movimentação do player
+                player.x += (player.targetX - player.x) * 0.25;
 
-                // Desenha item
-                ctx.fillStyle = item.color;
-                ctx.shadowColor = item.color;
-                ctx.shadowBlur = 8;
+                // Desenha o Player (Hacker Deck)
+                ctx.fillStyle = player.color;
+                ctx.strokeStyle = '#60A5FA';
+                ctx.lineWidth = 2;
+                ctx.shadowColor = '#3B82F6';
+                ctx.shadowBlur = 10;
                 ctx.beginPath();
-                
-                if (item.type === 'key') {
-                    // Desenha formato simples de chave
-                    ctx.arc(item.x, item.y, item.size/2, 0, Math.PI * 2);
-                    ctx.rect(item.x - 2, item.y + 2, 4, item.size);
-                } else if (item.type === 'gold') {
-                    // Círculo perfeito
-                    ctx.arc(item.x, item.y, item.size/2, 0, Math.PI * 2);
-                } else {
-                    // Vírus (Triângulo de aviso)
-                    ctx.moveTo(item.x, item.y - item.size/2);
-                    ctx.lineTo(item.x - item.size/2, item.y + item.size/2);
-                    ctx.lineTo(item.x + item.size/2, item.y + item.size/2);
-                }
-                
+                ctx.roundRect(player.x, player.y, player.width, player.height, 6);
                 ctx.fill();
+                ctx.stroke();
                 ctx.shadowBlur = 0;
+
+                // Spawn de Itens caindo
+                spawnItem();
+
+                // Atualiza e desenha itens caindo
+                for(let i = items.length - 1; i >= 0; i--) {
+                    const item = items[i];
+                    item.y += item.speed;
+
+                    // Colisão com o Player
+                    if (item.y + item.size >= player.y &&
+                        item.y <= player.y + player.height &&
+                        item.x + item.size >= player.x &&
+                        item.x <= player.x + player.width) {
+                        
+                        // Colidiu!
+                        score += item.score;
+                        if(score < 0) score = 0;
+                        
+                        spawnParticles(item.x + item.size/2, item.y + item.size/2, item.color);
+                        
+                        if(item.type === 'key') synth.point();
+                        else if(item.type === 'gold') synth.bonus();
+                        else {
+                            synth.hurt();
+                            endGame();
+                            return;
+                        }
+
+                        items.splice(i, 1);
+                        continue;
+                    }
+
+                    // Passou da tela
+                    if (item.y > canvas.height) {
+                        items.splice(i, 1);
+                        continue;
+                    }
+
+                    // Desenha item
+                    ctx.fillStyle = item.color;
+                    ctx.shadowColor = item.color;
+                    ctx.shadowBlur = 8;
+                    ctx.beginPath();
+                    
+                    if (item.type === 'key') {
+                        ctx.arc(item.x, item.y, item.size/2, 0, Math.PI * 2);
+                        ctx.rect(item.x - 2, item.y + 2, 4, item.size);
+                    } else if (item.type === 'gold') {
+                        ctx.arc(item.x, item.y, item.size/2, 0, Math.PI * 2);
+                    } else {
+                        ctx.moveTo(item.x, item.y - item.size/2);
+                        ctx.lineTo(item.x - item.size/2, item.y + item.size/2);
+                        ctx.lineTo(item.x + item.size/2, item.y + item.size/2);
+                    }
+                    
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+
+            } else if (currentGame === 'flappy') {
+                // ==========================================
+                // LÓGICA DO JOGO: ZHER BIRD (FLAPPY BIRD)
+                // ==========================================
+                
+                // Aplicar gravidade
+                bird.velocity += bird.gravity;
+                bird.y += bird.velocity;
+
+                // Colisão com Teto / Chão
+                if (bird.y + bird.radius > canvas.height || bird.y - bird.radius < 0) {
+                    synth.hurt();
+                    endGame();
+                    return;
+                }
+
+                // Desenha o Pássaro Neon (Zher Bird)
+                ctx.fillStyle = '#F43F5E';
+                ctx.strokeStyle = '#FDA4AF';
+                ctx.lineWidth = 2;
+                ctx.shadowColor = '#F43F5E';
+                ctx.shadowBlur = 12;
+                ctx.beginPath();
+                ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Asa batendo neon
+                ctx.fillStyle = '#FDA4AF';
+                ctx.beginPath();
+                ctx.ellipse(bird.x - 6, bird.y + (bird.velocity < 0 ? -4 : 4), 6, 4, (bird.velocity < 0 ? -Math.PI/6 : Math.PI/6), 0, Math.PI*2);
+                ctx.fill();
+
+                // Spawn de Canos Neon
+                if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 180) {
+                    spawnPipe();
+                }
+
+                // Atualiza e desenha canos
+                for (let i = pipes.length - 1; i >= 0; i--) {
+                    const p = pipes[i];
+                    p.x -= pipeSpeed;
+
+                    // Colisão com os canos
+                    if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + pipeWidth) {
+                        // Cano Superior
+                        if (bird.y - bird.radius < p.topHeight) {
+                            synth.hurt();
+                            endGame();
+                            return;
+                        }
+                        // Cano Inferior
+                        if (bird.y + bird.radius > canvas.height - p.bottomHeight) {
+                            synth.hurt();
+                            endGame();
+                            return;
+                        }
+                    }
+
+                    // Pontuação
+                    if (!p.passed && p.x + pipeWidth < bird.x) {
+                        p.passed = true;
+                        score += 10;
+                        synth.point();
+                        spawnParticles(p.x + pipeWidth/2, p.topHeight + pipeGap/2, '#F43F5E');
+                    }
+
+                    // Desenha Canos Neon (Firewall Verde Tóxico)
+                    ctx.fillStyle = '#050811';
+                    ctx.strokeStyle = '#10B981';
+                    ctx.lineWidth = 3;
+                    ctx.shadowColor = '#10B981';
+                    ctx.shadowBlur = 10;
+
+                    // Cano Superior
+                    ctx.beginPath();
+                    ctx.roundRect(p.x, 0, pipeWidth, p.topHeight, [0, 0, 8, 8]);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Cano Inferior
+                    ctx.beginPath();
+                    ctx.roundRect(p.x, canvas.height - p.bottomHeight, pipeWidth, p.bottomHeight, [8, 8, 0, 0]);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.shadowBlur = 0;
+
+                    // Remove canos fora da tela
+                    if (p.x + pipeWidth < 0) {
+                        pipes.splice(i, 1);
+                    }
+                }
             }
 
-            // Atualiza e desenha partículas
+            // Atualiza e desenha partículas comuns
             for(let p = particles.length - 1; p >= 0; p--) {
                 const part = particles[p];
                 part.x += part.vx;
@@ -908,7 +1235,7 @@
                 
                 const data = await res.json();
                 if (res.ok && data.success) {
-                    alert(`🎉 Sucesso! Você recebeu +15 Z-Points em sua conta por visualizar o patrocinador!`);
+                    alert(`🎉 Sucesso! Você recebeu +250 Z-Points em sua conta por visualizar o patrocinador!`);
                     userPoints = parseInt(data.newPoints);
                     document.getElementById('nav-points').innerText = `${userPoints} Pts`;
                 } else {
@@ -924,8 +1251,8 @@
             const inputVal = document.getElementById('convert-points-input').value;
             const pointsToConvert = parseInt(inputVal);
             
-            if (isNaN(pointsToConvert) || pointsToConvert < 100 || pointsToConvert % 100 !== 0) {
-                alert('⚠️ Por favor, insira uma quantidade de pontos válida (mínimo de 100 e em múltiplos de 100).');
+            if (isNaN(pointsToConvert) || pointsToConvert < 10000 || pointsToConvert % 10000 !== 0) {
+                alert('⚠️ Por favor, insira uma quantidade de pontos válida (mínimo de 10.000 e em múltiplos de 10.000).');
                 return;
             }
             
@@ -934,7 +1261,7 @@
                 return;
             }
             
-            if (!confirm(`Deseja converter ${pointsToConvert} Z-Points em R$ ${(pointsToConvert / 10000).toFixed(2)} de saldo real na carteira?`)) {
+            if (!confirm(`Deseja converter ${pointsToConvert} Z-Points em R$ ${(pointsToConvert / 1000000).toFixed(2)} de saldo real na carteira?`)) {
                 return;
             }
             
