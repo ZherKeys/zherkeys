@@ -111,7 +111,24 @@
                                 <span class="text-[10px] text-blue-400 font-orbitron font-bold uppercase tracking-wider">Aprovação Imediata</span>
                             </span>
                         </label>
+
+                        <!-- Opção 3: PIX Direct -->
+                        <label id="payment-option-pix" onclick="selectPaymentMethod('pix')" class="flex items-center gap-3 p-3 rounded-lg border border-slate-800 bg-slate-900/50 hover:border-slate-700 cursor-pointer group transition-all">
+                            <input type="radio" name="payment_method_input" value="pix" class="hidden">
+                            <i data-lucide="qr-code" class="w-5 h-5 text-emerald-400"></i>
+                            <span class="text-white font-orbitron text-xs font-bold flex justify-between items-center w-full">
+                                <span>PIX Direct</span>
+                                <span class="text-[10px] text-emerald-400 font-orbitron font-bold uppercase tracking-wider">Aprovação Imediata</span>
+                            </span>
+                        </label>
                     </div>
+                </div>
+
+                <!-- Campo de CPF para PIX Direct -->
+                <div id="cart-cpf-field-container" class="hidden mb-4 p-4 bg-slate-950/60 border border-slate-800 rounded-xl transition-all duration-300">
+                    <label class="block text-xs text-slate-400 mb-2 font-orbitron">CPF DO PAGADOR (REQUERIDO PARA PIX)</label>
+                    <input type="text" id="cart-payer-cpf" placeholder="000.000.000-00" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-all font-mono text-sm">
+                    <span id="cart-cpf-error-msg" class="text-[10px] text-red-500 mt-1 hidden font-semibold">CPF inválido! Por favor, digite um CPF real.</span>
                 </div>
 
                 <!-- Aviso de Saldo Insuficiente -->
@@ -145,31 +162,35 @@
 
     <!-- PIX MODAL -->
     <div id="pix-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 sm:p-6 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md"></div>
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onclick="closePixModal()"></div>
         <div class="relative w-full max-w-md bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 p-8 text-center" id="pix-modal-content">
-            <h3 class="font-orbitron font-black text-2xl text-toxicgreen mb-2">PAGAMENTO PIX GERADO!</h3>
-            <p class="text-slate-400 font-inter text-sm mb-4">Escaneie o QR Code abaixo pelo aplicativo do seu banco para aprovação imediata da sua Key.</p>
+            <h3 class="font-orbitron font-black text-2xl text-emerald-400 mb-2">PAGAMENTO PIX GERADO!</h3>
+            <p class="text-slate-400 font-inter text-sm mb-4">Escaneie o QR Code abaixo pelo aplicativo do seu banco para liberação imediata da sua Key.</p>
             
             <div class="mb-6 bg-red-500/10 border border-red-500/30 rounded-xl py-3 px-4 inline-flex items-center justify-center gap-2 text-red-400 font-orbitron font-bold text-sm tracking-widest" id="pix-timer-container">
                 <i data-lucide="clock" class="w-4 h-4 animate-pulse"></i> EXPIRA EM: <span id="pix-countdown">10:00</span>
             </div>
             
-            <div class="bg-white p-4 rounded-xl mx-auto w-48 h-48 mb-6 flex items-center justify-center shadow-[0_0_30px_rgba(34,197,94,0.2)]">
+            <div class="bg-white p-4 rounded-xl mx-auto w-48 h-48 mb-6 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.2)]">
                 <img id="pix-qr-img" src="" alt="QR Code PIX" class="w-full h-full object-contain">
             </div>
             
             <p class="text-slate-500 font-orbitron text-xs tracking-widest mb-2">OU USE O CÓDIGO COPIA E COLA:</p>
             <div class="flex gap-2">
                 <input type="text" id="pix-code-input" readonly class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-slate-300 focus:outline-none font-mono text-xs">
-                <button onclick="copyPixCode()" class="bg-slate-800 hover:bg-toxicgreen text-white hover:text-slate-900 px-4 rounded-lg font-orbitron font-bold transition-colors shadow-lg" title="Copiar PIX">
+                <button onclick="copyPixCode()" class="bg-slate-800 hover:bg-emerald-400 text-white hover:text-slate-900 px-4 rounded-lg font-orbitron font-bold transition-colors shadow-lg" title="Copiar PIX">
                     <i data-lucide="copy" class="w-5 h-5"></i>
                 </button>
             </div>
-            <p id="pix-copy-msg" class="text-toxicgreen text-[10px] mt-2 hidden font-orbitron tracking-widest">CÓDIGO COPIADO!</p>
+            <p id="pix-copy-msg" class="text-emerald-400 text-[10px] mt-2 hidden font-orbitron tracking-widest">CÓDIGO COPIADO!</p>
             
-            <a href="/account.html" class="mt-8 block w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl transition-colors uppercase">
+            <button onclick="closePixModal()" class="mt-8 block w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl transition-colors uppercase">
                 ACOMPANHAR MEU PEDIDO
-      <script>
+            </button>
+        </div>
+    </div>
+
+    <script>
         // --- TRANSLATIONS LOGIC ---
         const TRANSLATIONS = {
             pt: {
@@ -325,7 +346,21 @@
 
         lucide.createIcons();
 
-        let cart = JSON.parse(localStorage.getItem('zher_cart')) || [];
+        function cleanDuplicates(cartArr) {
+            const seen = new Set();
+            return cartArr.filter(item => {
+                if (!item || !item.id) return false;
+                const doubleCheckId = Number(item.id);
+                if (seen.has(doubleCheckId)) {
+                    return false;
+                }
+                seen.add(doubleCheckId);
+                return true;
+            });
+        }
+
+        let cart = cleanDuplicates(JSON.parse(localStorage.getItem('zher_cart')) || []);
+        localStorage.setItem('zher_cart', JSON.stringify(cart));
         let userBalance = 0;
         let isLoggedIn = false;
 
@@ -424,8 +459,8 @@
         window.selectedPaymentMethod = 'credits';
         
         window.selectPaymentMethod = (method) => {
-            if (!isLoggedIn && method === 'credits') {
-                alert("Você precisa fazer login para comprar com créditos da carteira.");
+            if (!isLoggedIn && (method === 'credits' || method === 'pix')) {
+                alert("Você precisa fazer login para finalizar a compra.");
                 return;
             }
             
@@ -433,25 +468,51 @@
             
             const optionCredits = document.getElementById('payment-option-credits');
             const optionPaypal = document.getElementById('payment-option-paypal');
+            const optionPix = document.getElementById('payment-option-pix');
+            const cpfContainer = document.getElementById('cart-cpf-field-container');
+            const balanceWarning = document.getElementById('balance-warning-box');
+            
+            // Reset borders
+            optionCredits.className = "flex items-center gap-3 p-3 rounded-lg border border-slate-800 bg-slate-900/50 hover:border-slate-700 cursor-pointer group transition-all";
+            optionPaypal.className = "flex items-center gap-3 p-3 rounded-lg border border-slate-800 bg-slate-900/50 hover:border-slate-700 cursor-pointer group transition-all";
+            optionPix.className = "flex items-center gap-3 p-3 rounded-lg border border-slate-800 bg-slate-900/50 hover:border-slate-700 cursor-pointer group transition-all";
+            
+            // Hide CPF field by default
+            if (cpfContainer) {
+                cpfContainer.classList.add('hidden');
+            }
             
             if (method === 'credits') {
                 optionCredits.className = "flex items-center gap-3 p-3 rounded-lg border border-emerald-500/50 bg-emerald-500/5 cursor-pointer group transition-all";
-                optionPaypal.className = "flex items-center gap-3 p-3 rounded-lg border border-slate-800 bg-slate-900/50 hover:border-slate-700 cursor-pointer group transition-all";
-                
                 document.getElementById('btn-checkout').classList.remove('hidden');
                 document.getElementById('paypal-checkout-button-container').classList.add('hidden');
-                
                 renderCartPage();
-            } else {
-                optionCredits.className = "flex items-center gap-3 p-3 rounded-lg border border-slate-800 bg-slate-900/50 hover:border-slate-700 cursor-pointer group transition-all";
+            } else if (method === 'paypal') {
                 optionPaypal.className = "flex items-center gap-3 p-3 rounded-lg border border-blue-500/50 bg-blue-500/5 cursor-pointer group transition-all";
-                
                 document.getElementById('btn-checkout').classList.add('hidden');
                 document.getElementById('paypal-checkout-button-container').classList.remove('hidden');
-                
-                document.getElementById('balance-warning-box').classList.add('hidden');
-                
+                if (balanceWarning) balanceWarning.classList.add('hidden');
                 initPayPalCheckout();
+            } else if (method === 'pix') {
+                optionPix.className = "flex items-center gap-3 p-3 rounded-lg border border-emerald-500/50 bg-emerald-500/5 cursor-pointer group transition-all";
+                document.getElementById('btn-checkout').classList.remove('hidden');
+                document.getElementById('paypal-checkout-button-container').classList.add('hidden');
+                if (balanceWarning) balanceWarning.classList.add('hidden');
+                
+                // Show CPF field
+                if (cpfContainer) {
+                    cpfContainer.classList.remove('hidden');
+                }
+                
+                // Enable checkout button
+                const btnCheckout = document.getElementById('btn-checkout');
+                btnCheckout.classList.remove('opacity-50', 'pointer-events-none');
+                
+                // Translate/Set checkout button for Pix
+                const cur = window.currentCurrency;
+                const lang = cur === 'USD' ? 'en' : (cur === 'EUR' ? 'es' : 'pt');
+                const dict = TRANSLATIONS[lang] || TRANSLATIONS['pt'];
+                btnCheckout.innerHTML = `${dict.checkout_btn} <i data-lucide="zap" class="w-4 h-4"></i>`;
             }
         };
 
@@ -546,13 +607,30 @@
             btn.classList.add('opacity-50', 'pointer-events-none');
             
             try {
-                const method = 'credits';
+                const method = window.selectedPaymentMethod || 'credits';
+                
+                // Valida o CPF caso o método de pagamento seja PIX
+                let cpfVal = '';
+                if (method === 'pix') {
+                    const cpfInput = document.getElementById('cart-payer-cpf');
+                    cpfVal = cpfInput.value.replace(/\D/g, '');
+                    if (!validarCPF(cpfVal)) {
+                        document.getElementById('cart-cpf-error-msg').classList.remove('hidden');
+                        cpfInput.classList.add('border-red-500', 'focus:border-red-500');
+                        alert(lang === 'en' ? 'Please enter a valid CPF.' : 'Por favor, insira um CPF válido.');
+                        cpfInput.focus();
+                        btn.innerHTML = `${dict.checkout_btn} <i data-lucide="zap" class="w-4 h-4"></i>`;
+                        btn.classList.remove('opacity-50', 'pointer-events-none');
+                        return;
+                    }
+                }
+
                 const items = cart.map(item => ({ id: item.id, quantity: 1 }));
                 
                 const res = await fetch('/create-checkout', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ items, method })
+                    body: JSON.stringify({ items, method, cpf: cpfVal })
                 });
                 
                 if(res.redirected && res.url.includes('login.html')) {
@@ -564,11 +642,25 @@
                 const data = await res.json();
                 
                 if(res.ok && data.success) {
-                    alert(data.message);
-                    cart = [];
-                    localStorage.setItem('zher_cart', JSON.stringify(cart));
-                    window.location.href = '/account.html';
-                    return;
+                    if (method === 'pix') {
+                        // Exibe o Pix modal com o QR code retornado
+                        showPixModal(data.qr_code_base64, data.qr_code);
+                        
+                        // Limpa o carrinho no frontend, pois as chaves do pedido pendente já foram reservadas!
+                        cart = [];
+                        localStorage.setItem('zher_cart', JSON.stringify(cart));
+                        
+                        // Restaura o botão de checkout
+                        btn.innerHTML = `${dict.checkout_btn} <i data-lucide="zap" class="w-4 h-4"></i>`;
+                        btn.classList.remove('opacity-50', 'pointer-events-none');
+                        return;
+                    } else {
+                        alert(data.message);
+                        cart = [];
+                        localStorage.setItem('zher_cart', JSON.stringify(cart));
+                        window.location.href = '/account.html';
+                        return;
+                    }
                 } else {
                     alert('Erro no checkout: ' + (data.error || 'Desconhecido'));
                     btn.innerHTML = `${dict.checkout_btn} <i data-lucide="zap" class="w-4 h-4"></i>`;
@@ -581,8 +673,153 @@
             }
         };
 
+        // --- CPF VALIDATION & MASK LOGIC ---
+        function validarCPF(cpf) {
+            cpf = cpf.replace(/[^\d]+/g, '');
+            if (cpf.length !== 11) return false;
+            if (/^(\d)\1{10}$/.test(cpf)) return false;
+            let add = 0;
+            for (let i = 0; i < 9; i++) {
+                add += parseInt(cpf.charAt(i)) * (10 - i);
+            }
+            let rev = 11 - (add % 11);
+            if (rev === 10 || rev === 11) rev = 0;
+            if (rev !== parseInt(cpf.charAt(9))) return false;
+            add = 0;
+            for (let i = 0; i < 10; i++) {
+                add += parseInt(cpf.charAt(i)) * (11 - i);
+            }
+            rev = 11 - (add % 11);
+            if (rev === 10 || rev === 11) rev = 0;
+            if (rev !== parseInt(cpf.charAt(10))) return false;
+            return true;
+        }
+
+        // --- PIX MODAL CONTROLS ---
+        window.showPixModal = (base64, code, customTimeLimit = 600) => {
+            const modal = document.getElementById('pix-modal');
+            const modalContent = document.getElementById('pix-modal-content');
+            
+            if (modal && modalContent) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0', 'pointer-events-none');
+                    modalContent.classList.remove('scale-95');
+                    modalContent.classList.add('scale-100');
+                }, 10);
+                
+                // Formata imagem do QR Code
+                if (base64.startsWith('data:')) {
+                    document.getElementById('pix-qr-img').src = base64;
+                } else if (base64.startsWith('http')) {
+                    document.getElementById('pix-qr-img').src = base64;
+                } else {
+                    document.getElementById('pix-qr-img').src = 'data:image/jpeg;base64,' + base64;
+                }
+                
+                document.getElementById('pix-code-input').value = code;
+                document.body.style.overflow = 'hidden';
+                
+                // Cronômetro regressivo de 10 minutos
+                let remainingSeconds = customTimeLimit;
+                const timerEl = document.getElementById('pix-countdown');
+                
+                if (timerEl) {
+                    const mins = Math.floor(remainingSeconds / 60);
+                    const secs = remainingSeconds % 60;
+                    timerEl.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                }
+                
+                if (window.pixInterval) clearInterval(window.pixInterval);
+                window.pixInterval = setInterval(() => {
+                    remainingSeconds--;
+                    if (remainingSeconds <= 0) {
+                        clearInterval(window.pixInterval);
+                        alert("O tempo para pagamento do PIX expirou! A reserva das chaves foi liberada.");
+                        closePixModal();
+                    } else {
+                        const mins = Math.floor(remainingSeconds / 60);
+                        const secs = remainingSeconds % 60;
+                        if (timerEl) {
+                            timerEl.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                        }
+                    }
+                }, 1000);
+            }
+        };
+
+        window.closePixModal = () => {
+            const modal = document.getElementById('pix-modal');
+            const modalContent = document.getElementById('pix-modal-content');
+            if (modal && modalContent) {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                modalContent.classList.remove('scale-100');
+                modalContent.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                    window.location.href = '/account.html?tab=carteira';
+                }, 300);
+            }
+            if (window.pixInterval) clearInterval(window.pixInterval);
+        };
+
+        window.copyPixCode = () => {
+            const input = document.getElementById('pix-code-input');
+            if (input) {
+                input.select();
+                input.setSelectionRange(0, 99999);
+                navigator.clipboard.writeText(input.value).then(() => {
+                    const msg = document.getElementById('pix-copy-msg');
+                    if (msg) {
+                        msg.classList.remove('hidden');
+                        setTimeout(() => { msg.classList.add('hidden'); }, 2000);
+                    }
+                }).catch(err => {
+                    console.error("Erro ao copiar código PIX:", err);
+                });
+            }
+        };
+
         // Init
         document.addEventListener('DOMContentLoaded', () => {
+            // CPF mask and check logic
+            const cpfInput = document.getElementById('cart-payer-cpf');
+            const cpfError = document.getElementById('cart-cpf-error-msg');
+            if (cpfInput && cpfError) {
+                cpfInput.addEventListener('input', (e) => {
+                    let value = e.target.value;
+                    value = value.replace(/\D/g, "");
+                    if (value.length > 11) {
+                        value = value.substring(0, 11);
+                    }
+                    if (value.length > 9) {
+                        value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2})$/, "$1.$2.$3-$4");
+                    } else if (value.length > 6) {
+                        value = value.replace(/^(\d{3})(\d{3})(\d{1,3})$/, "$1.$2.$3");
+                    } else if (value.length > 3) {
+                        value = value.replace(/^(\d{3})(\d{1,3})$/, "$1.$2");
+                    }
+                    e.target.value = value;
+                    
+                    const rawCpf = value.replace(/\D/g, '');
+                    if (rawCpf.length === 11) {
+                        if (validarCPF(rawCpf)) {
+                            cpfError.classList.add('hidden');
+                            cpfInput.classList.remove('border-red-500', 'focus:border-red-500');
+                            cpfInput.classList.add('border-emerald-500', 'focus:border-emerald-500');
+                        } else {
+                            cpfError.classList.remove('hidden');
+                            cpfInput.classList.remove('border-emerald-500', 'focus:border-emerald-500');
+                            cpfInput.classList.add('border-red-500', 'focus:border-red-500');
+                        }
+                    } else {
+                        cpfError.classList.add('hidden');
+                        cpfInput.classList.remove('border-red-500', 'border-emerald-500', 'focus:border-red-500', 'focus:border-emerald-500');
+                    }
+                });
+            }
+
             const selectEl = document.getElementById('currency-select');
             if (selectEl) {
                 selectEl.value = window.currentCurrency;

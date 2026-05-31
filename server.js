@@ -252,6 +252,35 @@ const requireAdmin = async (req, res, next) => {
 // API DE PRODUTOS E ADMIN
 // ========================
 
+// Ajudante para limpar pedidos pendentes expirados e restaurar seus estoques de chaves com segurança
+async function cleanupExpiredOrders() {
+    try {
+        // Encontra todos os pedidos pendentes com mais de 10 minutos
+        const expiredRes = await pool.query(
+            "SELECT id FROM orders WHERE status = 'pending' AND created_at < NOW() - INTERVAL '10 minutes'"
+        );
+        const expiredIds = expiredRes.rows.map(o => o.id);
+        
+        if (expiredIds.length > 0) {
+            // Restaura o estoque (in_stock = true) de todos os produtos desses pedidos expirados (que não sejam depósitos)
+            await pool.query(`
+                UPDATE products SET in_stock = true WHERE id IN (
+                    SELECT product_id FROM order_items WHERE order_id = ANY($1::int[])
+                )
+            `, [expiredIds]);
+            
+            // Cancela os pedidos correspondentes
+            await pool.query(`
+                UPDATE orders SET status = 'cancelled' WHERE id = ANY($1::int[])
+            `, [expiredIds]);
+            
+            console.log(`[EXPIRED-CLEANUP] ${expiredIds.length} pedidos pendentes cancelados automaticamente e seus estoques foram restaurados.`);
+        }
+    } catch (err) {
+        console.error("[EXPIRED-CLEANUP] Erro ao limpar pedidos pendentes expirados:", err);
+    }
+}
+
 // Cache em memória para o catálogo público de produtos para evitar timeouts e lentidão no banco
 let productsCache = null;
 let productsCacheTime = 0;
@@ -264,11 +293,15 @@ app.get('/api/products', async (req, res) => {
         return res.json(productsCache);
     }
     try {
+        // Limpa pedidos pendentes expirados e restaura o estoque antes de carregar o catálogo de produtos!
+        await cleanupExpiredOrders();
+
         const result = await pool.query('SELECT id, title, description, price, old_price, image, category, in_stock, is_global, restricted_countries, genres FROM products ORDER BY id ASC');
         productsCache = result.rows;
         productsCacheTime = now;
         res.json(productsCache);
     } catch(e) {
+        console.error("Erro ao buscar produtos e limpar expirados:", e);
         res.status(500).json({ error: 'Erro ao buscar produtos' });
     }
 });
@@ -352,18 +385,31 @@ function generateCPF() {
 // ========================
 
 app.post('/create-checkout', requireAuth, async (req, res) => {
-    const { items, method } = req.body; // array of { id, quantity }, method = 'credits'
+    const { items, method, cpf } = req.body; // array of { id, quantity }, method = 'credits' or 'pix', optional cpf
     
     if(!items || items.length === 0) return res.status(400).json({ error: 'Carrinho vazio' });
     
-    if (method !== 'credits') {
-        return res.status(400).json({ error: 'Este site permite compras apenas utilizando créditos da carteira.' });
+    if (method !== 'credits' && method !== 'pix') {
+        return res.status(400).json({ error: 'Método de pagamento inválido.' });
     }
     
     try {
         const ids = items.map(i => parseInt(i.id));
-        const result = await pool.query('SELECT * FROM products WHERE id = ANY($1::int[])', [ids]);
         
+        // Evita duplicados nos IDs do carrinho no backend
+        const uniqueIds = [...new Set(ids)];
+        if (uniqueIds.length !== ids.length) {
+            return res.status(400).json({ error: 'Não é permitido comprar mais de uma unidade de cada jogo por vez.' });
+        }
+        
+        // Evita quantidade superior a 1 no backend
+        for (let i of items) {
+            if (parseInt(i.quantity) !== 1) {
+                return res.status(400).json({ error: 'Só é possível comprar uma unidade de cada jogo por vez.' });
+            }
+        }
+        
+        const result = await pool.query('SELECT * FROM products WHERE id = ANY($1::int[])', [ids]);
         const realProducts = result.rows;
         if(realProducts.length === 0) return res.status(400).json({ error: 'Produtos não encontrados' });
         
@@ -374,139 +420,266 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
         }
         
         let totalAmount = 0;
-        const preferenceItems = [];
-        
         items.forEach(cartItem => {
             const dbProduct = realProducts.find(p => p.id === parseInt(cartItem.id));
             if(dbProduct) {
-                const qty = Math.max(1, parseInt(cartItem.quantity)); // Segurança: garante quantidade positiva >= 1
-                totalAmount += parseFloat(dbProduct.price) * qty;
-                preferenceItems.push({
-                    id: dbProduct.id.toString(),
-                    title: dbProduct.title,
-                    unit_price: parseFloat(dbProduct.price),
-                    quantity: qty,
-                    currency_id: 'BRL',
-                    picture_url: dbProduct.image
-                });
+                totalAmount += parseFloat(dbProduct.price);
             }
         });
         
-        if(preferenceItems.length === 0) return res.status(400).json({ error: 'Erro nos itens do carrinho' });
-        
-        // Criar o pedido PENDENTE no banco para gerar ID
-        const orderRes = await pool.query(
-            'INSERT INTO orders (user_id, status, total_amount) VALUES ($1, $2, $3) RETURNING id',
-            [req.session.userId, 'pending', totalAmount]
-        );
-        const orderId = orderRes.rows[0].id;
-        
-        // Salvar os itens do pedido
-        for (let item of items) {
-            const dbProduct = realProducts.find(p => p.id === parseInt(item.id));
-            if(dbProduct) {
-                const qty = Math.max(1, parseInt(item.quantity));
-                await pool.query(
-                    'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)',
-                    [orderId, dbProduct.id, qty, parseFloat(dbProduct.price)]
+        // Pega o email do usuário
+        const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [req.session.userId]);
+        const email = userRes.rows[0]?.email || 'guest@example.com';
+
+        if (method === 'pix') {
+            // ==========================================
+            // PAGAMENTO DIRETAMENTE VIA PIX COM RESERVA
+            // ==========================================
+            const client = await pool.connect();
+            try {
+                await client.query('BEGIN');
+                
+                // FOR UPDATE bloqueia as linhas dos produtos no banco, evitando RACE CONDITIONS de compras simultâneas!
+                const prodCheck = await client.query('SELECT id, price, in_stock FROM products WHERE id = ANY($1::int[]) FOR UPDATE', [ids]);
+                
+                // Verifica se algum item já foi vendido
+                for (let p of prodCheck.rows) {
+                    if (!p.in_stock) {
+                        await client.query('ROLLBACK');
+                        return res.status(400).json({ error: `O produto com ID ${p.id} já foi vendido por outro usuário.` });
+                    }
+                }
+                
+                // Criar o pedido PENDENTE de chaves no banco de dados (is_deposit = false)
+                const orderRes = await client.query(
+                    'INSERT INTO orders (user_id, status, total_amount, is_deposit) VALUES ($1, $2, $3, $4) RETURNING id',
+                    [req.session.userId, 'pending', totalAmount, false]
                 );
-            }
-        }
-
-        // Conecta um cliente de pool dedicado para gerenciar a transação segura
-        const client = await pool.connect();
-        try {
-            await client.query('BEGIN');
-            
-            // FOR UPDATE bloqueia as linhas dos produtos no banco, evitando RACE CONDITIONS de compras simultâneas!
-            const prodCheck = await client.query('SELECT id, price, in_stock FROM products WHERE id = ANY($1::int[]) FOR UPDATE', [ids]);
-            
-            // Verifica se algum item já foi vendido
-            for (let p of prodCheck.rows) {
-                if (!p.in_stock) {
-                    await client.query('ROLLBACK');
-                    return res.status(400).json({ error: `O produto com ID ${p.id} já foi vendido por outro usuário.` });
+                const orderId = orderRes.rows[0].id;
+                
+                // Salvar os itens do pedido
+                for (let item of items) {
+                    const dbProduct = realProducts.find(p => p.id === parseInt(item.id));
+                    if(dbProduct) {
+                        await client.query(
+                            'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)',
+                            [orderId, dbProduct.id, 1, parseFloat(dbProduct.price)]
+                        );
+                    }
                 }
-            }
-            
-            // FOR UPDATE bloqueia a linha do usuário, evitando RACE CONDITIONS / DOUBLE-SPENDING de créditos!
-            const userRes = await client.query('SELECT balance, email FROM users WHERE id = $1 FOR UPDATE', [req.session.userId]);
-            const balance = parseFloat(userRes.rows[0]?.balance || 0);
-            const email = userRes.rows[0]?.email || 'guest@example.com';
-            
-            if (balance < totalAmount) {
+                
+                // BLOQUEIA O ESTOQUE IMEDIATAMENTE (Atualiza o estoque local do produto para in_stock = false)
+                // Isso faz com que as chaves fiquem indisponíveis para outros compradores enquanto o pagamento estiver pendente!
+                await client.query('UPDATE products SET in_stock = false WHERE id = ANY($1::int[])', [ids]);
+                
+                // Delistar anúncio correspondente no Gameflip
+                const productsRes = await client.query('SELECT gameflip_listing_id FROM products WHERE id = ANY($1::int[])', [ids]);
+                for (let prod of productsRes.rows) {
+                    if (prod.gameflip_listing_id && prod.gameflip_listing_id.trim() !== '') {
+                        markGameflipListingAsSold(prod.gameflip_listing_id.trim());
+                    }
+                }
+                
+                // Gerar pagamento Pix via Mercado Pago
+                const paymentClient = new Payment(mpClient);
+                const createdPayment = await paymentClient.create({
+                    body: {
+                        transaction_amount: parseFloat(totalAmount.toFixed(2)),
+                        description: `Compra de Keys Zher Keys - Pedido #${orderId}`,
+                        payment_method_id: 'pix',
+                        payer: {
+                            email: email,
+                            first_name: 'Cliente',
+                            last_name: 'ZherKeys',
+                            identification: {
+                                type: 'CPF',
+                                number: cpf ? cpf.replace(/\D/g, '') : generateCPF()
+                            }
+                        },
+                        external_reference: orderId.toString(),
+                        notification_url: `${APP_URL}/webhook`
+                    },
+                    requestOptions: {
+                        idempotencyKey: crypto.randomUUID()
+                    }
+                });
+                
+                const qrCodeBase64 = createdPayment.point_of_interaction.transaction_data.qr_code_base64;
+                const qrCode = createdPayment.point_of_interaction.transaction_data.qr_code;
+                
+                // Atualiza o pedido com os códigos Pix
+                await client.query(
+                    'UPDATE orders SET mp_payment_id = $1, pix_qr_code = $2, pix_qr_code_base64 = $3 WHERE id = $4',
+                    [createdPayment.id.toString(), qrCode, qrCodeBase64, orderId]
+                );
+                
+                // Registra a notificação de pagamento pendente
+                await client.query(
+                    'INSERT INTO notifications (user_id, title, message, type, order_id) VALUES ($1, $2, $3, $4, $5)',
+                    [req.session.userId, 'Pagamento Pendente', `Seu pedido #${orderId} de R$ ${totalAmount.toFixed(2).replace('.', ',')} está aguardando pagamento. Clique para ver detalhes.`, 'warning', orderId]
+                );
+                
+                await client.query('COMMIT');
+                
+                // Envia e-mail contendo o código Pix copia e cola e QR Code
+                sendEmailViaBrevo(
+                    email,
+                    `⚡ Seu PIX de R$ ${totalAmount.toFixed(2).replace('.', ',')} para liberar suas Keys foi Gerado!`,
+                    `Olá! Seu PIX para finalizar a compra no valor de R$ ${totalAmount.toFixed(2).replace('.', ',')} foi gerado com sucesso. Pague utilizando o copia e cola abaixo:\n\n${qrCode}\n\nO PIX expira em 10 minutos e sua key está reservada durante este período.`,
+                    `<div style="background-color: #020617; color: #f8fafc; padding: 40px 20px; font-family: sans-serif; text-align: center; border: 1px solid #1e293b; border-radius: 16px; max-w: 600px; margin: 0 auto;">
+                        <h2 style="color: #10B981; font-size: 24px; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px;">RESERVA DE KEYS ZHER KEYS</h2>
+                        <p style="color: #94a3b8; font-size: 14px; margin-top: 0; margin-bottom: 25px;">Pedido #${orderId} - Pix Gerado com Sucesso</p>
+                        
+                        <div style="background-color: #ef4444; color: white; display: inline-block; padding: 8px 16px; border-radius: 9999px; font-size: 12px; font-weight: bold; letter-spacing: 1px; margin-bottom: 25px;">
+                            ⚠️ EXPIRA EM 10 MINUTOS (KEYS RESERVADAS)
+                        </div>
+                        
+                        <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6; margin-bottom: 25px;">
+                            Para receber as suas chaves de ativação na mesma hora, realize o pagamento do Pix copia e cola ou escaneie o código abaixo:
+                        </p>
+                        
+                        <div style="background-color: #ffffff; padding: 15px; border-radius: 12px; display: inline-block; margin-bottom: 25px; box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&amp;data=${encodeURIComponent(qrCode)}" alt="QR Code PIX" style="width: 180px; height: 180px; display: block;" />
+                        </div>
+                        
+                        <p style="color: #94a3b8; font-size: 11px; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; font-weight: bold;">Código Copia e Cola:</p>
+                        <div style="background-color: #0b0f19; border: 1px solid #1e293b; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; color: #10B981; word-break: break-all; text-align: left; margin-bottom: 30px;">
+                            ${qrCode}
+                        </div>
+                        
+                        <p style="color: #64748b; font-size: 11px; margin-top: 20px;">Esta é uma transação criptografada e segura da loja Zher Keys. Não responda a este e-mail.</p>
+                    </div>`
+                ).catch(err => console.error("Erro ao enviar e-mail com Pix de compra:", err));
+                
+                return res.json({ success: true, qr_code_base64: qrCodeBase64, qr_code: qrCode, orderId });
+                
+            } catch (err) {
                 await client.query('ROLLBACK');
-                return res.status(400).json({ error: 'Saldo insuficiente na carteira.' });
+                console.error("[PIX-CHECKOUT] Erro no checkout direto via PIX:", err);
+                return res.status(500).json({ error: 'Erro interno ao processar pagamento por Pix.' });
+            } finally {
+                client.release();
             }
             
-            // Deduz o saldo
-            const newBalance = balance - totalAmount;
-            await client.query('UPDATE users SET balance = $1 WHERE id = $2', [newBalance, req.session.userId]);
-            
-            // Registra a transação no extrato da carteira
-            await client.query(
-                'INSERT INTO wallet_transactions (user_id, amount, type, description) VALUES ($1, $2, $3, $4)',
-                [req.session.userId, -totalAmount, 'purchase', `Compra do Pedido #${orderId}`]
-            );
-            
-            // Aprova o pedido imediatamente no banco
-            await client.query("UPDATE orders SET status = 'approved' WHERE id = $1", [orderId]);
-            
-            // Atualiza o estoque local do produto (marca como fora de estoque)
-            await client.query('UPDATE products SET in_stock = false WHERE id = ANY($1::int[])', [ids]);
-            
-            // Delistar anúncio correspondente no Gameflip
-            const productsRes = await client.query('SELECT gameflip_listing_id FROM products WHERE id = ANY($1::int[])', [ids]);
-            for (let prod of productsRes.rows) {
-                if (prod.gameflip_listing_id && prod.gameflip_listing_id.trim() !== '') {
-                    markGameflipListingAsSold(prod.gameflip_listing_id.trim());
+        } else {
+            // ==========================================
+            // COMPRA UTILIZANDO CRÉDITOS DA CARTEIRA
+            // ==========================================
+            const client = await pool.connect();
+            try {
+                await client.query('BEGIN');
+                
+                // FOR UPDATE bloqueia as linhas dos produtos no banco, evitando RACE CONDITIONS de compras simultâneas!
+                const prodCheck = await client.query('SELECT id, price, in_stock FROM products WHERE id = ANY($1::int[]) FOR UPDATE', [ids]);
+                
+                // Verifica se algum item já foi vendido
+                for (let p of prodCheck.rows) {
+                    if (!p.in_stock) {
+                        await client.query('ROLLBACK');
+                        return res.status(400).json({ error: `O produto com ID ${p.id} já foi vendido por outro usuário.` });
+                    }
                 }
+                
+                // FOR UPDATE bloqueia a linha do usuário, evitando RACE CONDITIONS / DOUBLE-SPENDING de créditos!
+                const userRes = await client.query('SELECT balance, email FROM users WHERE id = $1 FOR UPDATE', [req.session.userId]);
+                const balance = parseFloat(userRes.rows[0]?.balance || 0);
+                const email = userRes.rows[0]?.email || 'guest@example.com';
+                
+                if (balance < totalAmount) {
+                    await client.query('ROLLBACK');
+                    return res.status(400).json({ error: 'Saldo insuficiente na carteira.' });
+                }
+                
+                // Criar o pedido APROVADO imediatamente no banco de dados (is_deposit = false)
+                const orderRes = await client.query(
+                    'INSERT INTO orders (user_id, status, total_amount, is_deposit) VALUES ($1, $2, $3, $4) RETURNING id',
+                    [req.session.userId, 'approved', totalAmount, false]
+                );
+                const orderId = orderRes.rows[0].id;
+                
+                // Salvar os itens do pedido
+                for (let item of items) {
+                    const dbProduct = realProducts.find(p => p.id === parseInt(item.id));
+                    if(dbProduct) {
+                        await client.query(
+                            'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)',
+                            [orderId, dbProduct.id, 1, parseFloat(dbProduct.price)]
+                        );
+                    }
+                }
+                
+                // Deduz o saldo
+                const newBalance = balance - totalAmount;
+                await client.query('UPDATE users SET balance = $1 WHERE id = $2', [newBalance, req.session.userId]);
+                
+                // Registra a transação no extrato da carteira
+                await client.query(
+                    'INSERT INTO wallet_transactions (user_id, amount, type, description) VALUES ($1, $2, $3, $4)',
+                    [req.session.userId, -totalAmount, 'purchase', `Compra do Pedido #${orderId}`]
+                );
+                
+                // Atualiza o estoque local do produto (marca como fora de estoque)
+                await client.query('UPDATE products SET in_stock = false WHERE id = ANY($1::int[])', [ids]);
+                
+                // Delistar anúncio correspondente no Gameflip
+                const productsRes = await client.query('SELECT gameflip_listing_id FROM products WHERE id = ANY($1::int[])', [ids]);
+                for (let prod of productsRes.rows) {
+                    if (prod.gameflip_listing_id && prod.gameflip_listing_id.trim() !== '') {
+                        markGameflipListingAsSold(prod.gameflip_listing_id.trim());
+                    }
+                }
+                
+                // Registra a notificação da compra
+                await client.query(
+                    'INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)',
+                    [req.session.userId, 'Compra Aprovada!', `Seu pedido #${orderId} foi aprovado com créditos. Chave de ativação liberada.`, 'success']
+                );
+                
+                await client.query('COMMIT');
+                
+                // Envia e-mail de confirmação da compra aprovada contendo as chaves (Keys) reveladas!
+                const keysRes = await pool.query('SELECT title, activation_key FROM products WHERE id = ANY($1::int[])', [ids]);
+                let keysListHtml = '';
+                keysRes.rows.forEach(k => {
+                    keysListHtml += `
+                        <div style="background-color: #0b0f19; border: 1px solid #1e293b; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: left;">
+                            <strong style="color: #ffffff; display: block; font-size: 14px; margin-bottom: 5px;">${k.title}</strong>
+                            <code style="font-family: monospace; font-size: 14px; color: #10B981; font-weight: bold;">${k.activation_key || 'Chave em liberação'}</code>
+                        </div>
+                    `;
+                });
+                
+                sendEmailViaBrevo(
+                    email,
+                    `🎮 Suas Keys do Pedido #${orderId} foram Liberadas! - Zher Keys`,
+                    `Olá! Seu pagamento usando créditos da carteira foi processado com sucesso. O pedido #${orderId} foi aprovado!`,
+                    `<div style="background-color: #020617; color: #f8fafc; padding: 40px 20px; font-family: sans-serif; text-align: center; border: 1px solid #1e293b; border-radius: 16px; max-w: 600px; margin: 0 auto;">
+                        <h2 style="color: #10B981; font-size: 24px; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px;">PAGAMENTO APROVADO!</h2>
+                        <p style="color: #94a3b8; font-size: 14px; margin-top: 0; margin-bottom: 25px;">Pedido #${orderId} - Pago via Carteira</p>
+                        
+                        <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6; margin-bottom: 25px; text-align: left;">
+                            Olá! O débito de <strong>R$ ${totalAmount.toFixed(2).replace('.', ',')}</strong> foi realizado com sucesso do seu saldo de créditos. Suas chaves de ativação já foram liberadas abaixo:
+                        </p>
+                        
+                        ${keysListHtml}
+                        
+                        <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin-top: 30px;">
+                            Você também pode visualizar suas keys a qualquer momento acessando a aba <strong>Minhas Compras</strong> no site da Zher Keys.
+                        </p>
+                        
+                        <p style="color: #64748b; font-size: 11px; margin-top: 30px;">Esta é uma transação criptografada e segura da loja Zher Keys. Não responda a este e-mail.</p>
+                    </div>`
+                ).catch(err => console.error("Erro ao enviar e-mail de aprovação de créditos:", err));
+                
+                return res.json({ success: true, message: 'Compra realizada com sucesso usando créditos da carteira!' });
+                
+            } catch (err) {
+                await client.query('ROLLBACK');
+                console.error("[CREDITS-CHECKOUT] Erro no checkout de créditos:", err);
+                return res.status(500).json({ error: 'Erro interno ao processar pagamento por créditos.' });
+            } finally {
+                client.release();
             }
-            
-            await client.query('COMMIT');
-            
-            // Envia e-mail de confirmação da compra aprovada contendo as chaves (Keys) reveladas!
-            const keysRes = await pool.query('SELECT title, activation_key FROM products WHERE id = ANY($1::int[])', [ids]);
-            let keysListHtml = '';
-            keysRes.rows.forEach(k => {
-                keysListHtml += `
-                    <div style="background-color: #0b0f19; border: 1px solid #1e293b; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: left;">
-                        <strong style="color: #ffffff; display: block; font-size: 14px; margin-bottom: 5px;">${k.title}</strong>
-                        <code style="font-family: monospace; font-size: 14px; color: #10B981; font-weight: bold;">${k.activation_key || 'Chave em liberação'}</code>
-                    </div>
-                `;
-            });
-            
-            sendEmailViaBrevo(
-                email,
-                `🎮 Suas Keys do Pedido #${orderId} foram Liberadas! - Zher Keys`,
-                `Olá! Seu pagamento usando créditos da carteira foi processado com sucesso. O pedido #${orderId} foi aprovado!`,
-                `<div style="background-color: #020617; color: #f8fafc; padding: 40px 20px; font-family: sans-serif; text-align: center; border: 1px solid #1e293b; border-radius: 16px; max-w: 600px; margin: 0 auto;">
-                    <h2 style="color: #10B981; font-size: 24px; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px;">PAGAMENTO APROVADO!</h2>
-                    <p style="color: #94a3b8; font-size: 14px; margin-top: 0; margin-bottom: 25px;">Pedido #${orderId} - Pago via Carteira</p>
-                    
-                    <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6; margin-bottom: 25px; text-align: left;">
-                        Olá! O débito de <strong>R$ ${totalAmount.toFixed(2).replace('.', ',')}</strong> foi realizado com sucesso do seu saldo de créditos. Suas chaves de ativação já foram liberadas abaixo:
-                    </p>
-                    
-                    ${keysListHtml}
-                    
-                    <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin-top: 30px;">
-                        Você também pode visualizar suas keys a qualquer momento acessando a aba <strong>Minhas Compras</strong> no site da Zher Keys.
-                    </p>
-                    
-                    <p style="color: #64748b; font-size: 11px; margin-top: 30px;">Esta é uma transação criptografada e segura da loja Zher Keys. Não responda a este e-mail.</p>
-                </div>`
-            ).catch(err => console.error("Erro ao enviar e-mail de aprovação de créditos:", err));
-
-            return res.json({ success: true, message: 'Compra realizada com sucesso usando créditos da carteira!' });
-            
-        } catch (err) {
-            await client.query('ROLLBACK');
-            console.error("[CREDITS-CHECKOUT] Erro no checkout de créditos:", err);
-            return res.status(500).json({ error: 'Erro interno ao processar pagamento por créditos.' });
-        } finally {
-            client.release();
         }
         
     } catch(e) {
@@ -526,6 +699,20 @@ app.post('/create-checkout/paypal', requireAuth, async (req, res) => {
     
     try {
         const ids = items.map(i => parseInt(i.id));
+        
+        // Evita duplicados nos IDs do carrinho no backend
+        const uniqueIds = [...new Set(ids)];
+        if (uniqueIds.length !== ids.length) {
+            return res.status(400).json({ error: 'Não é permitido comprar mais de uma unidade de cada jogo por vez.' });
+        }
+        
+        // Evita quantidade superior a 1 no backend
+        for (let i of items) {
+            if (parseInt(i.quantity) !== 1) {
+                return res.status(400).json({ error: 'Só é possível comprar uma unidade de cada jogo por vez.' });
+            }
+        }
+
         const result = await pool.query('SELECT * FROM products WHERE id = ANY($1::int[])', [ids]);
         
         const realProducts = result.rows;
@@ -541,8 +728,7 @@ app.post('/create-checkout/paypal', requireAuth, async (req, res) => {
         items.forEach(cartItem => {
             const dbProduct = realProducts.find(p => p.id === parseInt(cartItem.id));
             if(dbProduct) {
-                const qty = Math.max(1, parseInt(cartItem.quantity));
-                totalAmount += parseFloat(dbProduct.price) * qty;
+                totalAmount += parseFloat(dbProduct.price);
             }
         });
         
@@ -577,10 +763,9 @@ app.post('/create-checkout/paypal', requireAuth, async (req, res) => {
             for (let item of items) {
                 const dbProduct = realProducts.find(p => p.id === parseInt(item.id));
                 if(dbProduct) {
-                    const qty = Math.max(1, parseInt(item.quantity));
                     await client.query(
                         'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)',
-                        [orderId, dbProduct.id, qty, parseFloat(dbProduct.price)]
+                        [orderId, dbProduct.id, 1, parseFloat(dbProduct.price)]
                     );
                 }
             }
@@ -1044,8 +1229,8 @@ app.post('/webhook', async (req, res) => {
 
 app.get('/api/my-orders', requireAuth, async (req, res) => {
     try {
-        // Cancelar pedidos pendentes com mais de 10 minutos
-        await pool.query("UPDATE orders SET status = 'cancelled' WHERE status = 'pending' AND created_at < NOW() - INTERVAL '10 minutes'");
+        // Limpa pedidos pendentes expirados e restaura o estoque
+        await cleanupExpiredOrders();
 
         const ordersRes = await pool.query("SELECT * FROM orders WHERE user_id = $1 AND status != 'cancelled' ORDER BY id DESC", [req.session.userId]);
         const orders = ordersRes.rows;

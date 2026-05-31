@@ -1360,7 +1360,21 @@
         // ========================================
         // CART LOGIC
         // ========================================
-        let cart = JSON.parse(localStorage.getItem('zher_cart')) || [];
+        function cleanDuplicates(cartArr) {
+            const seen = new Set();
+            return cartArr.filter(item => {
+                if (!item || !item.id) return false;
+                const doubleCheckId = Number(item.id);
+                if (seen.has(doubleCheckId)) {
+                    return false;
+                }
+                seen.add(doubleCheckId);
+                return true;
+            });
+        }
+
+        let cart = cleanDuplicates(JSON.parse(localStorage.getItem('zher_cart')) || []);
+        localStorage.setItem('zher_cart', JSON.stringify(cart));
         
         function updateCartBadge() {
             const badge = document.getElementById('cart-badge');
@@ -1375,11 +1389,17 @@
         window.addAndShowCart = (event, id) => {
             if(event) event.stopPropagation(); // Evita abrir o modal se clicou no icone direto do card
             
+            // Reload and clean duplicates to ensure sync across tabs
+            cart = cleanDuplicates(JSON.parse(localStorage.getItem('zher_cart')) || []);
+            
             const product = produtos.find(p => p.id === id);
             if(product) {
-                const alreadyInCart = cart.find(item => item.id === id);
+                const alreadyInCart = cart.find(item => Number(item.id) === Number(id));
                 if (alreadyInCart) {
-                    alert("⚠️ Você já adicionou esta chave ao carrinho! Só é possível comprar uma unidade de cada jogo por vez para garantir as keys.");
+                    const cur = window.currentCurrency || 'BRL';
+                    const lang = cur === 'USD' ? 'en' : (cur === 'EUR' ? 'es' : 'pt');
+                    const dict = TRANSLATIONS[lang] || TRANSLATIONS['pt'];
+                    alert(dict.already_in_cart || "⚠️ Você já adicionou esta chave ao carrinho! Só é possível comprar uma unidade de cada jogo por vez para garantir as keys.");
                 } else {
                     cart.push(product);
                     localStorage.setItem('zher_cart', JSON.stringify(cart));
