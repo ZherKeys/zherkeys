@@ -1093,8 +1093,8 @@
             const totalExpirationSeconds = 600; // 10 minutes
             const remainingSeconds = Math.max(10, totalExpirationSeconds - elapsedSeconds);
             
-            // Use Google Charts URL to render the QR Code dynamically
-            const qrUrl = `https://chart.googleapis.com/chart?chs=180x180&cht=qr&chl=${encodeURIComponent(o.pix_qr_code)}`;
+            // Use goQR.me API URL to render the QR Code dynamically
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(o.pix_qr_code)}`;
             showPixModal(qrUrl, o.pix_qr_code, remainingSeconds);
         };
 

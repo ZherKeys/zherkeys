@@ -726,7 +726,7 @@ app.post('/api/wallet/deposit', requireAuth, async (req, res) => {
                     </p>
                     
                     <div style="background-color: #ffffff; padding: 15px; border-radius: 12px; display: inline-block; margin-bottom: 25px; box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);">
-                        <img src="https://chart.googleapis.com/chart?chs=180x180&cht=qr&chl=${encodeURIComponent(qrCode)}" alt="QR Code PIX" style="width: 180px; height: 180px; display: block;" />
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&amp;data=${encodeURIComponent(qrCode)}" alt="QR Code PIX" style="width: 180px; height: 180px; display: block;" />
                     </div>
                     
                     <p style="color: #94a3b8; font-size: 11px; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; font-weight: bold;">Código Copia e Cola:</p>
