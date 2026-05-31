@@ -119,7 +119,7 @@
             <p class="text-slate-400 font-inter text-sm mb-4">Escaneie o QR Code abaixo pelo aplicativo do seu banco para aprovação imediata da sua Key.</p>
             
             <div class="mb-6 bg-red-500/10 border border-red-500/30 rounded-xl py-3 px-4 inline-flex items-center justify-center gap-2 text-red-400 font-orbitron font-bold text-sm tracking-widest" id="pix-timer-container">
-                <i data-lucide="clock" class="w-4 h-4 animate-pulse"></i> EXPIRA EM: <span id="pix-countdown">05:00</span>
+                <i data-lucide="clock" class="w-4 h-4 animate-pulse"></i> EXPIRA EM: <span id="pix-countdown">10:00</span>
             </div>
             
             <div class="bg-white p-4 rounded-xl mx-auto w-48 h-48 mb-6 flex items-center justify-center shadow-[0_0_30px_rgba(34,197,94,0.2)]">
@@ -265,8 +265,8 @@
                 modalContent.classList.add('scale-100');
             }, 10);
             
-            // Inicia o cronômetro regressivo de 5 minutos (300 segundos)
-            let timeLeft = 300;
+            // Inicia o cronômetro regressivo de 10 minutos (600 segundos)
+            let timeLeft = 600;
             const timerEl = document.getElementById('pix-countdown');
             const timerContainer = document.getElementById('pix-timer-container');
             
