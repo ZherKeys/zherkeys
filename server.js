@@ -279,6 +279,26 @@ app.delete('/api/admin/products/:id', requireAdmin, async (req, res) => {
     }
 });
 
+// Função auxiliar para gerar CPF matematicamente válido exigido pela API do Mercado Pago
+function generateCPF() {
+    const num = () => Math.floor(Math.random() * 9);
+    const n = Array.from({ length: 9 }, num);
+    
+    let d1 = n.reduce((acc, val, i) => acc + val * (10 - i), 0);
+    d1 = 11 - (d1 % 11);
+    if (d1 >= 10) d1 = 0;
+    
+    n.push(d1);
+    
+    let d2 = n.reduce((acc, val, i) => acc + val * (11 - i), 0);
+    d2 = 11 - (d2 % 11);
+    if (d2 >= 10) d2 = 0;
+    
+    n.push(d2);
+    
+    return n.join('');
+}
+
 // ========================
 // CHECKOUT & MERCADOPAGO
 // ========================
@@ -343,12 +363,23 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
 
             const createdPayment = await paymentClient.create({
                 body: {
-                    transaction_amount: totalAmount,
+                    transaction_amount: parseFloat(totalAmount.toFixed(2)),
                     description: 'Compra Zher Keys',
                     payment_method_id: 'pix',
-                    payer: { email: email },
+                    payer: {
+                        email: email,
+                        first_name: 'Cliente',
+                        last_name: 'ZherKeys',
+                        identification: {
+                            type: 'CPF',
+                            number: generateCPF()
+                        }
+                    },
                     external_reference: orderId.toString(),
                     notification_url: `${APP_URL}/webhook`
+                },
+                requestOptions: {
+                    idempotencyKey: crypto.randomUUID()
                 }
             });
 
