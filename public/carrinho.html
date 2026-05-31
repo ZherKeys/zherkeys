@@ -128,16 +128,16 @@
                 total += priceNum;
 
                 html += `
-                    <div class="flex flex-col sm:flex-row items-center gap-6 bg-slate-950/60 p-4 rounded-xl border border-slate-800/80 hover:border-slate-700 transition-colors">
-                        <img src="${item.image}" class="w-full sm:w-32 h-24 object-cover rounded-lg shadow-lg">
-                        <div class="flex-grow text-center sm:text-left">
-                            <span class="bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[8px] tracking-widest px-2 py-0.5 rounded-full uppercase">${item.category}</span>
-                            <h4 class="text-white font-orbitron font-bold text-lg mt-2 uppercase tracking-wide">${item.title}</h4>
-                            <p class="text-slate-500 font-inter text-xs mt-1 truncate max-w-sm hidden sm:block">${item.description}</p>
+                    <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 bg-slate-950/60 p-4 rounded-xl border border-slate-800/80 hover:border-slate-700 transition-colors">
+                        <img src="${item.image}" class="w-full sm:w-32 h-32 sm:h-24 object-cover rounded-lg shadow-lg flex-shrink-0">
+                        <div class="flex-grow text-center sm:text-left overflow-hidden min-w-0 w-full">
+                            <span class="bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[8px] tracking-widest px-2 py-0.5 rounded-full uppercase inline-block mb-2">${item.category}</span>
+                            <h4 class="text-white font-orbitron font-bold text-base sm:text-lg uppercase tracking-wide truncate w-full">${item.title}</h4>
+                            <p class="text-slate-500 font-inter text-xs mt-1 truncate w-full hidden sm:block">${item.description}</p>
                         </div>
-                        <div class="flex items-center gap-6">
-                            <span class="text-cyberrose font-orbitron font-bold text-xl">R$ ${parseFloat(item.price).toFixed(2).replace('.', ',')}</span>
-                            <button onclick="removeFromCart(${index})" class="w-10 h-10 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-red-400 hover:border-red-500 transition-colors" title="Remover">
+                        <div class="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto flex-shrink-0 mt-2 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-0 border-slate-800/50">
+                            <span class="text-cyberrose font-orbitron font-bold text-lg sm:text-xl whitespace-nowrap">R$ ${parseFloat(item.price).toFixed(2).replace('.', ',')}</span>
+                            <button onclick="removeFromCart(${index})" class="w-10 h-10 flex-shrink-0 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-red-400 hover:border-red-500 transition-colors" title="Remover">
                                 <i data-lucide="trash-2" class="w-5 h-5"></i>
                             </button>
                         </div>

@@ -832,12 +832,12 @@
                 
                 html += `
                     <div class="flex items-center gap-3 bg-slate-800/50 p-2 rounded-lg border border-slate-700/50">
-                        <img src="${item.image}" class="w-12 h-12 object-cover rounded">
-                        <div class="flex-grow">
-                            <h4 class="text-white text-xs font-bold truncate max-w-[150px]">${item.title}</h4>
-                            <span class="text-cyberrose text-xs font-bold">${item.price}</span>
+                        <img src="${item.image}" class="w-12 h-12 object-cover rounded flex-shrink-0">
+                        <div class="flex-grow overflow-hidden min-w-0">
+                            <h4 class="text-white text-xs font-bold truncate">${item.title}</h4>
+                            <span class="text-cyberrose text-xs font-bold whitespace-nowrap">R$ ${parseFloat(item.price).toFixed(2).replace('.', ',')}</span>
                         </div>
-                        <button onclick="removeFromMiniCart(${index})" class="p-2 text-slate-400 hover:text-red-400 transition-colors bg-slate-900 rounded border border-slate-700">
+                        <button onclick="removeFromMiniCart(${index})" class="flex-shrink-0 p-2 text-slate-400 hover:text-red-400 transition-colors bg-slate-900 rounded border border-slate-700">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
