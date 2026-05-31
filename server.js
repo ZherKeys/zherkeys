@@ -72,6 +72,7 @@ async function initDB() {
             ALTER TABLE products ADD COLUMN IF NOT EXISTS gameflip_listing_id TEXT;
             
             ALTER TABLE users ADD COLUMN IF NOT EXISTS balance NUMERIC(10, 2) DEFAULT 0.00;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS points INTEGER DEFAULT 0;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS facebook_id TEXT;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS steam_id TEXT;
@@ -1746,11 +1747,12 @@ app.post('/api/notifications/read', requireAuth, async (req, res) => {
 
 app.get('/api/me', requireAuth, async (req, res) => {
     try {
-        const result = await pool.query('SELECT email, balance FROM users WHERE id = $1', [req.session.userId]);
+        const result = await pool.query('SELECT email, balance, points FROM users WHERE id = $1', [req.session.userId]);
         if (result.rows.length > 0) {
             res.json({ 
                 email: result.rows[0].email, 
                 balance: parseFloat(result.rows[0].balance || 0),
+                points: parseInt(result.rows[0].points || 0),
                 isAdmin: result.rows[0].email === 'zherkeys@gmail.com' 
             });
         } else {
@@ -2111,10 +2113,10 @@ app.get('/api/wallet/transactions', requireAuth, async (req, res) => {
 });
 
 // ========================
-// PLAY-TO-EARN MINIGAMES ENDPOINTS
+// PLAY-TO-EARN MINIGAMES ENDPOINTS (POINTS SYSTEM - Z-POINTS)
 // ========================
 
-// Buscar total ganho com minigames hoje pelo usuário
+// Buscar total convertido com minigames hoje pelo usuário (limite diário de R$ 2,00)
 app.get('/api/minigames/daily-total', requireAuth, async (req, res) => {
     try {
         const userId = req.session.userId;
@@ -2130,7 +2132,7 @@ app.get('/api/minigames/daily-total', requireAuth, async (req, res) => {
     }
 });
 
-// Reivindicar recompensa do Minigame (auto-sustentável baseada em anúncios)
+// Reivindicar recompensa em pontos do Minigame (auto-sustentável baseada em anúncios)
 app.post('/api/minigames/claim', requireAuth, async (req, res) => {
     const { points, adWatched } = req.body;
     
@@ -2139,20 +2141,19 @@ app.post('/api/minigames/claim', requireAuth, async (req, res) => {
         return res.status(400).json({ error: 'Pontuação inválida.' });
     }
     
-    // Cálculo seguro baseado no CPM de $ 0.20 USD para garantir lucro do dono do site
-    // 100 pontos = R$ 0,02 BRL (com anúncio Direct Link) ou quase R$ 0,00 BRL (sem anúncio)
-    // 1 ponto base = R$ 0.00001 (Sem anúncio)
-    // 1 ponto boost = R$ 0.0002 (Com anúncio)
-    const factor = adWatched ? 0.0002 : 0.00001;
-    let reward = parseFloat((scorePoints * factor).toFixed(2));
+    // Cálculo seguro baseado no CPM de $ 0.10 USD (1 Z-Point = R$ 0.0001 BRL)
+    // Sem Ad: 1 ponto a cada 100 pontos de score (fator 0.01)
+    // Com Ad: 5 pontos a cada 100 pontos de score (fator 0.05)
+    const factor = adWatched ? 0.05 : 0.01;
+    let rewardPoints = Math.round(scorePoints * factor);
     
-    // Segurança contra exploits/bots: limitar recompensa máxima por partida a R$ 0.10 (500 pts com boost)
-    if (reward > 0.10) {
-        reward = 0.10;
+    // Segurança contra exploits/bots: limitar recompensa máxima por partida a 30 pontos
+    if (rewardPoints > 30) {
+        rewardPoints = 30;
     }
     
-    if (reward <= 0) {
-        return res.json({ success: true, reward: 0, newBalance: 0, dailyTotal: 0, message: 'Pontuação muito baixa para gerar recompensa.' });
+    if (rewardPoints <= 0) {
+        return res.json({ success: true, rewardPoints: 0, newPoints: 0, message: 'Pontuação muito baixa para gerar pontos.' });
     }
     
     const userId = req.session.userId;
@@ -2161,65 +2162,160 @@ app.post('/api/minigames/claim', requireAuth, async (req, res) => {
     try {
         await client.query('BEGIN');
         
-        // 1. Verificar total diário acumulado
+        // 1. Verificar limite diário acumulado em dinheiro real convertido hoje (equivalente a 20.000 pontos = R$ 2,00)
         const dailyRes = await client.query(
             "SELECT COALESCE(SUM(amount), 0) AS total FROM wallet_transactions WHERE user_id = $1 AND type = 'minigame' AND created_at >= CURRENT_DATE",
             [userId]
         );
         const dailyTotal = parseFloat(dailyRes.rows[0].total || 0);
         
-        // Limite diário de R$ 2.00
         if (dailyTotal >= 2.00) {
             await client.query('ROLLBACK');
-            return res.status(400).json({ error: 'Limite diário de ganhos em minigames (R$ 2,00) já foi atingido.' });
+            return res.status(400).json({ error: 'Você já atingiu o limite máximo de resgate diário na carteira (R$ 2,00) hoje!' });
         }
         
-        // Ajusta se ultrapassar o limite
-        let finalReward = reward;
-        if (dailyTotal + reward > 2.00) {
-            finalReward = parseFloat((2.00 - dailyTotal).toFixed(2));
-        }
-        
-        if (finalReward <= 0) {
-            await client.query('ROLLBACK');
-            return res.status(400).json({ error: 'Limite diário de ganhos em minigames (R$ 2,00) já foi atingido.' });
-        }
-        
-        // 2. Atualizar o saldo do usuário com bloqueio FOR UPDATE
-        const userRes = await client.query('SELECT balance FROM users WHERE id = $1 FOR UPDATE', [userId]);
+        // 2. Incrementar a coluna 'points' do usuário
+        const userRes = await client.query('SELECT points, balance FROM users WHERE id = $1 FOR UPDATE', [userId]);
         if (userRes.rows.length === 0) {
             await client.query('ROLLBACK');
             return res.status(404).json({ error: 'Usuário não encontrado.' });
         }
         
+        const currentPoints = parseInt(userRes.rows[0].points || 0);
+        const newPoints = currentPoints + rewardPoints;
         const balance = parseFloat(userRes.rows[0].balance || 0);
-        const newBalance = parseFloat((balance + finalReward).toFixed(2));
         
-        await client.query('UPDATE users SET balance = $1 WHERE id = $2', [newBalance, userId]);
+        await client.query('UPDATE users SET points = $1 WHERE id = $2', [newPoints, userId]);
+        await client.query('COMMIT');
         
-        // 3. Registrar a transação na tabela wallet_transactions
-        const description = adWatched 
-            ? `Ganho de Minigame (Zher Hacker) + Anúncio Multi-Boost` 
-            : `Ganho de Minigame (Zher Hacker)`;
-            
+        res.json({
+            success: true,
+            rewardPoints,
+            newPoints,
+            newBalance: balance,
+            dailyTotal
+        });
+        
+    } catch(err) {
+        await client.query('ROLLBACK');
+        console.error("[MINIGAMES-CLAIM] Erro ao reivindicar pontos:", err);
+        res.status(500).json({ error: 'Erro interno ao processar os pontos.' });
+    } finally {
+        client.release();
+    }
+});
+
+// Assistir anúncio rápido e ganhar 15 pontos fixos (Smartlink Direct Ad)
+app.post('/api/minigames/watch-ad-points', requireAuth, async (req, res) => {
+    const userId = req.session.userId;
+    const client = await pool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        const userRes = await client.query('SELECT points, balance FROM users WHERE id = $1 FOR UPDATE', [userId]);
+        if (userRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+        
+        const rewardPoints = 15;
+        const currentPoints = parseInt(userRes.rows[0].points || 0);
+        const newPoints = currentPoints + rewardPoints;
+        const balance = parseFloat(userRes.rows[0].balance || 0);
+        
+        await client.query('UPDATE users SET points = $1 WHERE id = $2', [newPoints, userId]);
+        await client.query('COMMIT');
+        
+        res.json({
+            success: true,
+            rewardPoints,
+            newPoints,
+            newBalance: balance
+        });
+        
+    } catch(err) {
+        await client.query('ROLLBACK');
+        console.error("[MINIGAMES-AD-POINTS] Erro ao creditar pontos por anúncio:", err);
+        res.status(500).json({ error: 'Erro interno ao processar seus pontos.' });
+    } finally {
+        client.release();
+    }
+});
+
+// Converter pontos do Minigame em Saldo real de Carteira (100 pontos = R$ 0,01 BRL)
+app.post('/api/minigames/convert-points', requireAuth, async (req, res) => {
+    const { pointsToConvert } = req.body;
+    const pointsNum = parseInt(pointsToConvert);
+    
+    if (isNaN(pointsNum) || pointsNum < 100 || pointsNum % 100 !== 0) {
+        return res.status(400).json({ error: 'Por favor, insira uma quantidade de pontos válida (múltiplos de 100).' });
+    }
+    
+    const userId = req.session.userId;
+    const client = await pool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        const userRes = await client.query('SELECT points, balance FROM users WHERE id = $1 FOR UPDATE', [userId]);
+        if (userRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+        
+        const currentPoints = parseInt(userRes.rows[0].points || 0);
+        if (currentPoints < pointsNum) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'Pontos insuficientes para realizar a conversão.' });
+        }
+        
+        // Conversão: 100 pontos = R$ 0,01 BRL (10.000 pontos = R$ 1,00 BRL)
+        const convertedBRL = parseFloat((pointsNum / 10000).toFixed(2));
+        if (convertedBRL <= 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'Quantidade de pontos muito baixa para gerar saldo em reais.' });
+        }
+        
+        // Limite diário de ganhos convertidos em reais de minigames (R$ 2,00)
+        const dailyRes = await client.query(
+            "SELECT COALESCE(SUM(amount), 0) AS total FROM wallet_transactions WHERE user_id = $1 AND type = 'minigame' AND created_at >= CURRENT_DATE",
+            [userId]
+        );
+        const dailyTotal = parseFloat(dailyRes.rows[0].total || 0);
+        
+        if (dailyTotal + convertedBRL > 2.00) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: `A conversão excede seu limite diário restante de Play-to-Earn (R$ ${(2.00 - dailyTotal).toFixed(2)}).` });
+        }
+        
+        // Realiza a conversão
+        const newPoints = currentPoints - pointsNum;
+        const currentBalance = parseFloat(userRes.rows[0].balance || 0);
+        const newBalance = parseFloat((currentBalance + convertedBRL).toFixed(2));
+        
+        await client.query('UPDATE users SET points = $1, balance = $2 WHERE id = $3', [newPoints, newBalance, userId]);
+        
+        // Registra a transação com tipo 'minigame' para contar no limite diário
         await client.query(
-            'INSERT INTO wallet_transactions (user_id, amount, type, description) VALUES ($1, $2, $3, $4)',
-            [userId, finalReward, 'minigame', description]
+            "INSERT INTO wallet_transactions (user_id, amount, type, description) VALUES ($1, $2, $3, $4)",
+            [userId, convertedBRL, 'minigame', `Conversão de ${pointsNum} Z-Points do Minigame`]
         );
         
         await client.query('COMMIT');
         
         res.json({
             success: true,
-            reward: finalReward,
+            convertedBRL,
+            newPoints,
             newBalance,
-            dailyTotal: parseFloat((dailyTotal + finalReward).toFixed(2))
+            dailyTotal: parseFloat((dailyTotal + convertedBRL).toFixed(2))
         });
         
     } catch(err) {
         await client.query('ROLLBACK');
-        console.error("[MINIGAMES-CLAIM] Erro ao reivindicar recompensa:", err);
-        res.status(500).json({ error: 'Erro interno ao processar a recompensa.' });
+        console.error("[MINIGAMES-CONVERT] Erro ao converter pontos:", err);
+        res.status(500).json({ error: 'Erro interno ao processar sua conversão.' });
     } finally {
         client.release();
     }

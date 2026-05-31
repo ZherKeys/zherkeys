@@ -56,14 +56,20 @@
                 </div>
             </a>
             
-            <div class="flex items-center gap-6">
-                <!-- Saldo Live -->
-                <div class="flex items-center gap-2 bg-slate-900 border border-slate-850 px-4 py-2 rounded-xl">
-                    <i data-lucide="wallet" class="w-4 h-4 text-emerald-400"></i>
-                    <span class="text-xs font-orbitron text-slate-400 uppercase tracking-widest">SALDO:</span>
-                    <span id="nav-balance" class="text-xs font-orbitron font-bold text-emerald-400">Carregando...</span>
+            <div class="flex items-center gap-4">
+                <!-- Saldo Real e Pontos Live -->
+                <div class="flex flex-col gap-1 bg-slate-900 border border-slate-850 px-4 py-2.5 rounded-xl font-orbitron min-w-[140px]">
+                    <div class="flex items-center justify-between gap-3 text-[10px]">
+                        <span class="text-slate-400 tracking-wider uppercase">SALDO:</span>
+                        <span id="nav-balance" class="font-bold text-emerald-400">Carregando...</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-3 text-[10px] border-t border-slate-800/80 pt-1">
+                        <span class="text-slate-400 tracking-wider uppercase">Z-POINTS:</span>
+                        <span id="nav-points" class="font-bold text-electricblue">Carregando...</span>
+                    </div>
                 </div>
-                <a href="/account.html" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-500 text-white font-orbitron text-[10px] tracking-widest font-bold rounded-xl transition-all uppercase flex items-center gap-2">
+                
+                <a href="/account.html" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-500 text-white font-orbitron text-[10px] tracking-widest font-bold rounded-xl transition-all uppercase flex items-center gap-2">
                     MINHA CONTA <i data-lucide="user" class="w-4 h-4"></i>
                 </a>
             </div>
@@ -94,6 +100,34 @@
                         <span>O saldo é depositado **diretamente na sua carteira** do site e você pode usar para comprar qualquer Key de graça!</span>
                     </li>
                 </ul>
+            </div>
+
+            <!-- CENTRAL DE TAREFAS E CONVERSOR -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col gap-5">
+                <h3 class="font-orbitron font-bold text-white text-xs tracking-widest uppercase flex items-center gap-2 text-toxicgreen">
+                    <i data-lucide="coins" class="w-4 h-4"></i> ACADEMIA DE RECOMPENSAS
+                </h3>
+                
+                <!-- Tarefa: Assistir Anúncio -->
+                <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl flex flex-col gap-2.5">
+                    <span class="text-[9px] text-slate-500 font-orbitron tracking-widest uppercase">Ganhos Rápidos</span>
+                    <span class="text-xs font-semibold text-white font-inter">Assista a um anúncio rápido e ganhe pontos fixos sem precisar jogar!</span>
+                    <button onclick="watchQuickAdForPoints()" class="w-full bg-gradient-to-r from-electricblue to-blue-600 hover:from-blue-500 hover:to-blue-600 text-white font-orbitron text-[10px] tracking-widest font-bold py-2.5 rounded-lg shadow-lg shadow-blue-500/10 hover:scale-[1.01] transition-all uppercase flex items-center justify-center gap-2 cursor-pointer">
+                        ⚡ GANHAR +15 PONTOS <i data-lucide="zap" class="w-3.5 h-3.5 animate-pulse"></i>
+                    </button>
+                </div>
+
+                <!-- Conversor de Pontos -->
+                <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl flex flex-col gap-3">
+                    <span class="text-[9px] text-slate-500 font-orbitron tracking-widest uppercase">Conversor Z-Points</span>
+                    <span class="text-[10px] text-slate-400 font-inter leading-relaxed">Taxa: <b class="text-toxicgreen font-orbitron">100 Pontos = R$ 0,01 BRL</b>. Digite em múltiplos de 100 para converter.</span>
+                    <div class="flex gap-2">
+                        <input type="number" id="convert-points-input" placeholder="Ex: 500" min="100" step="100" class="w-full bg-slate-900 border border-slate-800 text-white text-xs px-3 py-2 rounded-lg font-orbitron focus:outline-none focus:border-toxicgreen focus:ring-1 focus:ring-toxicgreen transition-all" />
+                        <button onclick="convertPointsToCash()" class="bg-toxicgreen hover:bg-emerald-500 text-obsidian font-orbitron text-[10px] tracking-widest font-black px-4 py-2 rounded-lg transition-colors uppercase cursor-pointer">
+                            TROCAR
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- ANÚNCIO DE SIDEBAR PATROCINADO (BANNER 1) -->
@@ -137,7 +171,7 @@
                 <!-- Barra de Instruções -->
                 <div class="w-full bg-slate-900/80 border-t border-slate-800 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs">
                     <span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="keyboard" class="w-4 h-4 text-electricblue"></i> Use as setas <b class="text-white">&larr; &rarr;</b> ou clique e arraste para mover o Hacker</span>
-                    <span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos = <b class="text-white">R$ 0,02</b> (com Multi-Boost)</span>
+                    <span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">5 Z-Points</b> (com Multi-Boost)</span>
                 </div>
             </div>
             
@@ -289,19 +323,25 @@
         let sessionPoints = 0;
         let pointsToClaim = 0;
 
-        // --- FETCH USER LIVE BALANCE ---
+        let userPoints = 0;
+        
+        // --- FETCH USER LIVE BALANCE AND POINTS ---
         async function fetchMe() {
             try {
                 const res = await fetch('/api/me');
                 if (res.ok) {
                     const data = await res.json();
                     userBalance = parseFloat(data.balance || 0);
+                    userPoints = parseInt(data.points || 0);
                     document.getElementById('nav-balance').innerText = formatPrice(userBalance);
+                    document.getElementById('nav-points').innerText = `${userPoints} Pts`;
                 } else {
                     document.getElementById('nav-balance').innerText = 'Fazer Login';
+                    document.getElementById('nav-points').innerText = 'Fazer Login';
                 }
             } catch(e) {
                 document.getElementById('nav-balance').innerText = 'Offline';
+                document.getElementById('nav-points').innerText = 'Offline';
             }
         }
 
@@ -650,13 +690,13 @@
             const modal = document.getElementById('game-over-modal');
             const content = document.getElementById('game-over-content');
             
-            // Recompensas calculadas
-            const valBase = score * 0.00001; // R$ 0,01 a cada 1000 pontos
-            const valBoost = score * 0.0002; // R$ 0,02 a cada 100 pontos (com anúncio!)
-
+            // Recompensas calculadas em Z-Points virtuais
+            const valBase = Math.round(score * 0.01); 
+            const valBoost = Math.round(score * 0.05); 
+            
             document.getElementById('final-score').innerText = score;
-            document.getElementById('base-reward').innerText = formatPrice(valBase);
-            document.getElementById('ad-reward-val').innerText = formatPrice(valBoost);
+            document.getElementById('base-reward').innerText = `${valBase} Z-Points`;
+            document.getElementById('ad-reward-val').innerText = `${valBoost} Z-Points`;
 
             modal.classList.remove('hidden');
             setTimeout(() => {
@@ -776,9 +816,12 @@
                 const data = await response.json();
                 
                 if (response.ok && data.success) {
-                    alert(`🎉 Sucesso! Você recebeu ${formatPrice(data.reward)} na sua carteira de créditos!`);
+                    alert(`🎉 Sucesso! Você recebeu +${data.rewardPoints} Z-Points em sua conta!`);
                     
-                    // Atualiza o saldo live
+                    // Atualiza os saldos live
+                    userPoints = parseInt(data.newPoints);
+                    document.getElementById('nav-points').innerText = `${userPoints} Pts`;
+                    
                     userBalance = parseFloat(data.newBalance);
                     document.getElementById('nav-balance').innerText = formatPrice(userBalance);
                     
@@ -795,6 +838,143 @@
             drawStartScreen();
         }
 
+        // Função para assistir anúncio rápido e ganhar 15 pontos fixos
+        function watchQuickAdForPoints() {
+            // Abre o Direct Link real da Adsterra em uma nova aba
+            window.open('https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f', '_blank');
+            
+            // Abre o modal de cronômetro do anúncio (10 segundos para tarefas rápidas)
+            const adModal = document.getElementById('rewarded-ad-modal');
+            adModal.classList.remove('hidden');
+            setTimeout(() => {
+                adModal.classList.remove('opacity-0', 'pointer-events-none');
+            }, 10);
+            
+            document.body.style.overflow = 'hidden';
+
+            let remaining = 10;
+            const textEl = document.getElementById('ad-countdown');
+            const progressEl = document.getElementById('ad-progress-bar');
+            const collectBtn = document.getElementById('ad-collect-btn');
+            
+            textEl.innerText = `${remaining}s`;
+            progressEl.style.width = '0%';
+            
+            collectBtn.disabled = true;
+            collectBtn.className = "w-full bg-slate-800 opacity-50 cursor-not-allowed text-slate-500 font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl transition-all uppercase flex items-center justify-center gap-2";
+            collectBtn.innerHTML = `VALIDANDO TAREFA... <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>`;
+            lucide.createIcons();
+
+            const step = 100 / remaining;
+            let elapsed = 0;
+
+            if(window.adInterval) clearInterval(window.adInterval);
+            window.adInterval = setInterval(async () => {
+                remaining--;
+                elapsed++;
+                progressEl.style.width = `${elapsed * step}%`;
+                
+                if(remaining <= 0) {
+                    clearInterval(window.adInterval);
+                    progressEl.style.width = '100%';
+                    textEl.innerText = '0s';
+                    
+                    collectBtn.disabled = false;
+                    collectBtn.className = "w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl shadow-lg shadow-emerald-500/20 hover:scale-[1.02] transition-all cursor-pointer uppercase flex items-center justify-center gap-2";
+                    collectBtn.innerHTML = `CONCLUÍDO! RESGATAR 15 PONTOS ⚡ <i data-lucide="award" class="w-5 h-5"></i>`;
+                    collectBtn.onclick = async () => {
+                        closeAdModal();
+                        await claimQuickAdPoints();
+                    };
+                    lucide.createIcons();
+                } else {
+                    textEl.innerText = `${remaining}s`;
+                }
+            }, 1000);
+        }
+
+        async function claimQuickAdPoints() {
+            try {
+                const res = await fetch('/api/minigames/watch-ad-points', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (res.status === 401) {
+                    alert('⚠️ Você precisa estar logado para acumular pontos de tarefas!');
+                    window.location.href = '/login.html';
+                    return;
+                }
+                
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    alert(`🎉 Sucesso! Você recebeu +15 Z-Points em sua conta por visualizar o patrocinador!`);
+                    userPoints = parseInt(data.newPoints);
+                    document.getElementById('nav-points').innerText = `${userPoints} Pts`;
+                } else {
+                    alert(`⚠️ Erro ao reivindicar: ${data.error || 'Erro desconhecido'}`);
+                }
+            } catch(e) {
+                alert('Erro ao registrar sua recompensa de anúncio.');
+            }
+        }
+
+        // Função para converter pontos em reais na carteira
+        async function convertPointsToCash() {
+            const inputVal = document.getElementById('convert-points-input').value;
+            const pointsToConvert = parseInt(inputVal);
+            
+            if (isNaN(pointsToConvert) || pointsToConvert < 100 || pointsToConvert % 100 !== 0) {
+                alert('⚠️ Por favor, insira uma quantidade de pontos válida (mínimo de 100 e em múltiplos de 100).');
+                return;
+            }
+            
+            if (pointsToConvert > userPoints) {
+                alert(`⚠️ Pontos insuficientes. Você possui atualmente ${userPoints} Z-Points.`);
+                return;
+            }
+            
+            if (!confirm(`Deseja converter ${pointsToConvert} Z-Points em R$ ${(pointsToConvert / 10000).toFixed(2)} de saldo real na carteira?`)) {
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/minigames/convert-points', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pointsToConvert })
+                });
+                
+                if (res.status === 401) {
+                    alert('⚠️ Sessão expirada. Faça login novamente.');
+                    window.location.href = '/login.html';
+                    return;
+                }
+                
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    alert(`🎉 Sucesso! Você converteu ${pointsToConvert} Z-Points em R$ ${parseFloat(data.convertedBRL).toFixed(2).replace('.', ',')} de saldo na carteira!`);
+                    
+                    // Atualiza os saldos live
+                    userPoints = parseInt(data.newPoints);
+                    document.getElementById('nav-points').innerText = `${userPoints} Pts`;
+                    
+                    userBalance = parseFloat(data.newBalance);
+                    document.getElementById('nav-balance').innerText = formatPrice(userBalance);
+                    
+                    // Atualiza o limite diário restante
+                    updateDailyLimitUI(data.dailyTotal);
+                    
+                    // Limpa input
+                    document.getElementById('convert-points-input').value = '';
+                } else {
+                    alert(`⚠️ Erro ao converter: ${data.error || 'Erro desconhecido'}`);
+                }
+            } catch(e) {
+                alert('Erro de conexão ao processar sua conversão de pontos.');
+            }
+        }
+
         // Carrega limites de ganhos diários
         async function loadDailyTotal() {
             try {
@@ -808,7 +988,7 @@
 
         function updateDailyLimitUI(dailyTotal) {
             const remaining = Math.max(0, dailyLimitBRL - dailyTotal);
-            document.getElementById('daily-limit-display').innerText = `${formatPrice(remaining)} restantes hoje`;
+            document.getElementById('daily-limit-display').innerText = `${formatPrice(remaining)} de conversão Play-to-Earn restante hoje`;
             if (remaining <= 0) {
                 document.getElementById('daily-limit-display').className = "text-white font-orbitron font-bold text-base text-red-500";
             } else {
