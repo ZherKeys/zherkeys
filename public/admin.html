@@ -45,8 +45,9 @@
             </a>
             
             <div class="flex gap-4 font-orbitron text-xs tracking-widest">
-                <button onclick="switchTab('produtos')" id="tab-btn-produtos" class="text-white border-b-2 border-toxicgreen pb-1">PRODUTOS</button>
-                <button onclick="switchTab('vendas')" id="tab-btn-vendas" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all">VENDAS & SUPORTE</button>
+                <button onclick="switchTab('produtos')" id="tab-btn-produtos" class="text-white border-b-2 border-toxicgreen pb-1 transition-all">PRODUTOS</button>
+                <button onclick="switchTab('vendas')" id="tab-btn-vendas" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all">VENDAS</button>
+                <button onclick="switchTab('suporte')" id="tab-btn-suporte" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all">SUPORTE GLOBAL</button>
             </div>
             
             <div class="flex items-center gap-4">
@@ -97,6 +98,11 @@
                     </div>
 
                     <div>
+                        <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">GÊNEROS (Ex: Ação, RPG, Tiro)</label>
+                        <input type="text" id="prod-genres" placeholder="Ação, RPG, Multiplayer" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all">
+                    </div>
+
+                    <div>
                         <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">DESCRIÇÃO</label>
                         <textarea id="prod-desc" rows="3" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all"></textarea>
                     </div>
@@ -107,8 +113,10 @@
                     </div>
 
                     <div id="div-restricted" class="hidden">
-                        <label class="block text-xs font-orbitron tracking-widest text-rose-400 mb-1">PAÍSES PERMITIDOS (Aparece em vermelho)</label>
-                        <input type="text" id="prod-restricted" placeholder="Ex: Apenas Brasil e Argentina" class="w-full bg-slate-950 border border-rose-900 rounded-lg px-4 py-3 text-rose-400 focus:outline-none focus:border-rose-500 transition-all placeholder-rose-900/50">
+                        <label class="block text-xs font-orbitron tracking-widest text-rose-400 mb-2">PAÍSES PERMITIDOS (Selecione todos os aplicáveis)</label>
+                        <div id="countries-container" class="max-h-48 overflow-y-auto bg-slate-950 border border-rose-900/50 rounded-lg p-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            <!-- Gerado via JS -->
+                        </div>
                     </div>
 
                     <button type="submit" id="btn-save" class="w-full bg-toxicgreen hover:bg-emerald-500 text-obsidian font-orbitron font-bold tracking-widest py-3 rounded-lg transition-colors mt-4">
@@ -175,6 +183,46 @@
             
         </div>
 
+        <!-- ABA: SUPORTE GLOBAL -->
+        <div id="section-suporte" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Lista de Contatos -->
+                <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 h-[80vh] overflow-y-auto">
+                    <h3 class="font-orbitron font-bold text-white tracking-widest mb-6 border-b border-slate-800 pb-4 flex items-center justify-between">
+                        <span class="flex items-center gap-2"><i data-lucide="users" class="w-5 h-5 text-blue-400"></i> CLIENTES NO SUPORTE</span>
+                        <button onclick="loadGlobalSupport()" class="text-xs text-slate-400 hover:text-white"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                    </h3>
+                    
+                    <div id="support-list" class="space-y-4">
+                        <div class="text-center text-slate-500 py-10">Carregando contatos...</div>
+                    </div>
+                </div>
+
+                <!-- Chat Global -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col h-[80vh] relative">
+                    <div id="global-chat-placeholder" class="absolute inset-0 flex items-center justify-center flex-col text-slate-500 z-10 bg-slate-900 rounded-2xl">
+                        <i data-lucide="message-circle" class="w-12 h-12 mb-4 opacity-50"></i>
+                        <p class="font-orbitron tracking-widest text-sm">SELECIONE UM CLIENTE PARA ABRIR O CHAT</p>
+                    </div>
+
+                    <h3 class="font-orbitron font-bold text-white tracking-widest mb-4 border-b border-slate-800 pb-4 flex items-center justify-between">
+                        <span class="flex items-center gap-2"><i data-lucide="headset" class="w-5 h-5 text-blue-400"></i> ATENDIMENTO</span>
+                        <span id="global-chat-user" class="text-blue-400 text-xs"></span>
+                    </h3>
+
+                    <div id="global-chat-messages" class="flex-grow overflow-y-auto space-y-4 pr-2 mb-4">
+                    </div>
+
+                    <form id="global-chat-form" class="mt-auto border-t border-slate-800 pt-4 flex gap-2">
+                        <input type="text" id="global-chat-input" placeholder="Digite sua resposta..." class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-400 transition-all">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-6 rounded-lg font-orbitron font-bold flex items-center justify-center">
+                            <i data-lucide="send" class="w-5 h-5"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <script>
@@ -183,18 +231,25 @@
         let currentOrderId = null;
 
         function switchTab(tab) {
+            document.getElementById('section-produtos').classList.add('hidden');
+            document.getElementById('section-vendas').classList.add('hidden');
+            document.getElementById('section-suporte').classList.add('hidden');
+            document.getElementById('tab-btn-produtos').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
+            document.getElementById('tab-btn-vendas').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
+            document.getElementById('tab-btn-suporte').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
+
             if(tab === 'produtos') {
                 document.getElementById('section-produtos').classList.remove('hidden');
-                document.getElementById('section-vendas').classList.add('hidden');
-                document.getElementById('tab-btn-produtos').className = "text-white border-b-2 border-toxicgreen pb-1";
-                document.getElementById('tab-btn-vendas').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
+                document.getElementById('tab-btn-produtos').className = "text-white border-b-2 border-toxicgreen pb-1 transition-all";
                 loadProducts();
-            } else {
-                document.getElementById('section-produtos').classList.add('hidden');
+            } else if(tab === 'vendas') {
                 document.getElementById('section-vendas').classList.remove('hidden');
-                document.getElementById('tab-btn-vendas').className = "text-white border-b-2 border-purple-400 pb-1";
-                document.getElementById('tab-btn-produtos').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
+                document.getElementById('tab-btn-vendas').className = "text-white border-b-2 border-purple-400 pb-1 transition-all";
                 loadOrders();
+            } else if(tab === 'suporte') {
+                document.getElementById('section-suporte').classList.remove('hidden');
+                document.getElementById('tab-btn-suporte').className = "text-white border-b-2 border-blue-400 pb-1 transition-all";
+                loadGlobalSupport();
             }
         }
 
@@ -254,10 +309,26 @@
             }
         }
 
+        const countriesList = [
+            "Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Bahrein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia e Herzegovina","Botsuana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo-Brazzaville","Congo-Kinshasa","Coreia do Norte","Coreia do Sul","Costa do Marfim","Costa Rica","Croácia","Cuba","Dinamarca","Djibuti","Dominica","Egito","El Salvador","Emirados Árabes Unidos","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Eswatini","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné Equatorial","Guiné-Bissau","Haiti","Honduras","Hungria","Iêmen","Ilhas Marshall","Ilhas Salomão","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia do Norte","Madagascar","Malásia","Malaui","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Países Baixos","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Tcheca","República Dominicana","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão e Neves","São Tomé e Príncipe","São Vicente e Granadinas","Seicheles","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"
+        ];
+
+        function renderCountries() {
+            const container = document.getElementById('countries-container');
+            container.innerHTML = countriesList.map(c => `
+                <label class="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-white transition-colors text-xs font-inter">
+                    <input type="checkbox" value="${c}" class="country-checkbox w-4 h-4 rounded bg-slate-900 border-slate-700 text-electricblue focus:ring-0">
+                    <span class="truncate">${c}</span>
+                </label>
+            `).join('');
+        }
+
         document.getElementById('product-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const id = document.getElementById('prod-id').value;
+            const checkedCountries = Array.from(document.querySelectorAll('.country-checkbox:checked')).map(cb => cb.value).join(', ');
+
             const payload = {
                 title: document.getElementById('prod-title').value,
                 category: document.getElementById('prod-category').value,
@@ -266,7 +337,8 @@
                 description: document.getElementById('prod-desc').value,
                 activation_key: document.getElementById('prod-activation').value,
                 is_global: document.getElementById('prod-global').checked,
-                restricted_countries: document.getElementById('prod-restricted').value
+                restricted_countries: checkedCountries,
+                genres: document.getElementById('prod-genres').value
             };
 
             const url = id ? '/api/admin/products/' + id : '/api/admin/products';
@@ -298,9 +370,14 @@
             document.getElementById('prod-image').value = p.image;
             document.getElementById('prod-desc').value = p.description;
             document.getElementById('prod-activation').value = p.activation_key || '';
+            document.getElementById('prod-genres').value = p.genres || '';
             document.getElementById('prod-global').checked = p.is_global !== false;
-            document.getElementById('prod-restricted').value = p.restricted_countries || '';
             document.getElementById('div-restricted').classList.toggle('hidden', p.is_global !== false);
+            
+            const restrictedList = (p.restricted_countries || '').split(',').map(s => s.trim());
+            document.querySelectorAll('.country-checkbox').forEach(cb => {
+                cb.checked = restrictedList.includes(cb.value);
+            });
             
             document.getElementById('btn-save').innerText = "ATUALIZAR PRODUTO";
             document.getElementById('btn-save').classList.replace('bg-toxicgreen', 'bg-electricblue');
@@ -313,6 +390,7 @@
             document.getElementById('prod-id').value = '';
             document.getElementById('prod-global').checked = true;
             document.getElementById('div-restricted').classList.add('hidden');
+            document.querySelectorAll('.country-checkbox').forEach(cb => cb.checked = false);
             document.getElementById('btn-save').innerText = "SALVAR PRODUTO";
             document.getElementById('btn-save').classList.replace('bg-electricblue', 'bg-toxicgreen');
             document.getElementById('btn-cancel').classList.add('hidden');
@@ -483,7 +561,98 @@
             }
         });
 
+        // --- GLOBAL SUPPORT LOGIC ---
+        let allSupports = [];
+        let currentSupportUserId = null;
+
+        async function loadGlobalSupport() {
+            try {
+                const res = await fetch('/api/admin/support');
+                allSupports = await res.json();
+                
+                const container = document.getElementById('support-list');
+                if(allSupports.length === 0) {
+                    container.innerHTML = '<div class="text-center text-slate-500 py-10">Nenhum chamado de suporte.</div>';
+                    return;
+                }
+
+                let html = '';
+                allSupports.forEach(s => {
+                    const unreadStyle = s.chat.length > 0 && s.chat[s.chat.length-1].sender_type === 'user' ? 'border-blue-400 shadow-lg shadow-blue-400/20' : 'border-slate-800 hover:border-slate-600';
+                    
+                    html += `
+                        <div onclick="openGlobalChat(${s.user_id}, '${s.email}')" class="bg-slate-950 p-4 rounded-xl border ${unreadStyle} cursor-pointer transition-all flex justify-between items-center group mb-2">
+                            <div>
+                                <div class="font-orbitron font-bold text-white text-sm">${s.email}</div>
+                                <div class="text-[10px] text-slate-500 mt-1">${s.chat.length} mensagens</div>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600 group-hover:text-blue-400 transition-colors"></i>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+                lucide.createIcons();
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        function openGlobalChat(userId, email) {
+            currentSupportUserId = userId;
+            document.getElementById('global-chat-placeholder').classList.add('hidden');
+            document.getElementById('global-chat-user').innerText = email;
+            
+            const support = allSupports.find(s => s.user_id === userId);
+            renderGlobalChat(support ? support.chat : []);
+        }
+
+        function renderGlobalChat(messages) {
+            const container = document.getElementById('global-chat-messages');
+            if(messages.length === 0) {
+                container.innerHTML = '<div class="text-center text-slate-600 text-xs py-4">Nenhuma mensagem.</div>';
+                return;
+            }
+            container.innerHTML = messages.map(m => {
+                const isAdmin = m.sender_type === 'admin';
+                return `
+                    <div class="flex ${isAdmin ? 'justify-end' : 'justify-start'}">
+                        <div class="max-w-[80%] rounded-xl p-3 ${isAdmin ? 'bg-blue-600/20 border border-blue-500/30 text-blue-100 rounded-tr-none' : 'bg-slate-800 border border-slate-700 text-slate-300 rounded-tl-none'}">
+                            <p class="text-sm font-inter">${m.message}</p>
+                            <span class="text-[9px] opacity-50 mt-1 block">${new Date(m.created_at).toLocaleString()}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        document.getElementById('global-chat-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!currentSupportUserId) return;
+            
+            const input = document.getElementById('global-chat-input');
+            const message = input.value.trim();
+            if(!message) return;
+            input.value = '';
+
+            try {
+                const res = await fetch('/api/admin/support/' + currentSupportUserId, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                if(res.ok) {
+                    await loadGlobalSupport();
+                    const support = allSupports.find(s => s.user_id === currentSupportUserId);
+                    renderGlobalChat(support.chat);
+                }
+            } catch(err) {
+                console.error(err);
+            }
+        });
+
         // Init
+        renderCountries();
         loadProducts();
     </script>
 </body>

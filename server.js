@@ -64,6 +64,7 @@ async function initDB() {
             ALTER TABLE products ADD COLUMN IF NOT EXISTS in_stock BOOLEAN DEFAULT true;
             ALTER TABLE products ADD COLUMN IF NOT EXISTS is_global BOOLEAN DEFAULT true;
             ALTER TABLE products ADD COLUMN IF NOT EXISTS restricted_countries TEXT;
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS genres TEXT;
             
             CREATE TABLE IF NOT EXISTS order_items (
                 id SERIAL PRIMARY KEY,
@@ -80,7 +81,23 @@ async function initDB() {
                 message TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+            
+            CREATE TABLE IF NOT EXISTS support_chats (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id),
+                sender_type TEXT,
+                message TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
         `);
+
+        // Popular gêneros antigos automaticamente
+        pool.query("UPDATE products SET genres = 'Multiplayer, Ação, FPS' WHERE (title ILIKE '%CS:GO%' OR title ILIKE '%Counter%' OR title ILIKE '%Valorant%') AND genres IS NULL").catch(()=>{});
+        pool.query("UPDATE products SET genres = 'Aventura, RPG, Ação' WHERE (title ILIKE '%Elden Ring%' OR title ILIKE '%Witcher%' OR title ILIKE '%Cyberpunk%') AND genres IS NULL").catch(()=>{});
+        pool.query("UPDATE products SET genres = 'Ação, Aventura, Sandbox' WHERE (title ILIKE '%GTA%' OR title ILIKE '%Red Dead%' OR title ILIKE '%Minecraft%') AND genres IS NULL").catch(()=>{});
+        pool.query("UPDATE products SET genres = 'Esportes, Multiplayer' WHERE (title ILIKE '%FIFA%' OR title ILIKE '%FC 24%' OR title ILIKE '%NBA%') AND genres IS NULL").catch(()=>{});
+        pool.query("UPDATE products SET genres = 'Terror, Sobrevivência' WHERE (title ILIKE '%Resident Evil%' OR title ILIKE '%Silent Hill%') AND genres IS NULL").catch(()=>{});
+        pool.query("UPDATE products SET genres = 'Streaming' WHERE (category = 'GIFT CARD' OR title ILIKE '%Netflix%' OR title ILIKE '%Spotify%') AND genres IS NULL").catch(()=>{});
 
         // Popular produtos iniciais se estiver vazio
         const checkProducts = await pool.query('SELECT COUNT(*) FROM products');
@@ -203,7 +220,7 @@ const requireAdmin = async (req, res, next) => {
 // Listar produtos (Público - NÃO EXPÕE A CHAVE)
 app.get('/api/products', async (req, res) => {
     try {
-        const result = await pool.query('SELECT id, title, description, price, image, category, in_stock, is_global, restricted_countries FROM products ORDER BY id ASC');
+        const result = await pool.query('SELECT id, title, description, price, image, category, in_stock, is_global, restricted_countries, genres FROM products ORDER BY id ASC');
         res.json(result.rows);
     } catch(e) {
         res.status(500).json({ error: 'Erro ao buscar produtos' });
@@ -222,11 +239,11 @@ app.get('/api/admin/products', requireAdmin, async (req, res) => {
 
 // Criar produto (Admin)
 app.post('/api/admin/products', requireAdmin, async (req, res) => {
-    const { title, description, price, image, category, activation_key, is_global, restricted_countries } = req.body;
+    const { title, description, price, image, category, activation_key, is_global, restricted_countries, genres } = req.body;
     try {
         await pool.query(
-            'INSERT INTO products (title, description, price, image, category, activation_key, is_global, restricted_countries) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
-            [title, description, parseFloat(price), image, category, activation_key || '', is_global === false ? false : true, restricted_countries || '']
+            'INSERT INTO products (title, description, price, image, category, activation_key, is_global, restricted_countries, genres) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+            [title, description, parseFloat(price), image, category, activation_key || '', is_global === false ? false : true, restricted_countries || '', genres || '']
         );
         res.status(201).json({ message: 'Produto adicionado' });
     } catch(e) {
@@ -237,11 +254,11 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
 // Editar produto (Admin)
 app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
-    const { title, description, price, image, category, activation_key, is_global, restricted_countries } = req.body;
+    const { title, description, price, image, category, activation_key, is_global, restricted_countries, genres } = req.body;
     try {
         await pool.query(
-            'UPDATE products SET title=$1, description=$2, price=$3, image=$4, category=$5, activation_key=$6, in_stock=true, is_global=$7, restricted_countries=$8 WHERE id=$9',
-            [title, description, parseFloat(price), image, category, activation_key || '', is_global === false ? false : true, restricted_countries || '', id]
+            'UPDATE products SET title=$1, description=$2, price=$3, image=$4, category=$5, activation_key=$6, in_stock=true, is_global=$7, restricted_countries=$8, genres=$9 WHERE id=$10',
+            [title, description, parseFloat(price), image, category, activation_key || '', is_global === false ? false : true, restricted_countries || '', genres || '', id]
         );
         res.json({ message: 'Produto atualizado e retornado ao estoque' });
     } catch(e) {
@@ -702,6 +719,64 @@ app.post('/reset-password', async (req, res) => {
     } catch(err) {
         console.error(err);
         res.status(500).json({ error: 'Erro no banco.' });
+    }
+});
+
+// ========================
+// SUPORTE CHAT GLOBAL
+// ========================
+
+app.get('/api/support', requireAuth, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM support_chats WHERE user_id=$1 ORDER BY id ASC', [req.session.userId]);
+        res.json(result.rows);
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao buscar chat' });
+    }
+});
+
+app.post('/api/support', requireAuth, async (req, res) => {
+    const { message } = req.body;
+    if(!message) return res.status(400).json({ error: 'Mensagem vazia' });
+    try {
+        await pool.query('INSERT INTO support_chats (user_id, sender_type, message) VALUES ($1, $2, $3)', [req.session.userId, 'user', message]);
+        res.status(201).json({ success: true });
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao enviar mensagem' });
+    }
+});
+
+app.get('/api/admin/support', requireAdmin, async (req, res) => {
+    try {
+        const usersRes = await pool.query(`
+            SELECT DISTINCT u.id as user_id, u.email 
+            FROM support_chats s
+            JOIN users u ON u.id = s.user_id
+        `);
+        const result = [];
+        for (const u of usersRes.rows) {
+            const chatRes = await pool.query('SELECT * FROM support_chats WHERE user_id=$1 ORDER BY id ASC', [u.user_id]);
+            result.push({
+                user_id: u.user_id,
+                email: u.email,
+                chat: chatRes.rows
+            });
+        }
+        res.json(result);
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao buscar suportes' });
+    }
+});
+
+app.post('/api/admin/support/:userId', requireAdmin, async (req, res) => {
+    const { userId } = req.params;
+    const { message } = req.body;
+    if(!message) return res.status(400).json({ error: 'Mensagem vazia' });
+    try {
+        await pool.query('INSERT INTO support_chats (user_id, sender_type, message) VALUES ($1, $2, $3)', [userId, 'admin', message]);
+        res.status(201).json({ success: true });
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao enviar mensagem' });
     }
 });
 

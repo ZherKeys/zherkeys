@@ -151,6 +151,9 @@
                     <i data-lucide="shopping-cart" class="w-5 h-5 text-slate-300 group-hover:text-white"></i>
                     <span id="cart-badge" class="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 bg-cyberrose text-white text-[9px] font-bold rounded-full hidden">0</span>
                 </a>
+                <a href="#" onclick="openSupportModal(event)" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-blue-500 hover:bg-slate-700 transition-all group" title="Suporte ao Cliente">
+                    <i data-lucide="headset" class="w-5 h-5 text-slate-300 group-hover:text-white"></i>
+                </a>
                 <a href="/account.html" class="flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-electricblue hover:bg-slate-700 transition-all group" title="Minha Conta">
                     <i data-lucide="user" class="w-5 h-5 text-slate-300 group-hover:text-white"></i>
                 </a>
@@ -248,7 +251,7 @@
                     <div class="relative z-10">
                         <h3 class="font-orbitron font-bold text-xl text-white mb-2 uppercase tracking-wide">GAME KEYS</h3>
                         <p class="font-inter text-slate-400 text-xs mb-6 font-light leading-relaxed">Títulos AAA e lançamentos mundiais em formato digital permanente. Ativação imediata nas principais launchers.</p>
-                        <button class="w-full bg-slate-900 border border-slate-800 group-hover:border-electricblue text-white group-hover:text-electricblue font-orbitron text-[11px] tracking-widest py-3.5 rounded-lg transition-all duration-300 flex items-center justify-center gap-2">
+                        <button onclick="document.getElementById('vitrine').scrollIntoView({behavior:'smooth'})" class="w-full bg-slate-900 border border-slate-800 group-hover:border-electricblue text-white group-hover:text-electricblue font-orbitron text-[11px] tracking-widest py-3.5 rounded-lg transition-all duration-300 flex items-center justify-center gap-2">
                             ADQUIRIR AGORA — [ENTREGA INSTANTÂNEA]
                         </button>
                     </div>
@@ -271,7 +274,7 @@
                     <div class="relative z-10 max-w-lg">
                         <h3 class="font-orbitron font-bold text-xl text-white mb-2 uppercase tracking-wide">CONTAS HIGH-END</h3>
                         <p class="font-inter text-slate-400 text-xs mb-6 font-light leading-relaxed">Progresso maximizado, skins raras, passes antigos e setups competitivos prontos para o lobby. Troca de e-mail inteiramente liberada.</p>
-                        <button class="w-full bg-slate-900 border border-slate-800 group-hover:border-cyberrose text-white group-hover:text-cyberrose font-orbitron text-[11px] tracking-widest py-3.5 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-lg">
+                        <button onclick="document.getElementById('vitrine').scrollIntoView({behavior:'smooth'})" class="w-full bg-slate-900 border border-slate-800 group-hover:border-cyberrose text-white group-hover:text-cyberrose font-orbitron text-[11px] tracking-widest py-3.5 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-lg">
                             ADQUIRIR AGORA — [ENTREGA INSTANTÂNEA]
                         </button>
                     </div>
@@ -294,7 +297,7 @@
                     <div class="relative z-10 max-w-xl mt-auto">
                         <h3 class="font-orbitron font-bold text-xl text-white mb-2 uppercase tracking-wide">STREAMING & GIFT CARDS</h3>
                         <p class="font-inter text-slate-400 text-xs mb-6 font-light leading-relaxed">Assinaturas e créditos nas plataformas mais cobiçadas do mercado. Ultra 4K ativo, sem quedas e com garantia renovável.</p>
-                        <button class="w-full sm:w-auto px-8 bg-slate-900 border border-slate-800 group-hover:border-purple-400 text-white group-hover:text-purple-400 font-orbitron text-[11px] tracking-widest py-3.5 rounded-lg transition-all duration-300 flex items-center justify-center gap-2">
+                        <button onclick="document.getElementById('vitrine').scrollIntoView({behavior:'smooth'})" class="w-full sm:w-auto px-8 bg-slate-900 border border-slate-800 group-hover:border-purple-400 text-white group-hover:text-purple-400 font-orbitron text-[11px] tracking-widest py-3.5 rounded-lg transition-all duration-300 flex items-center justify-center gap-2">
                             ADQUIRIR AGORA — [ENTREGA INSTANTÂNEA]
                         </button>
                     </div>
@@ -309,6 +312,67 @@
         <div class="text-center mb-16">
             <span class="font-orbitron text-xs tracking-widest text-electricblue font-bold block mb-2 uppercase">// DESTAQUES DA LOJA</span>
             <h2 class="font-orbitron font-black text-3xl sm:text-4xl text-white uppercase tracking-tight">JOGOS EM PROMOÇÃO</h2>
+        </div>
+        
+        <!-- SEARCH & FILTER BAR -->
+        <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-4 sm:p-6 mb-8 backdrop-blur-sm">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="lg:col-span-2 relative">
+                    <i data-lucide="search" class="w-5 h-5 absolute left-3 top-3 text-slate-500"></i>
+                    <input type="text" id="filter-search" oninput="renderGrid()" placeholder="Buscar jogos, contas..." class="w-full bg-slate-950 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-electricblue transition-colors text-sm font-inter">
+                </div>
+                
+                <div>
+                    <select id="filter-category" onchange="renderGrid()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-300 focus:outline-none focus:border-electricblue transition-colors text-sm font-inter appearance-none">
+                        <option value="">Todas as Categorias</option>
+                        <option value="STEAM KEY">Steam Key</option>
+                        <option value="CONTA">Conta</option>
+                        <option value="GIFT CARD">Gift Card</option>
+                    </select>
+                </div>
+
+                <div>
+                    <select id="filter-genre" onchange="renderGrid()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-300 focus:outline-none focus:border-electricblue transition-colors text-sm font-inter appearance-none">
+                        <option value="">Todos os Gêneros</option>
+                        <option value="ação">Ação</option>
+                        <option value="aventura">Aventura</option>
+                        <option value="rpg">RPG</option>
+                        <option value="fps">FPS / Tiro</option>
+                        <option value="multiplayer">Multiplayer</option>
+                        <option value="estratégia">Estratégia</option>
+                        <option value="esportes">Esportes</option>
+                        <option value="terror">Terror</option>
+                    </select>
+                </div>
+
+                <div>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-slate-500 font-bold text-sm">R$</span>
+                        <input type="number" id="filter-min" oninput="renderGrid()" placeholder="Preço Mínimo" class="w-full bg-slate-950 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-electricblue transition-colors text-sm font-inter">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-slate-500 font-bold text-sm">R$</span>
+                        <input type="number" id="filter-max" oninput="renderGrid()" placeholder="Preço Máximo" class="w-full bg-slate-950 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-electricblue transition-colors text-sm font-inter">
+                    </div>
+                </div>
+
+                <div>
+                    <select id="filter-sort" onchange="renderGrid()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-300 focus:outline-none focus:border-electricblue transition-colors text-sm font-inter appearance-none">
+                        <option value="">Ordenar Por</option>
+                        <option value="lowest">Menor Preço</option>
+                        <option value="highest">Maior Preço</option>
+                        <option value="az">A - Z</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2 bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5">
+                    <input type="checkbox" id="filter-global" onchange="renderGrid()" class="w-4 h-4 rounded text-electricblue bg-slate-900 border-slate-700 focus:ring-0">
+                    <label for="filter-global" class="text-xs font-orbitron tracking-widest text-slate-300 cursor-pointer">SOMENTE GLOBAIS</label>
+                </div>
+            </div>
         </div>
         
         <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -436,6 +500,7 @@
             <div class="p-6 sm:p-8 -mt-20 relative z-10">
                 <span id="modal-category" class="bg-electricblue/20 border border-electricblue/30 text-electricblue font-orbitron text-[10px] tracking-widest px-3 py-1 rounded-full uppercase font-bold backdrop-blur-md">STEAM KEY</span>
                 <h3 id="modal-title" class="font-orbitron font-black text-2xl sm:text-3xl text-white mt-4 mb-2 uppercase">Nome do Jogo</h3>
+                <div id="modal-genres" class="flex flex-wrap gap-2 mt-2 mb-4"></div>
                 <div id="modal-region-warning" class="hidden mb-4 p-3 bg-rose-950/40 border border-rose-900/50 rounded-lg text-rose-400 text-[10px] sm:text-xs font-orbitron tracking-widest flex items-center gap-2"></div>
                 <div class="flex items-end gap-3 mb-6">
                     <span id="modal-price" class="font-orbitron font-bold text-3xl text-cyberrose">R$ 0,00</span>
@@ -453,6 +518,33 @@
                         <i data-lucide="zap" class="w-5 h-5"></i> COMPRAR AGORA
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUPPORT MODAL -->
+    <div id="support-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 sm:p-6 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onclick="closeSupportModal()"></div>
+        <div class="relative w-full max-w-lg bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="support-modal-content">
+            <button onclick="closeSupportModal()" class="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center bg-slate-950/60 hover:bg-rose-500 text-slate-300 hover:text-white rounded-full transition-colors backdrop-blur-sm">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="p-6 border-b border-slate-800 bg-slate-950">
+                <h3 class="font-orbitron font-black text-xl text-white flex items-center gap-2">
+                    <i data-lucide="headset" class="w-6 h-6 text-blue-500"></i> SUPORTE AO CLIENTE
+                </h3>
+                <p class="text-xs text-slate-400 mt-1">Converse diretamente com nossa equipe técnica.</p>
+            </div>
+            <div class="p-4 sm:p-6 flex flex-col h-[60vh]">
+                <div id="support-chat-messages" class="flex-grow overflow-y-auto space-y-4 pr-2 mb-4">
+                    <div class="text-center text-slate-500 py-10 text-sm">Carregando histórico...</div>
+                </div>
+                <form id="support-chat-form" class="mt-auto border-t border-slate-800 pt-4 flex gap-2">
+                    <input type="text" id="support-chat-input" placeholder="Digite sua mensagem..." required class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-all">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-6 rounded-lg font-orbitron font-bold flex items-center justify-center transition-colors">
+                        <i data-lucide="send" class="w-5 h-5"></i>
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -623,13 +715,50 @@
             }
         }
 
+        function getFilteredProducts() {
+            const search = document.getElementById('filter-search')?.value.toLowerCase() || '';
+            const category = document.getElementById('filter-category')?.value || '';
+            const genre = document.getElementById('filter-genre')?.value || '';
+            const minPrice = parseFloat(document.getElementById('filter-min')?.value);
+            const maxPrice = parseFloat(document.getElementById('filter-max')?.value);
+            const sort = document.getElementById('filter-sort')?.value || '';
+            const onlyGlobal = document.getElementById('filter-global')?.checked || false;
+
+            let filtered = produtos.filter(p => {
+                let match = true;
+                if(search && !p.title.toLowerCase().includes(search) && !p.description.toLowerCase().includes(search)) match = false;
+                if(category && p.category !== category) match = false;
+                if(genre && !(p.genres || '').toLowerCase().includes(genre)) match = false;
+                if(!isNaN(minPrice) && parseFloat(p.price) < minPrice) match = false;
+                if(!isNaN(maxPrice) && parseFloat(p.price) > maxPrice) match = false;
+                if(onlyGlobal && p.is_global === false) match = false;
+                return match;
+            });
+
+            if(sort === 'lowest') {
+                filtered.sort((a,b) => parseFloat(a.price) - parseFloat(b.price));
+            } else if(sort === 'highest') {
+                filtered.sort((a,b) => parseFloat(b.price) - parseFloat(a.price));
+            } else if(sort === 'az') {
+                filtered.sort((a,b) => a.title.localeCompare(b.title));
+            }
+
+            return filtered;
+        }
+
         function renderGrid() {
             const grid = document.getElementById('product-grid');
             if (!grid) return;
             
             grid.innerHTML = '';
+            const filteredProducts = getFilteredProducts();
+
+            if (filteredProducts.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center text-slate-400 py-10 border border-slate-800 rounded-xl bg-slate-900/30">Nenhum produto encontrado com esses filtros.</div>';
+                return;
+            }
             
-            produtos.forEach((p, index) => {
+            filteredProducts.forEach((p, index) => {
                 const precoFormatado = p.in_stock === false ? 
                     '<span class="text-rose-500 text-[10px] font-bold bg-rose-900/30 px-2 py-1 border border-rose-900/50 rounded tracking-widest">ESGOTADO</span>' : 
                     '<span class="font-orbitron font-black text-xl text-cyberrose">R$ ' + parseFloat(p.price).toFixed(2).replace('.', ',') + '</span>';
@@ -644,6 +773,8 @@
                     '<div class="flex items-center gap-1 text-[10px] text-slate-400 font-orbitron tracking-widest mt-1 mb-2" title="Restrita a alguns países"><div class="relative"><i data-lucide="globe" class="w-4 h-4 text-white opacity-50"></i><i data-lucide="lock" class="w-2.5 h-2.5 text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 drop-shadow-md"></i></div> RESTRITA</div>' : 
                     '<div class="flex items-center gap-1 text-[10px] text-slate-400 font-orbitron tracking-widest mt-1 mb-2"><i data-lucide="globe" class="w-4 h-4 text-white opacity-80"></i> GLOBAL</div>';
 
+                const genresTags = p.genres ? p.genres.split(',').slice(0,2).map(g => `<span class="bg-slate-800 border border-slate-700 text-slate-300 font-orbitron text-[8px] tracking-widest px-2 py-0.5 rounded uppercase">${g.trim()}</span>`).join(' ') : '';
+
                 grid.innerHTML += `
                     <div class="advantage-card bg-slate-950/80 border border-slate-800/80 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all duration-300 cursor-pointer flex flex-col h-full" onclick="openModal(${p.id})">
                         <div class="h-48 w-full overflow-hidden relative">
@@ -653,6 +784,7 @@
                         </div>
                         <div class="p-6 flex flex-col flex-grow">
                             <h4 class="font-orbitron font-bold text-lg text-white uppercase tracking-wide leading-tight ${p.in_stock === false ? 'text-slate-500' : ''}">${p.title}</h4>
+                            <div class="flex flex-wrap gap-1 mt-1 mb-1">${genresTags}</div>
                             ${regionIcon}
                             <div class="mt-auto flex items-center justify-between pt-4">
                                 ${precoFormatado}
@@ -705,6 +837,15 @@
             document.getElementById('modal-price').innerText = currentProduct.in_stock === false ? 'ESGOTADO' : 'R$ ' + parseFloat(currentProduct.price).toFixed(2).replace('.', ',');
             document.getElementById('modal-description').innerText = currentProduct.description;
             
+            const modalGenres = document.getElementById('modal-genres');
+            if(currentProduct.genres) {
+                modalGenres.innerHTML = currentProduct.genres.split(',').map(g => `<span class="bg-slate-800 border border-slate-700 text-slate-300 font-orbitron text-[9px] tracking-widest px-2 py-1 rounded uppercase">${g.trim()}</span>`).join('');
+                modalGenres.classList.remove('hidden');
+            } else {
+                modalGenres.innerHTML = '';
+                modalGenres.classList.add('hidden');
+            }
+            
             const actions = document.getElementById('modal-actions');
             if (currentProduct.in_stock === false) {
                 actions.innerHTML = '<div class="w-full text-center py-4 bg-slate-800/50 rounded-xl text-slate-500 font-orbitron text-xs tracking-widest font-bold border border-slate-800">PRODUTO INDISPONÍVEL NO MOMENTO</div>';
@@ -727,7 +868,6 @@
                 modalContent.classList.add('scale-100');
             }, 10);
             
-            // Prevent body scroll
             document.body.style.overflow = 'hidden';
         };
 
@@ -737,9 +877,86 @@
             modalContent.classList.add('scale-95');
             setTimeout(() => {
                 modal.classList.add('hidden');
-                document.body.style.overflow = '';
             }, 300);
+            document.body.style.overflow = '';
         };
+
+        // --- SUPPORT MODAL LOGIC ---
+        const supportModal = document.getElementById('support-modal');
+        const supportModalContent = document.getElementById('support-modal-content');
+        let supportPollInterval = null;
+
+        window.openSupportModal = async (e) => {
+            if(e) e.preventDefault();
+            const res = await fetch('/api/me');
+            if(!res.ok) {
+                alert("Você precisa fazer login para falar com o suporte.");
+                window.location.href = '/login.html';
+                return;
+            }
+            supportModal.classList.remove('hidden');
+            setTimeout(() => {
+                supportModal.classList.remove('opacity-0', 'pointer-events-none');
+                supportModalContent.classList.remove('scale-95');
+                supportModalContent.classList.add('scale-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+            
+            loadSupportChat();
+            supportPollInterval = setInterval(loadSupportChat, 3000);
+        };
+
+        window.closeSupportModal = () => {
+            supportModal.classList.add('opacity-0', 'pointer-events-none');
+            supportModalContent.classList.remove('scale-100');
+            supportModalContent.classList.add('scale-95');
+            setTimeout(() => supportModal.classList.add('hidden'), 300);
+            document.body.style.overflow = '';
+            clearInterval(supportPollInterval);
+        };
+
+        async function loadSupportChat() {
+            try {
+                const res = await fetch('/api/support');
+                if(!res.ok) return;
+                const messages = await res.json();
+                
+                const container = document.getElementById('support-chat-messages');
+                if(messages.length === 0) {
+                    container.innerHTML = '<div class="text-center text-slate-500 text-sm py-10">Envie uma mensagem para iniciar o chat.</div>';
+                    return;
+                }
+                container.innerHTML = messages.map(m => {
+                    const isUser = m.sender_type === 'user';
+                    return `
+                        <div class="flex ${isUser ? 'justify-end' : 'justify-start'}">
+                            <div class="max-w-[85%] rounded-xl p-3 ${isUser ? 'bg-blue-600/20 border border-blue-500/30 text-blue-100 rounded-tr-none' : 'bg-slate-800 border border-slate-700 text-slate-300 rounded-tl-none'}">
+                                <p class="text-sm font-inter">${m.message}</p>
+                                <span class="text-[9px] opacity-50 mt-1 block">${new Date(m.created_at).toLocaleString()}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                container.scrollTop = container.scrollHeight;
+            } catch(e) { console.error(e); }
+        }
+
+        document.getElementById('support-chat-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('support-chat-input');
+            const message = input.value.trim();
+            if(!message) return;
+            input.value = '';
+            
+            try {
+                const res = await fetch('/api/support', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                if(res.ok) loadSupportChat();
+            } catch(err) { console.error(err); }
+        });
 
         window.comprarProduto = () => {
             if(currentProduct) {
