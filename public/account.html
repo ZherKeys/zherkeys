@@ -67,12 +67,18 @@
                     <div>
                         <p class="font-orbitron text-xs text-slate-500 tracking-widest">BEM-VINDO</p>
                         <p id="user-email" class="text-sm font-semibold text-white truncate max-w-[150px]">carregando...</p>
+                        <div class="mt-1 flex items-center gap-1 text-xs text-emerald-400 font-bold font-orbitron tracking-wide">
+                            <i data-lucide="wallet" class="w-3.5 h-3.5"></i> <span id="user-credits">R$ 0,00</span>
+                        </div>
                     </div>
                 </div>
 
                 <div class="space-y-2">
                     <button onclick="switchTab('compras')" id="btn-compras" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-electricblue/10 text-electricblue font-orbitron text-xs tracking-widest transition-colors">
                         <i data-lucide="shopping-bag" class="w-4 h-4"></i> MINHAS COMPRAS
+                    </button>
+                    <button onclick="switchTab('carteira')" id="btn-carteira" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-orbitron text-xs tracking-widest transition-colors">
+                        <i data-lucide="wallet" class="w-4 h-4"></i> MINHA CARTEIRA
                     </button>
                     <button onclick="switchTab('configuracoes')" id="btn-configuracoes" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-orbitron text-xs tracking-widest transition-colors">
                         <i data-lucide="settings" class="w-4 h-4"></i> CONFIGURAÇÕES
@@ -97,6 +103,92 @@
                 </div>
             </div>
 
+            <!-- Carteira -->
+            <div id="tab-carteira" class="hidden bg-slate-900/50 border border-slate-800 rounded-2xl p-8 min-h-[400px]">
+                <h2 class="font-orbitron font-bold text-xl text-white mb-6 tracking-widest flex items-center gap-3">
+                    <i data-lucide="wallet" class="text-emerald-400"></i> MINHA CARTEIRA DE CRÉDITOS
+                </h2>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <!-- Painel de Saldo e Depósito -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                        <p class="font-orbitron text-xs text-slate-500 tracking-widest mb-1">SALDO DISPONÍVEL</p>
+                        <h3 class="text-3xl font-orbitron font-black text-emerald-400 mb-6" id="wallet-balance-large">R$ 0,00</h3>
+                        
+                        <h4 class="text-white font-bold font-orbitron text-xs tracking-widest mb-3 uppercase">Adicionar Créditos</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-2">Valor do Depósito (R$)</label>
+                                <input type="number" id="deposit-amount" placeholder="Ex: 50.00" min="5" step="1" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-400 transition-all font-mono">
+                                <span class="text-[10px] text-slate-500 mt-1 block">Depósito mínimo: R$ 5,00. Processamento imediato.</span>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-2">Método de Pagamento</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <label class="flex items-center gap-2 p-3 rounded-lg border border-slate-700 bg-slate-800 cursor-pointer hover:border-emerald-400 transition-colors group">
+                                        <input type="radio" name="deposit_method" value="pix" checked class="w-4 h-4 text-emerald-400 bg-slate-900 border-slate-700 focus:ring-0">
+                                        <span class="text-white font-orbitron text-xs font-bold">PIX</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 p-3 rounded-lg border border-slate-700 bg-slate-800 cursor-pointer hover:border-electricblue transition-colors group">
+                                        <input type="radio" name="deposit_method" value="card" class="w-4 h-4 text-electricblue bg-slate-900 border-slate-700 focus:ring-0">
+                                        <span class="text-white font-orbitron text-xs font-bold">Cartão</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button onclick="gerarDeposito()" id="btn-deposit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-xs tracking-widest font-bold py-3.5 rounded-xl shadow-lg transition-all duration-300 uppercase flex items-center justify-center gap-2">
+                                GERAR DEPÓSITO <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Informações / Ajuda -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-white font-bold mb-3 flex items-center gap-2"><i data-lucide="shield-check" class="text-emerald-400"></i> Pagamento 100% Protegido</h3>
+                            <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                                Toda a nossa infraestrutura de pagamentos é processada de forma segura através do gateway de pagamento oficial do Mercado Pago.
+                            </p>
+                            <ul class="text-slate-400 text-xs space-y-2">
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400"></i> PIX: saldo disponível em até 2 minutos</li>
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400"></i> Cartão de Crédito: aprovação imediata pelo emissor</li>
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400"></i> Sem taxas extras ou custos ocultos</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="mt-6 p-3 bg-slate-950/60 border border-slate-800 rounded-lg text-[11px] text-slate-500 flex items-start gap-2 leading-relaxed">
+                            <i data-lucide="info" class="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5"></i>
+                            <span>A Zher Keys preza pela segurança máxima das transações. Tentativas suspeitas ou de burla de saldo acarretarão no banimento permanente da credencial de acesso.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Histórico de Transações (Extrato) -->
+                <div>
+                    <h3 class="font-orbitron font-bold text-sm text-slate-300 mb-4 tracking-widest uppercase">Extrato de Transações</h3>
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-950/80 border-b border-slate-800 text-[10px] font-orbitron tracking-widest text-slate-500">
+                                        <th class="p-4 uppercase">Data</th>
+                                        <th class="p-4 uppercase">Descrição</th>
+                                        <th class="p-4 uppercase">Tipo</th>
+                                        <th class="p-4 uppercase text-right">Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="wallet-transactions-list" class="text-sm font-inter">
+                                    <tr>
+                                        <td colspan="4" class="p-8 text-center text-slate-500">Nenhuma transação registrada.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Configurações -->
             <div id="tab-configuracoes" class="hidden bg-slate-900/50 border border-slate-800 rounded-2xl p-8 min-h-[400px]">
                 <h2 class="font-orbitron font-bold text-xl text-white mb-6 tracking-widest flex items-center gap-3">
@@ -116,6 +208,36 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- PIX MODAL -->
+    <div id="pix-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 sm:p-6 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onclick="closePixModal()"></div>
+        <div class="relative w-full max-w-md bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 p-8 text-center" id="pix-modal-content">
+            <h3 class="font-orbitron font-black text-2xl text-emerald-400 mb-2">PAGAMENTO PIX GERADO!</h3>
+            <p class="text-slate-400 font-inter text-sm mb-4">Escaneie o QR Code abaixo pelo aplicativo do seu banco para aprovação imediata do seu saldo.</p>
+            
+            <div class="mb-6 bg-red-500/10 border border-red-500/30 rounded-xl py-3 px-4 inline-flex items-center justify-center gap-2 text-red-400 font-orbitron font-bold text-sm tracking-widest" id="pix-timer-container">
+                <i data-lucide="clock" class="w-4 h-4 animate-pulse"></i> EXPIRA EM: <span id="pix-countdown">10:00</span>
+            </div>
+            
+            <div class="bg-white p-4 rounded-xl mx-auto w-48 h-48 mb-6 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+                <img id="pix-qr-img" src="" alt="QR Code PIX" class="w-full h-full object-contain">
+            </div>
+            
+            <p class="text-slate-500 font-orbitron text-xs tracking-widest mb-2">OU USE O CÓDIGO COPIA E COLA:</p>
+            <div class="flex gap-2">
+                <input type="text" id="pix-code-input" readonly class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-slate-300 focus:outline-none font-mono text-xs">
+                <button onclick="copyPixCode()" class="bg-slate-800 hover:bg-emerald-400 text-white hover:text-slate-900 px-4 rounded-lg font-orbitron font-bold transition-colors shadow-lg" title="Copiar PIX">
+                    <i data-lucide="copy" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p id="pix-copy-msg" class="text-emerald-400 text-[10px] mt-2 hidden font-orbitron tracking-widest">CÓDIGO COPIADO!</p>
+            
+            <button onclick="closePixModal()" class="mt-8 block w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl transition-colors uppercase">
+                FECHAR E VER SALDO
+            </button>
+        </div>
     </div>
 
     <!-- CHAT MODAL -->
@@ -155,27 +277,41 @@
         fetch('/api/me')
             .then(res => res.json())
             .then(data => {
-                if(data.email) document.getElementById('user-email').innerText = data.email;
+                if(data.email) {
+                    document.getElementById('user-email').innerText = data.email;
+                    document.getElementById('user-credits').innerText = `R$ ${parseFloat(data.balance || 0).toFixed(2).replace('.', ',')}`;
+                }
                 if(data.isAdmin) document.getElementById('nav-admin-btn').classList.remove('hidden');
             });
 
         function switchTab(tab) {
             const compras = document.getElementById('tab-compras');
             const conf = document.getElementById('tab-configuracoes');
+            const carteira = document.getElementById('tab-carteira');
             const btnCompras = document.getElementById('btn-compras');
             const btnConf = document.getElementById('btn-configuracoes');
+            const btnCarteira = document.getElementById('btn-carteira');
+
+            // Reset classes
+            btnCompras.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-orbitron text-xs tracking-widest transition-colors";
+            btnConf.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-orbitron text-xs tracking-widest transition-colors";
+            btnCarteira.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-orbitron text-xs tracking-widest transition-colors";
+
+            compras.classList.add('hidden');
+            conf.classList.add('hidden');
+            carteira.classList.add('hidden');
 
             if(tab === 'compras') {
                 compras.classList.remove('hidden');
-                conf.classList.add('hidden');
                 btnCompras.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-electricblue/10 text-electricblue font-orbitron text-xs tracking-widest transition-colors";
-                btnConf.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-orbitron text-xs tracking-widest transition-colors";
                 loadMyOrders();
+            } else if (tab === 'carteira') {
+                carteira.classList.remove('hidden');
+                btnCarteira.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-emerald-500/10 text-emerald-400 font-orbitron text-xs tracking-widest transition-colors";
+                loadWalletData();
             } else {
                 conf.classList.remove('hidden');
-                compras.classList.add('hidden');
                 btnConf.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-cyberrose/10 text-cyberrose font-orbitron text-xs tracking-widest transition-colors";
-                btnCompras.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-orbitron text-xs tracking-widest transition-colors";
             }
         }
 
@@ -416,8 +552,183 @@
             }
         }
 
+        // --- WALLET / DEPOSIT LOGIC ---
+        async function loadWalletData() {
+            try {
+                // Atualizar o cabeçalho do saldo
+                const meRes = await fetch('/api/me');
+                const meData = await meRes.json();
+                if (meData.email) {
+                    const formatted = `R$ ${parseFloat(meData.balance || 0).toFixed(2).replace('.', ',')}`;
+                    document.getElementById('user-credits').innerText = formatted;
+                    document.getElementById('wallet-balance-large').innerText = formatted;
+                }
+
+                // Carregar transações
+                const txRes = await fetch('/api/wallet/transactions');
+                const transactions = await txRes.json();
+                
+                const container = document.getElementById('wallet-transactions-list');
+                if (transactions.length === 0) {
+                    container.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="p-8 text-center text-slate-500 font-orbitron text-xs tracking-widest">Nenhuma transação registrada.</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                transactions.forEach(t => {
+                    const date = new Date(t.created_at).toLocaleString('pt-BR');
+                    const isPositive = parseFloat(t.amount) >= 0;
+                    const amountText = (isPositive ? '+ ' : '') + `R$ ${Math.abs(parseFloat(t.amount)).toFixed(2).replace('.', ',')}`;
+                    const amountClass = isPositive ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold';
+                    
+                    let typeText = '';
+                    let typeBg = '';
+                    if (t.type === 'deposit') {
+                        typeText = 'DEPÓSITO';
+                        typeBg = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                    } else if (t.type === 'purchase') {
+                        typeText = 'COMPRA';
+                        typeBg = 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
+                    } else {
+                        typeText = 'AJUSTE';
+                        typeBg = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+                    }
+
+                    html += `
+                        <tr class="border-b border-slate-800 hover:bg-slate-900/30 transition-colors">
+                            <td class="p-4 text-slate-400 text-xs font-mono">${date}</td>
+                            <td class="p-4 text-slate-200 font-semibold">${t.description}</td>
+                            <td class="p-4">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-orbitron font-bold tracking-widest ${typeBg}">${typeText}</span>
+                            </td>
+                            <td class="p-4 text-right font-orbitron ${amountClass}">${amountText}</td>
+                        </tr>
+                    `;
+                });
+                container.innerHTML = html;
+                lucide.createIcons();
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        async function gerarDeposito() {
+            const amountInput = document.getElementById('deposit-amount');
+            const amount = parseFloat(amountInput.value);
+            if (isNaN(amount) || amount < 5) {
+                alert('O valor mínimo de depósito é R$ 5,00.');
+                return;
+            }
+
+            const method = document.querySelector('input[name="deposit_method"]:checked').value;
+            const btn = document.getElementById('btn-deposit');
+            btn.innerHTML = 'GERANDO PAGAMENTO... <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
+            btn.classList.add('opacity-50', 'pointer-events-none');
+            
+            try {
+                const res = await fetch('/api/wallet/deposit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount, method })
+                });
+
+                const data = await res.json();
+                
+                if (res.ok && data.init_point) {
+                    // Redireciona para Mercado Pago (Cartão)
+                    window.location.href = data.init_point;
+                    return;
+                } else if (res.ok && data.qr_code_base64) {
+                    // Mostra o modal de PIX para depósito
+                    amountInput.value = '';
+                    showPixModal(data.qr_code_base64, data.qr_code);
+                } else {
+                    alert('Erro ao gerar depósito: ' + (data.error || 'Erro desconhecido.'));
+                }
+            } catch(e) {
+                alert('Erro de conexão ao gerar depósito.');
+            } finally {
+                btn.innerHTML = 'GERAR DEPÓSITO <i data-lucide="plus-circle" class="w-4 h-4"></i>';
+                btn.classList.remove('opacity-50', 'pointer-events-none');
+                lucide.createIcons();
+            }
+        }
+
+        window.showPixModal = (base64, code) => {
+            const modal = document.getElementById('pix-modal');
+            const modalContent = document.getElementById('pix-modal-content');
+            
+            document.getElementById('pix-qr-img').src = 'data:image/jpeg;base64,' + base64;
+            document.getElementById('pix-code-input').value = code;
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+            
+            let timeLeft = 600;
+            const timerEl = document.getElementById('pix-countdown');
+            const timerContainer = document.getElementById('pix-timer-container');
+            
+            if(window.pixInterval) clearInterval(window.pixInterval);
+            
+            window.pixInterval = setInterval(() => {
+                timeLeft--;
+                if(timeLeft <= 0) {
+                    clearInterval(window.pixInterval);
+                    timerEl.innerText = "EXPIRADO";
+                    timerContainer.classList.remove('bg-red-500/10', 'border-red-500/30', 'text-red-400');
+                    timerContainer.classList.add('bg-slate-800', 'border-slate-700', 'text-slate-500');
+                    alert("O tempo para pagamento do PIX expirou! O depósito foi cancelado.");
+                    closePixModal();
+                } else {
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    timerEl.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+            
+            lucide.createIcons();
+        };
+
+        window.closePixModal = () => {
+            const modal = document.getElementById('pix-modal');
+            const modalContent = document.getElementById('pix-modal-content');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+            
+            if(window.pixInterval) clearInterval(window.pixInterval);
+            loadWalletData();
+        };
+
+        window.copyPixCode = () => {
+            const input = document.getElementById('pix-code-input');
+            input.select();
+            input.setSelectionRange(0, 99999); 
+            navigator.clipboard.writeText(input.value);
+            
+            const msg = document.getElementById('pix-copy-msg');
+            msg.classList.remove('hidden');
+            setTimeout(() => msg.classList.add('hidden'), 3000);
+        };
+
         // INIT
-        loadMyOrders();
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('tab') === 'carteira') {
+            switchTab('carteira');
+        } else {
+            loadMyOrders();
+        }
     </script>
 </body>
 </html>

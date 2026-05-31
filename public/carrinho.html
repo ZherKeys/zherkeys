@@ -82,17 +82,24 @@
                 <div class="border-t border-slate-800 pt-4 mb-4">
                     <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-3">MÉTODO DE PAGAMENTO</label>
                     <div class="space-y-2">
-                        <label class="flex items-center gap-3 p-3 rounded-lg border border-slate-700 bg-slate-800 cursor-pointer hover:border-toxicgreen transition-colors group">
-                            <input type="radio" name="payment_method" value="pix" checked class="w-4 h-4 text-toxicgreen bg-slate-900 border-slate-700 focus:ring-0">
-                            <i data-lucide="qr-code" class="w-5 h-5 text-slate-400 group-hover:text-toxicgreen transition-colors"></i>
-                            <span class="text-white font-orbitron text-sm font-bold">PIX (Nativo / Imediato)</span>
-                        </label>
-                        <label class="flex items-center gap-3 p-3 rounded-lg border border-slate-700 bg-slate-800 cursor-pointer hover:border-electricblue transition-colors group">
-                            <input type="radio" name="payment_method" value="card" class="w-4 h-4 text-electricblue bg-slate-900 border-slate-700 focus:ring-0">
-                            <i data-lucide="credit-card" class="w-5 h-5 text-slate-400 group-hover:text-electricblue transition-colors"></i>
-                            <span class="text-white font-orbitron text-sm font-bold">Cartão de Crédito / Mercado Pago</span>
+                        <label class="flex items-center gap-3 p-3 rounded-lg border border-emerald-500/50 bg-emerald-500/5 cursor-default group">
+                            <i data-lucide="wallet" class="w-5 h-5 text-emerald-400"></i>
+                            <span class="text-white font-orbitron text-sm font-bold flex justify-between items-center w-full">
+                                <span>Saldo da Carteira (Créditos)</span>
+                                <span id="payment-credits-balance" class="text-sm text-emerald-400 font-orbitron font-bold">Carregando...</span>
+                            </span>
                         </label>
                     </div>
+                </div>
+
+                <!-- Aviso de Saldo Insuficiente -->
+                <div id="balance-warning-box" class="hidden mb-4 p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-center">
+                    <p class="text-rose-400 text-xs font-semibold leading-relaxed mb-3">
+                        Saldo insuficiente! Você não possui créditos suficientes na carteira para realizar esta compra.
+                    </p>
+                    <a href="/account.html?tab=carteira" class="inline-flex items-center gap-2 bg-rose-600 hover:bg-rose-500 text-white font-orbitron text-[10px] tracking-widest font-bold px-4 py-2 rounded-lg transition-colors uppercase">
+                        Adicionar Créditos <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    </a>
                 </div>
 
                 <div class="border-t border-slate-800 pt-4 mb-8 flex justify-between items-end">
@@ -100,7 +107,7 @@
                     <span id="summary-total" class="text-cyberrose font-orbitron font-black text-3xl">R$ 0,00</span>
                 </div>
 
-                <button onclick="finalizarCompra()" id="btn-checkout" class="w-full bg-gradient-to-r from-electricblue to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all duration-300 uppercase flex items-center justify-center gap-2">
+                <button onclick="finalizarCompra()" id="btn-checkout" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all duration-300 uppercase flex items-center justify-center gap-2">
                     FINALIZAR COMPRA <i data-lucide="zap" class="w-4 h-4"></i>
                 </button>
                 <div class="mt-4 flex items-center justify-center gap-2 text-slate-500 text-[10px] font-inter">
@@ -139,18 +146,19 @@
                 ACOMPANHAR MEU PEDIDO
             </a>
         </div>
-    </div>
-
     <script>
         lucide.createIcons();
 
         let cart = JSON.parse(localStorage.getItem('zher_cart')) || [];
+        let userBalance = 0;
+        let isLoggedIn = false;
 
         function renderCartPage() {
             const container = document.getElementById('cart-items-container');
             const subtotalEl = document.getElementById('summary-subtotal');
             const totalEl = document.getElementById('summary-total');
             const btnCheckout = document.getElementById('btn-checkout');
+            const warningBox = document.getElementById('balance-warning-box');
 
             if(cart.length === 0) {
                 container.innerHTML = `
@@ -163,6 +171,7 @@
                 subtotalEl.innerText = "R$ 0,00";
                 totalEl.innerText = "R$ 0,00";
                 btnCheckout.classList.add('opacity-50', 'pointer-events-none');
+                if (warningBox) warningBox.classList.add('hidden');
                 return;
             }
 
@@ -171,7 +180,7 @@
             let total = 0;
 
             cart.forEach((item, index) => {
-                const priceNum = parseFloat(item.price.replace('R$ ', '').replace(',', '.'));
+                const priceNum = parseFloat(item.price.toString().replace('R$ ', '').replace(',', '.'));
                 total += priceNum;
 
                 html += `
@@ -196,6 +205,22 @@
             const formattedTotal = `R$ ${total.toFixed(2).replace('.', ',')}`;
             subtotalEl.innerText = formattedTotal;
             totalEl.innerText = formattedTotal;
+
+            // Controle de Saldo de Créditos
+            if (isLoggedIn) {
+                if (userBalance < total) {
+                    btnCheckout.classList.add('opacity-50', 'pointer-events-none');
+                    btnCheckout.innerHTML = 'SALDO INSUFICIENTE <i data-lucide="x-circle" class="w-4 h-4"></i>';
+                    if (warningBox) warningBox.classList.remove('hidden');
+                } else {
+                    btnCheckout.classList.remove('opacity-50', 'pointer-events-none');
+                    btnCheckout.innerHTML = 'FINALIZAR COMPRA <i data-lucide="zap" class="w-4 h-4"></i>';
+                    if (warningBox) warningBox.classList.add('hidden');
+                }
+            } else {
+                if (warningBox) warningBox.classList.add('hidden');
+            }
+
             lucide.createIcons();
         }
 
@@ -213,8 +238,7 @@
             btn.classList.add('opacity-50', 'pointer-events-none');
             
             try {
-                // Prepara itens no formato que o backend espera
-                const method = document.querySelector('input[name="payment_method"]:checked').value;
+                const method = 'credits'; // Força compras com créditos apenas!
                 const items = cart.map(item => ({ id: item.id, quantity: 1 }));
                 
                 const res = await fetch('/create-checkout', {
@@ -231,14 +255,12 @@
                 
                 const data = await res.json();
                 
-                if(res.ok && data.init_point) {
-                    window.location.href = data.init_point; // Redireciona para o MercadoPago (Cartão)
-                } else if(res.ok && data.qr_code_base64) {
-                    // Limpar carrinho pois o pedido foi gerado (PIX nativo)
+                if(res.ok && data.success) {
+                    alert(data.message);
                     cart = [];
                     localStorage.setItem('zher_cart', JSON.stringify(cart));
-                    renderCartPage();
-                    showPixModal(data.qr_code_base64, data.qr_code);
+                    window.location.href = '/account.html';
+                    return;
                 } else {
                     alert('Erro no checkout: ' + (data.error || 'Desconhecido'));
                     btn.innerHTML = 'FINALIZAR COMPRA <i data-lucide="zap" class="w-4 h-4"></i>';
@@ -251,60 +273,28 @@
             }
         };
 
-        window.showPixModal = (base64, code) => {
-            const modal = document.getElementById('pix-modal');
-            const modalContent = document.getElementById('pix-modal-content');
-            
-            document.getElementById('pix-qr-img').src = 'data:image/jpeg;base64,' + base64;
-            document.getElementById('pix-code-input').value = code;
-            
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0', 'pointer-events-none');
-                modalContent.classList.remove('scale-95');
-                modalContent.classList.add('scale-100');
-            }, 10);
-            
-            // Inicia o cronômetro regressivo de 10 minutos (600 segundos)
-            let timeLeft = 600;
-            const timerEl = document.getElementById('pix-countdown');
-            const timerContainer = document.getElementById('pix-timer-container');
-            
-            if(window.pixInterval) clearInterval(window.pixInterval);
-            
-            window.pixInterval = setInterval(() => {
-                timeLeft--;
-                if(timeLeft <= 0) {
-                    clearInterval(window.pixInterval);
-                    timerEl.innerText = "EXPIRADO";
-                    timerContainer.classList.remove('bg-red-500/10', 'border-red-500/30', 'text-red-400');
-                    timerContainer.classList.add('bg-slate-800', 'border-slate-700', 'text-slate-500');
-                    alert("O tempo para pagamento do PIX expirou! O pedido foi cancelado e removido das suas compras.");
-                    window.location.href = '/account.html';
-                } else {
-                    const minutes = Math.floor(timeLeft / 60);
-                    const seconds = timeLeft % 60;
-                    timerEl.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                }
-            }, 1000);
-            
-            lucide.createIcons();
-        };
-
-        window.copyPixCode = () => {
-            const input = document.getElementById('pix-code-input');
-            input.select();
-            input.setSelectionRange(0, 99999); 
-            navigator.clipboard.writeText(input.value);
-            
-            const msg = document.getElementById('pix-copy-msg');
-            msg.classList.remove('hidden');
-            setTimeout(() => msg.classList.add('hidden'), 3000);
-        };
-
         // Init
-        document.addEventListener('DOMContentLoaded', renderCartPage);
-
+        document.addEventListener('DOMContentLoaded', () => {
+            // Buscar e exibir o saldo de créditos da carteira
+            fetch('/api/me')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.email) {
+                        isLoggedIn = true;
+                        userBalance = parseFloat(data.balance || 0);
+                        const balEl = document.getElementById('payment-credits-balance');
+                        if (balEl) {
+                            balEl.innerText = `R$ ${userBalance.toFixed(2).replace('.', ',')}`;
+                        }
+                    }
+                    renderCartPage();
+                }).catch(() => {
+                    isLoggedIn = false;
+                    const balEl = document.getElementById('payment-credits-balance');
+                    if (balEl) balEl.innerText = 'Precisa fazer login';
+                    renderCartPage();
+                });
+        });
     </script>
 </body>
 </html>
