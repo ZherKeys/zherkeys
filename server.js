@@ -14,8 +14,8 @@ const APP_URL = process.env.APP_URL || ('http://localhost:' + port);
 const mpClient = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN || 'TEST-12345' });
 
 // Setup Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(session({
     secret: 'zher-keys-secret',
     resave: false,
@@ -248,6 +248,7 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
         );
         res.status(201).json({ message: 'Produto adicionado' });
     } catch(e) {
+        console.error("Erro ao adicionar produto:", e);
         res.status(500).json({ error: 'Erro ao adicionar' });
     }
 });
@@ -263,6 +264,7 @@ app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
         );
         res.json({ message: 'Produto atualizado e retornado ao estoque' });
     } catch(e) {
+        console.error("Erro ao atualizar produto:", e);
         res.status(500).json({ error: 'Erro ao atualizar' });
     }
 });

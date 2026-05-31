@@ -102,6 +102,9 @@
                                 <i data-lucide="upload" class="w-5 h-5"></i>
                                 <input type="file" id="prod-image-file" accept="image/*" class="hidden">
                             </label>
+                            <button type="button" id="btn-remove-upload" onclick="removeUpload()" class="hidden bg-slate-800 hover:bg-rose-900 text-rose-500 hover:text-rose-400 px-4 py-3 rounded-lg flex items-center justify-center transition-colors border border-slate-700 hover:border-rose-500" title="Remover Upload">
+                                <i data-lucide="trash-2" class="w-5 h-5"></i>
+                            </button>
                         </div>
                         <p id="upload-status" class="text-[9px] text-toxicgreen mt-1 hidden"></p>
                     </div>
@@ -446,6 +449,7 @@
             document.getElementById('prod-global').checked = true;
             document.getElementById('div-restricted').classList.add('hidden');
             document.getElementById('upload-status').classList.add('hidden');
+            document.getElementById('btn-remove-upload').classList.add('hidden');
             document.getElementById('prod-image-file').value = '';
             document.querySelectorAll('.country-checkbox').forEach(cb => cb.checked = false);
             document.querySelectorAll('.genre-checkbox').forEach(cb => cb.checked = false);
@@ -486,10 +490,18 @@
                     const status = document.getElementById('upload-status');
                     status.innerText = `Imagem local carregada: ${file.name}`;
                     status.classList.remove('hidden');
+                    document.getElementById('btn-remove-upload').classList.remove('hidden');
                 };
                 reader.readAsDataURL(file);
             }
         });
+
+        window.removeUpload = () => {
+            document.getElementById('prod-image').value = '';
+            document.getElementById('prod-image-file').value = '';
+            document.getElementById('upload-status').classList.add('hidden');
+            document.getElementById('btn-remove-upload').classList.add('hidden');
+        };
 
         // --- VENDAS & CHAT LOGIC ---
         async function loadOrders() {
