@@ -7,6 +7,8 @@
     <script src="/tailwind.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    <!-- Cloudflare Turnstile -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <script>
         tailwind.config = {
             theme: {
@@ -91,6 +93,10 @@
                     <input type="password" id="reg-password" required class="w-full bg-slate-950 border border-slate-800 rounded-lg py-3 pl-10 pr-4 text-white placeholder-slate-600 focus:outline-none focus:border-cyberrose transition-colors" placeholder="••••••••">
                 </div>
             </div>
+            
+            <!-- Anti-Robô Widget -->
+            <div id="turnstile-container" class="my-4 flex justify-center"></div>
+            
             <button type="submit" id="btn-register" class="w-full bg-cyberrose hover:bg-rose-600 text-white font-orbitron text-xs tracking-widest font-bold py-4 rounded-lg shadow-lg shadow-cyberrose/30 transition-all uppercase flex items-center justify-center gap-2">
                 CRIAR CREDENCIAL <i data-lucide="user-plus" class="w-4 h-4"></i>
             </button>
@@ -119,6 +125,33 @@
     <script>
         lucide.createIcons();
 
+        // Configuração do anti-robô (Cloudflare Turnstile)
+        let turnstileToken = '';
+        let turnstileLoaded = false;
+
+        async function loadTurnstile() {
+            if (turnstileLoaded) return;
+            try {
+                const res = await fetch('/api/config/turnstile');
+                const { sitekey } = await res.json();
+                if (window.turnstile) {
+                    window.turnstile.render('#turnstile-container', {
+                        sitekey: sitekey,
+                        theme: 'dark',
+                        callback: function(token) {
+                            turnstileToken = token;
+                        },
+                        'expired-callback': function() {
+                            turnstileToken = '';
+                        }
+                    });
+                    turnstileLoaded = true;
+                }
+            } catch(e) {
+                console.error("Erro ao carregar o Turnstile:", e);
+            }
+        }
+
         function switchTab(tab) {
             const loginForm = document.getElementById('login-form');
             const regForm = document.getElementById('register-form');
@@ -144,6 +177,7 @@
                 tabReg.classList.remove('text-slate-500');
                 tabLogin.classList.remove('border-b-2', 'border-electricblue', 'text-white');
                 tabLogin.classList.add('text-slate-500');
+                loadTurnstile(); // Carrega o Turnstile dinamicamente
             }
         }
 
@@ -215,6 +249,13 @@
 
         async function handleRegister(e) {
             e.preventDefault();
+            
+            // Validação client-side do Turnstile
+            if(!turnstileToken) {
+                showAlert('Por favor, confirme que você não é um robô.', true);
+                return;
+            }
+
             const email = document.getElementById('reg-email').value;
             const password = document.getElementById('reg-password').value;
             const btn = document.getElementById('btn-register');
@@ -229,14 +270,19 @@
                 const res = await fetch('/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ email, password, turnstileToken })
                 });
                 const data = await res.json();
                 
-                if(!res.ok) showAlert(data.error, true);
-                else {
+                if(!res.ok) {
+                    showAlert(data.error, true);
+                    if (window.turnstile) window.turnstile.reset('#turnstile-container');
+                    turnstileToken = '';
+                } else {
                     showAlert(data.message, false);
                     document.getElementById('register-form').reset();
+                    if (window.turnstile) window.turnstile.reset('#turnstile-container');
+                    turnstileToken = '';
                 }
             } catch(err) {
                 showAlert('Erro de conexão com servidor.', true);
