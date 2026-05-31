@@ -811,51 +811,65 @@
                     }
 
                     let itemsHtml = '';
-                    o.items.forEach(item => {
-                        let keyBox = '';
-                        if (isApproved && item.activation_key) {
-                            const keyId = `key-${o.id}-${item.title.replace(/\s+/g, '')}`;
-                            keyBox = `
-                                <div class="mt-3 p-3 bg-emerald-950/50 border border-emerald-800/50 rounded-lg flex items-center justify-between group">
-                                    <div class="flex items-center gap-2">
-                                        <i data-lucide="key" class="w-4 h-4 text-emerald-400"></i>
-                                        <span id="${keyId}" class="font-orbitron font-bold text-emerald-300 tracking-wider filter blur-sm transition-all duration-300 select-none">${item.activation_key}</span>
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <button onclick="toggleKeyVisibility('${keyId}', this)" class="text-xs text-emerald-500 hover:text-emerald-300 bg-emerald-900/30 px-2 py-1 rounded flex items-center justify-center" title="Mostrar/Ocultar"><i data-lucide="eye" class="w-4 h-4"></i></button>
-                                        <button onclick="copyToClipboard('${item.activation_key}')" class="text-xs text-emerald-500 hover:text-emerald-300 bg-emerald-900/30 px-2 py-1 rounded">${lang === 'en' ? 'COPY' : 'COPIAR'}</button>
-                                    </div>
-                                </div>
-                            `;
-                        } else if (isApproved) {
-                             keyBox = `<div class="mt-2 text-xs text-slate-500">${dict.key_releasing}...</div>`;
-                        }
-
-                        // Steam logo overlay if category is Steam Key
-                        const isSteam = item.category === 'STEAM KEY';
-                        const steamBadge = isSteam ? `
-                            <div class="absolute top-1 left-1 bg-black/75 border border-slate-700/80 px-1 py-0.5 rounded backdrop-blur-sm flex items-center gap-0.5 z-10 text-[6px] font-orbitron text-slate-200 tracking-widest uppercase">
-                                <svg class="w-2 h-2 text-slate-300" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-3.328 17.514c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189zm.065-2.923c-.767-.008-1.464.385-1.859 1.03l-2.45-.754c-.116-.036-.182-.16-.146-.276l.781-2.54c.036-.116.16-.182.276-.146l2.36.726c.45-.373 1.01-.58 1.595-.589.626-.008 1.222.215 1.688.625l3.29-2.285c.105-.072.247-.043.318.062l1.62 2.336c.072.104.043.247-.062.318l-3.23 2.244c-.218.66-.827 1.127-1.52 1.139-.026.001-.052.001-.078.001zm6.953-3.693c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189z"/>
-                                </svg>
-                                STEAM
-                            </div>
-                        ` : '';
-
-                        itemsHtml += `
+                    if (o.is_deposit) {
+                        itemsHtml = `
                             <div class="flex items-center gap-4 bg-slate-900/50 p-3 rounded-lg border border-slate-800 mt-3">
-                                <div class="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
-                                    ${steamBadge}
-                                    <img src="${item.image}" class="w-full h-full object-cover">
+                                <div class="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0 flex items-center justify-center bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                                    <i data-lucide="wallet" class="w-8 h-8"></i>
                                 </div>
                                 <div class="flex-grow">
-                                    <div class="text-xs text-electricblue font-orbitron tracking-widest uppercase">${item.category}</div>
-                                    <div class="font-bold text-slate-200">${item.title} (x${item.quantity})</div>
-                                    ${keyBox}
+                                    <div class="text-xs text-emerald-400 font-orbitron tracking-widest uppercase">${lang === 'en' ? 'WALLET DEPOSIT' : 'DEPÓSITO CARTEIRA'}</div>
+                                    <div class="font-bold text-slate-200">${lang === 'en' ? 'Credits Recharge' : 'Recarga de Créditos'}</div>
                                 </div>
                             </div>
                         `;
-                    });
+                    } else if (o.items) {
+                        o.items.forEach(item => {
+                            let keyBox = '';
+                            if (isApproved && item.activation_key) {
+                                const keyId = `key-${o.id}-${item.title.replace(/\s+/g, '')}`;
+                                keyBox = `
+                                    <div class="mt-3 p-3 bg-emerald-950/50 border border-emerald-800/50 rounded-lg flex items-center justify-between group">
+                                        <div class="flex items-center gap-2">
+                                            <i data-lucide="key" class="w-4 h-4 text-emerald-400"></i>
+                                            <span id="${keyId}" class="font-orbitron font-bold text-emerald-300 tracking-wider filter blur-sm transition-all duration-300 select-none">${item.activation_key}</span>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button onclick="toggleKeyVisibility('${keyId}', this)" class="text-xs text-emerald-500 hover:text-emerald-300 bg-emerald-900/30 px-2 py-1 rounded flex items-center justify-center" title="Mostrar/Ocultar"><i data-lucide="eye" class="w-4 h-4"></i></button>
+                                            <button onclick="copyToClipboard('${item.activation_key}')" class="text-xs text-emerald-500 hover:text-emerald-300 bg-emerald-900/30 px-2 py-1 rounded">${lang === 'en' ? 'COPY' : 'COPIAR'}</button>
+                                        </div>
+                                    </div>
+                                `;
+                            } else if (isApproved) {
+                                 keyBox = `<div class="mt-2 text-xs text-slate-500">${dict.key_releasing}...</div>`;
+                            }
+
+                            // Steam logo overlay if category is Steam Key
+                            const isSteam = item.category === 'STEAM KEY';
+                            const steamBadge = isSteam ? `
+                                <div class="absolute top-1 left-1 bg-black/75 border border-slate-700/80 px-1 py-0.5 rounded backdrop-blur-sm flex items-center gap-0.5 z-10 text-[6px] font-orbitron text-slate-200 tracking-widest uppercase">
+                                    <svg class="w-2 h-2 text-slate-300" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-3.328 17.514c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189zm.065-2.923c-.767-.008-1.464.385-1.859 1.03l-2.45-.754c-.116-.036-.182-.16-.146-.276l.781-2.54c.036-.116.16-.182.276-.146l2.36.726c.45-.373 1.01-.58 1.595-.589.626-.008 1.222.215 1.688.625l3.29-2.285c.105-.072.247-.043.318.062l1.62 2.336c.072.104.043.247-.062.318l-3.23 2.244c-.218.66-.827 1.127-1.52 1.139-.026.001-.052.001-.078.001zm6.953-3.693c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189z"/>
+                                    </svg>
+                                    STEAM
+                                </div>
+                            ` : '';
+
+                            itemsHtml += `
+                                <div class="flex items-center gap-4 bg-slate-900/50 p-3 rounded-lg border border-slate-800 mt-3">
+                                    <div class="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
+                                        ${steamBadge}
+                                        <img src="${item.image}" class="w-full h-full object-cover">
+                                    </div>
+                                    <div class="flex-grow">
+                                        <div class="text-xs text-electricblue font-orbitron tracking-widest uppercase">${item.category}</div>
+                                        <div class="font-bold text-slate-200">${item.title} (x${item.quantity})</div>
+                                        ${keyBox}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
 
                     html += `
                         <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden">
@@ -866,6 +880,7 @@
                                     <span class="font-orbitron font-bold text-white text-lg">${dict.order_id_lbl} - #${o.id}</span>
                                     <div class="text-sm font-bold text-cyberrose mt-1">${formatPrice(o.total_amount)}</div>
                                     ${isApproved ? `<button onclick="showOrderDetails(${o.id})" class="text-[10px] text-slate-400 hover:text-emerald-400 underline block mt-1.5 transition-colors font-semibold">${dict.view_details}</button>` : ''}
+                                    ${o.status === 'pending' && o.pix_qr_code ? `<button onclick="showPendingPixDetails(${o.id})" class="text-[10px] text-slate-400 hover:text-emerald-400 underline block mt-1.5 transition-colors font-semibold">${dict.view_details}</button>` : ''}
                                 </div>
                                 <div class="flex flex-col sm:items-end gap-2">
                                     <span class="flex items-center gap-2 font-orbitron text-[10px] tracking-widest px-3 py-1.5 rounded-full border ${statusColor}">
@@ -1060,6 +1075,21 @@
             }, 10);
             
             lucide.createIcons();
+        };
+
+        window.showPendingPixDetails = (orderId) => {
+            const o = allUserOrders.find(order => order.id === orderId);
+            if (!o || !o.pix_qr_code) return;
+            
+            const createdAt = new Date(o.created_at).getTime();
+            const now = Date.now();
+            const elapsedSeconds = Math.floor((now - createdAt) / 1000);
+            const totalExpirationSeconds = 600; // 10 minutes
+            const remainingSeconds = Math.max(10, totalExpirationSeconds - elapsedSeconds);
+            
+            // Use Google Charts URL to render the QR Code dynamically
+            const qrUrl = `https://chart.googleapis.com/chart?chs=180x180&cht=qr&chl=${encodeURIComponent(o.pix_qr_code)}`;
+            showPixModal(qrUrl, o.pix_qr_code, remainingSeconds);
         };
 
         window.closeReceiptModal = () => {
@@ -1535,7 +1565,7 @@
             }
         }
 
-        window.showPixModal = (base64, code) => {
+        window.showPixModal = (base64, code, customTimeLimit = 600) => {
             const modal = document.getElementById('pix-modal');
             const modalContent = document.getElementById('pix-modal-content');
             
@@ -1543,7 +1573,13 @@
             const lang = cur === 'USD' ? 'en' : (cur === 'EUR' ? 'es' : 'pt');
             const dict = TRANSLATIONS[lang] || TRANSLATIONS['pt'];
 
-            document.getElementById('pix-qr-img').src = 'data:image/jpeg;base64,' + base64;
+            if (base64.startsWith('http://') || base64.startsWith('https://')) {
+                document.getElementById('pix-qr-img').src = base64;
+            } else if (base64.startsWith('data:')) {
+                document.getElementById('pix-qr-img').src = base64;
+            } else {
+                document.getElementById('pix-qr-img').src = 'data:image/jpeg;base64,' + base64;
+            }
             document.getElementById('pix-code-input').value = code;
             
             modal.classList.remove('hidden');
@@ -1553,9 +1589,12 @@
                 modalContent.classList.add('scale-100');
             }, 10);
             
-            let timeLeft = 600;
+            let timeLeft = customTimeLimit;
             const timerEl = document.getElementById('pix-countdown');
             const timerContainer = document.getElementById('pix-timer-container');
+            
+            timerContainer.classList.remove('bg-slate-800', 'border-slate-700', 'text-slate-500');
+            timerContainer.classList.add('bg-red-500/10', 'border-red-500/30', 'text-red-400');
             
             if(window.pixInterval) clearInterval(window.pixInterval);
             

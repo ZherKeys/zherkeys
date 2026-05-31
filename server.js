@@ -77,6 +77,8 @@ async function initDB() {
             ALTER TABLE users ADD COLUMN IF NOT EXISTS steam_id TEXT;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT;
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_deposit BOOLEAN DEFAULT false;
+            ALTER TABLE orders ADD COLUMN IF NOT EXISTS pix_qr_code TEXT;
+            ALTER TABLE orders ADD COLUMN IF NOT EXISTS pix_qr_code_base64 TEXT;
             
             CREATE TABLE IF NOT EXISTS wallet_transactions (
                 id SERIAL PRIMARY KEY,
@@ -698,12 +700,15 @@ app.post('/api/wallet/deposit', requireAuth, async (req, res) => {
                 }
             });
             
-            await pool.query('UPDATE orders SET mp_payment_id = $1 WHERE id = $2', [createdPayment.id, orderId]);
-            
             const qrCodeBase64 = createdPayment.point_of_interaction.transaction_data.qr_code_base64;
             const qrCode = createdPayment.point_of_interaction.transaction_data.qr_code;
             
-            // Envia e-mail com o PIX
+            await pool.query(
+                'UPDATE orders SET mp_payment_id = $1, pix_qr_code = $2, pix_qr_code_base64 = $3 WHERE id = $4',
+                [createdPayment.id.toString(), qrCode, qrCodeBase64, orderId]
+            );
+            
+            // Envia e-mail com o PIX (usando a API do Google Charts para renderizar o QR Code remotamente de forma compatível)
             sendEmailViaBrevo(
                 email,
                 `⚡ Seu PIX para Adicionar R$ ${parsedAmount.toFixed(2).replace('.', ',')} na Carteira foi Gerado!`,
@@ -721,7 +726,7 @@ app.post('/api/wallet/deposit', requireAuth, async (req, res) => {
                     </p>
                     
                     <div style="background-color: #ffffff; padding: 15px; border-radius: 12px; display: inline-block; margin-bottom: 25px; box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);">
-                        <img src="data:image/jpeg;base64,${qrCodeBase64}" alt="QR Code PIX" style="width: 180px; height: 180px; display: block;" />
+                        <img src="https://chart.googleapis.com/chart?chs=180x180&cht=qr&chl=${encodeURIComponent(qrCode)}" alt="QR Code PIX" style="width: 180px; height: 180px; display: block;" />
                     </div>
                     
                     <p style="color: #94a3b8; font-size: 11px; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; font-weight: bold;">Código Copia e Cola:</p>
