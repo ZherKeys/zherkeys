@@ -150,6 +150,12 @@
                                 </div>
                             </div>
                             
+                            <div id="cpf-field-container" class="transition-all duration-300">
+                                <label class="block text-xs text-slate-400 mb-2">CPF do Pagador (Requerido para Pix/Cartão)</label>
+                                <input type="text" id="payer-cpf" placeholder="000.000.000-00" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-400 transition-all font-mono">
+                                <span id="cpf-error-msg" class="text-[10px] text-red-500 mt-1 hidden font-semibold">CPF inválido! Por favor, digite um CPF real.</span>
+                            </div>
+                            
                             <button onclick="gerarDeposito()" id="btn-deposit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-xs tracking-widest font-bold py-3.5 rounded-xl shadow-lg transition-all duration-300 uppercase flex items-center justify-center gap-2">
                                 <span data-i18n="generate_deposit">GERAR DEPÓSITO</span> <i data-lucide="plus-circle" class="w-4 h-4"></i>
                             </button>
@@ -1338,6 +1344,91 @@
             }
         }
 
+        // --- CPF VALIDATION & MASK LOGIC ---
+        function validarCPF(cpf) {
+            cpf = cpf.replace(/[^\d]+/g, '');
+            if (cpf.length !== 11) return false;
+            if (/^(\d)\1{10}$/.test(cpf)) return false;
+            
+            let add = 0;
+            for (let i = 0; i < 9; i++) {
+                add += parseInt(cpf.charAt(i)) * (10 - i);
+            }
+            let rev = 11 - (add % 11);
+            if (rev === 10 || rev === 11) rev = 0;
+            if (rev !== parseInt(cpf.charAt(9))) return false;
+            
+            add = 0;
+            for (let i = 0; i < 10; i++) {
+                add += parseInt(cpf.charAt(i)) * (11 - i);
+            }
+            rev = 11 - (add % 11);
+            if (rev === 10 || rev === 11) rev = 0;
+            if (rev !== parseInt(cpf.charAt(10))) return false;
+            
+            return true;
+        }
+
+        function toggleCpfField() {
+            const method = document.querySelector('input[name="deposit_method"]:checked').value;
+            const cpfContainer = document.getElementById('cpf-field-container');
+            if (method === 'paypal') {
+                cpfContainer.style.opacity = '0';
+                setTimeout(() => { cpfContainer.classList.add('hidden'); }, 300);
+            } else {
+                cpfContainer.classList.remove('hidden');
+                setTimeout(() => { cpfContainer.style.opacity = '1'; }, 10);
+            }
+        }
+
+        // Configuração dos inputs de CPF após o carregamento da página
+        setTimeout(() => {
+            const cpfInput = document.getElementById('payer-cpf');
+            const cpfError = document.getElementById('cpf-error-msg');
+            const methodRadios = document.querySelectorAll('input[name="deposit_method"]');
+            
+            if (cpfInput && cpfError) {
+                cpfInput.addEventListener('input', (e) => {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value.length > 11) value = value.slice(0, 11);
+                    
+                    // Aplicar máscara
+                    if (value.length > 9) {
+                        value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
+                    } else if (value.length > 6) {
+                        value = value.replace(/^(\d{3})(\d{3})(\d{0,3})$/, '$1.$2.$3');
+                    } else if (value.length > 3) {
+                        value = value.replace(/^(\d{3})(\d{0,3})$/, '$1.$2');
+                    }
+                    
+                    e.target.value = value;
+                    
+                    // Validação em tempo real
+                    const rawCpf = value.replace(/\D/g, '');
+                    if (rawCpf.length === 11) {
+                        if (validarCPF(rawCpf)) {
+                            cpfError.classList.add('hidden');
+                            cpfInput.classList.remove('border-red-500', 'focus:border-red-500');
+                            cpfInput.classList.add('border-emerald-500', 'focus:border-emerald-500');
+                        } else {
+                            cpfError.classList.remove('hidden');
+                            cpfInput.classList.remove('border-emerald-500', 'focus:border-emerald-500');
+                            cpfInput.classList.add('border-red-500', 'focus:border-red-500');
+                        }
+                    } else {
+                        cpfError.classList.add('hidden');
+                        cpfInput.classList.remove('border-red-500', 'border-emerald-500', 'focus:border-red-500', 'focus:border-emerald-500');
+                    }
+                });
+            }
+            
+            if (methodRadios) {
+                methodRadios.forEach(radio => {
+                    radio.addEventListener('change', toggleCpfField);
+                });
+            }
+        }, 500);
+
         // --- WALLET / DEPOSIT LOGIC ---
         async function loadWalletData() {
             try {
@@ -1532,6 +1623,20 @@
                 return;
             }
 
+            // Validar CPF para PIX/Cartão
+            let cpfVal = '';
+            if (method === 'pix' || method === 'card') {
+                const cpfInput = document.getElementById('payer-cpf');
+                cpfVal = cpfInput.value.replace(/\D/g, '');
+                if (!validarCPF(cpfVal)) {
+                    document.getElementById('cpf-error-msg').classList.remove('hidden');
+                    cpfInput.classList.add('border-red-500', 'focus:border-red-500');
+                    alert(lang === 'en' ? 'Please enter a valid CPF.' : 'Por favor, insira um CPF válido.');
+                    cpfInput.focus();
+                    return;
+                }
+            }
+
             const btn = document.getElementById('btn-deposit');
             btn.innerHTML = `${dict.generating_payment} <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>`;
             btn.classList.add('opacity-50', 'pointer-events-none');
@@ -1540,7 +1645,7 @@
                 const res = await fetch('/api/wallet/deposit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: amountBRL, method })
+                    body: JSON.stringify({ amount: amountBRL, method, cpf: cpfVal })
                 });
 
                 const data = await res.json();

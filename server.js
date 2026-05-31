@@ -656,7 +656,7 @@ function generateCPF() {
 
 // Criar pedido de depósito para adicionar créditos à carteira
 app.post('/api/wallet/deposit', requireAuth, async (req, res) => {
-    const { amount, method } = req.body; // amount (numeric), method ('pix' or 'card')
+    const { amount, method, cpf } = req.body; // amount (numeric), method ('pix' or 'card'), optional cpf
     const parsedAmount = parseFloat(amount);
     
     if (isNaN(parsedAmount) || parsedAmount < 5.00) {
@@ -689,7 +689,7 @@ app.post('/api/wallet/deposit', requireAuth, async (req, res) => {
                         last_name: 'ZherKeys',
                         identification: {
                             type: 'CPF',
-                            number: generateCPF()
+                            number: cpf ? cpf.replace(/\D/g, '') : generateCPF()
                         }
                     },
                     external_reference: orderId.toString(),
