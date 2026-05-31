@@ -1141,6 +1141,14 @@
                                 score += 10;
                                 synth.point();
                                 treasureStatusText = 'NÓ LIMPO. ACESSO VERIFICADO. +10 PTS.';
+                                treasureResultColor = '#60A5FA';
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        });
            canvas.addEventListener('touchstart', (e) => {
             if (!gameActive && !gameInitialized) {
                 e.preventDefault();
