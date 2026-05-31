@@ -124,6 +124,44 @@
             </div>
         </form>
 
+        <!-- Container de Autenticação Social -->
+        <div id="social-auth-container" class="mt-4">
+            <!-- Separador -->
+            <div class="relative flex py-4 items-center">
+                <div class="flex-grow border-t border-slate-800/60"></div>
+                <span class="flex-shrink mx-4 text-[9px] font-orbitron text-slate-500 tracking-widest uppercase">Ou conecte-se com</span>
+                <div class="flex-grow border-t border-slate-800/60"></div>
+            </div>
+
+            <!-- Botões de Redes Sociais -->
+            <div class="grid grid-cols-3 gap-2">
+                <!-- Google -->
+                <button onclick="authSocial('google')" class="flex items-center justify-center gap-1.5 bg-slate-950/80 border border-slate-800 hover:border-slate-700 hover:bg-slate-900 text-slate-300 hover:text-white font-orbitron text-[9px] tracking-wider font-semibold py-3 px-1 rounded-lg transition-all shadow-md flex-nowrap">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+                    </svg>
+                    GOOGLE
+                </button>
+                <!-- Facebook -->
+                <button onclick="authSocial('facebook')" class="flex items-center justify-center gap-1.5 bg-slate-950/80 border border-slate-800 hover:border-slate-700 hover:bg-slate-900 text-slate-300 hover:text-white font-orbitron text-[9px] tracking-wider font-semibold py-3 px-1 rounded-lg transition-all shadow-md flex-nowrap">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="#1877F2" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                    FACEBOOK
+                </button>
+                <!-- Steam -->
+                <button onclick="authSocial('steam')" class="flex items-center justify-center gap-1.5 bg-slate-950/80 border border-slate-800 hover:border-slate-700 hover:bg-[#171a21] text-slate-300 hover:text-white font-orbitron text-[9px] tracking-wider font-semibold py-3 px-1 rounded-lg transition-all shadow-md flex-nowrap">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 .002C5.373.002.001 5.375.001 12.002c0 5.679 3.951 10.436 9.255 11.696a12.827 12.827 0 0 1-.223-2.184l3.963-2.772a4.428 4.428 0 0 0 2.227.608 4.464 4.464 0 0 0 4.457-4.458 4.465 4.465 0 0 0-4.457-4.459c-2.316 0-4.223 1.761-4.437 4.024L8.272 13.1a6.432 6.432 0 0 1 .01-6.143l3.754 1.545c2.316-.957 5.007.135 5.965 2.451a4.464 4.464 0 0 1-5.965 5.965l-3.754-1.545a6.432 6.432 0 0 1-.01 6.143l5.066 3.542a12.002 12.002 0 0 0 6.662-11c0-6.627-5.373-12-12-12zm3.223 16.458a2.678 2.678 0 0 1-2.674-2.674c0-1.478 1.196-2.674 2.674-2.674 1.477 0 2.673 1.196 2.673 2.674a2.678 2.678 0 0 1-2.673 2.674z"/>
+                    </svg>
+                    STEAM
+                </button>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -198,6 +236,10 @@
             
             alertBox.classList.add('hidden'); // clear alerts
             forgotForm.classList.add('hidden');
+            
+            // Exibir botões sociais ao alternar abas normais
+            const socialAuth = document.getElementById('social-auth-container');
+            if (socialAuth) socialAuth.classList.remove('hidden');
 
             if(tab === 'login') {
                 loginForm.classList.remove('hidden');
@@ -367,12 +409,22 @@
             document.getElementById('register-form').classList.add('hidden');
             document.getElementById('forgot-form').classList.remove('hidden');
             
+            // Ocultar botões sociais na tela de esqueci a senha
+            const socialAuth = document.getElementById('social-auth-container');
+            if (socialAuth) socialAuth.classList.add('hidden');
+            
             document.getElementById('tab-login').classList.remove('border-b-2', 'border-electricblue', 'text-white');
             document.getElementById('tab-login').classList.add('text-slate-500');
             document.getElementById('tab-register').classList.remove('border-b-2', 'border-cyberrose', 'text-white');
             document.getElementById('tab-register').classList.add('text-slate-500');
             document.getElementById('alert-box').classList.add('hidden');
         }
+
+        // Função de Redirecionamento Social
+        function authSocial(provider) {
+            window.location.href = `/auth/${provider}`;
+        }
+
         // Clear cart on logout
         if (window.location.search.includes('logout=1')) {
             localStorage.removeItem('zher_cart');

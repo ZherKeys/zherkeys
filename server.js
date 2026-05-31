@@ -72,6 +72,10 @@ async function initDB() {
             ALTER TABLE products ADD COLUMN IF NOT EXISTS gameflip_listing_id TEXT;
             
             ALTER TABLE users ADD COLUMN IF NOT EXISTS balance NUMERIC(10, 2) DEFAULT 0.00;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS facebook_id TEXT;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS steam_id TEXT;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT;
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_deposit BOOLEAN DEFAULT false;
             
             CREATE TABLE IF NOT EXISTS wallet_transactions (
@@ -1459,6 +1463,245 @@ app.get('/api/me', requireAuth, async (req, res) => {
 app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/login.html?logout=1');
+});
+
+// ==========================================
+// AUTENTICAÇÃO SOCIAL (GOOGLE, FACEBOOK, STEAM)
+// ==========================================
+
+// --- GOOGLE AUTHENTICATION ---
+app.get('/auth/google', (req, res) => {
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+        return res.send(`
+            <script>
+                alert("A integração de login com o Google não está configurada no servidor. Por favor, configure as chaves GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET no seu arquivo .env.");
+                window.location.href = "/login.html";
+            </script>
+        `);
+    }
+    const redirectUri = `${APP_URL}/auth/google/callback`;
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=email%20profile`;
+    res.redirect(googleAuthUrl);
+});
+
+app.get('/auth/google/callback', async (req, res) => {
+    const { code } = req.query;
+    if (!code) return res.redirect('/login.html');
+
+    const redirectUri = `${APP_URL}/auth/google/callback`;
+
+    try {
+        // Trocar o código de autorização por Access Token
+        const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                code,
+                client_id: process.env.GOOGLE_CLIENT_ID,
+                client_secret: process.env.GOOGLE_CLIENT_SECRET,
+                redirect_uri: redirectUri,
+                grant_type: 'authorization_code'
+            })
+        });
+        const tokenData = await tokenRes.json();
+        if (!tokenData.access_token) throw new Error("Não foi possível obter o token de acesso do Google.");
+
+        // Buscar dados do perfil do usuário
+        const userRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { 'Authorization': `Bearer ${tokenData.access_token}` }
+        });
+        const userData = await userRes.json();
+        const { sub: googleId, email, picture: avatar } = userData;
+
+        if (!email) throw new Error("Nenhum e-mail retornado pelo Google.");
+
+        // Buscar ou criar usuário no banco
+        let userResult = await pool.query('SELECT * FROM users WHERE google_id = $1', [googleId]);
+        let user = userResult.rows[0];
+
+        if (!user) {
+            // Tentar buscar pelo e-mail se já existia cadastro manual
+            userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+            user = userResult.rows[0];
+
+            if (user) {
+                // Vincular e pré-verificar a conta existente
+                await pool.query('UPDATE users SET google_id = $1, avatar = $2, is_verified = 1 WHERE id = $3', [googleId, avatar, user.id]);
+            } else {
+                // Criar nova conta
+                const randomPassword = crypto.randomBytes(32).toString('hex');
+                const salt = await bcrypt.genSalt(10);
+                const hash = await bcrypt.hash(randomPassword, salt);
+                
+                const insertResult = await pool.query(
+                    'INSERT INTO users (email, password_hash, is_verified, google_id, avatar) VALUES ($1, $2, 1, $3, $4) RETURNING *',
+                    [email, hash, googleId, avatar]
+                );
+                user = insertResult.rows[0];
+            }
+        } else {
+            // Atualizar avatar
+            await pool.query('UPDATE users SET avatar = $1 WHERE id = $2', [avatar, user.id]);
+        }
+
+        req.session.userId = user.id;
+        res.redirect('/');
+    } catch(err) {
+        console.error("Erro na autenticação Google:", err);
+        res.send(`<script>alert("Erro ao entrar com o Google: ${err.message}"); window.location.href = "/login.html";</script>`);
+    }
+});
+
+// --- FACEBOOK AUTHENTICATION ---
+app.get('/auth/facebook', (req, res) => {
+    if (!process.env.FACEBOOK_APP_ID || !process.env.FACEBOOK_APP_SECRET) {
+        return res.send(`
+            <script>
+                alert("A integração de login com o Facebook não está configurada no servidor. Por favor, configure as chaves FACEBOOK_APP_ID e FACEBOOK_APP_SECRET no seu arquivo .env.");
+                window.location.href = "/login.html";
+            </script>
+        `);
+    }
+    const redirectUri = `${APP_URL}/auth/facebook/callback`;
+    const facebookAuthUrl = `https://www.facebook.com/v12.0/dialog/oauth?client_id=${process.env.FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=email`;
+    res.redirect(facebookAuthUrl);
+});
+
+app.get('/auth/facebook/callback', async (req, res) => {
+    const { code } = req.query;
+    if (!code) return res.redirect('/login.html');
+
+    const redirectUri = `${APP_URL}/auth/facebook/callback`;
+
+    try {
+        // Trocar o código de autorização por Access Token
+        const tokenRes = await fetch(`https://graph.facebook.com/v12.0/oauth/access_token?client_id=${process.env.FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&client_secret=${process.env.FACEBOOK_APP_SECRET}&code=${code}`);
+        const tokenData = await tokenRes.json();
+        if (!tokenData.access_token) throw new Error("Não foi possível obter o token de acesso do Facebook.");
+
+        // Buscar dados do perfil do usuário
+        const userRes = await fetch(`https://graph.facebook.com/me?fields=id,name,email,picture.type(large)&access_token=${tokenData.access_token}`);
+        const userData = await userRes.json();
+        const { id: facebookId, email } = userData;
+        const avatar = userData.picture?.data?.url || '';
+
+        // Contas de telefone do Facebook não retornam email
+        const userEmail = email || `${facebookId}@facebook.zherkeys.com`;
+
+        // Buscar ou criar usuário no banco
+        let userResult = await pool.query('SELECT * FROM users WHERE facebook_id = $1', [facebookId]);
+        let user = userResult.rows[0];
+
+        if (!user) {
+            userResult = await pool.query('SELECT * FROM users WHERE email = $1', [userEmail]);
+            user = userResult.rows[0];
+
+            if (user) {
+                // Vincular e pré-verificar a conta existente
+                await pool.query('UPDATE users SET facebook_id = $1, avatar = $2, is_verified = 1 WHERE id = $3', [facebookId, avatar, user.id]);
+            } else {
+                // Criar nova conta
+                const randomPassword = crypto.randomBytes(32).toString('hex');
+                const salt = await bcrypt.genSalt(10);
+                const hash = await bcrypt.hash(randomPassword, salt);
+                
+                const insertResult = await pool.query(
+                    'INSERT INTO users (email, password_hash, is_verified, facebook_id, avatar) VALUES ($1, $2, 1, $3, $4) RETURNING *',
+                    [userEmail, hash, facebookId, avatar]
+                );
+                user = insertResult.rows[0];
+            }
+        } else {
+            // Atualizar avatar
+            await pool.query('UPDATE users SET avatar = $1 WHERE id = $2', [avatar, user.id]);
+        }
+
+        req.session.userId = user.id;
+        res.redirect('/');
+    } catch(err) {
+        console.error("Erro na autenticação Facebook:", err);
+        res.send(`<script>alert("Erro ao entrar com o Facebook: ${err.message}"); window.location.href = "/login.html";</script>`);
+    }
+});
+
+// --- STEAM AUTHENTICATION (OpenID 2.0) ---
+app.get('/auth/steam', (req, res) => {
+    const redirectUri = `${APP_URL}/auth/steam/callback`;
+    const steamAuthUrl = 'https://steamcommunity.com/openid/login' +
+        '?openid.ns=http://specs.openid.net/auth/2.0' +
+        '&openid.mode=checkid_setup' +
+        '&openid.return_to=' + encodeURIComponent(redirectUri) +
+        '&openid.realm=' + encodeURIComponent(APP_URL) +
+        '&openid.identity=http://specs.openid.net/auth/2.0/identifier_select' +
+        '&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select';
+    res.redirect(steamAuthUrl);
+});
+
+app.get('/auth/steam/callback', async (req, res) => {
+    const params = req.query;
+    const verifyParams = { ...params, 'openid.mode': 'check_authentication' };
+    
+    try {
+        // Enviar os parâmetros de volta para o Steam para verificar a autenticidade (anti-fraude)
+        const verifyBody = new URLSearchParams(verifyParams).toString();
+        const verifyRes = await fetch('https://steamcommunity.com/openid/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: verifyBody
+        });
+        const verifyText = await verifyRes.text();
+        const isValid = verifyText.includes('is_valid:true');
+        
+        if (!isValid) throw new Error("A autenticação fornecida pela Steam falhou.");
+
+        // Extrair o SteamID de 64 bits da URL de identidade
+        const steamIdUrl = params['openid.claimed_id'] || params['openid.identity'] || '';
+        const steamId = steamIdUrl.split('/id/')[1];
+        if (!steamId) throw new Error("Não foi possível obter o seu ID Steam.");
+
+        // Obter dados públicos do perfil da Steam usando a API Key se fornecida
+        let avatar = '';
+        if (process.env.STEAM_API_KEY) {
+            try {
+                const steamProfileRes = await fetch(`https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${process.env.STEAM_API_KEY}&steamids=${steamId}`);
+                const steamProfileData = await steamProfileRes.json();
+                const player = steamProfileData.response?.players?.[0];
+                if (player) {
+                    avatar = player.avatarfull || player.avatarmedium || '';
+                }
+            } catch(e) {
+                console.error("Erro ao obter avatar da API da Steam:", e);
+            }
+        }
+
+        const steamEmail = `${steamId}@steam.zherkeys.com`;
+
+        // Buscar ou criar usuário no banco pelo Steam ID
+        let userResult = await pool.query('SELECT * FROM users WHERE steam_id = $1', [steamId]);
+        let user = userResult.rows[0];
+
+        if (!user) {
+            // Steam não fornece e-mail no OpenID, criamos uma credencial Steam exclusiva no sistema
+            const randomPassword = crypto.randomBytes(32).toString('hex');
+            const salt = await bcrypt.genSalt(10);
+            const hash = await bcrypt.hash(randomPassword, salt);
+            
+            const insertResult = await pool.query(
+                'INSERT INTO users (email, password_hash, is_verified, steam_id, avatar) VALUES ($1, $2, 1, $3, $4) RETURNING *',
+                [steamEmail, hash, steamId, avatar]
+            );
+            user = insertResult.rows[0];
+        } else if (avatar) {
+            // Atualizar avatar
+            await pool.query('UPDATE users SET avatar = $1 WHERE id = $2', [avatar, user.id]);
+        }
+
+        req.session.userId = user.id;
+        res.redirect('/');
+    } catch(err) {
+        console.error("Erro na autenticação Steam:", err);
+        res.send(`<script>alert("Erro ao entrar com a Steam: ${err.message}"); window.location.href = "/login.html";</script>`);
+    }
 });
 
 // ========================
