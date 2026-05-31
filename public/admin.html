@@ -81,9 +81,15 @@
                         <input type="text" id="prod-category" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all">
                     </div>
                     
-                    <div>
-                        <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">PREÇO (R$)</label>
-                        <input type="number" step="0.01" id="prod-price" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">PREÇO (R$)</label>
+                            <input type="number" step="0.01" id="prod-price" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">PREÇO ANTIGO (Opcional)</label>
+                            <input type="number" step="0.01" id="prod-old-price" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all placeholder-slate-700" placeholder="R$ 0,00">
+                        </div>
                     </div>
                     
                     <div>
@@ -333,6 +339,7 @@
                 title: document.getElementById('prod-title').value,
                 category: document.getElementById('prod-category').value,
                 price: document.getElementById('prod-price').value,
+                old_price: document.getElementById('prod-old-price').value,
                 image: document.getElementById('prod-image').value,
                 description: document.getElementById('prod-desc').value,
                 activation_key: document.getElementById('prod-activation').value,
@@ -367,6 +374,7 @@
             document.getElementById('prod-title').value = p.title;
             document.getElementById('prod-category').value = p.category;
             document.getElementById('prod-price').value = p.price;
+            document.getElementById('prod-old-price').value = p.old_price || '';
             document.getElementById('prod-image').value = p.image;
             document.getElementById('prod-desc').value = p.description;
             document.getElementById('prod-activation').value = p.activation_key || '';

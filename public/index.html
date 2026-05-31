@@ -759,9 +759,23 @@
             }
             
             filteredProducts.forEach((p, index) => {
-                const precoFormatado = p.in_stock === false ? 
-                    '<span class="text-rose-500 text-[10px] font-bold bg-rose-900/30 px-2 py-1 border border-rose-900/50 rounded tracking-widest">ESGOTADO</span>' : 
-                    '<span class="font-orbitron font-black text-xl text-cyberrose">R$ ' + parseFloat(p.price).toFixed(2).replace('.', ',') + '</span>';
+                let precoFormatado = '';
+                if (p.in_stock === false) {
+                    precoFormatado = '<span class="text-rose-500 text-[10px] font-bold bg-rose-900/30 px-2 py-1 border border-rose-900/50 rounded tracking-widest">ESGOTADO</span>';
+                } else {
+                    const priceNum = parseFloat(p.price);
+                    const oldPriceNum = p.old_price ? parseFloat(p.old_price) : 0;
+                    if (oldPriceNum > priceNum) {
+                        precoFormatado = `
+                            <div class="flex flex-col">
+                                <del class="text-rose-500 text-[10px] font-orbitron -mb-1 opacity-80">R$ ${oldPriceNum.toFixed(2).replace('.', ',')}</del>
+                                <span class="font-orbitron font-black text-xl text-cyberrose">R$ ${priceNum.toFixed(2).replace('.', ',')}</span>
+                            </div>
+                        `;
+                    } else {
+                        precoFormatado = '<span class="font-orbitron font-black text-xl text-cyberrose">R$ ' + priceNum.toFixed(2).replace('.', ',') + '</span>';
+                    }
+                }
                 
                 const cartBtn = p.in_stock === false ? '' : `
                     <button onclick="addAndShowCart(event, ${p.id})" class="w-8 h-8 rounded bg-electricblue/10 flex items-center justify-center text-electricblue hover:bg-electricblue hover:text-white transition-colors shadow-cyber z-10 relative">
@@ -834,7 +848,22 @@
                 warningEl.classList.add('hidden');
             }
 
-            document.getElementById('modal-price').innerText = currentProduct.in_stock === false ? 'ESGOTADO' : 'R$ ' + parseFloat(currentProduct.price).toFixed(2).replace('.', ',');
+            if (currentProduct.in_stock === false) {
+                document.getElementById('modal-price').innerHTML = 'ESGOTADO';
+            } else {
+                const priceNum = parseFloat(currentProduct.price);
+                const oldPriceNum = currentProduct.old_price ? parseFloat(currentProduct.old_price) : 0;
+                if (oldPriceNum > priceNum) {
+                    document.getElementById('modal-price').innerHTML = `
+                        <div class="flex flex-col">
+                            <del class="text-rose-500 text-sm font-orbitron -mb-1 opacity-80">R$ ${oldPriceNum.toFixed(2).replace('.', ',')}</del>
+                            <span>R$ ${priceNum.toFixed(2).replace('.', ',')}</span>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('modal-price').innerText = 'R$ ' + priceNum.toFixed(2).replace('.', ',');
+                }
+            }
             document.getElementById('modal-description').innerText = currentProduct.description;
             
             const modalGenres = document.getElementById('modal-genres');
@@ -960,7 +989,7 @@
 
         window.comprarProduto = () => {
             if(currentProduct) {
-                alert("🛒 Indo para o checkout com: " + currentProduct.title + " por " + currentProduct.price);
+                addAndShowCart(null, currentProduct.id);
             }
         };
 

@@ -65,6 +65,7 @@ async function initDB() {
             ALTER TABLE products ADD COLUMN IF NOT EXISTS is_global BOOLEAN DEFAULT true;
             ALTER TABLE products ADD COLUMN IF NOT EXISTS restricted_countries TEXT;
             ALTER TABLE products ADD COLUMN IF NOT EXISTS genres TEXT;
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS old_price NUMERIC(10, 2);
             
             CREATE TABLE IF NOT EXISTS order_items (
                 id SERIAL PRIMARY KEY,
@@ -220,7 +221,7 @@ const requireAdmin = async (req, res, next) => {
 // Listar produtos (Público - NÃO EXPÕE A CHAVE)
 app.get('/api/products', async (req, res) => {
     try {
-        const result = await pool.query('SELECT id, title, description, price, image, category, in_stock, is_global, restricted_countries, genres FROM products ORDER BY id ASC');
+        const result = await pool.query('SELECT id, title, description, price, old_price, image, category, in_stock, is_global, restricted_countries, genres FROM products ORDER BY id ASC');
         res.json(result.rows);
     } catch(e) {
         res.status(500).json({ error: 'Erro ao buscar produtos' });
@@ -239,11 +240,11 @@ app.get('/api/admin/products', requireAdmin, async (req, res) => {
 
 // Criar produto (Admin)
 app.post('/api/admin/products', requireAdmin, async (req, res) => {
-    const { title, description, price, image, category, activation_key, is_global, restricted_countries, genres } = req.body;
+    const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres } = req.body;
     try {
         await pool.query(
-            'INSERT INTO products (title, description, price, image, category, activation_key, is_global, restricted_countries, genres) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
-            [title, description, parseFloat(price), image, category, activation_key || '', is_global === false ? false : true, restricted_countries || '', genres || '']
+            'INSERT INTO products (title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
+            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, image, category, activation_key || '', is_global === false ? false : true, restricted_countries || '', genres || '']
         );
         res.status(201).json({ message: 'Produto adicionado' });
     } catch(e) {
@@ -254,11 +255,11 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
 // Editar produto (Admin)
 app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
-    const { title, description, price, image, category, activation_key, is_global, restricted_countries, genres } = req.body;
+    const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres } = req.body;
     try {
         await pool.query(
-            'UPDATE products SET title=$1, description=$2, price=$3, image=$4, category=$5, activation_key=$6, in_stock=true, is_global=$7, restricted_countries=$8, genres=$9 WHERE id=$10',
-            [title, description, parseFloat(price), image, category, activation_key || '', is_global === false ? false : true, restricted_countries || '', genres || '', id]
+            'UPDATE products SET title=$1, description=$2, price=$3, old_price=$4, image=$5, category=$6, activation_key=$7, in_stock=true, is_global=$8, restricted_countries=$9, genres=$10 WHERE id=$11',
+            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, image, category, activation_key || '', is_global === false ? false : true, restricted_countries || '', genres || '', id]
         );
         res.json({ message: 'Produto atualizado e retornado ao estoque' });
     } catch(e) {
