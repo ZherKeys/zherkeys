@@ -233,11 +233,22 @@ const requireAdmin = async (req, res, next) => {
 // API DE PRODUTOS E ADMIN
 // ========================
 
+// Cache em memória para o catálogo público de produtos para evitar timeouts e lentidão no banco
+let productsCache = null;
+let productsCacheTime = 0;
+const PRODUCTS_CACHE_TTL = 10000; // 10 segundos
+
 // Listar produtos (Público - NÃO EXPÕE A CHAVE)
 app.get('/api/products', async (req, res) => {
+    const now = Date.now();
+    if (productsCache && (now - productsCacheTime < PRODUCTS_CACHE_TTL)) {
+        return res.json(productsCache);
+    }
     try {
         const result = await pool.query('SELECT id, title, description, price, old_price, image, category, in_stock, is_global, restricted_countries, genres FROM products ORDER BY id ASC');
-        res.json(result.rows);
+        productsCache = result.rows;
+        productsCacheTime = now;
+        res.json(productsCache);
     } catch(e) {
         res.status(500).json({ error: 'Erro ao buscar produtos' });
     }
@@ -261,6 +272,7 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
             'INSERT INTO products (title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
             [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, image, category, activation_key || '', is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '']
         );
+        productsCache = null; // Limpa o cache para atualizar a home imediatamente
         res.status(201).json({ message: 'Produto adicionado' });
     } catch(e) {
         console.error("Erro ao adicionar produto:", e);
@@ -277,6 +289,7 @@ app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
             'UPDATE products SET title=$1, description=$2, price=$3, old_price=$4, image=$5, category=$6, activation_key=$7, in_stock=true, is_global=$8, restricted_countries=$9, genres=$10, gameflip_listing_id=$11 WHERE id=$12',
             [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, image, category, activation_key || '', is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '', id]
         );
+        productsCache = null; // Limpa o cache para atualizar a home imediatamente
         res.json({ message: 'Produto atualizado e retornado ao estoque' });
     } catch(e) {
         console.error("Erro ao atualizar produto:", e);
@@ -288,6 +301,7 @@ app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
 app.delete('/api/admin/products/:id', requireAdmin, async (req, res) => {
     try {
         await pool.query('DELETE FROM products WHERE id=$1', [req.params.id]);
+        productsCache = null; // Limpa o cache para atualizar a home imediatamente
         res.json({ message: 'Produto deletado' });
     } catch(e) {
         res.status(500).json({ error: 'Erro ao deletar' });
