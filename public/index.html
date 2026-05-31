@@ -164,6 +164,24 @@
                 <a href="#" onclick="openSupportModal(event)" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-blue-500 hover:bg-slate-700 transition-all group" title="Suporte ao Cliente">
                     <i data-lucide="headset" class="w-5 h-5 text-slate-300 group-hover:text-white"></i>
                 </a>
+                <!-- Notificações -->
+                <div class="relative inline-block text-left" id="notification-dropdown-container">
+                    <button onclick="toggleNotificationDropdown(event)" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-emerald-400 hover:bg-slate-700 transition-all group" title="Notificações">
+                        <i data-lucide="bell" class="w-5 h-5 text-slate-300 group-hover:text-white"></i>
+                        <span id="notification-badge" class="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 bg-cyberrose text-white text-[9px] font-bold rounded-full hidden">0</span>
+                    </button>
+                    <!-- Dropdown -->
+                    <div id="notification-dropdown" class="absolute right-0 mt-3 w-80 bg-slate-950/95 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden hidden transition-all duration-300 z-[100] backdrop-blur-xl">
+                        <div class="p-4 border-b border-slate-800 bg-slate-900/30 flex justify-between items-center">
+                            <span class="font-orbitron font-bold text-xs tracking-wider text-white">NOTIFICAÇÕES</span>
+                            <button onclick="markAllNotificationsAsRead(event)" class="text-[10px] text-electricblue hover:text-white font-semibold transition-colors underline bg-transparent border-0 cursor-pointer">Marcar todas como lidas</button>
+                        </div>
+                        <div id="notification-list" class="max-h-72 overflow-y-auto divide-y divide-slate-900/50 font-inter text-xs text-slate-400">
+                            <!-- Injeção dinâmica -->
+                            <div class="p-6 text-center text-slate-500">Nenhuma notificação encontrada.</div>
+                        </div>
+                    </div>
+                </div>
                 <a href="/account.html" class="flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-electricblue hover:bg-slate-700 transition-all group" title="Minha Conta">
                     <i data-lucide="user" class="w-5 h-5 text-slate-300 group-hover:text-white"></i>
                 </a>
@@ -1441,6 +1459,148 @@
             if(window.lucide) window.lucide.createIcons();
         }
         
+        // --- REAL-TIME NOTIFICATIONS SYSTEM ---
+        let notificationsList = [];
+        window.toggleNotificationDropdown = (event) => {
+            if(event) event.stopPropagation();
+            const dropdown = document.getElementById('notification-dropdown');
+            if (dropdown.classList.contains('hidden')) {
+                dropdown.classList.remove('hidden');
+                loadNotifications();
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        };
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const container = document.getElementById('notification-dropdown-container');
+            const dropdown = document.getElementById('notification-dropdown');
+            if (container && dropdown && !container.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        async function loadNotifications() {
+            try {
+                const res = await fetch('/api/notifications');
+                if(!res.ok) return;
+                const data = await res.json();
+                notificationsList = data;
+                
+                const listContainer = document.getElementById('notification-list');
+                if (data.length === 0) {
+                    listContainer.innerHTML = '<div class="p-6 text-center text-slate-600">Nenhuma notificação encontrada.</div>';
+                    return;
+                }
+                
+                let html = '';
+                data.forEach(n => {
+                    const relativeTime = getRelativeTime(new Date(n.created_at));
+                    let iconHtml = '<i data-lucide="bell" class="w-4 h-4 text-slate-400"></i>';
+                    let typeClass = 'bg-slate-900 border-slate-800';
+                    
+                    if (n.type === 'success') {
+                        iconHtml = '<i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>';
+                        typeClass = 'bg-emerald-950/20 border-emerald-900/30';
+                    } else if (n.type === 'chat') {
+                        iconHtml = '<i data-lucide="message-square" class="w-4 h-4 text-electricblue"></i>';
+                        typeClass = 'bg-blue-950/20 border-blue-900/30';
+                    } else if (n.type === 'warning') {
+                        iconHtml = '<i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400"></i>';
+                        typeClass = 'bg-rose-950/20 border-rose-900/30';
+                    }
+                    
+                    const readIndicator = n.is_read ? '' : '<span class="w-1.5 h-1.5 bg-cyberrose rounded-full animate-ping flex-shrink-0"></span>';
+                    
+                    html += `
+                        <div onclick="markNotificationAsRead(${n.id}, event)" class="p-4 flex gap-3 items-start border-l-2 hover:bg-slate-900/40 transition-colors cursor-pointer ${n.is_read ? 'border-transparent opacity-60' : 'border-cyberrose bg-slate-900/20'}">
+                            <div class="p-2 rounded-lg border flex-shrink-0 ${typeClass}">
+                                ${iconHtml}
+                            </div>
+                            <div class="flex-grow min-w-0">
+                                <div class="flex justify-between items-start gap-2">
+                                    <span class="font-bold text-slate-200 truncate">${n.title}</span>
+                                    ${readIndicator}
+                                </div>
+                                <p class="text-slate-400 text-[11px] leading-relaxed mt-1">${n.message}</p>
+                                <span class="text-[9px] text-slate-600 font-mono mt-1 block">${relativeTime}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                listContainer.innerHTML = html;
+                if(window.lucide) window.lucide.createIcons();
+            } catch(e) {
+                console.error("Erro ao carregar notificações:", e);
+            }
+        }
+
+        async function updateNotificationsBadge() {
+            try {
+                const res = await fetch('/api/notifications/unread-count');
+                if(!res.ok) return;
+                const data = await res.json();
+                const badge = document.getElementById('notification-badge');
+                if(badge) {
+                    if (data.unread_count > 0) {
+                        badge.innerText = data.unread_count;
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        window.markNotificationAsRead = async (id, event) => {
+            if(event) event.stopPropagation();
+            try {
+                await fetch('/api/notifications/read', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                loadNotifications();
+                updateNotificationsBadge();
+            } catch(e) {
+                console.error(e);
+            }
+        };
+
+        window.markAllNotificationsAsRead = async (event) => {
+            if(event) event.stopPropagation();
+            try {
+                await fetch('/api/notifications/read', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                loadNotifications();
+                updateNotificationsBadge();
+            } catch(e) {
+                console.error(e);
+            }
+        };
+
+        function getRelativeTime(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            
+            if (diffMins < 1) return "agora mesmo";
+            if (diffMins < 60) return `há ${diffMins} min`;
+            if (diffHours < 24) return `há ${diffHours} h`;
+            return `há ${diffDays} dias`;
+        }
+
+        // Atualizar contagem periodicamente a cada 30 segundos
+        setInterval(updateNotificationsBadge, 30000);
+        setTimeout(updateNotificationsBadge, 1000);
+
         // Inicializa o badge de carrinho assim que a página carrega
         document.addEventListener('DOMContentLoaded', () => {
             updateCartBadge();

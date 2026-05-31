@@ -89,6 +89,16 @@ async function initDB() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             
+            CREATE TABLE IF NOT EXISTS notifications (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id),
+                title TEXT NOT NULL,
+                message TEXT NOT NULL,
+                type TEXT NOT NULL,
+                is_read BOOLEAN DEFAULT false,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            
             CREATE TABLE IF NOT EXISTS order_items (
                 id SERIAL PRIMARY KEY,
                 order_id INTEGER REFERENCES orders(id),
@@ -875,6 +885,12 @@ async function approveOrderSecure(orderId, paymentId) {
                     [userId, depositAmount, 'deposit', `Depósito do Pedido #${orderId}`]
                 );
                 
+                // Registra a notificação do depósito
+                await client.query(
+                    'INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)',
+                    [userId, 'Depósito Aprovado!', `R$ ${depositAmount.toFixed(2).replace('.', ',')} adicionados à sua carteira.`, 'success']
+                );
+                
                 console.log(`[APPROVE-SECURE] Depósito do Pedido ${orderId} creditado com sucesso para usuário ${userId}. Valor: R$ ${depositAmount}`);
                 
                 // Envia e-mail de confirmação do depósito
@@ -920,6 +936,12 @@ async function approveOrderSecure(orderId, paymentId) {
                     }
                 }
             }
+            
+            // Registra a notificação da compra
+            await client.query(
+                'INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)',
+                [order.user_id, 'Compra Aprovada!', `Seu pedido #${orderId} foi aprovado. Chave de ativação liberada.`, 'success']
+            );
             
             // Envia e-mail de confirmação da compra aprovada contendo as chaves (Keys) reveladas!
             const emailRes = await client.query('SELECT email FROM users WHERE id = $1', [order.user_id]);
@@ -1089,6 +1111,17 @@ app.post('/api/admin/orders/:id/chat', requireAdmin, async (req, res) => {
     const { message } = req.body;
     try {
         await pool.query('INSERT INTO order_chats (order_id, sender_type, message) VALUES ($1, $2, $3)', [req.params.id, 'admin', message]);
+        
+        // Envia notificação para o usuário dono do pedido
+        const orderRes = await pool.query('SELECT user_id FROM orders WHERE id = $1', [req.params.id]);
+        if (orderRes.rows.length > 0) {
+            const userId = orderRes.rows[0].user_id;
+            await pool.query(
+                'INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)',
+                [userId, 'Nova Mensagem do Suporte', `Você recebeu uma nova mensagem sobre o pedido #${req.params.id}.`, 'chat']
+            );
+        }
+        
         res.status(201).json({ message: 'Enviado' });
     } catch(e) {
         res.status(500).json({ error: 'Erro ao enviar mensagem' });
@@ -1441,9 +1474,69 @@ app.post('/api/admin/support/:userId', requireAdmin, async (req, res) => {
     if(!message) return res.status(400).json({ error: 'Mensagem vazia' });
     try {
         await pool.query('INSERT INTO support_chats (user_id, sender_type, message) VALUES ($1, $2, $3)', [userId, 'admin', message]);
+        
+        // Envia notificação para o usuário
+        await pool.query(
+            'INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)',
+            [userId, 'Nova Resposta de Suporte', 'Você recebeu uma resposta da nossa equipe de suporte técnico.', 'chat']
+        );
+        
         res.status(201).json({ success: true });
     } catch(e) {
         res.status(500).json({ error: 'Erro ao enviar mensagem' });
+    }
+});
+
+// ========================
+// NOTIFICAÇÕES ENDPOINTS
+// ========================
+
+// Buscar notificações do usuário
+app.get('/api/notifications', requireAuth, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM notifications WHERE user_id = $1 ORDER BY id DESC LIMIT 30',
+            [req.session.userId]
+        );
+        res.json(result.rows);
+    } catch (e) {
+        console.error("[NOTIFICATIONS] Erro ao buscar:", e);
+        res.status(500).json({ error: 'Erro ao buscar notificações' });
+    }
+});
+
+// Buscar quantidade de não lidas
+app.get('/api/notifications/unread-count', requireAuth, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND is_read = false',
+            [req.session.userId]
+        );
+        res.json({ unread_count: parseInt(result.rows[0].count) });
+    } catch (e) {
+        res.status(500).json({ error: 'Erro' });
+    }
+});
+
+// Marcar como lida(s)
+app.post('/api/notifications/read', requireAuth, async (req, res) => {
+    const { id } = req.body;
+    try {
+        if (id) {
+            await pool.query(
+                'UPDATE notifications SET is_read = true WHERE id = $1 AND user_id = $2',
+                [parseInt(id), req.session.userId]
+            );
+        } else {
+            await pool.query(
+                'UPDATE notifications SET is_read = true WHERE user_id = $1',
+                [req.session.userId]
+            );
+        }
+        res.json({ success: true });
+    } catch (e) {
+        console.error("[NOTIFICATIONS] Erro ao marcar como lida:", e);
+        res.status(500).json({ error: 'Erro ao marcar como lida' });
     }
 });
 
