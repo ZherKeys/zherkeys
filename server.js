@@ -61,6 +61,9 @@ async function initDB() {
             );
             
             ALTER TABLE products ADD COLUMN IF NOT EXISTS activation_key TEXT;
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS in_stock BOOLEAN DEFAULT true;
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS is_global BOOLEAN DEFAULT true;
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS restricted_countries TEXT;
             
             CREATE TABLE IF NOT EXISTS order_items (
                 id SERIAL PRIMARY KEY,
@@ -200,7 +203,7 @@ const requireAdmin = async (req, res, next) => {
 // Listar produtos (Público - NÃO EXPÕE A CHAVE)
 app.get('/api/products', async (req, res) => {
     try {
-        const result = await pool.query('SELECT id, title, description, price, image, category FROM products ORDER BY id ASC');
+        const result = await pool.query('SELECT id, title, description, price, image, category, in_stock, is_global, restricted_countries FROM products ORDER BY id ASC');
         res.json(result.rows);
     } catch(e) {
         res.status(500).json({ error: 'Erro ao buscar produtos' });
@@ -219,11 +222,11 @@ app.get('/api/admin/products', requireAdmin, async (req, res) => {
 
 // Criar produto (Admin)
 app.post('/api/admin/products', requireAdmin, async (req, res) => {
-    const { title, description, price, image, category, activation_key } = req.body;
+    const { title, description, price, image, category, activation_key, is_global, restricted_countries } = req.body;
     try {
         await pool.query(
-            'INSERT INTO products (title, description, price, image, category, activation_key) VALUES ($1, $2, $3, $4, $5, $6)',
-            [title, description, parseFloat(price), image, category, activation_key || '']
+            'INSERT INTO products (title, description, price, image, category, activation_key, is_global, restricted_countries) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+            [title, description, parseFloat(price), image, category, activation_key || '', is_global === false ? false : true, restricted_countries || '']
         );
         res.status(201).json({ message: 'Produto adicionado' });
     } catch(e) {
@@ -234,13 +237,13 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
 // Editar produto (Admin)
 app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
-    const { title, description, price, image, category, activation_key } = req.body;
+    const { title, description, price, image, category, activation_key, is_global, restricted_countries } = req.body;
     try {
         await pool.query(
-            'UPDATE products SET title=$1, description=$2, price=$3, image=$4, category=$5, activation_key=$6 WHERE id=$7',
-            [title, description, parseFloat(price), image, category, activation_key || '', id]
+            'UPDATE products SET title=$1, description=$2, price=$3, image=$4, category=$5, activation_key=$6, in_stock=true, is_global=$7, restricted_countries=$8 WHERE id=$9',
+            [title, description, parseFloat(price), image, category, activation_key || '', is_global === false ? false : true, restricted_countries || '', id]
         );
-        res.json({ message: 'Produto atualizado' });
+        res.json({ message: 'Produto atualizado e retornado ao estoque' });
     } catch(e) {
         res.status(500).json({ error: 'Erro ao atualizar' });
     }
@@ -355,6 +358,14 @@ app.post('/webhook', async (req, res) => {
                         [status, paymentId.toString(), parseInt(orderId)]
                     );
                     console.log(`[WEBHOOK] Pedido ${orderId} atualizado para: ${status}`);
+                    
+                    if (status === 'approved') {
+                        const items = await pool.query('SELECT product_id FROM order_items WHERE order_id = $1', [parseInt(orderId)]);
+                        const pIds = items.rows.map(r => r.product_id);
+                        if (pIds.length > 0) {
+                            await pool.query('UPDATE products SET in_stock = false WHERE id = ANY($1::int[])', [pIds]);
+                        }
+                    }
                 }
             } catch(e) {
                 console.error('Erro no webhook de pagamento:', e);
@@ -456,9 +467,27 @@ app.post('/api/admin/orders/:id/chat', requireAdmin, async (req, res) => {
 app.put('/api/admin/orders/:id/approve', requireAdmin, async (req, res) => {
     try {
         await pool.query('UPDATE orders SET status = $1 WHERE id = $2', ['approved', req.params.id]);
+        
+        const items = await pool.query('SELECT product_id FROM order_items WHERE order_id = $1', [req.params.id]);
+        const pIds = items.rows.map(r => r.product_id);
+        if (pIds.length > 0) {
+            await pool.query('UPDATE products SET in_stock = false WHERE id = ANY($1::int[])', [pIds]);
+        }
+        
         res.json({ message: 'Pedido aprovado manualmente' });
     } catch(e) {
         res.status(500).json({ error: 'Erro ao aprovar' });
+    }
+});
+
+app.delete('/api/admin/orders/:id', requireAdmin, async (req, res) => {
+    try {
+        await pool.query('DELETE FROM order_chats WHERE order_id = $1', [req.params.id]);
+        await pool.query('DELETE FROM order_items WHERE order_id = $1', [req.params.id]);
+        await pool.query('DELETE FROM orders WHERE id = $1', [req.params.id]);
+        res.json({ message: 'Pedido excluído' });
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao excluir pedido' });
     }
 });
 
@@ -467,16 +496,16 @@ app.put('/api/admin/orders/:id/approve', requireAdmin, async (req, res) => {
 // FRONTEND ROUTES & AUTH
 // ========================
 
-app.get('/', requireAuth, (req, res) => {
+app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-app.get('/index.html', requireAuth, (req, res) => {
+app.get('/index.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 app.get('/account.html', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'account.html'));
 });
-app.get('/carrinho.html', requireAuth, (req, res) => {
+app.get('/carrinho.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'carrinho.html'));
 });
 

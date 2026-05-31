@@ -436,6 +436,7 @@
             <div class="p-6 sm:p-8 -mt-20 relative z-10">
                 <span id="modal-category" class="bg-electricblue/20 border border-electricblue/30 text-electricblue font-orbitron text-[10px] tracking-widest px-3 py-1 rounded-full uppercase font-bold backdrop-blur-md">STEAM KEY</span>
                 <h3 id="modal-title" class="font-orbitron font-black text-2xl sm:text-3xl text-white mt-4 mb-2 uppercase">Nome do Jogo</h3>
+                <div id="modal-region-warning" class="hidden mb-4 p-3 bg-rose-950/40 border border-rose-900/50 rounded-lg text-rose-400 text-[10px] sm:text-xs font-orbitron tracking-widest flex items-center gap-2"></div>
                 <div class="flex items-end gap-3 mb-6">
                     <span id="modal-price" class="font-orbitron font-bold text-3xl text-cyberrose">R$ 0,00</span>
                 </div>
@@ -444,7 +445,7 @@
                     Descrição do jogo aqui...
                 </p>
                 
-                <div class="flex flex-col sm:flex-row gap-4 mt-6">
+                <div id="modal-actions" class="flex flex-col sm:flex-row gap-4 mt-6">
                     <button onclick="addAndShowCart(null, currentProduct.id)" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl transition-all duration-300 uppercase flex items-center justify-center gap-2 border border-slate-700 hover:border-slate-500">
                         <i data-lucide="shopping-cart" class="w-5 h-5"></i> ADICIONAR
                     </button>
@@ -629,21 +630,33 @@
             grid.innerHTML = '';
             
             produtos.forEach((p, index) => {
-                const precoFormatado = 'R$ ' + parseFloat(p.price).toFixed(2).replace('.', ',');
+                const precoFormatado = p.in_stock === false ? 
+                    '<span class="text-rose-500 text-[10px] font-bold bg-rose-900/30 px-2 py-1 border border-rose-900/50 rounded tracking-widest">ESGOTADO</span>' : 
+                    '<span class="font-orbitron font-black text-xl text-cyberrose">R$ ' + parseFloat(p.price).toFixed(2).replace('.', ',') + '</span>';
+                
+                const cartBtn = p.in_stock === false ? '' : `
+                    <button onclick="addAndShowCart(event, ${p.id})" class="w-8 h-8 rounded bg-electricblue/10 flex items-center justify-center text-electricblue hover:bg-electricblue hover:text-white transition-colors shadow-cyber z-10 relative">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                    </button>
+                `;
+
+                const regionIcon = p.is_global === false ? 
+                    '<div class="flex items-center gap-1 text-[10px] text-slate-400 font-orbitron tracking-widest mt-1 mb-2" title="Restrita a alguns países"><div class="relative"><i data-lucide="globe" class="w-4 h-4 text-white opacity-50"></i><i data-lucide="lock" class="w-2.5 h-2.5 text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 drop-shadow-md"></i></div> RESTRITA</div>' : 
+                    '<div class="flex items-center gap-1 text-[10px] text-slate-400 font-orbitron tracking-widest mt-1 mb-2"><i data-lucide="globe" class="w-4 h-4 text-white opacity-80"></i> GLOBAL</div>';
+
                 grid.innerHTML += `
                     <div class="advantage-card bg-slate-950/80 border border-slate-800/80 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all duration-300 cursor-pointer flex flex-col h-full" onclick="openModal(${p.id})">
                         <div class="h-48 w-full overflow-hidden relative">
-                            <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
+                            <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ${p.in_stock === false ? 'grayscale opacity-50' : ''}">
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 to-transparent"></div>
                             <span class="absolute top-3 right-3 bg-slate-900/80 border border-slate-700 text-slate-300 font-orbitron text-[9px] tracking-widest px-2 py-1 rounded backdrop-blur-md uppercase">${p.category}</span>
                         </div>
                         <div class="p-6 flex flex-col flex-grow">
-                            <h4 class="font-orbitron font-bold text-lg text-white mb-2 uppercase tracking-wide leading-tight">${p.title}</h4>
+                            <h4 class="font-orbitron font-bold text-lg text-white uppercase tracking-wide leading-tight ${p.in_stock === false ? 'text-slate-500' : ''}">${p.title}</h4>
+                            ${regionIcon}
                             <div class="mt-auto flex items-center justify-between pt-4">
-                                <span class="font-orbitron font-black text-xl text-cyberrose">${precoFormatado}</span>
-                                <button onclick="addAndShowCart(event, ${p.id})" class="w-8 h-8 rounded bg-electricblue/10 flex items-center justify-center text-electricblue hover:bg-electricblue hover:text-white transition-colors shadow-cyber z-10 relative">
-                                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-                                </button>
+                                ${precoFormatado}
+                                ${cartBtn}
                             </div>
                         </div>
                         <div class="absolute bottom-0 left-0 h-[2px] w-0 bg-electricblue transition-all duration-300 group-hover:w-full"></div>
@@ -680,8 +693,31 @@
             
             document.getElementById('modal-image').src = currentProduct.image;
             document.getElementById('modal-title').innerText = currentProduct.title;
-            document.getElementById('modal-price').innerText = 'R$ ' + parseFloat(currentProduct.price).toFixed(2).replace('.', ',');
+            
+            const warningEl = document.getElementById('modal-region-warning');
+            if (currentProduct.is_global === false) {
+                warningEl.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500"></i> ATIVAÇÃO RESTRITA: Válido apenas para ${currentProduct.restricted_countries || 'alguns países especificados'}.`;
+                warningEl.classList.remove('hidden');
+            } else {
+                warningEl.classList.add('hidden');
+            }
+
+            document.getElementById('modal-price').innerText = currentProduct.in_stock === false ? 'ESGOTADO' : 'R$ ' + parseFloat(currentProduct.price).toFixed(2).replace('.', ',');
             document.getElementById('modal-description').innerText = currentProduct.description;
+            
+            const actions = document.getElementById('modal-actions');
+            if (currentProduct.in_stock === false) {
+                actions.innerHTML = '<div class="w-full text-center py-4 bg-slate-800/50 rounded-xl text-slate-500 font-orbitron text-xs tracking-widest font-bold border border-slate-800">PRODUTO INDISPONÍVEL NO MOMENTO</div>';
+            } else {
+                actions.innerHTML = `
+                    <button onclick="addAndShowCart(null, currentProduct.id)" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl transition-all duration-300 uppercase flex items-center justify-center gap-2 border border-slate-700 hover:border-slate-500">
+                        <i data-lucide="shopping-cart" class="w-5 h-5"></i> ADICIONAR
+                    </button>
+                    <button onclick="comprarProduto()" class="w-full bg-gradient-to-r from-electricblue to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl shadow-cyber transition-all duration-300 uppercase flex items-center justify-center gap-2">
+                        <i data-lucide="zap" class="w-5 h-5"></i> COMPRAR AGORA
+                    </button>
+                `;
+            }
             
             modal.classList.remove('hidden');
             // Allow display:flex to apply before animating opacity
@@ -731,9 +767,14 @@
             
             const product = produtos.find(p => p.id === id);
             if(product) {
-                cart.push(product);
-                localStorage.setItem('zher_cart', JSON.stringify(cart));
-                updateCartBadge();
+                const alreadyInCart = cart.find(item => item.id === id);
+                if (alreadyInCart) {
+                    alert("⚠️ Você já adicionou esta chave ao carrinho! Só é possível comprar uma unidade de cada jogo por vez para garantir as keys.");
+                } else {
+                    cart.push(product);
+                    localStorage.setItem('zher_cart', JSON.stringify(cart));
+                    updateCartBadge();
+                }
                 renderMiniCart();
                 openMiniCart();
             }
