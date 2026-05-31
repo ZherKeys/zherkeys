@@ -20,14 +20,13 @@
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #020617; }
         .mesh-bg {
-            background-color: #020617;
+            background-color: transparent;
             background-image: 
-                radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.4) 0px, transparent 50%),
-                radial-gradient(at 90% 10%, rgba(244, 63, 94, 0.4) 0px, transparent 50%),
+                radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.2) 0px, transparent 50%),
+                radial-gradient(at 90% 10%, rgba(244, 63, 94, 0.2) 0px, transparent 50%),
                 url('loginbackground.png');
             background-size: cover;
             background-position: center;
-            background-blend-mode: overlay;
         }
     </style>
 </head>
@@ -281,6 +280,12 @@
             document.getElementById('tab-register').classList.remove('border-b-2', 'border-cyberrose', 'text-white');
             document.getElementById('tab-register').classList.add('text-slate-500');
             document.getElementById('alert-box').classList.add('hidden');
+        }
+        // Clear cart on logout
+        if (window.location.search.includes('logout=1')) {
+            localStorage.removeItem('zher_cart');
+            // Remove from URL so it doesn't keep triggering
+            window.history.replaceState({}, document.title, "/login.html");
         }
     </script>
 </body>
