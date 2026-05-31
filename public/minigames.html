@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zher Play - Jogue e Ganhe | ZHER KEYS</title>
+    <link rel="canonical" href="https://zherkeys.com/minigames.html" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="tailwind.js"></script>
+    <script src="https://unpkg.com/lucide@0.469.0"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        obsidian: '#020617',
+                        electricblue: '#3B82F6',
+                        cyberrose: '#F43F5E',
+                        toxicgreen: '#10B981'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        orbitron: ['Orbitron', 'sans-serif']
+                    },
+                    boxShadow: {
+                        cyber: '0 0 15px rgba(59, 130, 246, 0.4)',
+                        rose: '0 0 15px rgba(244, 63, 94, 0.4)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #020617; }
+        .mesh-bg {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.18) 0px, transparent 50%),
+                radial-gradient(at 90% 10%, rgba(244, 63, 94, 0.15) 0px, transparent 50%);
+        }
+        canvas {
+            image-rendering: pixelated;
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="text-slate-200 antialiased mesh-bg min-h-screen flex flex-col">
+
+    <!-- NAVBAR -->
+    <nav class="border-b border-slate-800 bg-obsidian/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-3 group">
+                <img src="logo.png" alt="Zher Keys Logo" class="w-10 h-10 object-contain rounded-lg shadow-lg shadow-cyberrose/20 group-hover:shadow-electricblue/40 border border-slate-700/50 bg-slate-950/40 p-1 group-hover:scale-105 transition-transform duration-300">
+                <div>
+                    <h1 class="font-orbitron font-black text-xl tracking-widest text-white uppercase">ZHER KEYS</h1>
+                </div>
+            </a>
+            
+            <div class="flex items-center gap-6">
+                <!-- Saldo Live -->
+                <div class="flex items-center gap-2 bg-slate-900 border border-slate-850 px-4 py-2 rounded-xl">
+                    <i data-lucide="wallet" class="w-4 h-4 text-emerald-400"></i>
+                    <span class="text-xs font-orbitron text-slate-400 uppercase tracking-widest">SALDO:</span>
+                    <span id="nav-balance" class="text-xs font-orbitron font-bold text-emerald-400">Carregando...</span>
+                </div>
+                <a href="/account.html" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-500 text-white font-orbitron text-[10px] tracking-widest font-bold rounded-xl transition-all uppercase flex items-center gap-2">
+                    MINHA CONTA <i data-lucide="user" class="w-4 h-4"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN BODY -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-6 py-10 flex flex-col lg:grid lg:grid-cols-4 gap-8">
+        
+        <!-- SIDEBAR DE ANÚNCIOS ESQUERDA -->
+        <div class="lg:col-span-1 flex flex-col gap-6">
+            <!-- Informações / Regras do Play-to-Earn -->
+            <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-5">
+                <h3 class="font-orbitron font-bold text-white text-xs tracking-widest uppercase mb-4 flex items-center gap-2 text-electricblue">
+                    <i data-lucide="info" class="w-4 h-4"></i> COMO FUNCIONA?
+                </h3>
+                <ul class="space-y-3 text-xs text-slate-400 leading-relaxed font-inter">
+                    <li class="flex gap-2">
+                        <i data-lucide="play" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+                        <span>Jogue o minigame **Zher Hacker** e colete o máximo de chaves digitais e moedas de ouro que puder.</span>
+                    </li>
+                    <li class="flex gap-2">
+                        <i data-lucide="tv" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+                        <span>No fim de cada partida, assista a um rápido anúncio patrocinado de 15s para **multiplicar seus lucros em 5x**!</span>
+                    </li>
+                    <li class="flex gap-2">
+                        <i data-lucide="coins" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+                        <span>O saldo é depositado **diretamente na sua carteira** do site e você pode usar para comprar qualquer Key de graça!</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- ANÚNCIO DE SIDEBAR PATROCINADO (BANNER 1) -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col items-center text-center relative overflow-hidden group">
+                <div class="absolute top-1 right-2 bg-slate-800 text-[8px] text-slate-500 font-bold px-1.5 py-0.5 rounded tracking-widest uppercase">Patrocinado</div>
+                <span class="text-[10px] text-slate-500 font-orbitron tracking-widest uppercase mb-2 mt-2">Espaço Publicitário</span>
+                
+                <!-- Mock Banner Ad -->
+                <div class="w-full bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700/80 rounded-xl p-4 flex flex-col items-center gap-3 transition-colors cursor-pointer" onclick="window.open('https://zherkeys.com')">
+                    <div class="w-12 h-12 rounded bg-gradient-to-tr from-cyberrose to-orange-500 flex items-center justify-center text-white font-orbitron font-bold">Z</div>
+                    <span class="font-orbitron font-bold text-white text-xs tracking-wider uppercase">ZHER KEYS STORE</span>
+                    <p class="text-[10px] text-slate-400">Quer economizar? Compre jogos premium com até 90% de desconto e ativação global instantânea!</p>
+                    <span class="text-[9px] text-electricblue font-bold tracking-widest hover:underline uppercase">Comprar Agora &raquo;</span>
+                </div>
+                
+                <!-- Dica para o Admin -->
+                <p class="text-[9px] text-slate-600 mt-4 leading-normal italic">Adsterra Banner Placeholder (300x250 ou 160x600). Substitua pelo script de sua rede de anúncios no código de minigames.html.</p>
+            </div>
+        </div>
+
+        <!-- ESPAÇO CENTRAL DO JOGO -->
+        <div class="lg:col-span-2 flex flex-col gap-6">
+            
+            <!-- Painel de Status do Minigame -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex flex-col">
+                    <span class="text-[9px] text-slate-500 font-orbitron tracking-widest uppercase mb-1">LIMITE DIÁRIO PLAY-TO-EARN</span>
+                    <span id="daily-limit-display" class="text-white font-orbitron font-bold text-base text-toxicgreen">R$ 2,00 restantes</span>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex flex-col">
+                    <span class="text-[9px] text-slate-500 font-orbitron tracking-widest uppercase mb-1">PONTOS NESTA SESSÃO</span>
+                    <span id="session-score-display" class="text-white font-orbitron font-bold text-base text-electricblue">0 Pts</span>
+                </div>
+            </div>
+
+            <!-- VIEWPORT DO JOGO -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden relative shadow-cyber flex flex-col items-center">
+                <!-- Tela do Jogo Canvas -->
+                <canvas id="gameCanvas" class="w-full bg-[#050811]" width="500" height="500"></canvas>
+
+                <!-- Barra de Instruções -->
+                <div class="w-full bg-slate-900/80 border-t border-slate-800 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs">
+                    <span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="keyboard" class="w-4 h-4 text-electricblue"></i> Use as setas <b class="text-white">&larr; &rarr;</b> ou clique e arraste para mover o Hacker</span>
+                    <span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos = <b class="text-white">R$ 0,05</b> (com Multi-Boost)</span>
+                </div>
+            </div>
+            
+            <!-- ANÚNCIO INFERIOR HORIZONTAL (BANNER 2) -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col items-center relative overflow-hidden">
+                <div class="absolute top-1 right-2 bg-slate-800 text-[8px] text-slate-500 font-bold px-1.5 py-0.5 rounded tracking-widest uppercase">Patrocínio Global</div>
+                <span class="text-[10px] text-slate-500 font-orbitron tracking-widest uppercase mb-3">Banner Horizontal</span>
+                
+                <!-- Mock Leaderboard Ad -->
+                <div class="w-full bg-slate-900/50 hover:bg-slate-850 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-4 cursor-pointer" onclick="window.open('https://gameflip.com')">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-9 h-9 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-orbitron font-black text-sm flex-shrink-0">G</div>
+                        <div class="min-w-0">
+                            <span class="font-orbitron font-bold text-white text-xs block truncate uppercase">GAMEFLIP PARTNERS</span>
+                            <span class="text-[10px] text-slate-400 block truncate">Venda suas keys não utilizadas no maior mercado do mundo automaticamente.</span>
+                        </div>
+                    </div>
+                    <span class="text-[9px] text-toxicgreen font-bold tracking-widest uppercase flex-shrink-0 border border-toxicgreen/30 px-3 py-1.5 rounded bg-toxicgreen/5">Visitar &raquo;</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SIDEBAR DE ANÚNCIOS DIREITA -->
+        <div class="lg:col-span-1 flex flex-col gap-6">
+            <!-- Estatísticas e Ranking Local -->
+            <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-5">
+                <h3 class="font-orbitron font-bold text-white text-xs tracking-widest uppercase mb-4 flex items-center gap-2 text-cyberrose">
+                    <i data-lucide="zap" class="w-4 h-4"></i> CYBER RANKING
+                </h3>
+                <div class="space-y-3 font-orbitron text-xs">
+                    <div class="flex justify-between items-center border-b border-slate-800/60 pb-2">
+                        <span class="text-slate-200 flex items-center gap-2">🥇 <span class="text-white">NeoHacker</span></span>
+                        <span class="text-cyberrose">R$ 14,80</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-800/60 pb-2">
+                        <span class="text-slate-300 flex items-center gap-2">🥈 <span class="text-slate-200">CyberGamer</span></span>
+                        <span class="text-cyberrose">R$ 12,45</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-800/60 pb-2">
+                        <span class="text-slate-400 flex items-center gap-2">🥉 <span class="text-slate-300">KeyHunter</span></span>
+                        <span class="text-cyberrose">R$ 9,15</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-1 text-[10px] text-slate-500 font-inter">
+                        <span>Você está na 12ª posição</span>
+                        <a href="#" class="text-electricblue hover:underline">Ver tudo</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANÚNCIO DE SIDEBAR PATROCINADO (BANNER 3) -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col items-center text-center relative overflow-hidden group">
+                <div class="absolute top-1 right-2 bg-slate-800 text-[8px] text-slate-500 font-bold px-1.5 py-0.5 rounded tracking-widest uppercase">Patrocinado</div>
+                <span class="text-[10px] text-slate-500 font-orbitron tracking-widest uppercase mb-2 mt-2">Parceiro Oficial</span>
+                
+                <!-- Mock Banner Ad 2 -->
+                <div class="w-full bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700/80 rounded-xl p-4 flex flex-col items-center gap-3 transition-colors cursor-pointer" onclick="window.open('https://brevo.com')">
+                    <div class="w-12 h-12 rounded bg-gradient-to-tr from-electricblue to-toxicgreen flex items-center justify-center text-white font-orbitron font-bold">B</div>
+                    <span class="font-orbitron font-bold text-white text-xs tracking-wider uppercase">BREVO MAILING</span>
+                    <p class="text-[10px] text-slate-400 font-inter">Excelente entrega de e-mails transacionais e de marketing com ativação instantânea.</p>
+                    <span class="text-[9px] text-toxicgreen font-bold tracking-widest hover:underline uppercase">Conhecer Agora &raquo;</span>
+                </div>
+                
+                <!-- Dica para o Admin -->
+                <p class="text-[9px] text-slate-600 mt-4 leading-normal italic">Adsterra Native Ad Placeholder. O tráfego de usuários jogando gera milhares de impressões para seus banners.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- FULLSCREEN REWARDED AD MODAL (SIMULAÇÃO DE ANÚNCIO DE VÍDEO COMPATÍVEL COM ADSTERRA/UNITY) -->
+    <div id="rewarded-ad-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-slate-950/98 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden p-8 flex flex-col items-center text-center">
+            
+            <!-- Header do Anúncio -->
+            <div class="w-full flex justify-between items-center mb-6 pb-4 border-b border-slate-800">
+                <span class="text-[10px] text-slate-500 font-orbitron tracking-widest uppercase">Patrocinado - Vídeo de Recompensa</span>
+                <!-- Cronômetro do Anúncio -->
+                <div id="ad-timer" class="bg-red-500/10 border border-red-500/30 px-3 py-1.5 rounded-lg text-red-400 font-orbitron font-bold text-xs tracking-widest flex items-center gap-1.5">
+                    <i data-lucide="clock" class="w-3.5 h-3.5 animate-pulse"></i> VÍDEO EXIBINDO: <span id="ad-countdown">15s</span>
+                </div>
+            </div>
+            
+            <!-- Corpo / Vídeo Patrocinado Simulated -->
+            <div class="w-full aspect-video bg-black rounded-xl overflow-hidden relative border border-slate-800 flex items-center justify-center mb-6 shadow-rose shadow-2xl/10" id="ad-player-container">
+                <!-- Conteúdo do Anúncio Simulado -->
+                <div class="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-900 to-slate-950 p-8 flex flex-col justify-center items-center gap-4">
+                    <div class="w-16 h-16 rounded-full bg-cyberrose/10 border border-cyberrose/20 text-cyberrose flex items-center justify-center animate-bounce">
+                        <i data-lucide="zap" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="font-orbitron font-black text-xl text-white tracking-widest uppercase">GTA VI - PRE-ORDER AGORA</h3>
+                    <p class="text-xs text-slate-400 max-w-md">O jogo mais aguardado da década já está com reservas abertas na ZHER KEYS! Compre antecipado e garanta brindes exclusivos de pré-venda.</p>
+                    <div class="flex items-center gap-2 text-toxicgreen font-orbitron text-[10px] tracking-widest font-bold uppercase mt-2">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i> PROVEDOR DE ANÚNCIOS ZHER P2E SECURE
+                    </div>
+                </div>
+                <!-- Barra de Progresso do Anúncio -->
+                <div class="absolute bottom-0 left-0 h-1 bg-cyberrose transition-all duration-100" id="ad-progress-bar" style="width: 0%;"></div>
+            </div>
+
+            <p class="text-xs text-slate-400 leading-relaxed max-w-lg mb-6">
+                Não feche esta tela! Assista ao anúncio completo para validar sua recompensa de <b class="text-toxicgreen font-orbitron" id="ad-reward-val">R$ 0,10</b> diretamente no seu saldo.
+            </p>
+
+            <!-- Botão de Fechar e Coletar Recompensa -->
+            <button id="ad-collect-btn" disabled class="w-full bg-slate-800 opacity-50 cursor-not-allowed text-slate-500 font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl transition-all uppercase flex items-center justify-center gap-2">
+                ASSISTINDO ANÚNCIO... <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- GAME OVER MODAL -->
+    <div id="game-over-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden p-8 text-center" id="game-over-content">
+            <h3 class="font-orbitron font-black text-2xl text-cyberrose mb-2">HACK EXPIRADO!</h3>
+            <p class="text-slate-400 font-inter text-sm mb-6">O sistema do servidor te detectou e derrubou o hack de chaves.</p>
+            
+            <div class="bg-slate-950 border border-slate-850 p-4 rounded-xl mb-6">
+                <span class="text-[9px] text-slate-500 font-orbitron tracking-widest uppercase block mb-1">SCORE OBTIDO</span>
+                <span id="final-score" class="text-white font-orbitron font-black text-3xl">0</span>
+                <span class="text-[9px] text-slate-500 font-orbitron tracking-widest uppercase block mt-3">RECOMPENSA BASE</span>
+                <span id="base-reward" class="text-slate-300 font-orbitron font-bold text-sm block">R$ 0,02</span>
+            </div>
+
+            <!-- Ações -->
+            <div class="space-y-3">
+                <button onclick="watchRewardedAdAndClaim()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-xs tracking-widest font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all uppercase flex items-center justify-center gap-2">
+                    ⚡ MULTI-BOOST 5X (ASSISTIR ANÚNCIO) <i data-lucide="zap" class="w-4.5 h-4.5 animate-bounce"></i>
+                </button>
+                <button onclick="claimBaseReward()" class="w-full bg-slate-850 hover:bg-slate-800 text-slate-300 font-orbitron text-xs tracking-widest font-bold py-3.5 rounded-xl border border-slate-700 hover:border-slate-500 transition-colors uppercase">
+                    Receber Apenas Recompensa Base (Sem Anúncio)
+                </button>
+                <button onclick="resetGame()" class="w-full bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-white font-orbitron text-[10px] tracking-widest py-2 rounded-xl transition-all uppercase">
+                    Tentar Novamente (Sem Sacar)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-900 bg-obsidian py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-6 text-center text-slate-600 text-xs font-orbitron tracking-widest">
+            <p>&copy; 2026 ZHER KEYS - PLATAFORMA DE MINIGAMES AUTO-SUSTENTÁVEL</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT DO MINIGAME E COMPATIBILIDADE DE ANÚNCIOS -->
+    <script>
+        let userBalance = 0;
+        let dailyLimitBRL = 2.00;
+        let sessionPoints = 0;
+        let pointsToClaim = 0;
+
+        // --- FETCH USER LIVE BALANCE ---
+        async function fetchMe() {
+            try {
+                const res = await fetch('/api/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    userBalance = parseFloat(data.balance || 0);
+                    document.getElementById('nav-balance').innerText = formatPrice(userBalance);
+                } else {
+                    document.getElementById('nav-balance').innerText = 'Fazer Login';
+                }
+            } catch(e) {
+                document.getElementById('nav-balance').innerText = 'Offline';
+            }
+        }
+
+        function formatPrice(val) {
+            return `R$ ${parseFloat(val).toFixed(2).replace('.', ',')}`;
+        }
+
+        // --- AUDIO / SOUND EFFECTS SIMULATION (Synth) ---
+        const synth = {
+            ctx: null,
+            init() {
+                if(!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            },
+            play(freq, type, duration) {
+                try {
+                    this.init();
+                    if(!this.ctx) return;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type || 'sine';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e) {}
+            },
+            point() { this.play(800, 'sine', 0.1); },
+            bonus() { this.play(1200, 'triangle', 0.15); },
+            hurt() { this.play(150, 'sawtooth', 0.3); },
+            gameover() { this.play(100, 'square', 0.5); }
+        };
+
+        // ==========================================
+        // CANVAS GAME: ZHER HACKER (CYBER CATCHER)
+        // ==========================================
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let gameActive = false;
+        let score = 0;
+        
+        // Entidades
+        const player = {
+            x: 220,
+            y: 430,
+            width: 60,
+            height: 25,
+            speed: 8,
+            color: '#3B82F6',
+            targetX: 220
+        };
+
+        let items = [];
+        let particles = [];
+        let keyImage = null;
+
+        // Movimento do Player (Teclado)
+        let keysPressed = {};
+        window.addEventListener('keydown', (e) => {
+            keysPressed[e.code] = true;
+            if(e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
+                e.preventDefault();
+            }
+        });
+        window.addEventListener('keyup', (e) => { keysPressed[e.code] = false; });
+
+        // Movimento do Player (Mouse / Touch)
+        function updatePlayerX(clientX) {
+            const rect = canvas.getBoundingClientRect();
+            const relativeX = (clientX - rect.left) * (canvas.width / rect.width);
+            player.targetX = Math.max(0, Math.min(canvas.width - player.width, relativeX - player.width/2));
+        }
+
+        canvas.addEventListener('mousemove', (e) => {
+            if(!gameActive) return;
+            updatePlayerX(e.clientX);
+        });
+        canvas.addEventListener('touchmove', (e) => {
+            if(!gameActive) return;
+            e.preventDefault();
+            if(e.touches.length > 0) {
+                updatePlayerX(e.touches[0].clientX);
+            }
+        }, { passive: false });
+
+        // Inicia o Canvas
+        function drawStartScreen() {
+            ctx.fillStyle = '#050811';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Grid de fundo cyberpunk
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.05)';
+            ctx.lineWidth = 1;
+            for(let x=0; x<canvas.width; x+=30) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            for(let y=0; y<canvas.height; y+=30) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+
+            ctx.fillStyle = '#F43F5E';
+            ctx.font = '900 32px Orbitron';
+            ctx.textAlign = 'center';
+            ctx.shadowColor = '#F43F5E';
+            ctx.shadowBlur = 15;
+            ctx.fillText('ZHER HACKER', canvas.width / 2, 180);
+            
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#94A3B8';
+            ctx.font = '500 12px Orbitron';
+            ctx.fillText('HACKEIE AS CHAVES PATROCINADAS E SAQUE SALDO', canvas.width / 2, 220);
+
+            // Botão "START HACK"
+            ctx.fillStyle = '#10B981';
+            ctx.shadowColor = '#10B981';
+            ctx.shadowBlur = 20;
+            ctx.beginPath();
+            ctx.roundRect(canvas.width/2 - 90, 270, 180, 50, 10);
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#020617';
+            ctx.font = 'bold 13px Orbitron';
+            ctx.fillText('INICIAR HACK', canvas.width / 2, 301);
+        }
+
+        canvas.addEventListener('click', (e) => {
+            if(gameActive) return;
+            const rect = canvas.getBoundingClientRect();
+            const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+            
+            // Se clicou no botão iniciar hack
+            if(clickX >= canvas.width/2 - 90 && clickX <= canvas.width/2 + 90 &&
+               clickY >= 270 && clickY <= 320) {
+                startGame();
+            }
+        });
+
+        function startGame() {
+            synth.init();
+            gameActive = true;
+            score = 0;
+            items = [];
+            particles = [];
+            player.x = 220;
+            player.targetX = 220;
+            
+            // Loop do jogo
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Adiciona um item caindo
+        function spawnItem() {
+            if (Math.random() < 0.05) {
+                const types = [
+                    { type: 'key', color: '#3B82F6', size: 14, score: 10, speed: Math.random() * 2 + 3 },       // Chave convencional
+                    { type: 'gold', color: '#FBBF24', size: 12, score: 25, speed: Math.random() * 2 + 4 },      // Moeda de Ouro
+                    { type: 'virus', color: '#EF4444', size: 15, score: -20, speed: Math.random() * 3 + 3 }     // Vírus (perde vida/score)
+                ];
+                
+                // Distribuição ponderada
+                let rolled = types[0];
+                const rand = Math.random();
+                if (rand < 0.6) {
+                    rolled = types[0];
+                } else if (rand < 0.8) {
+                    rolled = types[1];
+                } else {
+                    rolled = types[2];
+                }
+
+                items.push({
+                    x: Math.random() * (canvas.width - 30) + 15,
+                    y: -20,
+                    ...rolled
+                });
+            }
+        }
+
+        // Spawn de Partículas
+        function spawnParticles(x, y, color) {
+            for(let i=0; i<8; i++) {
+                particles.push({
+                    x, y,
+                    vx: Math.random() * 4 - 2,
+                    vy: Math.random() * 4 - 2,
+                    size: Math.random() * 3 + 2,
+                    color,
+                    life: 20
+                });
+            }
+        }
+
+        // Loop Principal
+        function gameLoop() {
+            if(!gameActive) return;
+
+            // Limpa canvas
+            ctx.fillStyle = '#050811';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Grid Neon
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.03)';
+            for(let x=0; x<canvas.width; x+=30) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            for(let y=0; y<canvas.height; y+=30) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+
+            // Movimento do Player por teclado (Interpolação de teclado)
+            if(keysPressed['ArrowLeft']) {
+                player.targetX = Math.max(0, player.x - player.speed * 1.5);
+            }
+            if(keysPressed['ArrowRight']) {
+                player.targetX = Math.min(canvas.width - player.width, player.x + player.speed * 1.5);
+            }
+
+            // Suaviza a movimentação do player
+            player.x += (player.targetX - player.x) * 0.25;
+
+            // Desenha o Player (Hacker Deck)
+            ctx.fillStyle = player.color;
+            ctx.strokeStyle = '#60A5FA';
+            ctx.lineWidth = 2;
+            ctx.shadowColor = '#3B82F6';
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.roundRect(player.x, player.y, player.width, player.height, 6);
+            ctx.fill();
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Spawn de Itens caindo
+            spawnItem();
+
+            // Atualiza e desenha itens caindo
+            for(let i = items.length - 1; i >= 0; i--) {
+                const item = items[i];
+                item.y += item.speed;
+
+                // Colisão com o Player
+                if (item.y + item.size >= player.y &&
+                    item.y <= player.y + player.height &&
+                    item.x + item.size >= player.x &&
+                    item.x <= player.x + player.width) {
+                    
+                    // Colidiu!
+                    score += item.score;
+                    if(score < 0) score = 0;
+                    
+                    spawnParticles(item.x + item.size/2, item.y + item.size/2, item.color);
+                    
+                    if(item.type === 'key') synth.point();
+                    else if(item.type === 'gold') synth.bonus();
+                    else {
+                        synth.hurt();
+                        // Se atingiu o vírus, o jogo acaba (Game Over clássico!)
+                        endGame();
+                        return;
+                    }
+
+                    items.splice(i, 1);
+                    continue;
+                }
+
+                // Passou da tela (perdeu ponto se for chave)
+                if (item.y > canvas.height) {
+                    if (item.type === 'key') {
+                        // Não penaliza excessivamente para deixar divertido
+                    }
+                    items.splice(i, 1);
+                    continue;
+                }
+
+                // Desenha item
+                ctx.fillStyle = item.color;
+                ctx.shadowColor = item.color;
+                ctx.shadowBlur = 8;
+                ctx.beginPath();
+                
+                if (item.type === 'key') {
+                    // Desenha formato simples de chave
+                    ctx.arc(item.x, item.y, item.size/2, 0, Math.PI * 2);
+                    ctx.rect(item.x - 2, item.y + 2, 4, item.size);
+                } else if (item.type === 'gold') {
+                    // Círculo perfeito
+                    ctx.arc(item.x, item.y, item.size/2, 0, Math.PI * 2);
+                } else {
+                    // Vírus (Triângulo de aviso)
+                    ctx.moveTo(item.x, item.y - item.size/2);
+                    ctx.lineTo(item.x - item.size/2, item.y + item.size/2);
+                    ctx.lineTo(item.x + item.size/2, item.y + item.size/2);
+                }
+                
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            // Atualiza e desenha partículas
+            for(let p = particles.length - 1; p >= 0; p--) {
+                const part = particles[p];
+                part.x += part.vx;
+                part.y += part.vy;
+                part.life--;
+                
+                if(part.life <= 0) {
+                    particles.splice(p, 1);
+                    continue;
+                }
+
+                ctx.fillStyle = part.color;
+                ctx.globalAlpha = part.life / 20;
+                ctx.fillRect(part.x, part.y, part.size, part.size);
+                ctx.globalAlpha = 1.0;
+            }
+
+            // Desenha Score do Topo do Canvas
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 15px Orbitron';
+            ctx.textAlign = 'left';
+            ctx.fillText(`SCORE: ${score}`, 20, 35);
+
+            // Atualiza painel do DOM principal
+            document.getElementById('session-score-display').innerText = `${score} Pts`;
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function endGame() {
+            gameActive = false;
+            synth.gameover();
+            pointsToClaim = score;
+            
+            // Limpa canvas com sobreposição cinza
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.85)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Mostra o Modal de Game Over
+            const modal = document.getElementById('game-over-modal');
+            const content = document.getElementById('game-over-content');
+            
+            // Recompensas calculadas
+            const valBase = score * 0.0001; // R$ 0,01 a cada 100 pontos
+            const valBoost = score * 0.0005; // R$ 0,05 a cada 100 pontos (com anúncio!)
+
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('base-reward').innerText = formatPrice(valBase);
+            document.getElementById('ad-reward-val').innerText = formatPrice(valBoost);
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
+
+        function resetGame() {
+            const modal = document.getElementById('game-over-modal');
+            const content = document.getElementById('game-over-content');
+            
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                startGame();
+            }, 300);
+        }
+
+        // ==========================================
+        // SISTEMA DE ANÚNCIOS PATROCINADOS DE SUPORTE
+        // ==========================================
+        function closeAdModal() {
+            const adModal = document.getElementById('rewarded-ad-modal');
+            adModal.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                adModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        function watchRewardedAdAndClaim() {
+            // Fecha modal de game over
+            const goModal = document.getElementById('game-over-modal');
+            goModal.classList.add('hidden');
+
+            const adModal = document.getElementById('rewarded-ad-modal');
+            adModal.classList.remove('hidden');
+            setTimeout(() => {
+                adModal.classList.remove('opacity-0', 'pointer-events-none');
+            }, 10);
+            
+            document.body.style.overflow = 'hidden';
+
+            // Inicia cronômetro do anúncio premiado (15 segundos)
+            let remaining = 15;
+            const textEl = document.getElementById('ad-countdown');
+            const progressEl = document.getElementById('ad-progress-bar');
+            const collectBtn = document.getElementById('ad-collect-btn');
+            
+            textEl.innerText = `${remaining}s`;
+            progressEl.style.width = '0%';
+            
+            collectBtn.disabled = true;
+            collectBtn.className = "w-full bg-slate-800 opacity-50 cursor-not-allowed text-slate-500 font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl transition-all uppercase flex items-center justify-center gap-2";
+            collectBtn.innerHTML = `ASSISTINDO ANÚNCIO... <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>`;
+            lucide.createIcons();
+
+            const step = 100 / remaining;
+            let elapsed = 0;
+
+            if(window.adInterval) clearInterval(window.adInterval);
+            window.adInterval = setInterval(() => {
+                remaining--;
+                elapsed++;
+                progressEl.style.width = `${elapsed * step}%`;
+                
+                if(remaining <= 0) {
+                    clearInterval(window.adInterval);
+                    progressEl.style.width = '100%';
+                    textEl.innerText = '0s';
+                    
+                    // Libera recompensa
+                    collectBtn.disabled = false;
+                    collectBtn.className = "w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl shadow-lg shadow-emerald-500/20 hover:scale-[1.02] transition-all cursor-pointer uppercase flex items-center justify-center gap-2";
+                    collectBtn.innerHTML = `CONCLUÍDO! RECEBER RECOMPENSA ⚡ <i data-lucide="award" class="w-5 h-5"></i>`;
+                    collectBtn.onclick = () => {
+                        closeAdModal();
+                        sendClaimToBackend(pointsToClaim, true);
+                    };
+                    lucide.createIcons();
+                } else {
+                    textEl.innerText = `${remaining}s`;
+                }
+            }, 1000);
+        }
+
+        // Reivindica recompensa base sem assistir anúncios
+        function claimBaseReward() {
+            const goModal = document.getElementById('game-over-modal');
+            goModal.classList.add('hidden');
+            sendClaimToBackend(pointsToClaim, false);
+        }
+
+        // Envia requisição segura ao servidor
+        async function sendClaimToBackend(scoreValue, watchedAd) {
+            try {
+                const response = await fetch('/api/minigames/claim', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ points: scoreValue, adWatched: watchedAd })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    alert(`🎉 Sucesso! Você recebeu ${formatPrice(data.reward)} na sua carteira de créditos!`);
+                    
+                    // Atualiza o saldo live
+                    userBalance = parseFloat(data.newBalance);
+                    document.getElementById('nav-balance').innerText = formatPrice(userBalance);
+                    
+                    // Recarrega informações do limite diário
+                    updateDailyLimitUI(data.dailyTotal);
+                } else {
+                    alert(`⚠️ Erro ao reivindicar: ${data.error || 'Erro desconhecido'}`);
+                }
+            } catch(e) {
+                alert('Erro de conexão ao salvar sua recompensa de jogo.');
+            }
+
+            // Reseta tela de jogo
+            drawStartScreen();
+        }
+
+        // Carrega limites de ganhos diários
+        async function loadDailyTotal() {
+            try {
+                const res = await fetch('/api/minigames/daily-total');
+                if (res.ok) {
+                    const data = await res.json();
+                    updateDailyLimitUI(parseFloat(data.dailyTotal || 0));
+                }
+            } catch(e) {}
+        }
+
+        function updateDailyLimitUI(dailyTotal) {
+            const remaining = Math.max(0, dailyLimitBRL - dailyTotal);
+            document.getElementById('daily-limit-display').innerText = `${formatPrice(remaining)} restantes hoje`;
+            if (remaining <= 0) {
+                document.getElementById('daily-limit-display').className = "text-white font-orbitron font-bold text-base text-red-500";
+            } else {
+                document.getElementById('daily-limit-display').className = "text-white font-orbitron font-bold text-base text-toxicgreen";
+            }
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchMe();
+            loadDailyTotal();
+            drawStartScreen();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

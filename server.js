@@ -2104,6 +2104,118 @@ app.get('/api/wallet/transactions', requireAuth, async (req, res) => {
     }
 });
 
+// ========================
+// PLAY-TO-EARN MINIGAMES ENDPOINTS
+// ========================
+
+// Buscar total ganho com minigames hoje pelo usuário
+app.get('/api/minigames/daily-total', requireAuth, async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const result = await pool.query(
+            "SELECT COALESCE(SUM(amount), 0) AS total FROM wallet_transactions WHERE user_id = $1 AND type = 'minigame' AND created_at >= CURRENT_DATE",
+            [userId]
+        );
+        const dailyTotal = parseFloat(result.rows[0].total || 0);
+        res.json({ dailyTotal });
+    } catch(err) {
+        console.error("[MINIGAMES-DAILY] Erro ao buscar total diário:", err);
+        res.status(500).json({ error: 'Erro ao processar limite diário.' });
+    }
+});
+
+// Reivindicar recompensa do Minigame (auto-sustentável baseada em anúncios)
+app.post('/api/minigames/claim', requireAuth, async (req, res) => {
+    const { points, adWatched } = req.body;
+    
+    const scorePoints = parseInt(points);
+    if (isNaN(scorePoints) || scorePoints < 0) {
+        return res.status(400).json({ error: 'Pontuação inválida.' });
+    }
+    
+    // 100 pontos = R$ 0,05 (com ad watched) ou R$ 0,01 (sem ad)
+    const factor = adWatched ? 0.0005 : 0.0001;
+    let reward = parseFloat((scorePoints * factor).toFixed(2));
+    
+    // Segurança contra exploits/bots: limitar recompensa máxima por partida a R$ 0.15
+    if (reward > 0.15) {
+        reward = 0.15;
+    }
+    
+    if (reward <= 0) {
+        return res.json({ success: true, reward: 0, newBalance: 0, dailyTotal: 0, message: 'Pontuação muito baixa para gerar recompensa.' });
+    }
+    
+    const userId = req.session.userId;
+    const client = await pool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        // 1. Verificar total diário acumulado
+        const dailyRes = await client.query(
+            "SELECT COALESCE(SUM(amount), 0) AS total FROM wallet_transactions WHERE user_id = $1 AND type = 'minigame' AND created_at >= CURRENT_DATE",
+            [userId]
+        );
+        const dailyTotal = parseFloat(dailyRes.rows[0].total || 0);
+        
+        // Limite diário de R$ 2.00
+        if (dailyTotal >= 2.00) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'Limite diário de ganhos em minigames (R$ 2,00) já foi atingido.' });
+        }
+        
+        // Ajusta se ultrapassar o limite
+        let finalReward = reward;
+        if (dailyTotal + reward > 2.00) {
+            finalReward = parseFloat((2.00 - dailyTotal).toFixed(2));
+        }
+        
+        if (finalReward <= 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'Limite diário de ganhos em minigames (R$ 2,00) já foi atingido.' });
+        }
+        
+        // 2. Atualizar o saldo do usuário com bloqueio FOR UPDATE
+        const userRes = await client.query('SELECT balance FROM users WHERE id = $1 FOR UPDATE', [userId]);
+        if (userRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+        
+        const balance = parseFloat(userRes.rows[0].balance || 0);
+        const newBalance = parseFloat((balance + finalReward).toFixed(2));
+        
+        await client.query('UPDATE users SET balance = $1 WHERE id = $2', [newBalance, userId]);
+        
+        // 3. Registrar a transação na tabela wallet_transactions
+        const description = adWatched 
+            ? `Ganho de Minigame (Zher Hacker) + Anúncio Multi-Boost` 
+            : `Ganho de Minigame (Zher Hacker)`;
+            
+        await client.query(
+            'INSERT INTO wallet_transactions (user_id, amount, type, description) VALUES ($1, $2, $3, $4)',
+            [userId, finalReward, 'minigame', description]
+        );
+        
+        await client.query('COMMIT');
+        
+        res.json({
+            success: true,
+            reward: finalReward,
+            newBalance,
+            dailyTotal: parseFloat((dailyTotal + finalReward).toFixed(2))
+        });
+        
+    } catch(err) {
+        await client.query('ROLLBACK');
+        console.error("[MINIGAMES-CLAIM] Erro ao reivindicar recompensa:", err);
+        res.status(500).json({ error: 'Erro interno ao processar a recompensa.' });
+    } finally {
+        client.release();
+    }
+});
+
 // Listar todos os usuários com seus saldos (Admin)
 app.get('/api/admin/users', requireAdmin, async (req, res) => {
     try {
