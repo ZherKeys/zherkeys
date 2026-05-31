@@ -137,7 +137,7 @@
                 <!-- Barra de Instruções -->
                 <div class="w-full bg-slate-900/80 border-t border-slate-800 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs">
                     <span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="keyboard" class="w-4 h-4 text-electricblue"></i> Use as setas <b class="text-white">&larr; &rarr;</b> ou clique e arraste para mover o Hacker</span>
-                    <span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos = <b class="text-white">R$ 0,05</b> (com Multi-Boost)</span>
+                    <span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos = <b class="text-white">R$ 0,02</b> (com Multi-Boost)</span>
                 </div>
             </div>
             
@@ -651,8 +651,8 @@
             const content = document.getElementById('game-over-content');
             
             // Recompensas calculadas
-            const valBase = score * 0.0001; // R$ 0,01 a cada 100 pontos
-            const valBoost = score * 0.0005; // R$ 0,05 a cada 100 pontos (com anúncio!)
+            const valBase = score * 0.00001; // R$ 0,01 a cada 1000 pontos
+            const valBoost = score * 0.0002; // R$ 0,02 a cada 100 pontos (com anúncio!)
 
             document.getElementById('final-score').innerText = score;
             document.getElementById('base-reward').innerText = formatPrice(valBase);

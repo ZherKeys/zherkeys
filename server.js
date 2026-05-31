@@ -2139,13 +2139,16 @@ app.post('/api/minigames/claim', requireAuth, async (req, res) => {
         return res.status(400).json({ error: 'Pontuação inválida.' });
     }
     
-    // 100 pontos = R$ 0,05 (com ad watched) ou R$ 0,01 (sem ad)
-    const factor = adWatched ? 0.0005 : 0.0001;
+    // Cálculo seguro baseado no CPM de $ 0.20 USD para garantir lucro do dono do site
+    // 100 pontos = R$ 0,02 BRL (com anúncio Direct Link) ou quase R$ 0,00 BRL (sem anúncio)
+    // 1 ponto base = R$ 0.00001 (Sem anúncio)
+    // 1 ponto boost = R$ 0.0002 (Com anúncio)
+    const factor = adWatched ? 0.0002 : 0.00001;
     let reward = parseFloat((scorePoints * factor).toFixed(2));
     
-    // Segurança contra exploits/bots: limitar recompensa máxima por partida a R$ 0.15
-    if (reward > 0.15) {
-        reward = 0.15;
+    // Segurança contra exploits/bots: limitar recompensa máxima por partida a R$ 0.10 (500 pts com boost)
+    if (reward > 0.10) {
+        reward = 0.10;
     }
     
     if (reward <= 0) {
