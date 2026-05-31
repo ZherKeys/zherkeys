@@ -2321,6 +2321,54 @@ app.post('/api/minigames/convert-points', requireAuth, async (req, res) => {
     }
 });
 
+// Deduzir pontos do usuário para cobrir taxa de entrada/jogo (Roleta, Cassino)
+app.post('/api/minigames/spend-points', requireAuth, async (req, res) => {
+    const { amount } = req.body;
+    const spendAmount = parseInt(amount);
+    
+    if (isNaN(spendAmount) || spendAmount <= 0) {
+        return res.status(400).json({ error: 'Quantia de pontos inválida.' });
+    }
+    
+    const userId = req.session.userId;
+    const client = await pool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        const userRes = await client.query('SELECT points, balance FROM users WHERE id = $1 FOR UPDATE', [userId]);
+        if (userRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+        
+        const currentPoints = parseInt(userRes.rows[0].points || 0);
+        if (currentPoints < spendAmount) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'Saldo de Z-Points insuficiente para jogar.' });
+        }
+        
+        const newPoints = currentPoints - spendAmount;
+        const balance = parseFloat(userRes.rows[0].balance || 0);
+        
+        await client.query('UPDATE users SET points = $1 WHERE id = $2', [newPoints, userId]);
+        await client.query('COMMIT');
+        
+        res.json({
+            success: true,
+            newPoints,
+            newBalance: balance
+        });
+        
+    } catch(err) {
+        await client.query('ROLLBACK');
+        console.error("[MINIGAMES-SPEND] Erro ao deduzir pontos:", err);
+        res.status(500).json({ error: 'Erro interno ao processar a dedução de pontos.' });
+    } finally {
+        client.release();
+    }
+});
+
 // Listar todos os usuários com seus saldos (Admin)
 app.get('/api/admin/users', requireAdmin, async (req, res) => {
     try {
