@@ -87,11 +87,11 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">PREÇO (R$)</label>
-                            <input type="number" step="0.01" id="prod-price" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all">
+                            <input type="text" inputmode="decimal" id="prod-price" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all" placeholder="R$ 0,00">
                         </div>
                         <div>
                             <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">PREÇO ANTIGO (Opcional)</label>
-                            <input type="number" step="0.01" id="prod-old-price" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all placeholder-slate-700" placeholder="R$ 0,00">
+                            <input type="text" inputmode="decimal" id="prod-old-price" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all placeholder-slate-700" placeholder="R$ 0,00">
                         </div>
                     </div>
                     
@@ -475,6 +475,37 @@
             `).join('');
         }
 
+        function applyCurrencyMask(inputEl) {
+            if (!inputEl) return;
+            inputEl.addEventListener('input', function (e) {
+                let value = this.value.replace(/\D/g, '');
+                if (!value) {
+                    this.value = '';
+                    return;
+                }
+                let floatValue = parseInt(value, 10) / 100;
+                let formatted = floatValue.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                this.value = formatted;
+            });
+        }
+
+        function parseMaskedFloat(val) {
+            if (!val) return null;
+            const clean = val.replace(/\./g, '').replace(',', '.');
+            return parseFloat(clean) || 0;
+        }
+
+        function formatNumberToMask(num) {
+            if (num === null || num === undefined || isNaN(num)) return '';
+            return parseFloat(num).toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
         document.getElementById('product-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -490,8 +521,8 @@
             const payload = {
                 title: document.getElementById('prod-title').value,
                 category: document.querySelector('.category-radio:checked')?.value || '',
-                price: document.getElementById('prod-price').value,
-                old_price: document.getElementById('prod-old-price').value,
+                price: parseMaskedFloat(document.getElementById('prod-price').value),
+                old_price: parseMaskedFloat(document.getElementById('prod-old-price').value),
                 image: imageVal,
                 description: document.getElementById('prod-desc').value,
                 activation_key: document.getElementById('prod-activation').value,
@@ -528,8 +559,8 @@
             document.querySelectorAll('.category-radio').forEach(rb => {
                 rb.checked = (rb.value === p.category);
             });
-            document.getElementById('prod-price').value = p.price;
-            document.getElementById('prod-old-price').value = p.old_price || '';
+            document.getElementById('prod-price').value = formatNumberToMask(p.price);
+            document.getElementById('prod-old-price').value = p.old_price ? formatNumberToMask(p.old_price) : '';
             document.getElementById('prod-image').value = p.image;
             document.getElementById('prod-desc').value = p.description;
             document.getElementById('prod-activation').value = p.activation_key || '';
@@ -861,6 +892,8 @@
         renderGenres();
         renderCountries();
         loadProducts();
+        applyCurrencyMask(document.getElementById('prod-price'));
+        applyCurrencyMask(document.getElementById('prod-old-price'));
     </script>
 </body>
 </html>

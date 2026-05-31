@@ -482,6 +482,139 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
     }
 });
 
+app.post('/create-checkout/paypal', requireAuth, async (req, res) => {
+    const { items, paypalOrderId, status } = req.body;
+    
+    if(!items || items.length === 0) return res.status(400).json({ error: 'Carrinho vazio' });
+    
+    if (status !== 'COMPLETED') {
+        return res.status(400).json({ error: 'O pagamento do PayPal não foi concluído.' });
+    }
+    
+    try {
+        const ids = items.map(i => parseInt(i.id));
+        const result = await pool.query('SELECT * FROM products WHERE id = ANY($1::int[])', [ids]);
+        
+        const realProducts = result.rows;
+        if(realProducts.length === 0) return res.status(400).json({ error: 'Produtos não encontrados' });
+        
+        // Verifica se algum produto está fora de estoque
+        const outOfStock = realProducts.find(p => !p.in_stock);
+        if (outOfStock) {
+            return res.status(400).json({ error: `O produto "${outOfStock.title}" já está esgotado.` });
+        }
+        
+        let totalAmount = 0;
+        items.forEach(cartItem => {
+            const dbProduct = realProducts.find(p => p.id === parseInt(cartItem.id));
+            if(dbProduct) {
+                const qty = Math.max(1, parseInt(cartItem.quantity));
+                totalAmount += parseFloat(dbProduct.price) * qty;
+            }
+        });
+        
+        // Pega o email do usuário
+        const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [req.session.userId]);
+        const email = userRes.rows[0]?.email || 'guest@example.com';
+
+        // Conecta um cliente de pool dedicado para gerenciar a transação segura
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            
+            // FOR UPDATE bloqueia as linhas dos produtos no banco, evitando RACE CONDITIONS de compras simultâneas!
+            const prodCheck = await client.query('SELECT id, price, in_stock FROM products WHERE id = ANY($1::int[]) FOR UPDATE', [ids]);
+            
+            // Verifica se algum item já foi vendido
+            for (let p of prodCheck.rows) {
+                if (!p.in_stock) {
+                    await client.query('ROLLBACK');
+                    return res.status(400).json({ error: `O produto com ID ${p.id} já foi vendido por outro usuário.` });
+                }
+            }
+            
+            // Criar o pedido APROVADO no banco
+            const orderRes = await client.query(
+                'INSERT INTO orders (user_id, status, total_amount, mp_payment_id) VALUES ($1, $2, $3, $4) RETURNING id',
+                [req.session.userId, 'approved', totalAmount, paypalOrderId]
+            );
+            const orderId = orderRes.rows[0].id;
+            
+            // Salvar os itens do pedido
+            for (let item of items) {
+                const dbProduct = realProducts.find(p => p.id === parseInt(item.id));
+                if(dbProduct) {
+                    const qty = Math.max(1, parseInt(item.quantity));
+                    await client.query(
+                        'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)',
+                        [orderId, dbProduct.id, qty, parseFloat(dbProduct.price)]
+                    );
+                }
+            }
+            
+            // Atualiza o estoque local do produto (marca como fora de estoque)
+            await client.query('UPDATE products SET in_stock = false WHERE id = ANY($1::int[])', [ids]);
+            
+            // Delistar anúncio correspondente no Gameflip
+            const productsRes = await client.query('SELECT gameflip_listing_id FROM products WHERE id = ANY($1::int[])', [ids]);
+            for (let prod of productsRes.rows) {
+                if (prod.gameflip_listing_id && prod.gameflip_listing_id.trim() !== '') {
+                    markGameflipListingAsSold(prod.gameflip_listing_id.trim());
+                }
+            }
+            
+            await client.query('COMMIT');
+            
+            // Envia e-mail de confirmação da compra aprovada contendo as chaves (Keys) reveladas!
+            const keysRes = await pool.query('SELECT title, activation_key FROM products WHERE id = ANY($1::int[])', [ids]);
+            let keysListHtml = '';
+            keysRes.rows.forEach(k => {
+                keysListHtml += `
+                    <div style="background-color: #0b0f19; border: 1px solid #1e293b; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: left;">
+                        <strong style="color: #ffffff; display: block; font-size: 14px; margin-bottom: 5px;">${k.title}</strong>
+                        <code style="font-family: monospace; font-size: 14px; color: #10B981; font-weight: bold;">${k.activation_key || 'Chave em liberação'}</code>
+                    </div>
+                `;
+            });
+            
+            sendEmailViaBrevo(
+                email,
+                `🎮 Suas Keys do Pedido #${orderId} foram Liberadas via PayPal! - Zher Keys`,
+                `Olá! Seu pagamento via PayPal foi processado com sucesso. O pedido #${orderId} foi aprovado!`,
+                `<div style="background-color: #020617; color: #f8fafc; padding: 40px 20px; font-family: sans-serif; text-align: center; border: 1px solid #1e293b; border-radius: 16px; max-w: 600px; margin: 0 auto;">
+                    <h2 style="color: #3B82F6; font-size: 24px; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px;">PAGAMENTO PAYPAL APROVADO!</h2>
+                    <p style="color: #94a3b8; font-size: 14px; margin-top: 0; margin-bottom: 25px;">Pedido #${orderId} - Pago via PayPal</p>
+                    
+                    <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6; margin-bottom: 25px; text-align: left;">
+                        Olá! O pagamento de <strong>R$ ${totalAmount.toFixed(2).replace('.', ',')}</strong> via PayPal foi recebido com sucesso. Suas chaves de ativação já foram liberadas abaixo:
+                    </p>
+                    
+                    ${keysListHtml}
+                    
+                    <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin-top: 30px;">
+                        Você também pode visualizar suas keys a qualquer momento acessando a aba <strong>Minhas Compras</strong> no site da Zher Keys.
+                    </p>
+                    
+                    <p style="color: #64748b; font-size: 11px; margin-top: 30px;">Esta é uma transação criptografada e segura da loja Zher Keys. Não responda a este e-mail.</p>
+                </div>`
+            ).catch(err => console.error("Erro ao enviar e-mail PayPal checkout:", err));
+
+            return res.json({ success: true, message: 'Compra realizada com sucesso via PayPal!' });
+            
+        } catch (err) {
+            await client.query('ROLLBACK');
+            console.error("[PAYPAL-CHECKOUT] Erro:", err);
+            return res.status(500).json({ error: 'Erro interno ao processar pagamento por PayPal.' });
+        } finally {
+            client.release();
+        }
+        
+    } catch(e) {
+        console.error(e);
+        res.status(500).json({ error: 'Erro ao gerar checkout do PayPal' });
+    }
+});
+
 // CPF Generator helper for Mercado Pago transparent checkouts
 function generateCPF() {
     let n = Array.from({length: 9}, () => Math.floor(Math.random() * 9));
@@ -615,6 +748,57 @@ app.post('/api/wallet/deposit', requireAuth, async (req, res) => {
     } catch (e) {
         console.error("[DEPOSIT] Erro ao gerar depósito:", e);
         res.status(500).json({ error: 'Erro interno ao processar solicitação de depósito.' });
+    }
+});
+
+app.post('/api/wallet/deposit/paypal', requireAuth, async (req, res) => {
+    const { amount, paypalOrderId, status } = req.body;
+    const parsedAmount = parseFloat(amount);
+    
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+        return res.status(400).json({ error: 'Valor de depósito inválido.' });
+    }
+    
+    if (status !== 'COMPLETED') {
+        return res.status(400).json({ error: 'O pagamento do PayPal não foi concluído.' });
+    }
+    
+    try {
+        // Criar o pedido de depósito aprovado
+        const orderRes = await pool.query(
+            'INSERT INTO orders (user_id, status, total_amount, is_deposit, mp_payment_id) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+            [req.session.userId, 'pending', parsedAmount, true, paypalOrderId]
+        );
+        const orderId = orderRes.rows[0].id;
+        
+        // Aprovar o pedido de forma segura (adiciona o saldo)
+        const success = await approveOrderSecure(orderId, paypalOrderId);
+        
+        if (success) {
+            // Pega o email do usuário
+            const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [req.session.userId]);
+            const email = userRes.rows[0]?.email;
+            if (email) {
+                sendEmailViaBrevo(
+                    email,
+                    `🎉 Saldo de R$ ${parsedAmount.toFixed(2).replace('.', ',')} Adicionado via PayPal!`,
+                    `Olá! Seu depósito via PayPal de R$ ${parsedAmount.toFixed(2).replace('.', ',')} foi aprovado e o saldo já está disponível na sua carteira de créditos.`,
+                    `<div style="background-color: #020617; color: #f8fafc; padding: 40px 20px; font-family: sans-serif; text-align: center; border: 1px solid #1e293b; border-radius: 16px; max-w: 600px; margin: 0 auto;">
+                        <h2 style="color: #10B981; font-size: 24px; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px;">SALDO ADICIONADO!</h2>
+                        <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6; margin-bottom: 25px;">
+                            Seu depósito de <strong>R$ ${parsedAmount.toFixed(2).replace('.', ',')}</strong> via PayPal foi processado com sucesso.
+                        </p>
+                     </div>`
+                ).catch(err => console.error("Erro ao enviar e-mail PayPal:", err));
+            }
+            
+            return res.json({ success: true, message: 'Depósito aprovado e saldo creditado!' });
+        } else {
+            return res.status(500).json({ error: 'Erro ao aprovar saldo na carteira.' });
+        }
+    } catch (e) {
+        console.error("[PAYPAL-DEPOSIT] Erro:", e);
+        res.status(500).json({ error: 'Erro interno ao processar depósito do PayPal.' });
     }
 });
 

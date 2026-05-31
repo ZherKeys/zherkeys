@@ -128,13 +128,13 @@
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-xs text-slate-400 mb-2" data-i18n="deposit_amount_label">Valor do Depósito (R$)</label>
-                                <input type="number" id="deposit-amount" placeholder="Ex: 50.00" data-i18n-attr="placeholder" data-i18n="deposit_placeholder" min="5" step="1" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-400 transition-all font-mono">
+                                <input type="text" inputmode="decimal" id="deposit-amount" placeholder="Ex: 50,00" data-i18n-attr="placeholder" data-i18n="deposit_placeholder" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-400 transition-all font-mono">
                                 <span class="text-[10px] text-slate-500 mt-1 block" data-i18n="min_deposit_instruction">Depósito mínimo: R$ 5,00. Processamento imediato.</span>
                             </div>
                             
                             <div>
                                 <label class="block text-xs text-slate-400 mb-2" data-i18n="payment_method">Método de Pagamento</label>
-                                <div class="grid grid-cols-2 gap-3">
+                                <div class="grid grid-cols-3 gap-3">
                                     <label class="flex items-center gap-2 p-3 rounded-lg border border-slate-700 bg-slate-800 cursor-pointer hover:border-emerald-400 transition-colors group">
                                         <input type="radio" name="deposit_method" value="pix" checked class="w-4 h-4 text-emerald-400 bg-slate-900 border-slate-700 focus:ring-0">
                                         <span class="text-white font-orbitron text-xs font-bold">PIX</span>
@@ -142,6 +142,10 @@
                                     <label class="flex items-center gap-2 p-3 rounded-lg border border-slate-700 bg-slate-800 cursor-pointer hover:border-electricblue transition-colors group">
                                         <input type="radio" name="deposit_method" value="card" class="w-4 h-4 text-electricblue bg-slate-900 border-slate-700 focus:ring-0">
                                         <span class="text-white font-orbitron text-xs font-bold">Cartão</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 p-3 rounded-lg border border-slate-700 bg-slate-800 cursor-pointer hover:border-blue-500 transition-colors group">
+                                        <input type="radio" name="deposit_method" value="paypal" class="w-4 h-4 text-blue-500 bg-slate-900 border-slate-700 focus:ring-0">
+                                        <span class="text-white font-orbitron text-xs font-bold">PayPal</span>
                                     </label>
                                 </div>
                             </div>
@@ -245,6 +249,21 @@
             
             <button onclick="closePixModal()" class="mt-8 block w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl transition-colors uppercase">
                 FECHAR E VER SALDO
+            </button>
+    </div>
+
+    <!-- PAYPAL MODAL -->
+    <div id="paypal-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 sm:p-6 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onclick="closePaypalModal()"></div>
+        <div class="relative w-full max-w-md bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 p-8 text-center" id="paypal-modal-content">
+            <h3 class="font-orbitron font-black text-2xl text-blue-400 mb-2">PAGAMENTO PAYPAL</h3>
+            <p class="text-slate-400 font-inter text-sm mb-6" data-i18n="paypal_instruction">Conclua o pagamento seguro abaixo utilizando o PayPal.</p>
+            
+            <!-- PayPal Button Container -->
+            <div id="paypal-button-container" class="mb-6 relative z-10"></div>
+            
+            <button onclick="closePaypalModal()" class="mt-4 block w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl transition-colors uppercase" data-i18n="close">
+                FECHAR
             </button>
         </div>
     </div>
@@ -1356,20 +1375,133 @@
             }
         }
 
+        function applyCurrencyMask(inputEl) {
+            if (!inputEl) return;
+            inputEl.addEventListener('input', function (e) {
+                let value = this.value.replace(/\D/g, '');
+                if (!value) {
+                    this.value = '';
+                    return;
+                }
+                let floatValue = parseInt(value, 10) / 100;
+                let formatted = floatValue.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                this.value = formatted;
+            });
+        }
+
+        function parseMaskedFloat(val) {
+            if (!val) return 0;
+            const clean = val.replace(/\./g, '').replace(',', '.');
+            return parseFloat(clean) || 0;
+        }
+
+        window.loadPayPalSDK = (currency, callback) => {
+            const old = document.getElementById('paypal-sdk');
+            if (old) old.remove();
+            const s = document.createElement('script');
+            s.id = 'paypal-sdk';
+            s.src = `https://www.paypal.com/sdk/js?client-id=sb&currency=${currency}`;
+            s.onload = callback;
+            document.head.appendChild(s);
+        };
+
+        window.showPaypalModal = (amountVal, currencyCode, amountBRL) => {
+            const modal = document.getElementById('paypal-modal');
+            const modalContent = document.getElementById('paypal-modal-content');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+            
+            document.getElementById('paypal-button-container').innerHTML = '';
+            
+            loadPayPalSDK(currencyCode, () => {
+                paypal.Buttons({
+                    createOrder: function(data, actions) {
+                        return actions.order.create({
+                            purchase_units: [{
+                                amount: {
+                                    currency_code: currencyCode,
+                                    value: amountVal.toFixed(2)
+                                },
+                                description: `Depósito Zher Keys`
+                            }]
+                        });
+                    },
+                    onApprove: function(data, actions) {
+                        return actions.order.capture().then(async function(details) {
+                            try {
+                                const response = await fetch('/api/wallet/deposit/paypal', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        amount: amountBRL,
+                                        paypalOrderId: details.id,
+                                        status: details.status
+                                    })
+                                });
+                                const resData = await response.json();
+                                if (response.ok && resData.success) {
+                                    alert(window.currentCurrency === 'USD' ? 'Deposit approved successfully!' : 'Depósito aprovado com sucesso!');
+                                    closePaypalModal();
+                                    loadWalletData();
+                                } else {
+                                    alert(resData.error || 'Erro ao creditar depósito PayPal.');
+                                }
+                            } catch(err) {
+                                alert('Erro de rede ao creditar saldo.');
+                            }
+                        });
+                    },
+                    onError: function(err) {
+                        console.error('PayPal error:', err);
+                        alert('Ocorreu um erro com o pagamento via PayPal.');
+                    }
+                }).render('#paypal-button-container');
+            });
+        };
+
+        window.closePaypalModal = () => {
+            const modal = document.getElementById('paypal-modal');
+            const modalContent = document.getElementById('paypal-modal-content');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        };
+
         async function gerarDeposito() {
             const amountInput = document.getElementById('deposit-amount');
-            const amount = parseFloat(amountInput.value);
+            const amount = parseMaskedFloat(amountInput.value);
             
             const cur = window.currentCurrency;
             const lang = cur === 'USD' ? 'en' : (cur === 'EUR' ? 'es' : 'pt');
             const dict = TRANSLATIONS[lang] || TRANSLATIONS['pt'];
 
-            if (isNaN(amount) || amount < 5) {
+            const rate = window.exchangeRates[cur] || 1.0;
+            const amountBRL = amount / rate;
+
+            if (isNaN(amountBRL) || amountBRL < 5) {
                 alert(dict.min_deposit_error || 'O valor mínimo de depósito é R$ 5,00.');
                 return;
             }
 
             const method = document.querySelector('input[name="deposit_method"]:checked').value;
+            
+            if (method === 'paypal') {
+                amountInput.value = '';
+                showPaypalModal(amount, cur, amountBRL);
+                return;
+            }
+
             const btn = document.getElementById('btn-deposit');
             btn.innerHTML = `${dict.generating_payment} <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>`;
             btn.classList.add('opacity-50', 'pointer-events-none');
@@ -1378,7 +1510,7 @@
                 const res = await fetch('/api/wallet/deposit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount, method })
+                    body: JSON.stringify({ amount: amountBRL, method })
                 });
 
                 const data = await res.json();
@@ -1478,6 +1610,7 @@
         } else {
             loadMyOrders();
         }
+        applyCurrencyMask(document.getElementById('deposit-amount'));
     </script>
 </body>
 </html>

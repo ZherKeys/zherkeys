@@ -90,12 +90,24 @@
 
                 <div class="border-t border-slate-800 pt-4 mb-4">
                     <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-3" data-i18n="payment_method">MÉTODO DE PAGAMENTO</label>
-                    <div class="space-y-2">
-                        <label class="flex items-center gap-3 p-3 rounded-lg border border-emerald-500/50 bg-emerald-500/5 cursor-default group">
+                    <div class="space-y-3">
+                        <!-- Opção 1: Carteira (Créditos) -->
+                        <label id="payment-option-credits" onclick="selectPaymentMethod('credits')" class="flex items-center gap-3 p-3 rounded-lg border border-emerald-500/50 bg-emerald-500/5 cursor-pointer group transition-all">
+                            <input type="radio" name="payment_method_input" value="credits" checked class="hidden">
                             <i data-lucide="wallet" class="w-5 h-5 text-emerald-400"></i>
-                            <span class="text-white font-orbitron text-sm font-bold flex justify-between items-center w-full">
+                            <span class="text-white font-orbitron text-xs font-bold flex justify-between items-center w-full">
                                 <span data-i18n="credits_balance_desc">Saldo da Carteira (Créditos)</span>
-                                <span id="payment-credits-balance" class="text-sm text-emerald-400 font-orbitron font-bold" data-i18n="loading">Carregando...</span>
+                                <span id="payment-credits-balance" class="text-xs text-emerald-400 font-orbitron font-bold" data-i18n="loading">Carregando...</span>
+                            </span>
+                        </label>
+                        
+                        <!-- Opção 2: PayPal Direct -->
+                        <label id="payment-option-paypal" onclick="selectPaymentMethod('paypal')" class="flex items-center gap-3 p-3 rounded-lg border border-slate-800 bg-slate-900/50 hover:border-slate-700 cursor-pointer group transition-all">
+                            <input type="radio" name="payment_method_input" value="paypal" class="hidden">
+                            <i data-lucide="credit-card" class="w-5 h-5 text-blue-400"></i>
+                            <span class="text-white font-orbitron text-xs font-bold flex justify-between items-center w-full">
+                                <span>PayPal</span>
+                                <span class="text-[10px] text-blue-400 font-orbitron font-bold uppercase tracking-wider">Aprovação Imediata</span>
                             </span>
                         </label>
                     </div>
@@ -116,9 +128,12 @@
                     <span id="summary-total" class="text-cyberrose font-orbitron font-black text-3xl">R$ 0,00</span>
                 </div>
 
-                <button onclick="finalizarCompra()" id="btn-checkout" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all duration-300 uppercase flex items-center justify-center gap-2">
-                    <span id="checkout-btn-text" data-i18n="checkout_btn">FINALIZAR COMPRA</span> <i data-lucide="zap" class="w-4 h-4"></i>
-                </button>
+                <div id="checkout-actions-wrapper">
+                    <button onclick="finalizarCompra()" id="btn-checkout" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all duration-300 uppercase flex items-center justify-center gap-2">
+                        <span id="checkout-btn-text" data-i18n="checkout_btn">FINALIZAR COMPRA</span> <i data-lucide="zap" class="w-4 h-4"></i>
+                    </button>
+                    <div id="paypal-checkout-button-container" class="hidden mt-2 relative z-10"></div>
+                </div>
                 <div class="mt-4 flex items-center justify-center gap-2 text-slate-500 text-[10px] font-inter">
                     <i data-lucide="lock" class="w-3 h-3"></i> <span data-i18n="secure_payment_ssl">Pagamento 100% Seguro (SSL)</span>
                 </div>
@@ -385,7 +400,10 @@
             totalEl.innerText = formattedTotal;
 
             // Controle de Saldo de Créditos
-            if (isLoggedIn) {
+            if (window.selectedPaymentMethod === 'paypal') {
+                if (warningBox) warningBox.classList.add('hidden');
+                initPayPalCheckout();
+            } else if (isLoggedIn) {
                 if (userBalance < total) {
                     btnCheckout.classList.add('opacity-50', 'pointer-events-none');
                     btnCheckout.innerHTML = `${dict.btn_checkout_insufficient} <i data-lucide="x-circle" class="w-4 h-4"></i>`;
@@ -401,6 +419,113 @@
 
             lucide.createIcons();
         }
+
+        window.selectedPaymentMethod = 'credits';
+        
+        window.selectPaymentMethod = (method) => {
+            if (!isLoggedIn && method === 'credits') {
+                alert("Você precisa fazer login para comprar com créditos da carteira.");
+                return;
+            }
+            
+            window.selectedPaymentMethod = method;
+            
+            const optionCredits = document.getElementById('payment-option-credits');
+            const optionPaypal = document.getElementById('payment-option-paypal');
+            
+            if (method === 'credits') {
+                optionCredits.className = "flex items-center gap-3 p-3 rounded-lg border border-emerald-500/50 bg-emerald-500/5 cursor-pointer group transition-all";
+                optionPaypal.className = "flex items-center gap-3 p-3 rounded-lg border border-slate-800 bg-slate-900/50 hover:border-slate-700 cursor-pointer group transition-all";
+                
+                document.getElementById('btn-checkout').classList.remove('hidden');
+                document.getElementById('paypal-checkout-button-container').classList.add('hidden');
+                
+                renderCartPage();
+            } else {
+                optionCredits.className = "flex items-center gap-3 p-3 rounded-lg border border-slate-800 bg-slate-900/50 hover:border-slate-700 cursor-pointer group transition-all";
+                optionPaypal.className = "flex items-center gap-3 p-3 rounded-lg border border-blue-500/50 bg-blue-500/5 cursor-pointer group transition-all";
+                
+                document.getElementById('btn-checkout').classList.add('hidden');
+                document.getElementById('paypal-checkout-button-container').classList.remove('hidden');
+                
+                document.getElementById('balance-warning-box').classList.add('hidden');
+                
+                initPayPalCheckout();
+            }
+        };
+
+        window.loadPayPalSDK = (currency, callback) => {
+            const old = document.getElementById('paypal-sdk');
+            if (old) old.remove();
+            const s = document.createElement('script');
+            s.id = 'paypal-sdk';
+            s.src = `https://www.paypal.com/sdk/js?client-id=sb&currency=${currency}`;
+            s.onload = callback;
+            document.head.appendChild(s);
+        };
+
+        window.initPayPalCheckout = () => {
+            const container = document.getElementById('paypal-checkout-button-container');
+            container.innerHTML = '';
+            
+            if (cart.length === 0) return;
+
+            const currency = window.currentCurrency || 'BRL';
+            const rate = window.exchangeRates[currency] || 1.0;
+            let totalBRL = 0;
+            cart.forEach(item => {
+                const priceNum = typeof item.price === 'string' ? parseFloat(item.price.replace('R$ ', '').replace(',', '.')) : parseFloat(item.price);
+                totalBRL += priceNum;
+            });
+            const amountVal = totalBRL * rate;
+            
+            loadPayPalSDK(currency, () => {
+                paypal.Buttons({
+                    createOrder: function(data, actions) {
+                        return actions.order.create({
+                            purchase_units: [{
+                                amount: {
+                                    currency_code: currency,
+                                    value: amountVal.toFixed(2)
+                                },
+                                description: `Compra Zher Keys`
+                            }]
+                        });
+                    },
+                    onApprove: function(data, actions) {
+                        return actions.order.capture().then(async function(details) {
+                            try {
+                                const items = cart.map(item => ({ id: item.id, quantity: 1 }));
+                                const response = await fetch('/create-checkout/paypal', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        items: items,
+                                        paypalOrderId: details.id,
+                                        status: details.status
+                                    })
+                                });
+                                const resData = await response.json();
+                                if (response.ok && resData.success) {
+                                    alert(window.currentCurrency === 'USD' ? 'Purchase completed successfully!' : 'Compra finalizada com sucesso!');
+                                    cart = [];
+                                    localStorage.setItem('zher_cart', JSON.stringify(cart));
+                                    window.location.href = '/account.html';
+                                } else {
+                                    alert(resData.error || 'Erro ao processar compra PayPal.');
+                                }
+                            } catch(err) {
+                                alert('Erro de rede ao processar compra.');
+                            }
+                        });
+                    },
+                    onError: function(err) {
+                        console.error('PayPal error:', err);
+                        alert('Ocorreu um erro com o pagamento via PayPal.');
+                    }
+                }).render('#paypal-checkout-button-container');
+            });
+        };
 
         window.removeFromCart = (index) => {
             cart.splice(index, 1);
@@ -420,7 +545,7 @@
             btn.classList.add('opacity-50', 'pointer-events-none');
             
             try {
-                const method = 'credits'; // Força compras com créditos apenas!
+                const method = 'credits';
                 const items = cart.map(item => ({ id: item.id, quantity: 1 }));
                 
                 const res = await fetch('/create-checkout', {
@@ -457,26 +582,19 @@
 
         // Init
         document.addEventListener('DOMContentLoaded', () => {
-            // Set select dropdown value
             const selectEl = document.getElementById('currency-select');
             if (selectEl) {
                 selectEl.value = window.currentCurrency;
             }
 
-            // Initial translation based on active currency
             let lang = 'pt';
             if (window.currentCurrency === 'USD') lang = 'en';
             else if (window.currentCurrency === 'EUR') lang = 'es';
             applyTranslations(lang);
 
-            // Buscar e exibir o saldo de créditos da carteira
             fetch('/api/me')
                 .then(res => res.json())
                 .then(data => {
-                    const cur = window.currentCurrency;
-                    const lang = cur === 'USD' ? 'en' : (cur === 'EUR' ? 'es' : 'pt');
-                    const dict = TRANSLATIONS[lang] || TRANSLATIONS['pt'];
-
                     if (data.email) {
                         isLoggedIn = true;
                         userBalance = parseFloat(data.balance || 0);
