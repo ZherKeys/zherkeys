@@ -41,6 +41,15 @@
             </a>
             
             <div class="flex items-center gap-4">
+                <!-- Seletor de Moedas -->
+                <div class="relative">
+                    <select id="currency-select" onchange="changeCurrency(this.value)" class="bg-slate-950 border border-slate-800 text-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-orbitron tracking-widest focus:outline-none focus:border-electricblue transition-all cursor-pointer">
+                        <option value="BRL">🇧🇷 BRL</option>
+                        <option value="USD">🇺🇸 USD</option>
+                        <option value="EUR">🇪🇺 EUR</option>
+                    </select>
+                </div>
+                
                 <a href="/account.html" class="flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-electricblue hover:bg-slate-700 transition-all group" title="Minha Conta">
                     <i data-lucide="user" class="w-5 h-5 text-slate-300 group-hover:text-white"></i>
                 </a>
@@ -147,6 +156,54 @@
             </a>
         </div>
     <script>
+        // --- EXCHANGE & CURRENCY LOGIC ---
+        window.currentCurrency = localStorage.getItem('zher_currency') || 'BRL';
+        window.exchangeRates = { BRL: 1.0, USD: 0.19, EUR: 0.17 };
+
+        async function fetchExchangeRates() {
+            try {
+                const res = await fetch('https://open.er-api.com/v6/latest/BRL');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.rates) {
+                        window.exchangeRates = data.rates;
+                        console.log("[EXCHANGE] Live exchange rates loaded successfully!");
+                    }
+                }
+            } catch(e) {
+                console.warn("[EXCHANGE] Failed to fetch live exchange rates, using offline fallbacks.", e);
+            }
+        }
+
+        function formatPrice(priceBRL) {
+            const rate = window.exchangeRates[window.currentCurrency] || 1.0;
+            const converted = parseFloat(priceBRL) * rate;
+            if (window.currentCurrency === 'USD') {
+                return `$ ${converted.toFixed(2)}`;
+            } else if (window.currentCurrency === 'EUR') {
+                return `€ ${converted.toFixed(2)}`;
+            } else {
+                return `R$ ${converted.toFixed(2).replace('.', ',')}`;
+            }
+        }
+
+        window.changeCurrency = (cur) => {
+            window.currentCurrency = cur;
+            localStorage.setItem('zher_currency', cur);
+            
+            // Sync current select value
+            const selectEl = document.getElementById('currency-select');
+            if (selectEl) selectEl.value = cur;
+            
+            // Re-render user balance element with formatted price
+            const balEl = document.getElementById('payment-credits-balance');
+            if (balEl && isLoggedIn) {
+                balEl.innerText = formatPrice(userBalance);
+            }
+            
+            renderCartPage();
+        };
+
         lucide.createIcons();
 
         let cart = JSON.parse(localStorage.getItem('zher_cart')) || [];
@@ -168,8 +225,8 @@
                         <p class="text-slate-500 text-sm mt-2">Volte para a loja e explore nossos drops limitados.</p>
                         <a href="/" class="mt-6 px-6 py-2 bg-slate-800 hover:bg-electricblue text-white rounded font-orbitron text-xs tracking-widest transition-colors border border-slate-700">VOLTAR PARA A LOJA</a>
                     </div>`;
-                subtotalEl.innerText = "R$ 0,00";
-                totalEl.innerText = "R$ 0,00";
+                subtotalEl.innerText = formatPrice(0);
+                totalEl.innerText = formatPrice(0);
                 btnCheckout.classList.add('opacity-50', 'pointer-events-none');
                 if (warningBox) warningBox.classList.add('hidden');
                 return;
@@ -180,19 +237,33 @@
             let total = 0;
 
             cart.forEach((item, index) => {
-                const priceNum = parseFloat(item.price.toString().replace('R$ ', '').replace(',', '.'));
+                const priceNum = typeof item.price === 'string' ? parseFloat(item.price.replace('R$ ', '').replace(',', '.')) : parseFloat(item.price);
                 total += priceNum;
+
+                // Steam logo overlay if category is Steam Key
+                const isSteam = item.category === 'STEAM KEY';
+                const steamBadge = isSteam ? `
+                    <div class="absolute top-2 left-2 bg-black/75 border border-slate-700/80 px-1.5 py-0.5 rounded backdrop-blur-md flex items-center gap-1 z-10 text-[7px] font-orbitron text-slate-200 tracking-widest uppercase">
+                        <svg class="w-2.5 h-2.5 text-slate-300" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-3.328 17.514c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189zm.065-2.923c-.767-.008-1.464.385-1.859 1.03l-2.45-.754c-.116-.036-.182-.16-.146-.276l.781-2.54c.036-.116.16-.182.276-.146l2.36.726c.45-.373 1.01-.58 1.595-.589.626-.008 1.222.215 1.688.625l3.29-2.285c.105-.072.247-.043.318.062l1.62 2.336c.072.104.043.247-.062.318l-3.23 2.244c-.218.66-.827 1.127-1.52 1.139-.026.001-.052.001-.078.001zm6.953-3.693c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189z"/>
+                        </svg>
+                        STEAM
+                    </div>
+                ` : '';
 
                 html += `
                     <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 bg-slate-950/60 p-4 rounded-xl border border-slate-800/80 hover:border-slate-700 transition-colors">
-                        <img src="${item.image}" class="w-full sm:w-32 h-32 sm:h-24 object-cover rounded-lg shadow-lg flex-shrink-0">
+                        <div class="relative w-full sm:w-32 h-32 sm:h-24 rounded-lg overflow-hidden flex-shrink-0">
+                            ${steamBadge}
+                            <img src="${item.image}" class="w-full h-full object-cover shadow-lg">
+                        </div>
                         <div class="flex-grow text-center sm:text-left overflow-hidden min-w-0 w-full">
                             <span class="bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[8px] tracking-widest px-2 py-0.5 rounded-full uppercase inline-block mb-2">${item.category}</span>
                             <h4 class="text-white font-orbitron font-bold text-base sm:text-lg uppercase tracking-wide truncate w-full">${item.title}</h4>
                             <p class="text-slate-500 font-inter text-xs mt-1 truncate w-full hidden sm:block">${item.description}</p>
                         </div>
                         <div class="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto flex-shrink-0 mt-2 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-0 border-slate-800/50">
-                            <span class="text-cyberrose font-orbitron font-bold text-lg sm:text-xl whitespace-nowrap">R$ ${parseFloat(item.price).toFixed(2).replace('.', ',')}</span>
+                            <span class="text-cyberrose font-orbitron font-bold text-lg sm:text-xl whitespace-nowrap">${formatPrice(priceNum)}</span>
                             <button onclick="removeFromCart(${index})" class="w-10 h-10 flex-shrink-0 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-red-400 hover:border-red-500 transition-colors" title="Remover">
                                 <i data-lucide="trash-2" class="w-5 h-5"></i>
                             </button>
@@ -202,7 +273,7 @@
             });
 
             container.innerHTML = html;
-            const formattedTotal = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            const formattedTotal = formatPrice(total);
             subtotalEl.innerText = formattedTotal;
             totalEl.innerText = formattedTotal;
 
@@ -275,6 +346,12 @@
 
         // Init
         document.addEventListener('DOMContentLoaded', () => {
+            // Set select dropdown value
+            const selectEl = document.getElementById('currency-select');
+            if (selectEl) {
+                selectEl.value = window.currentCurrency;
+            }
+
             // Buscar e exibir o saldo de créditos da carteira
             fetch('/api/me')
                 .then(res => res.json())
@@ -284,15 +361,28 @@
                         userBalance = parseFloat(data.balance || 0);
                         const balEl = document.getElementById('payment-credits-balance');
                         if (balEl) {
-                            balEl.innerText = `R$ ${userBalance.toFixed(2).replace('.', ',')}`;
+                            balEl.innerText = formatPrice(userBalance);
                         }
                     }
-                    renderCartPage();
+                    
+                    fetchExchangeRates().then(() => {
+                        if (selectEl) selectEl.value = window.currentCurrency;
+                        
+                        const balEl = document.getElementById('payment-credits-balance');
+                        if (balEl && isLoggedIn) {
+                            balEl.innerText = formatPrice(userBalance);
+                        }
+                        renderCartPage();
+                    });
                 }).catch(() => {
                     isLoggedIn = false;
                     const balEl = document.getElementById('payment-credits-balance');
                     if (balEl) balEl.innerText = 'Precisa fazer login';
-                    renderCartPage();
+                    
+                    fetchExchangeRates().then(() => {
+                        if (selectEl) selectEl.value = window.currentCurrency;
+                        renderCartPage();
+                    });
                 });
         });
     </script>

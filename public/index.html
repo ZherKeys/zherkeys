@@ -144,6 +144,15 @@
             </div>
 
             <div class="flex items-center gap-4">
+                <!-- Seletor de Moedas -->
+                <div class="relative">
+                    <select id="currency-select" onchange="changeCurrency(this.value)" class="bg-slate-950 border border-slate-800 text-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-orbitron tracking-widest focus:outline-none focus:border-electricblue transition-all cursor-pointer">
+                        <option value="BRL">🇧🇷 BRL</option>
+                        <option value="USD">🇺🇸 USD</option>
+                        <option value="EUR">🇪🇺 EUR</option>
+                    </select>
+                </div>
+                
                 <a id="nav-admin-btn" href="/admin.html" class="hidden flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-emerald-500 hover:bg-slate-700 transition-all group" title="Painel Admin">
                     <i data-lucide="shield" class="w-5 h-5 text-slate-300 group-hover:text-emerald-400"></i>
                 </a>
@@ -371,6 +380,11 @@
                 <div class="flex items-center gap-2 bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5">
                     <input type="checkbox" id="filter-global" onchange="renderGrid()" class="w-4 h-4 rounded text-electricblue bg-slate-900 border-slate-700 focus:ring-0">
                     <label for="filter-global" class="text-xs font-orbitron tracking-widest text-slate-300 cursor-pointer">SOMENTE GLOBAIS</label>
+                </div>
+
+                <div class="flex items-center gap-2 bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5">
+                    <input type="checkbox" id="filter-favorites" onchange="renderGrid()" class="w-4 h-4 rounded text-cyberrose bg-slate-900 border-slate-700 focus:ring-0">
+                    <label for="filter-favorites" class="text-xs font-orbitron tracking-widest text-slate-300 cursor-pointer">SOMENTE FAVORITOS</label>
                 </div>
             </div>
         </div>
@@ -715,6 +729,65 @@
             }
         }
 
+        // --- EXCHANGE & CURRENCY LOGIC ---
+        window.currentCurrency = localStorage.getItem('zher_currency') || 'BRL';
+        window.exchangeRates = { BRL: 1.0, USD: 0.19, EUR: 0.17 };
+
+        async function fetchExchangeRates() {
+            try {
+                const res = await fetch('https://open.er-api.com/v6/latest/BRL');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.rates) {
+                        window.exchangeRates = data.rates;
+                        console.log("[EXCHANGE] Live exchange rates loaded successfully!");
+                    }
+                }
+            } catch(e) {
+                console.warn("[EXCHANGE] Failed to fetch live exchange rates, using offline fallbacks.", e);
+            }
+        }
+
+        function formatPrice(priceBRL) {
+            const rate = window.exchangeRates[window.currentCurrency] || 1.0;
+            const converted = parseFloat(priceBRL) * rate;
+            if (window.currentCurrency === 'USD') {
+                return `$ ${converted.toFixed(2)}`;
+            } else if (window.currentCurrency === 'EUR') {
+                return `€ ${converted.toFixed(2)}`;
+            } else {
+                return `R$ ${converted.toFixed(2).replace('.', ',')}`;
+            }
+        }
+
+        window.changeCurrency = (cur) => {
+            window.currentCurrency = cur;
+            localStorage.setItem('zher_currency', cur);
+            renderGrid();
+            renderMiniCart();
+        };
+
+        // --- FAVORITES LOGIC ---
+        function getFavorites() {
+            return JSON.parse(localStorage.getItem('zher_favorites')) || [];
+        }
+
+        function isFavorite(id) {
+            return getFavorites().includes(id);
+        }
+
+        window.toggleFavorite = (event, id) => {
+            if (event) event.stopPropagation(); // Evita abrir o modal do produto
+            let favorites = getFavorites();
+            if (favorites.includes(id)) {
+                favorites = favorites.filter(favId => favId !== id);
+            } else {
+                favorites.push(id);
+            }
+            localStorage.setItem('zher_favorites', JSON.stringify(favorites));
+            renderGrid();
+        };
+
         function getFilteredProducts() {
             const search = document.getElementById('filter-search')?.value.toLowerCase() || '';
             const category = document.getElementById('filter-category')?.value || '';
@@ -723,6 +796,7 @@
             const maxPrice = parseFloat(document.getElementById('filter-max')?.value);
             const sort = document.getElementById('filter-sort')?.value || '';
             const onlyGlobal = document.getElementById('filter-global')?.checked || false;
+            const onlyFavorites = document.getElementById('filter-favorites')?.checked || false;
 
             let filtered = produtos.filter(p => {
                 let match = true;
@@ -732,6 +806,7 @@
                 if(!isNaN(minPrice) && parseFloat(p.price) < minPrice) match = false;
                 if(!isNaN(maxPrice) && parseFloat(p.price) > maxPrice) match = false;
                 if(onlyGlobal && p.is_global === false) match = false;
+                if(onlyFavorites && !isFavorite(p.id)) match = false;
                 return match;
             });
 
@@ -768,12 +843,12 @@
                     if (oldPriceNum > priceNum) {
                         precoFormatado = `
                             <div class="flex flex-col">
-                                <del class="text-rose-500 text-[10px] font-orbitron -mb-1 opacity-80">R$ ${oldPriceNum.toFixed(2).replace('.', ',')}</del>
-                                <span class="font-orbitron font-black text-xl text-cyberrose">R$ ${priceNum.toFixed(2).replace('.', ',')}</span>
+                                <del class="text-rose-500 text-[10px] font-orbitron -mb-1 opacity-80">${formatPrice(oldPriceNum)}</del>
+                                <span class="font-orbitron font-black text-xl text-cyberrose">${formatPrice(priceNum)}</span>
                             </div>
                         `;
                     } else {
-                        precoFormatado = '<span class="font-orbitron font-black text-xl text-cyberrose">R$ ' + priceNum.toFixed(2).replace('.', ',') + '</span>';
+                        precoFormatado = '<span class="font-orbitron font-black text-xl text-cyberrose">' + formatPrice(priceNum) + '</span>';
                     }
                 }
                 
@@ -789,12 +864,34 @@
 
                 const genresTags = p.genres ? p.genres.split(',').slice(0,2).map(g => `<span class="bg-slate-800 border border-slate-700 text-slate-300 font-orbitron text-[8px] tracking-widest px-2 py-0.5 rounded uppercase">${g.trim()}</span>`).join(' ') : '';
 
+                // Steam logo overlay if category is Steam Key
+                const isSteam = p.category === 'STEAM KEY';
+                const steamBadge = isSteam ? `
+                    <div class="absolute top-3 left-3 bg-black/75 border border-slate-700/80 px-2 py-1 rounded backdrop-blur-md flex items-center gap-1.5 z-10 text-[9px] font-orbitron text-slate-200 tracking-widest uppercase">
+                        <svg class="w-3.5 h-3.5 text-slate-300" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-3.328 17.514c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189zm.065-2.923c-.767-.008-1.464.385-1.859 1.03l-2.45-.754c-.116-.036-.182-.16-.146-.276l.781-2.54c.036-.116.16-.182.276-.146l2.36.726c.45-.373 1.01-.58 1.595-.589.626-.008 1.222.215 1.688.625l3.29-2.285c.105-.072.247-.043.318.062l1.62 2.336c.072.104.043.247-.062.318l-3.23 2.244c-.218.66-.827 1.127-1.52 1.139-.026.001-.052.001-.078.001zm6.953-3.693c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189z"/>
+                        </svg>
+                        STEAM
+                    </div>
+                ` : '';
+
+                // Favorites button in top right
+                const favActive = isFavorite(p.id);
+                const heartClass = favActive ? 'fill-cyberrose text-cyberrose' : 'text-slate-400 hover:text-cyberrose';
+                const favoriteBtn = `
+                    <button onclick="toggleFavorite(event, ${p.id})" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-900/80 border border-slate-700 flex items-center justify-center backdrop-blur-md transition-all duration-300 z-20 hover:scale-110" title="Favoritar">
+                        <i data-lucide="heart" class="w-4 h-4 ${heartClass}"></i>
+                    </button>
+                `;
+
                 grid.innerHTML += `
                     <div class="advantage-card bg-slate-950/80 border border-slate-800/80 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all duration-300 cursor-pointer flex flex-col h-full" onclick="openModal(${p.id})">
                         <div class="h-48 w-full overflow-hidden relative">
+                            ${steamBadge}
+                            ${favoriteBtn}
                             <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ${p.in_stock === false ? 'grayscale opacity-50' : ''}">
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 to-transparent"></div>
-                            <span class="absolute top-3 right-3 bg-slate-900/80 border border-slate-700 text-slate-300 font-orbitron text-[9px] tracking-widest px-2 py-1 rounded backdrop-blur-md uppercase">${p.category}</span>
+                            <span class="absolute bottom-3 right-3 bg-slate-900/80 border border-slate-700 text-slate-300 font-orbitron text-[9px] tracking-widest px-2 py-1 rounded backdrop-blur-md uppercase">${p.category}</span>
                         </div>
                         <div class="p-6 flex flex-col flex-grow">
                             <h4 class="font-orbitron font-bold text-lg text-white uppercase tracking-wide leading-tight ${p.in_stock === false ? 'text-slate-500' : ''}">${p.title}</h4>
@@ -827,7 +924,10 @@
             );
         }
         
-        loadProducts();
+        // Load exchange rates, then products
+        fetchExchangeRates().then(() => {
+            loadProducts();
+        });
 
         const modal = document.getElementById('product-modal');
         const modalContent = document.getElementById('modal-content');
@@ -856,12 +956,12 @@
                 if (oldPriceNum > priceNum) {
                     document.getElementById('modal-price').innerHTML = `
                         <div class="flex flex-col">
-                            <del class="text-rose-500 text-sm font-orbitron -mb-1 opacity-80">R$ ${oldPriceNum.toFixed(2).replace('.', ',')}</del>
-                            <span>R$ ${priceNum.toFixed(2).replace('.', ',')}</span>
+                            <del class="text-rose-500 text-sm font-orbitron -mb-1 opacity-80">${formatPrice(oldPriceNum)}</del>
+                            <span>${formatPrice(priceNum)}</span>
                         </div>
                     `;
                 } else {
-                    document.getElementById('modal-price').innerText = 'R$ ' + priceNum.toFixed(2).replace('.', ',');
+                    document.getElementById('modal-price').innerText = formatPrice(priceNum);
                 }
             }
             document.getElementById('modal-description').innerText = currentProduct.description;
@@ -1073,7 +1173,7 @@
             let total = 0;
             
             cart.forEach((item, index) => {
-                const priceNum = parseFloat(item.price.replace('R$ ', '').replace(',', '.'));
+                const priceNum = typeof item.price === 'string' ? parseFloat(item.price.replace('R$ ', '').replace(',', '.')) : parseFloat(item.price);
                 total += priceNum;
                 
                 html += `
@@ -1081,7 +1181,7 @@
                         <img src="${item.image}" class="w-12 h-12 object-cover rounded flex-shrink-0">
                         <div class="flex-grow overflow-hidden min-w-0">
                             <h4 class="text-white text-xs font-bold truncate">${item.title}</h4>
-                            <span class="text-cyberrose text-xs font-bold whitespace-nowrap">R$ ${parseFloat(item.price).toFixed(2).replace('.', ',')}</span>
+                            <span class="text-cyberrose text-xs font-bold whitespace-nowrap">${formatPrice(priceNum)}</span>
                         </div>
                         <button onclick="removeFromMiniCart(${index})" class="flex-shrink-0 p-2 text-slate-400 hover:text-red-400 transition-colors bg-slate-900 rounded border border-slate-700">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -1091,13 +1191,17 @@
             });
             
             container.innerHTML = html;
-            totalEl.innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            totalEl.innerText = formatPrice(total);
             if(window.lucide) window.lucide.createIcons();
         }
         
         // Inicializa o badge de carrinho assim que a página carrega
         document.addEventListener('DOMContentLoaded', () => {
             updateCartBadge();
+            const selectEl = document.getElementById('currency-select');
+            if (selectEl) {
+                selectEl.value = window.currentCurrency;
+            }
         });
     </script>
 </body>

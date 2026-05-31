@@ -45,6 +45,15 @@
             </a>
             
             <div class="flex items-center gap-4">
+                <!-- Seletor de Moedas -->
+                <div class="relative">
+                    <select id="currency-select" onchange="changeCurrency(this.value)" class="bg-slate-950 border border-slate-800 text-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-orbitron tracking-widest focus:outline-none focus:border-electricblue transition-all cursor-pointer">
+                        <option value="BRL">🇧🇷 BRL</option>
+                        <option value="USD">🇺🇸 USD</option>
+                        <option value="EUR">🇪🇺 EUR</option>
+                    </select>
+                </div>
+
                 <a id="nav-admin-btn" href="/admin.html" class="hidden text-slate-400 hover:text-toxicgreen transition-colors flex items-center gap-2 font-orbitron text-xs tracking-widest" title="Painel Admin">
                     <i data-lucide="shield" class="w-4 h-4"></i> ADMIN
                 </a>
@@ -326,6 +335,68 @@
     </div>
 
     <script>
+        // --- EXCHANGE & CURRENCY LOGIC ---
+        window.currentCurrency = localStorage.getItem('zher_currency') || 'BRL';
+        window.exchangeRates = { BRL: 1.0, USD: 0.19, EUR: 0.17 };
+
+        async function fetchExchangeRates() {
+            try {
+                const res = await fetch('https://open.er-api.com/v6/latest/BRL');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.rates) {
+                        window.exchangeRates = data.rates;
+                        console.log("[EXCHANGE] Live exchange rates loaded successfully!");
+                    }
+                }
+            } catch(e) {
+                console.warn("[EXCHANGE] Failed to fetch live exchange rates, using offline fallbacks.", e);
+            }
+        }
+
+        function formatPrice(priceBRL) {
+            const rate = window.exchangeRates[window.currentCurrency] || 1.0;
+            const converted = parseFloat(priceBRL) * rate;
+            if (window.currentCurrency === 'USD') {
+                return `$ ${converted.toFixed(2)}`;
+            } else if (window.currentCurrency === 'EUR') {
+                return `€ ${converted.toFixed(2)}`;
+            } else {
+                return `R$ ${converted.toFixed(2).replace('.', ',')}`;
+            }
+        }
+
+        window.changeCurrency = (cur) => {
+            window.currentCurrency = cur;
+            localStorage.setItem('zher_currency', cur);
+            
+            // Sync current select value
+            const selectEl = document.getElementById('currency-select');
+            if (selectEl) selectEl.value = cur;
+            
+            // Re-render UI elements
+            updateCreditsDisplay();
+            
+            // Reload tab contents if loaded
+            const compras = document.getElementById('tab-compras');
+            const carteira = document.getElementById('tab-carteira');
+            if (compras && !compras.classList.contains('hidden')) {
+                loadMyOrders();
+            } else if (carteira && !carteira.classList.contains('hidden')) {
+                loadWalletData();
+            }
+        };
+
+        let cachedUserData = null;
+        function updateCreditsDisplay() {
+            if (cachedUserData && cachedUserData.email) {
+                const formatted = formatPrice(cachedUserData.balance || 0);
+                document.getElementById('user-credits').innerText = formatted;
+                const balLarge = document.getElementById('wallet-balance-large');
+                if (balLarge) balLarge.innerText = formatted;
+            }
+        }
+
         lucide.createIcons();
         let currentChatOrderId = null;
         let chatInterval = null;
@@ -334,11 +405,21 @@
         fetch('/api/me')
             .then(res => res.json())
             .then(data => {
+                cachedUserData = data;
                 if(data.email) {
                     document.getElementById('user-email').innerText = data.email;
-                    document.getElementById('user-credits').innerText = `R$ ${parseFloat(data.balance || 0).toFixed(2).replace('.', ',')}`;
+                    updateCreditsDisplay();
                 }
                 if(data.isAdmin) document.getElementById('nav-admin-btn').classList.remove('hidden');
+                
+                fetchExchangeRates().then(() => {
+                    // Set select dropdown value
+                    const selectEl = document.getElementById('currency-select');
+                    if (selectEl) {
+                        selectEl.value = window.currentCurrency;
+                    }
+                    updateCreditsDisplay();
+                });
             });
 
         function switchTab(tab) {
@@ -422,9 +503,23 @@
                              keyBox = `<div class="mt-2 text-xs text-slate-500">Chave em processamento. Abra o suporte.</div>`;
                         }
 
+                        // Steam logo overlay if category is Steam Key
+                        const isSteam = item.category === 'STEAM KEY';
+                        const steamBadge = isSteam ? `
+                            <div class="absolute top-1 left-1 bg-black/75 border border-slate-700/80 px-1 py-0.5 rounded backdrop-blur-sm flex items-center gap-0.5 z-10 text-[6px] font-orbitron text-slate-200 tracking-widest uppercase">
+                                <svg class="w-2 h-2 text-slate-300" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-3.328 17.514c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189zm.065-2.923c-.767-.008-1.464.385-1.859 1.03l-2.45-.754c-.116-.036-.182-.16-.146-.276l.781-2.54c.036-.116.16-.182.276-.146l2.36.726c.45-.373 1.01-.58 1.595-.589.626-.008 1.222.215 1.688.625l3.29-2.285c.105-.072.247-.043.318.062l1.62 2.336c.072.104.043.247-.062.318l-3.23 2.244c-.218.66-.827 1.127-1.52 1.139-.026.001-.052.001-.078.001zm6.953-3.693c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189z"/>
+                                </svg>
+                                STEAM
+                            </div>
+                        ` : '';
+
                         itemsHtml += `
                             <div class="flex items-center gap-4 bg-slate-900/50 p-3 rounded-lg border border-slate-800 mt-3">
-                                <img src="${item.image}" class="w-16 h-16 object-cover rounded-md">
+                                <div class="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
+                                    ${steamBadge}
+                                    <img src="${item.image}" class="w-full h-full object-cover">
+                                </div>
                                 <div class="flex-grow">
                                     <div class="text-xs text-electricblue font-orbitron tracking-widest uppercase">${item.category}</div>
                                     <div class="font-bold text-slate-200">${item.title} (x${item.quantity})</div>
@@ -441,7 +536,7 @@
                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 pl-3">
                                 <div>
                                     <span class="font-orbitron font-bold text-white text-lg">#PEDIDO-${o.id}</span>
-                                    <div class="text-sm font-bold text-cyberrose mt-1">R$ ${parseFloat(o.total_amount).toFixed(2).replace('.', ',')}</div>
+                                    <div class="text-sm font-bold text-cyberrose mt-1">${formatPrice(o.total_amount)}</div>
                                     ${isApproved ? `<button onclick="showOrderDetails(${o.id})" class="text-[10px] text-slate-400 hover:text-emerald-400 underline block mt-1.5 transition-colors font-semibold">ver detalhes</button>` : ''}
                                 </div>
                                 <div class="flex flex-col sm:items-end gap-2">
@@ -596,21 +691,35 @@
             
             const dateStr = new Date(o.created_at).toLocaleString('pt-BR');
             document.getElementById('receipt-date').innerText = dateStr;
-            document.getElementById('receipt-total').innerText = `R$ ${parseFloat(o.total_amount).toFixed(2).replace('.', ',')}`;
+            document.getElementById('receipt-total').innerText = formatPrice(o.total_amount);
             
             const itemsContainer = document.getElementById('receipt-items-list');
             itemsContainer.innerHTML = '';
             
             o.items.forEach(item => {
+                // Steam logo overlay if category is Steam Key
+                const isSteam = item.category === 'STEAM KEY';
+                const steamBadge = isSteam ? `
+                    <div class="absolute top-0.5 left-0.5 bg-black/75 border border-slate-700/80 px-1 py-0.5 rounded backdrop-blur-sm flex items-center gap-0.5 z-10 text-[5px] font-orbitron text-slate-200 tracking-widest uppercase">
+                        <svg class="w-1.5 h-1.5 text-slate-300" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-3.328 17.514c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189zm.065-2.923c-.767-.008-1.464.385-1.859 1.03l-2.45-.754c-.116-.036-.182-.16-.146-.276l.781-2.54c.036-.116.16-.182.276-.146l2.36.726c.45-.373 1.01-.58 1.595-.589.626-.008 1.222.215 1.688.625l3.29-2.285c.105-.072.247-.043.318.062l1.62 2.336c.072.104.043.247-.062.318l-3.23 2.244c-.218.66-.827 1.127-1.52 1.139-.026.001-.052.001-.078.001zm6.953-3.693c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189z"/>
+                        </svg>
+                        STEAM
+                    </div>
+                ` : '';
+
                 itemsContainer.innerHTML += `
                     <div class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg border border-slate-800">
-                        <img src="${item.image}" class="w-12 h-12 object-cover rounded">
+                        <div class="relative w-12 h-12 rounded overflow-hidden flex-shrink-0">
+                            ${steamBadge}
+                            <img src="${item.image}" class="w-full h-full object-cover">
+                        </div>
                         <div class="flex-grow min-w-0">
                             <span class="text-[8px] bg-electricblue/10 border border-electricblue/20 text-electricblue font-orbitron px-1.5 py-0.5 rounded uppercase font-bold">${item.category}</span>
                             <h5 class="text-white text-xs font-bold truncate mt-1">${item.title} (x${item.quantity})</h5>
                             <code class="text-[10px] text-emerald-400 font-bold block font-mono mt-0.5 select-all bg-emerald-950/20 px-1 py-0.5 rounded border border-emerald-900/30 w-fit">${item.activation_key || 'Chave em liberação'}</code>
                         </div>
-                        <span class="text-xs font-bold text-slate-300 font-orbitron whitespace-nowrap">R$ ${parseFloat(item.price).toFixed(2).replace('.', ',')}</span>
+                        <span class="text-xs font-bold text-slate-300 font-orbitron whitespace-nowrap">${formatPrice(item.price)}</span>
                     </div>
                 `;
             });
@@ -646,7 +755,7 @@
                     <tr style="border-bottom: 1px solid #e2e8f0;">
                         <td style="padding: 12px; font-weight: bold; color: #1e293b;">${item.title}</td>
                         <td style="padding: 12px; text-align: center; color: #64748b;">${item.quantity}</td>
-                        <td style="padding: 12px; text-align: right; font-weight: bold; color: #0f172a;">R$ ${parseFloat(item.price).toFixed(2).replace('.', ',')}</td>
+                        <td style="padding: 12px; text-align: right; font-weight: bold; color: #0f172a;">${formatPrice(item.price)}</td>
                     </tr>
                 `;
             });
@@ -714,7 +823,7 @@
                         
                         <div class="total-row">
                             <span class="total-label">TOTAL PAGO</span>
-                            <span class="total-value">R$ ${parseFloat(o.total_amount).toFixed(2).replace('.', ',')}</span>
+                            <span class="total-value">${formatPrice(o.total_amount)}</span>
                         </div>
                         
                         <div class="footer">
@@ -748,7 +857,7 @@
                     <tr style="border-bottom: 1px solid #e2e8f0;">
                         <td style="padding: 12px; font-weight: bold; color: #1e293b;">${item.title}</td>
                         <td style="padding: 12px; text-align: center; color: #64748b;">${item.quantity}</td>
-                        <td style="padding: 12px; text-align: right; font-weight: bold; color: #0f172a;">R$ ${parseFloat(item.price).toFixed(2).replace('.', ',')}</td>
+                        <td style="padding: 12px; text-align: right; font-weight: bold; color: #0f172a;">${formatPrice(item.price)}</td>
                     </tr>
                 `;
             });
@@ -817,7 +926,7 @@
                         
                         <div class="total-row">
                             <span class="total-label">TOTAL PAGO</span>
-                            <span class="total-value">R$ ${parseFloat(o.total_amount).toFixed(2).replace('.', ',')}</span>
+                            <span class="total-value">${formatPrice(o.total_amount)}</span>
                         </div>
                         
                         <div class="footer">
@@ -834,7 +943,6 @@
                 </body>
                 </html>
             `);
-            printWindow.document.close();
         };
 
         // --- PASSWORD RESET ---
@@ -873,9 +981,8 @@
                 const meRes = await fetch('/api/me');
                 const meData = await meRes.json();
                 if (meData.email) {
-                    const formatted = `R$ ${parseFloat(meData.balance || 0).toFixed(2).replace('.', ',')}`;
-                    document.getElementById('user-credits').innerText = formatted;
-                    document.getElementById('wallet-balance-large').innerText = formatted;
+                    cachedUserData = meData;
+                    updateCreditsDisplay();
                 }
 
                 // Carregar transações
@@ -896,7 +1003,7 @@
                 transactions.forEach(t => {
                     const date = new Date(t.created_at).toLocaleString('pt-BR');
                     const isPositive = parseFloat(t.amount) >= 0;
-                    const amountText = (isPositive ? '+ ' : '') + `R$ ${Math.abs(parseFloat(t.amount)).toFixed(2).replace('.', ',')}`;
+                    const amountText = (isPositive ? '+ ' : '') + formatPrice(Math.abs(parseFloat(t.amount)));
                     const amountClass = isPositive ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold';
                     
                     let typeText = '';
