@@ -45,6 +45,9 @@
             </a>
             
             <div class="flex items-center gap-4">
+                <a id="nav-admin-btn" href="/admin.html" class="hidden text-slate-400 hover:text-toxicgreen transition-colors flex items-center gap-2 font-orbitron text-xs tracking-widest" title="Painel Admin">
+                    <i data-lucide="shield" class="w-4 h-4"></i> ADMIN
+                </a>
                 <a href="/logout" class="text-slate-400 hover:text-cyberrose transition-colors flex items-center gap-2 font-orbitron text-xs tracking-widest" title="Desconectar">
                     <i data-lucide="power" class="w-4 h-4"></i> SAIR
                 </a>
@@ -153,6 +156,7 @@
             .then(res => res.json())
             .then(data => {
                 if(data.email) document.getElementById('user-email').innerText = data.email;
+                if(data.isAdmin) document.getElementById('nav-admin-btn').classList.remove('hidden');
             });
 
         function switchTab(tab) {
