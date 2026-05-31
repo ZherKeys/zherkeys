@@ -77,8 +77,10 @@
                     </div>
                     
                     <div>
-                        <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">CATEGORIA (Ex: Vitalício)</label>
-                        <input type="text" id="prod-category" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all">
+                        <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-2">CATEGORIA</label>
+                        <div id="categories-container" class="bg-slate-950 border border-slate-800 rounded-lg p-3 grid grid-cols-2 gap-2">
+                            <!-- Gerado via JS -->
+                        </div>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4">
@@ -93,8 +95,15 @@
                     </div>
                     
                     <div>
-                        <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">LINK DA IMAGEM</label>
-                        <input type="url" id="prod-image" placeholder="https://..." required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all">
+                        <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">IMAGEM DO PRODUTO (Link ou Upload)</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="prod-image" placeholder="https://..." required class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all">
+                            <label class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-3 rounded-lg cursor-pointer flex items-center justify-center transition-colors border border-slate-700 hover:border-slate-500" title="Fazer Upload de Imagem">
+                                <i data-lucide="upload" class="w-5 h-5"></i>
+                                <input type="file" id="prod-image-file" accept="image/*" class="hidden">
+                            </label>
+                        </div>
+                        <p id="upload-status" class="text-[9px] text-toxicgreen mt-1 hidden"></p>
                     </div>
 
                     <div>
@@ -104,8 +113,10 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">GÊNEROS (Ex: Ação, RPG, Tiro)</label>
-                        <input type="text" id="prod-genres" placeholder="Ação, RPG, Multiplayer" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all">
+                        <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-2">GÊNEROS (Selecione vários)</label>
+                        <div id="genres-container" class="max-h-32 overflow-y-auto bg-slate-950 border border-slate-800 rounded-lg p-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            <!-- Gerado via JS -->
+                        </div>
                     </div>
 
                     <div>
@@ -315,6 +326,29 @@
             }
         }
 
+        const categoryList = ["STEAM KEY", "CONTA", "GIFT CARD", "SOFTWARE"];
+        const genreList = ["Ação", "Aventura", "RPG", "FPS", "Tiro", "Estratégia", "Esportes", "Corrida", "Terror", "Sobrevivência", "Sandbox", "Mundo Aberto", "Multiplayer", "Co-op", "Indie", "Casual", "Simulação", "Streaming", "Utilitário"];
+
+        function renderCategories() {
+            const container = document.getElementById('categories-container');
+            container.innerHTML = categoryList.map(c => `
+                <label class="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-white transition-colors text-xs font-inter">
+                    <input type="radio" name="prod_cat" value="${c}" class="category-radio w-4 h-4 text-toxicgreen bg-slate-900 border-slate-700 focus:ring-0" ${c === 'STEAM KEY' ? 'checked' : ''}>
+                    <span class="truncate">${c}</span>
+                </label>
+            `).join('');
+        }
+
+        function renderGenres() {
+            const container = document.getElementById('genres-container');
+            container.innerHTML = genreList.map(g => `
+                <label class="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-white transition-colors text-xs font-inter">
+                    <input type="checkbox" value="${g}" class="genre-checkbox w-4 h-4 rounded bg-slate-900 border-slate-700 text-electricblue focus:ring-0">
+                    <span class="truncate">${g}</span>
+                </label>
+            `).join('');
+        }
+
         const countriesList = [
             "Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Bahrein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia e Herzegovina","Botsuana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo-Brazzaville","Congo-Kinshasa","Coreia do Norte","Coreia do Sul","Costa do Marfim","Costa Rica","Croácia","Cuba","Dinamarca","Djibuti","Dominica","Egito","El Salvador","Emirados Árabes Unidos","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Eswatini","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné Equatorial","Guiné-Bissau","Haiti","Honduras","Hungria","Iêmen","Ilhas Marshall","Ilhas Salomão","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia do Norte","Madagascar","Malásia","Malaui","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Países Baixos","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Tcheca","República Dominicana","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão e Neves","São Tomé e Príncipe","São Vicente e Granadinas","Seicheles","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"
         ];
@@ -335,17 +369,23 @@
             const id = document.getElementById('prod-id').value;
             const checkedCountries = Array.from(document.querySelectorAll('.country-checkbox:checked')).map(cb => cb.value).join(', ');
 
+            const imageVal = document.getElementById('prod-image').value;
+            if(!imageVal) {
+                alert("Por favor, forneça um link ou faça upload de uma imagem.");
+                return;
+            }
+
             const payload = {
                 title: document.getElementById('prod-title').value,
-                category: document.getElementById('prod-category').value,
+                category: document.querySelector('.category-radio:checked')?.value || '',
                 price: document.getElementById('prod-price').value,
                 old_price: document.getElementById('prod-old-price').value,
-                image: document.getElementById('prod-image').value,
+                image: imageVal,
                 description: document.getElementById('prod-desc').value,
                 activation_key: document.getElementById('prod-activation').value,
                 is_global: document.getElementById('prod-global').checked,
                 restricted_countries: checkedCountries,
-                genres: document.getElementById('prod-genres').value
+                genres: Array.from(document.querySelectorAll('.genre-checkbox:checked')).map(cb => cb.value).join(', ')
             };
 
             const url = id ? '/api/admin/products/' + id : '/api/admin/products';
@@ -372,13 +412,20 @@
         window.editProduct = (p) => {
             document.getElementById('prod-id').value = p.id;
             document.getElementById('prod-title').value = p.title;
-            document.getElementById('prod-category').value = p.category;
+            document.querySelectorAll('.category-radio').forEach(rb => {
+                rb.checked = (rb.value === p.category);
+            });
             document.getElementById('prod-price').value = p.price;
             document.getElementById('prod-old-price').value = p.old_price || '';
             document.getElementById('prod-image').value = p.image;
             document.getElementById('prod-desc').value = p.description;
             document.getElementById('prod-activation').value = p.activation_key || '';
-            document.getElementById('prod-genres').value = p.genres || '';
+            
+            const genresListStr = (p.genres || '').split(',').map(s => s.trim());
+            document.querySelectorAll('.genre-checkbox').forEach(cb => {
+                cb.checked = genresListStr.includes(cb.value);
+            });
+            
             document.getElementById('prod-global').checked = p.is_global !== false;
             document.getElementById('div-restricted').classList.toggle('hidden', p.is_global !== false);
             
@@ -398,7 +445,12 @@
             document.getElementById('prod-id').value = '';
             document.getElementById('prod-global').checked = true;
             document.getElementById('div-restricted').classList.add('hidden');
+            document.getElementById('upload-status').classList.add('hidden');
+            document.getElementById('prod-image-file').value = '';
             document.querySelectorAll('.country-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('.genre-checkbox').forEach(cb => cb.checked = false);
+            const firstCat = document.querySelector('.category-radio');
+            if (firstCat) firstCat.checked = true;
             document.getElementById('btn-save').innerText = "SALVAR PRODUTO";
             document.getElementById('btn-save').classList.replace('bg-electricblue', 'bg-toxicgreen');
             document.getElementById('btn-cancel').classList.add('hidden');
@@ -417,6 +469,27 @@
                 alert("Erro ao deletar.");
             }
         };
+
+        // File upload logic
+        document.getElementById('prod-image-file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(file) {
+                // Check size (max 2MB to avoid giant DB payload)
+                if(file.size > 2 * 1024 * 1024) {
+                    alert('Por favor, envie uma imagem menor que 2MB.');
+                    this.value = '';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    document.getElementById('prod-image').value = evt.target.result;
+                    const status = document.getElementById('upload-status');
+                    status.innerText = `Imagem local carregada: ${file.name}`;
+                    status.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
 
         // --- VENDAS & CHAT LOGIC ---
         async function loadOrders() {
@@ -660,6 +733,8 @@
         });
 
         // Init
+        renderCategories();
+        renderGenres();
         renderCountries();
         loadProducts();
     </script>
