@@ -79,6 +79,7 @@ async function initDB() {
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_deposit BOOLEAN DEFAULT false;
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS pix_qr_code TEXT;
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS pix_qr_code_base64 TEXT;
+            ALTER TABLE notifications ADD COLUMN IF NOT EXISTS order_id INTEGER REFERENCES orders(id);
             
             CREATE TABLE IF NOT EXISTS wallet_transactions (
                 id SERIAL PRIMARY KEY,
@@ -96,6 +97,7 @@ async function initDB() {
                 message TEXT NOT NULL,
                 type TEXT NOT NULL,
                 is_read BOOLEAN DEFAULT false,
+                order_id INTEGER REFERENCES orders(id),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             
@@ -718,6 +720,12 @@ app.post('/api/wallet/deposit', requireAuth, async (req, res) => {
                 [createdPayment.id.toString(), qrCode, qrCodeBase64, orderId]
             );
             
+            // Registra a notificação de pagamento pendente
+            await pool.query(
+                'INSERT INTO notifications (user_id, title, message, type, order_id) VALUES ($1, $2, $3, $4, $5)',
+                [req.session.userId, 'Pagamento Pendente', `Sua recarga de R$ ${parsedAmount.toFixed(2).replace('.', ',')} está aguardando pagamento. Clique aqui para abrir o QR Code.`, 'warning', orderId]
+            );
+            
             // Envia e-mail com o PIX (usando a API do Google Charts para renderizar o QR Code remotamente de forma compatível)
             sendEmailViaBrevo(
                 email,
@@ -859,10 +867,15 @@ async function approveOrderSecure(orderId, paymentId) {
             return true;
         }
         
-        // 2. Atualiza o status do pedido para approved
+        // 2. Atualiza o status do pedido para approved e marca a notificação pendente como lida
         await client.query(
             'UPDATE orders SET status = $1, mp_payment_id = $2 WHERE id = $3',
             ['approved', paymentId ? paymentId.toString() : order.mp_payment_id, orderId]
+        );
+        
+        await client.query(
+            'UPDATE notifications SET is_read = true WHERE order_id = $1',
+            [orderId]
         );
         
         // 3. Se for DEPÓSITO, credita o saldo do usuário com segurança

@@ -1514,7 +1514,7 @@
                     const readIndicator = n.is_read ? '' : '<span class="w-1.5 h-1.5 bg-cyberrose rounded-full animate-ping flex-shrink-0"></span>';
                     
                     html += `
-                        <div onclick="markNotificationAsRead(${n.id}, event)" class="p-4 flex gap-3 items-start border-l-2 hover:bg-slate-900/40 transition-colors cursor-pointer ${n.is_read ? 'border-transparent opacity-60' : 'border-cyberrose bg-slate-900/20'}">
+                        <div onclick="markNotificationAsRead(${n.id}, event, ${n.order_id || 'null'})" class="p-4 flex gap-3 items-start border-l-2 hover:bg-slate-900/40 transition-colors cursor-pointer ${n.is_read ? 'border-transparent opacity-60' : 'border-cyberrose bg-slate-900/20'}">
                             <div class="p-2 rounded-lg border flex-shrink-0 ${typeClass}">
                                 ${iconHtml}
                             </div>
@@ -1555,7 +1555,7 @@
             }
         }
 
-        window.markNotificationAsRead = async (id, event) => {
+        window.markNotificationAsRead = async (id, event, orderId) => {
             if(event) event.stopPropagation();
             try {
                 await fetch('/api/notifications/read', {
@@ -1563,8 +1563,22 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id })
                 });
-                loadNotifications();
-                updateNotificationsBadge();
+                
+                if (orderId) {
+                    if (window.location.pathname.includes('account.html')) {
+                        if (typeof switchTab === 'function') {
+                            switchTab('carteira');
+                        }
+                        if (typeof showPendingPixDetails === 'function') {
+                            setTimeout(() => { showPendingPixDetails(parseInt(orderId)); }, 100);
+                        }
+                    } else {
+                        window.location.href = `/account.html?tab=carteira&open_pix=${orderId}`;
+                    }
+                } else {
+                    loadNotifications();
+                    updateNotificationsBadge();
+                }
             } catch(e) {
                 console.error(e);
             }
