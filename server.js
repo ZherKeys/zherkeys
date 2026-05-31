@@ -389,6 +389,36 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
             const qrCodeBase64 = createdPayment.point_of_interaction.transaction_data.qr_code_base64;
             const qrCode = createdPayment.point_of_interaction.transaction_data.qr_code;
 
+            // Envia e-mail com as informações de pagamento do PIX e aviso de 5 minutos
+            sendEmailViaBrevo(
+                email,
+                `⚡ Pague seu PIX de R$ ${totalAmount.toFixed(2).replace('.', ',')} - Zher Keys`,
+                `Olá! Seu PIX para o pedido #${orderId} foi gerado com sucesso.\nComo as keys têm alta rotatividade, o seu PIX expira em exatamente 5 minutos.\nUtilize o código Copia e Cola abaixo para pagar:\n\n${qrCode}\n\nCaso não pague em 5 minutos, o pedido será cancelado automaticamente.`,
+                `<div style="background-color: #020617; color: #f8fafc; padding: 40px 20px; font-family: sans-serif; text-align: center; border: 1px solid #1e293b; border-radius: 16px; max-w: 600px; margin: 0 auto;">
+                    <h2 style="color: #3b82f6; font-size: 24px; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px;">ZHER KEYS SECURE BILLING</h2>
+                    <p style="color: #94a3b8; font-size: 14px; margin-top: 0; margin-bottom: 25px;">Pedido #${orderId}</p>
+                    
+                    <div style="background-color: #ef4444; color: white; display: inline-block; padding: 8px 16px; border-radius: 9999px; font-size: 12px; font-weight: bold; letter-spacing: 1px; margin-bottom: 25px;">
+                        ⚠️ EXPIRA EM 5 MINUTOS
+                    </div>
+                    
+                    <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6; margin-bottom: 25px;">
+                        Para concluir sua compra e liberar suas chaves (keys) instantaneamente, efetue o pagamento do PIX abaixo. Após 5 minutos, este pedido será cancelado automaticamente e sumirá da sua conta.
+                    </p>
+                    
+                    <div style="background-color: #ffffff; padding: 15px; border-radius: 12px; display: inline-block; margin-bottom: 25px; box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);">
+                        <img src="data:image/jpeg;base64,${qrCodeBase64}" alt="QR Code PIX" style="width: 180px; height: 180px; display: block;" />
+                    </div>
+                    
+                    <p style="color: #94a3b8; font-size: 11px; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; font-weight: bold;">Código Copia e Cola:</p>
+                    <div style="background-color: #0b0f19; border: 1px solid #1e293b; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; color: #3b82f6; word-break: break-all; text-align: left; margin-bottom: 30px;">
+                        ${qrCode}
+                    </div>
+                    
+                    <p style="color: #64748b; font-size: 11px; margin-top: 20px;">Esta é uma transação criptografada e segura da loja Zher Keys. Não responda a este e-mail.</p>
+                </div>`
+            ).catch(err => console.error("Erro ao enviar e-mail com PIX:", err));
+
             return res.json({ qr_code_base64: qrCodeBase64, qr_code: qrCode });
         }
 
@@ -461,7 +491,10 @@ app.post('/webhook', async (req, res) => {
 
 app.get('/api/my-orders', requireAuth, async (req, res) => {
     try {
-        const ordersRes = await pool.query('SELECT * FROM orders WHERE user_id = $1 ORDER BY id DESC', [req.session.userId]);
+        // Cancelar pedidos pendentes com mais de 5 minutos
+        await pool.query("UPDATE orders SET status = 'cancelled' WHERE status = 'pending' AND created_at < NOW() - INTERVAL '5 minutes'");
+
+        const ordersRes = await pool.query("SELECT * FROM orders WHERE user_id = $1 AND status != 'cancelled' ORDER BY id DESC", [req.session.userId]);
         const orders = ordersRes.rows;
         
         for (let order of orders) {
