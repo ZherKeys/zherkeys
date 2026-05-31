@@ -453,6 +453,15 @@ app.post('/api/admin/orders/:id/chat', requireAdmin, async (req, res) => {
     }
 });
 
+app.put('/api/admin/orders/:id/approve', requireAdmin, async (req, res) => {
+    try {
+        await pool.query('UPDATE orders SET status = $1 WHERE id = $2', ['approved', req.params.id]);
+        res.json({ message: 'Pedido aprovado manualmente' });
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao aprovar' });
+    }
+});
+
 
 // ========================
 // FRONTEND ROUTES & AUTH

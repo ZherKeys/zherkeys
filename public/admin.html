@@ -327,11 +327,19 @@
 
                     const unreadStyle = o.chat.length > 0 && o.chat[o.chat.length-1].sender_type === 'user' ? 'border-cyberrose shadow-lg shadow-cyberrose/20' : 'border-slate-800 hover:border-slate-600';
 
+                    let approveBtn = '';
+                    if(o.status === 'pending') {
+                        approveBtn = `<button onclick="approveOrder(event, ${o.id})" class="text-[9px] bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1 px-2 rounded ml-2 transition-colors">FORÇAR APROVAÇÃO (TESTE)</button>`;
+                    }
+
                     html += `
                         <div onclick="openChat(${o.id})" class="cursor-pointer bg-slate-950 p-4 rounded-xl border ${unreadStyle} transition-all">
                             <div class="flex justify-between items-start mb-2">
                                 <span class="font-orbitron font-bold text-white text-sm">#PEDIDO-${o.id}</span>
-                                <span class="font-orbitron text-[9px] px-2 py-1 rounded border ${statusColor}">${statusText}</span>
+                                <div class="flex items-center">
+                                    <span class="font-orbitron text-[9px] px-2 py-1 rounded border ${statusColor}">${statusText}</span>
+                                    ${approveBtn}
+                                </div>
                             </div>
                             <div class="text-sm text-slate-300 mb-1"><i data-lucide="user" class="w-3 h-3 inline"></i> ${o.user_email}</div>
                             <div class="text-xs text-slate-500 truncate mb-2">${itemsHtml}</div>
@@ -345,6 +353,20 @@
                 console.error(e);
             }
         }
+
+        window.approveOrder = async (e, id) => {
+            e.stopPropagation();
+            if(!confirm("Aprovar este pedido manualmente? (Isso revelará a chave secreta ao cliente)")) return;
+            try {
+                const res = await fetch('/api/admin/orders/' + id + '/approve', { method: 'PUT' });
+                if(res.ok) {
+                    loadOrders();
+                    alert("Pedido Aprovado!");
+                }
+            } catch(err) {
+                alert("Erro ao aprovar.");
+            }
+        };
 
         window.openChat = (orderId) => {
             currentOrderId = orderId;
