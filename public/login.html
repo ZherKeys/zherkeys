@@ -72,6 +72,10 @@
                     <input type="password" id="login-password" required class="w-full bg-slate-950 border border-slate-800 rounded-lg py-3 pl-10 pr-4 text-white placeholder-slate-600 focus:outline-none focus:border-electricblue transition-colors" placeholder="••••••••">
                 </div>
             </div>
+            
+            <!-- Anti-Robô Widget para Login -->
+            <div id="turnstile-login-container" class="my-4 flex justify-center"></div>
+            
             <button type="submit" class="w-full bg-electricblue hover:bg-blue-600 text-white font-orbitron text-xs tracking-widest font-bold py-4 rounded-lg shadow-lg shadow-electricblue/30 transition-all uppercase flex items-center justify-center gap-2">
                 INICIAR SESSÃO <i data-lucide="log-in" class="w-4 h-4"></i>
             </button>
@@ -126,31 +130,63 @@
         lucide.createIcons();
 
         // Configuração do anti-robô (Cloudflare Turnstile)
-        let turnstileToken = '';
-        let turnstileLoaded = false;
+        let turnstileRegisterToken = '';
+        let turnstileLoginToken = '';
+        let turnstileRegisterLoaded = false;
+        let turnstileLoginLoaded = false;
+        let turnstileSitekey = '';
 
-        async function loadTurnstile() {
-            if (turnstileLoaded) return;
+        async function fetchSitekey() {
+            if (turnstileSitekey) return turnstileSitekey;
             try {
                 const res = await fetch('/api/config/turnstile');
                 const { sitekey } = await res.json();
-                if (window.turnstile) {
-                    window.turnstile.render('#turnstile-container', {
-                        sitekey: sitekey,
-                        theme: 'dark',
-                        callback: function(token) {
-                            turnstileToken = token;
-                        },
-                        'expired-callback': function() {
-                            turnstileToken = '';
-                        }
-                    });
-                    turnstileLoaded = true;
-                }
+                turnstileSitekey = sitekey;
+                return sitekey;
             } catch(e) {
-                console.error("Erro ao carregar o Turnstile:", e);
+                console.error("Erro ao buscar sitekey:", e);
+                return '1x00000000000000000000AA';
             }
         }
+
+        async function loadLoginTurnstile() {
+            if (turnstileLoginLoaded) return;
+            const sitekey = await fetchSitekey();
+            if (window.turnstile) {
+                window.turnstile.render('#turnstile-login-container', {
+                    sitekey: sitekey,
+                    theme: 'dark',
+                    callback: function(token) {
+                        turnstileLoginToken = token;
+                    },
+                    'expired-callback': function() {
+                        turnstileLoginToken = '';
+                    }
+                });
+                turnstileLoginLoaded = true;
+            }
+        }
+
+        async function loadRegisterTurnstile() {
+            if (turnstileRegisterLoaded) return;
+            const sitekey = await fetchSitekey();
+            if (window.turnstile) {
+                window.turnstile.render('#turnstile-container', {
+                    sitekey: sitekey,
+                    theme: 'dark',
+                    callback: function(token) {
+                        turnstileRegisterToken = token;
+                    },
+                    'expired-callback': function() {
+                        turnstileRegisterToken = '';
+                    }
+                });
+                turnstileRegisterLoaded = true;
+            }
+        }
+
+        // Carrega o captcha de login imediatamente na inicialização
+        setTimeout(loadLoginTurnstile, 500);
 
         function switchTab(tab) {
             const loginForm = document.getElementById('login-form');
@@ -170,6 +206,7 @@
                 tabLogin.classList.remove('text-slate-500');
                 tabReg.classList.remove('border-b-2', 'border-cyberrose', 'text-white');
                 tabReg.classList.add('text-slate-500');
+                loadLoginTurnstile(); // Carrega Turnstile de login se necessário
             } else {
                 regForm.classList.remove('hidden');
                 loginForm.classList.add('hidden');
@@ -177,7 +214,7 @@
                 tabReg.classList.remove('text-slate-500');
                 tabLogin.classList.remove('border-b-2', 'border-electricblue', 'text-white');
                 tabLogin.classList.add('text-slate-500');
-                loadTurnstile(); // Carrega o Turnstile dinamicamente
+                loadRegisterTurnstile(); // Carrega Turnstile de registro se necessário
             }
         }
 
@@ -190,6 +227,13 @@
 
         async function handleLogin(e) {
             e.preventDefault();
+            
+            // Validação client-side do Turnstile
+            if(!turnstileLoginToken) {
+                showAlert('Por favor, confirme que você não é um robô.', true);
+                return;
+            }
+
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
             
@@ -197,7 +241,7 @@
                 const res = await fetch('/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ email, password, turnstileToken: turnstileLoginToken })
                 });
                 const data = await res.json();
                 
@@ -207,6 +251,8 @@
                     } else {
                         showAlert(data.error, true);
                     }
+                    if (window.turnstile) window.turnstile.reset('#turnstile-login-container');
+                    turnstileLoginToken = '';
                 }
                 else {
                     showAlert(data.message, false);
@@ -251,7 +297,7 @@
             e.preventDefault();
             
             // Validação client-side do Turnstile
-            if(!turnstileToken) {
+            if(!turnstileRegisterToken) {
                 showAlert('Por favor, confirme que você não é um robô.', true);
                 return;
             }
@@ -270,19 +316,19 @@
                 const res = await fetch('/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password, turnstileToken })
+                    body: JSON.stringify({ email, password, turnstileToken: turnstileRegisterToken })
                 });
                 const data = await res.json();
                 
                 if(!res.ok) {
                     showAlert(data.error, true);
                     if (window.turnstile) window.turnstile.reset('#turnstile-container');
-                    turnstileToken = '';
+                    turnstileRegisterToken = '';
                 } else {
                     showAlert(data.message, false);
                     document.getElementById('register-form').reset();
                     if (window.turnstile) window.turnstile.reset('#turnstile-container');
-                    turnstileToken = '';
+                    turnstileRegisterToken = '';
                 }
             } catch(err) {
                 showAlert('Erro de conexão com servidor.', true);

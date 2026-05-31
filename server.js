@@ -1217,9 +1217,34 @@ app.post('/register', async (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, turnstileToken } = req.body;
     
     if(!email || !password) return res.status(400).json({ error: 'Preencha todos os campos.' });
+
+    // Validar Cloudflare Turnstile anti-robô
+    const secretKey = process.env.CLOUDFLARE_TURNSTILE_SECRETKEY || '1x0000000000000000000000000000000AA';
+    if (!turnstileToken) {
+        return res.status(400).json({ error: 'Validação anti-robô ausente.' });
+    }
+
+    try {
+        const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                secret: secretKey,
+                response: turnstileToken,
+                remoteip: req.ip
+            })
+        });
+        const verifyData = await verifyRes.json();
+        if (!verifyData.success) {
+            return res.status(400).json({ error: 'Falha na validação anti-robô. Você é um robô?' });
+        }
+    } catch(err) {
+        console.error("Erro na verificação do Turnstile no login:", err);
+        return res.status(500).json({ error: 'Erro ao validar anti-robô no servidor.' });
+    }
 
     try {
         const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
