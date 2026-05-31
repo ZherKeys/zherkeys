@@ -767,6 +767,12 @@
                     body: JSON.stringify({ points: scoreValue, adWatched: watchedAd })
                 });
 
+                if (response.status === 401) {
+                    alert('⚠️ Você precisa estar logado na sua conta para salvar seus pontos e receber a recompensa!');
+                    window.location.href = '/login.html';
+                    return;
+                }
+
                 const data = await response.json();
                 
                 if (response.ok && data.success) {
@@ -782,7 +788,7 @@
                     alert(`⚠️ Erro ao reivindicar: ${data.error || 'Erro desconhecido'}`);
                 }
             } catch(e) {
-                alert('Erro de conexão ao salvar sua recompensa de jogo.');
+                alert('Erro ao processar sua recompensa. Certifique-se de que está logado no site!');
             }
 
             // Reseta tela de jogo

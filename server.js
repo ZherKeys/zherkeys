@@ -230,8 +230,14 @@ console.log('Motor de E-mail configurado via Brevo API');
 
 // Middlewares
 const requireAuth = (req, res, next) => {
-    if (req.session.userId) next();
-    else res.redirect('/login.html');
+    if (req.session.userId) {
+        next();
+    } else {
+        if (req.originalUrl && req.originalUrl.startsWith('/api/')) {
+            return res.status(401).json({ error: 'Você precisa estar logado para realizar esta ação.' });
+        }
+        res.redirect('/login.html');
+    }
 };
 
 const requireAdmin = async (req, res, next) => {
