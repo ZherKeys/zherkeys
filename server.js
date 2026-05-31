@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const path = require('path');
 const crypto = require('crypto');
-const { MercadoPagoConfig, Preference } = require('mercadopago');
+const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -59,6 +59,24 @@ async function initDB() {
                 total_amount NUMERIC(10, 2),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+            
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS activation_key TEXT;
+            
+            CREATE TABLE IF NOT EXISTS order_items (
+                id SERIAL PRIMARY KEY,
+                order_id INTEGER REFERENCES orders(id),
+                product_id INTEGER REFERENCES products(id),
+                quantity INTEGER,
+                price NUMERIC(10, 2)
+            );
+            
+            CREATE TABLE IF NOT EXISTS order_chats (
+                id SERIAL PRIMARY KEY,
+                order_id INTEGER REFERENCES orders(id),
+                sender_type TEXT,
+                message TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
         `);
 
         // Popular produtos iniciais se estiver vazio
@@ -70,47 +88,53 @@ async function initDB() {
                     price: 7.79,
                     image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/477160/header.jpg",
                     description: "Human: Fall Flat é um jogo hilário e leve de plataforma baseado em física, ambientado em paisagens flutuantes e oníricas que podem ser jogadas solo ou com até 8 amigos online. Ativação via Steam.",
-                    category: "STEAM KEY"
+                    category: "STEAM KEY",
+                    activation_key: "ABCD-1234-EFGH-5678"
                 },
                 {
                     title: "Batman: Arkham Origins",
                     price: 8.09,
                     image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/209000/header.jpg",
                     description: "Batman: Arkham Origins apresenta uma Gotham City expandida e uma história original prequela ambientada vários anos antes dos eventos de Batman: Arkham Asylum e Batman: Arkham City.",
-                    category: "STEAM KEY"
+                    category: "STEAM KEY",
+                    activation_key: "WXYZ-9876-QWER-TYUI"
                 },
                 {
                     title: "LEGO The Incredibles",
                     price: 7.50,
                     image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/818320/header.jpg",
                     description: "Experimente as aventuras emocionantes da família Pera e use seus superpoderes para derrotar o crime e reviver momentos memoráveis dos filmes Os Incríveis e Os Incríveis 2 no mundo LEGO.",
-                    category: "STEAM KEY"
+                    category: "STEAM KEY",
+                    activation_key: "LKJH-GFDS-MNBV-CXZA"
                 },
                 {
                     title: "LEGO DC Super-Villains Deluxe",
                     price: 12.01,
                     image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/829110/header.jpg",
                     description: "É bom ser mau... Embarque em uma nova aventura da DC/LEGO tornando-se o melhor vilão que o universo já viu. A Deluxe Edition inclui conteúdo extra e DLCs exclusivos.",
-                    category: "STEAM KEY"
+                    category: "STEAM KEY",
+                    activation_key: "POIU-YTRE-WQAS-DFGH"
                 },
                 {
                     title: "Middle-earth: Shadow of War Definitive",
                     price: 15.28,
                     image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/356190/header.jpg",
                     description: "Experimente um mundo épico aberto trazido à vida pelo Sistema Nêmesis premiado. Forje um novo Anel do Poder, conquiste Fortalezas e domine Mordor com seu próprio exército de orcs nesta Edição Definitiva completa.",
-                    category: "STEAM KEY"
+                    category: "STEAM KEY",
+                    activation_key: "MKOI-JNBH-UYGV-CFTX"
                 },
                 {
                     title: "The LEGO Movie Videogame",
                     price: 5.28,
                     image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/267530/header.jpg",
                     description: "Junte-se a Emmet e um grupo improvável de rebeldes em sua busca heroica para impedir o plano maligno do Senhor Negócios. Construa com peças de LEGO nesta incrível aventura em formato de jogo.",
-                    category: "STEAM KEY"
+                    category: "STEAM KEY",
+                    activation_key: "ZZZZ-XXXX-CCCC-VVVV"
                 }
             ];
             
             for (let p of defaultProducts) {
-                await pool.query('INSERT INTO products (title, description, price, image, category) VALUES ($1, $2, $3, $4, $5)', [p.title, p.description, p.price, p.image, p.category]);
+                await pool.query('INSERT INTO products (title, description, price, image, category, activation_key) VALUES ($1, $2, $3, $4, $5, $6)', [p.title, p.description, p.price, p.image, p.category, p.activation_key]);
             }
             console.log('✅ Produtos iniciais transferidos para o Banco de Dados.');
         }
@@ -173,8 +197,18 @@ const requireAdmin = async (req, res, next) => {
 // API DE PRODUTOS E ADMIN
 // ========================
 
-// Listar produtos (Público)
+// Listar produtos (Público - NÃO EXPÕE A CHAVE)
 app.get('/api/products', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT id, title, description, price, image, category FROM products ORDER BY id ASC');
+        res.json(result.rows);
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao buscar produtos' });
+    }
+});
+
+// Admin Listar (EXPÕE A CHAVE PARA O ADMIN VER)
+app.get('/api/admin/products', requireAdmin, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM products ORDER BY id ASC');
         res.json(result.rows);
@@ -185,11 +219,11 @@ app.get('/api/products', async (req, res) => {
 
 // Criar produto (Admin)
 app.post('/api/admin/products', requireAdmin, async (req, res) => {
-    const { title, description, price, image, category } = req.body;
+    const { title, description, price, image, category, activation_key } = req.body;
     try {
         await pool.query(
-            'INSERT INTO products (title, description, price, image, category) VALUES ($1, $2, $3, $4, $5)',
-            [title, description, parseFloat(price), image, category]
+            'INSERT INTO products (title, description, price, image, category, activation_key) VALUES ($1, $2, $3, $4, $5, $6)',
+            [title, description, parseFloat(price), image, category, activation_key || '']
         );
         res.status(201).json({ message: 'Produto adicionado' });
     } catch(e) {
@@ -200,11 +234,11 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
 // Editar produto (Admin)
 app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
-    const { title, description, price, image, category } = req.body;
+    const { title, description, price, image, category, activation_key } = req.body;
     try {
         await pool.query(
-            'UPDATE products SET title=$1, description=$2, price=$3, image=$4, category=$5 WHERE id=$6',
-            [title, description, parseFloat(price), image, category, id]
+            'UPDATE products SET title=$1, description=$2, price=$3, image=$4, category=$5, activation_key=$6 WHERE id=$7',
+            [title, description, parseFloat(price), image, category, activation_key || '', id]
         );
         res.json({ message: 'Produto atualizado' });
     } catch(e) {
@@ -232,7 +266,6 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
     if(!items || items.length === 0) return res.status(400).json({ error: 'Carrinho vazio' });
     
     try {
-        // Consultar banco para obter os preços REAIS para evitar fraudes
         const ids = items.map(i => parseInt(i.id));
         const result = await pool.query('SELECT * FROM products WHERE id = ANY($1::int[])', [ids]);
         
@@ -259,28 +292,43 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
         
         if(preferenceItems.length === 0) return res.status(400).json({ error: 'Erro nos itens do carrinho' });
         
-        // Criar Preferência no MercadoPago
+        // Criar o pedido PENDENTE no banco para gerar ID
+        const orderRes = await pool.query(
+            'INSERT INTO orders (user_id, status, total_amount) VALUES ($1, $2, $3) RETURNING id',
+            [req.session.userId, 'pending', totalAmount]
+        );
+        const orderId = orderRes.rows[0].id;
+        
+        // Salvar os itens do pedido
+        for (let item of items) {
+            const dbProduct = realProducts.find(p => p.id === parseInt(item.id));
+            if(dbProduct) {
+                await pool.query(
+                    'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)',
+                    [orderId, dbProduct.id, item.quantity, parseFloat(dbProduct.price)]
+                );
+            }
+        }
+
+        // Criar Preferência no MercadoPago com external_reference = orderId
         const preference = new Preference(mpClient);
         const createdPref = await preference.create({
             body: {
                 items: preferenceItems,
+                external_reference: orderId.toString(),
                 back_urls: {
-                    success: `${APP_URL}/carrinho.html?status=success`,
-                    failure: `${APP_URL}/carrinho.html?status=failure`,
-                    pending: `${APP_URL}/carrinho.html?status=pending`
+                    success: \`\${APP_URL}/carrinho.html?status=success\`,
+                    failure: \`\${APP_URL}/carrinho.html?status=failure\`,
+                    pending: \`\${APP_URL}/carrinho.html?status=pending\`
                 },
                 auto_return: 'approved',
-                notification_url: `${APP_URL}/webhook`
+                notification_url: \`\${APP_URL}/webhook\`
             }
         });
         
-        // Salvar pedido pendente no banco
-        await pool.query(
-            'INSERT INTO orders (user_id, mp_preference_id, total_amount) VALUES ($1, $2, $3)',
-            [req.session.userId, createdPref.id, totalAmount]
-        );
+        // Atualizar pedido com a preferencia
+        await pool.query('UPDATE orders SET mp_preference_id = $1 WHERE id = $2', [createdPref.id, orderId]);
         
-        // Retornar a URL de pagamento
         res.json({ init_point: createdPref.init_point });
         
     } catch(e) {
@@ -292,14 +340,119 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
 app.post('/webhook', async (req, res) => {
     const { topic, id } = req.query;
     if (topic === 'payment' || req.query.type === 'payment') {
-        try {
-            console.log(`[WEBHOOK] Pagamento recebido! ID: ${id}`);
-        } catch(e) {
-            console.error('Erro no webhook:', e);
+        const paymentId = id || req.query['data.id'];
+        if(paymentId) {
+            try {
+                const paymentClient = new Payment(mpClient);
+                const paymentInfo = await paymentClient.get({ id: paymentId });
+                
+                const orderId = paymentInfo.external_reference;
+                const status = paymentInfo.status; // 'approved', 'pending', etc
+                
+                if(orderId && status) {
+                    await pool.query(
+                        'UPDATE orders SET status = $1, mp_payment_id = $2 WHERE id = $3',
+                        [status, paymentId.toString(), parseInt(orderId)]
+                    );
+                    console.log(\`[WEBHOOK] Pedido \${orderId} atualizado para: \${status}\`);
+                }
+            } catch(e) {
+                console.error('Erro no webhook de pagamento:', e);
+            }
         }
     }
     res.status(200).send('OK');
 });
+
+// ========================
+// MY ORDERS & CHAT
+// ========================
+
+app.get('/api/my-orders', requireAuth, async (req, res) => {
+    try {
+        const ordersRes = await pool.query('SELECT * FROM orders WHERE user_id = $1 ORDER BY id DESC', [req.session.userId]);
+        const orders = ordersRes.rows;
+        
+        for (let order of orders) {
+            const itemsRes = await pool.query(\`
+                SELECT oi.quantity, oi.price, p.title, p.image, p.category, 
+                CASE WHEN $1 = 'approved' THEN p.activation_key ELSE NULL END as activation_key
+                FROM order_items oi
+                JOIN products p ON oi.product_id = p.id
+                WHERE oi.order_id = $2
+            \`, [order.status, order.id]);
+            order.items = itemsRes.rows;
+        }
+        res.json(orders);
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao buscar pedidos' });
+    }
+});
+
+app.get('/api/orders/:id/chat', requireAuth, async (req, res) => {
+    try {
+        const orderRes = await pool.query('SELECT * FROM orders WHERE id = $1 AND user_id = $2', [req.params.id, req.session.userId]);
+        if(orderRes.rows.length === 0) return res.status(403).json({ error: 'Acesso negado' });
+        
+        const chatRes = await pool.query('SELECT * FROM order_chats WHERE order_id = $1 ORDER BY created_at ASC', [req.params.id]);
+        res.json(chatRes.rows);
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao buscar chat' });
+    }
+});
+
+app.post('/api/orders/:id/chat', requireAuth, async (req, res) => {
+    const { message } = req.body;
+    try {
+        const orderRes = await pool.query('SELECT * FROM orders WHERE id = $1 AND user_id = $2', [req.params.id, req.session.userId]);
+        if(orderRes.rows.length === 0) return res.status(403).json({ error: 'Acesso negado' });
+        
+        await pool.query('INSERT INTO order_chats (order_id, sender_type, message) VALUES ($1, $2, $3)', [req.params.id, 'user', message]);
+        res.status(201).json({ message: 'Enviado' });
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao enviar mensagem' });
+    }
+});
+
+// Admin Orders & Chat
+app.get('/api/admin/orders', requireAdmin, async (req, res) => {
+    try {
+        const ordersRes = await pool.query(\`
+            SELECT o.*, u.email as user_email
+            FROM orders o
+            JOIN users u ON o.user_id = u.id
+            ORDER BY o.id DESC
+        \`);
+        const orders = ordersRes.rows;
+        
+        for (let order of orders) {
+            const itemsRes = await pool.query(\`
+                SELECT oi.quantity, oi.price, p.title
+                FROM order_items oi
+                JOIN products p ON oi.product_id = p.id
+                WHERE oi.order_id = $1
+            \`, [order.id]);
+            order.items = itemsRes.rows;
+            
+            const chatRes = await pool.query('SELECT * FROM order_chats WHERE order_id = $1 ORDER BY created_at ASC', [order.id]);
+            order.chat = chatRes.rows;
+        }
+        res.json(orders);
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao buscar pedidos' });
+    }
+});
+
+app.post('/api/admin/orders/:id/chat', requireAdmin, async (req, res) => {
+    const { message } = req.body;
+    try {
+        await pool.query('INSERT INTO order_chats (order_id, sender_type, message) VALUES ($1, $2, $3)', [req.params.id, 'admin', message]);
+        res.status(201).json({ message: 'Enviado' });
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao enviar mensagem' });
+    }
+});
+
 
 // ========================
 // FRONTEND ROUTES & AUTH
@@ -319,7 +472,7 @@ app.get('/carrinho.html', requireAuth, (req, res) => {
 });
 
 // Admin Route Protected
-app.get('/admin.html', requireAuth, async (req, res, next) => {
+app.get('/admin.html', requireAuth, async (req, res) => {
     try {
         const result = await pool.query('SELECT email FROM users WHERE id = $1', [req.session.userId]);
         if (result.rows.length > 0 && result.rows[0].email === 'zherkeys@gmail.com') {
@@ -354,22 +507,18 @@ app.post('/register', async (req, res) => {
             [email, hash, token]
         );
             
-        const verifyUrl = `${APP_URL}/verify-email?token=${token}`;
+        const verifyUrl = \`\${APP_URL}/verify-email?token=\${token}\`;
         
         await sendEmailViaBrevo(
             email,
             'Verifique seu e-mail na ZHER KEYS',
-            `Por favor, clique no link para verificar seu e-mail: ${verifyUrl}`,
-            `<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
+            \`Por favor, clique no link para verificar seu e-mail: \${verifyUrl}\`,
+            \`<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
                 <h2>ZHER KEYS SECURE SYSTEM</h2>
                 <p>Confirme sua credencial de acesso clicando no link abaixo:</p>
-                <a href="${verifyUrl}" style="display:inline-block;padding:10px 20px;background:#3B82F6;color:white;text-decoration:none;border-radius:5px;">VERIFICAR ACESSO</a>
-               </div>`
+                <a href="\${verifyUrl}" style="display:inline-block;padding:10px 20px;background:#3B82F6;color:white;text-decoration:none;border-radius:5px;">VERIFICAR ACESSO</a>
+               </div>\`
         );
-        
-        console.log('\n======================================================');
-        console.log('✅ E-MAIL DE VERIFICAÇÃO ENVIADO VIA BREVO PARA: ' + email);
-        console.log('======================================================\n');
         
         res.status(200).json({ message: 'verify your email, confery your spam too' });
         
@@ -422,17 +571,17 @@ app.post('/resend-verification', async (req, res) => {
         const token = crypto.randomBytes(20).toString('hex');
         await pool.query('UPDATE users SET verification_token = $1 WHERE email = $2', [token, email]);
             
-        const verifyUrl = `${APP_URL}/verify-email?token=${token}`;
+        const verifyUrl = \`\${APP_URL}/verify-email?token=\${token}\`;
         
         await sendEmailViaBrevo(
             email,
             'Reenvio: Verifique seu e-mail na ZHER KEYS',
-            `Por favor, clique no link para verificar seu e-mail: ${verifyUrl}`,
-            `<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
+            \`Por favor, clique no link para verificar seu e-mail: \${verifyUrl}\`,
+            \`<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
                 <h2>ZHER KEYS SECURE SYSTEM</h2>
                 <p>Confirme sua credencial de acesso clicando no link abaixo:</p>
-                <a href="${verifyUrl}" style="display:inline-block;padding:10px 20px;background:#3B82F6;color:white;text-decoration:none;border-radius:5px;">VERIFICAR ACESSO</a>
-               </div>`
+                <a href="\${verifyUrl}" style="display:inline-block;padding:10px 20px;background:#3B82F6;color:white;text-decoration:none;border-radius:5px;">VERIFICAR ACESSO</a>
+               </div>\`
         );
         
         res.status(200).json({ message: 'E-mail de verificação reenviado com sucesso!' });
@@ -448,7 +597,7 @@ app.get('/verify-email', async (req, res) => {
         const result = await pool.query('UPDATE users SET is_verified = 1 WHERE verification_token = $1', [token]);
         if (result.rowCount === 0) return res.status(400).send('<h1>Token inválido ou já verificado.</h1>');
         
-        res.send(`
+        res.send(\`
             <body style="background:#020617;color:white;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;">
                 <div style="text-align:center;background:#0f172a;padding:40px;border-radius:10px;border:1px solid #3B82F6;box-shadow:0 0 20px rgba(59,130,246,0.3);">
                     <h1 style="color:#3B82F6;">ACESSO VERIFICADO</h1>
@@ -456,7 +605,7 @@ app.get('/verify-email', async (req, res) => {
                     <a href="/login.html" style="display:inline-block;margin-top:20px;padding:10px 20px;background:#F43F5E;color:white;text-decoration:none;border-radius:5px;font-weight:bold;">IR PARA O TERMINAL DE LOGIN</a>
                 </div>
             </body>
-        `);
+        \`);
     } catch(err) {
         console.error(err);
         res.status(500).send('Erro interno.');
@@ -477,17 +626,17 @@ app.post('/forgot-password', async (req, res) => {
         
         await pool.query('UPDATE users SET reset_token = $1, reset_expires = $2 WHERE id = $3', [token, expires, user.id]);
             
-        const resetUrl = `${APP_URL}/reset-password.html?token=${token}`;
+        const resetUrl = \`\${APP_URL}/reset-password.html?token=\${token}\`;
         
         await sendEmailViaBrevo(
             email,
             'Redefinição de Senha - ZHER KEYS',
-            `Você solicitou a troca da sua senha. Acesse: ${resetUrl}`,
-            `<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
+            \`Você solicitou a troca da sua senha. Acesse: \${resetUrl}\`,
+            \`<div style="background:#020617;color:white;padding:20px;font-family:sans-serif;text-align:center;">
                 <h2>REDEFINIÇÃO DE CREDENCIAL</h2>
                 <p>Você solicitou a troca da sua senha.</p>
-                <a href="${resetUrl}" style="display:inline-block;padding:10px 20px;background:#F43F5E;color:white;text-decoration:none;border-radius:5px;">CRIAR NOVA SENHA</a>
-               </div>`
+                <a href="\${resetUrl}" style="display:inline-block;padding:10px 20px;background:#F43F5E;color:white;text-decoration:none;border-radius:5px;">CRIAR NOVA SENHA</a>
+               </div>\`
         );
         
         res.status(200).json({ message: 'E-mail de redefinição enviado! Verifique sua caixa de entrada.' });
@@ -539,6 +688,6 @@ app.get('/logout', (req, res) => {
 
 // Start Server
 app.listen(port, () => {
-    console.log(`🚀 ZHER KEYS SECURE SERVER INICIADO!`);
-    console.log(`🌐 Porta: ${port}`);
+    console.log(\`🚀 ZHER KEYS SECURE SERVER INICIADO!\`);
+    console.log(\`🌐 Porta: \${port}\`);
 });

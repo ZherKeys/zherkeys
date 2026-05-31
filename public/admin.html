@@ -25,6 +25,10 @@
                 radial-gradient(at 0% 0%, rgba(244, 63, 94, 0.15) 0px, transparent 50%),
                 radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.15) 0px, transparent 50%);
         }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
     </style>
 </head>
 <body class="text-slate-200 antialiased mesh-bg min-h-screen flex flex-col">
@@ -39,6 +43,12 @@
                     <h1 class="font-orbitron font-black text-xl tracking-widest text-white uppercase">PAINEL ADMIN</h1>
                 </div>
             </a>
+            
+            <div class="flex gap-4 font-orbitron text-xs tracking-widest">
+                <button onclick="switchTab('produtos')" id="tab-btn-produtos" class="text-white border-b-2 border-toxicgreen pb-1">PRODUTOS</button>
+                <button onclick="switchTab('vendas')" id="tab-btn-vendas" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all">VENDAS & SUPORTE</button>
+            </div>
+            
             <div class="flex items-center gap-4">
                 <span class="text-xs font-orbitron tracking-widest text-cyberrose bg-cyberrose/10 px-3 py-1 rounded border border-cyberrose/30">NÍVEL: DEUS</span>
                 <a href="/logout" class="text-xs text-slate-400 hover:text-white transition-colors">SAIR</a>
@@ -48,7 +58,8 @@
 
     <main class="flex-grow max-w-7xl mx-auto px-6 py-12 w-full">
         
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- ABA: PRODUTOS -->
+        <div id="section-produtos" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             <!-- Formulário de Novo Produto -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit sticky top-28">
@@ -80,6 +91,12 @@
                     </div>
 
                     <div>
+                        <label class="block text-xs font-orbitron tracking-widest text-emerald-400 font-bold mb-1"><i data-lucide="key" class="w-3 h-3 inline"></i> CHAVE DE ATIVAÇÃO OCULTA</label>
+                        <input type="text" id="prod-activation" placeholder="XXXX-XXXX-XXXX" class="w-full bg-slate-950 border border-emerald-900 rounded-lg px-4 py-3 text-emerald-400 focus:outline-none focus:border-emerald-500 transition-all placeholder-emerald-900/50">
+                        <p class="text-[9px] text-slate-500 mt-1">Essa chave será revelada ao comprador quando o pagamento for aprovado.</p>
+                    </div>
+
+                    <div>
                         <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">DESCRIÇÃO</label>
                         <textarea id="prod-desc" rows="3" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all"></textarea>
                     </div>
@@ -100,28 +117,81 @@
                 </h3>
                 
                 <div id="products-list" class="space-y-4">
-                    <!-- Produtos carregados via JS -->
                     <div class="text-center text-slate-500 py-10">Carregando catálogo seguro...</div>
                 </div>
             </div>
-
         </div>
+
+        <!-- ABA: VENDAS E SUPORTE -->
+        <div id="section-vendas" class="hidden">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Lista de Pedidos -->
+                <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 h-[80vh] overflow-y-auto">
+                    <h3 class="font-orbitron font-bold text-white tracking-widest mb-6 border-b border-slate-800 pb-4 flex items-center justify-between">
+                        <span class="flex items-center gap-2"><i data-lucide="activity" class="w-5 h-5 text-purple-400"></i> LOG DE VENDAS</span>
+                        <button onclick="loadOrders()" class="text-xs text-slate-400 hover:text-white"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                    </h3>
+                    
+                    <div id="orders-list" class="space-y-4">
+                        <div class="text-center text-slate-500 py-10">Carregando operações de rede...</div>
+                    </div>
+                </div>
+
+                <!-- Chat do Pedido -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col h-[80vh] relative">
+                    <div id="chat-placeholder" class="absolute inset-0 flex items-center justify-center flex-col text-slate-500 z-10 bg-slate-900 rounded-2xl">
+                        <i data-lucide="message-square" class="w-12 h-12 mb-4 opacity-50"></i>
+                        <p class="font-orbitron tracking-widest text-sm">SELECIONE UM PEDIDO PARA ABRIR O CHAT</p>
+                    </div>
+
+                    <h3 class="font-orbitron font-bold text-white tracking-widest mb-4 border-b border-slate-800 pb-4 flex items-center justify-between">
+                        <span class="flex items-center gap-2"><i data-lucide="headset" class="w-5 h-5 text-cyberrose"></i> CANAL DE SUPORTE</span>
+                        <span id="chat-order-id" class="text-cyberrose text-xs">#000</span>
+                    </h3>
+
+                    <div id="chat-messages" class="flex-grow overflow-y-auto space-y-4 pr-2 mb-4">
+                        <!-- Messages go here -->
+                    </div>
+
+                    <form id="chat-form" class="mt-auto border-t border-slate-800 pt-4 flex gap-2">
+                        <input type="text" id="chat-input" placeholder="Digite sua resposta..." class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyberrose transition-all">
+                        <button type="submit" class="bg-cyberrose hover:bg-rose-500 text-white px-6 rounded-lg font-orbitron font-bold flex items-center justify-center">
+                            <i data-lucide="send" class="w-5 h-5"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+        </div>
+
     </main>
 
     <script>
         lucide.createIcons();
+        let allOrders = [];
+        let currentOrderId = null;
 
-        // Autenticação básica no front
-        fetch('/api/me').then(res => res.json()).then(data => {
-            if(!data.isAdmin) {
-                alert("Acesso Negado.");
-                window.location.href = '/';
+        function switchTab(tab) {
+            if(tab === 'produtos') {
+                document.getElementById('section-produtos').classList.remove('hidden');
+                document.getElementById('section-vendas').classList.add('hidden');
+                document.getElementById('tab-btn-produtos').className = "text-white border-b-2 border-toxicgreen pb-1";
+                document.getElementById('tab-btn-vendas').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
+                loadProducts();
+            } else {
+                document.getElementById('section-produtos').classList.add('hidden');
+                document.getElementById('section-vendas').classList.remove('hidden');
+                document.getElementById('tab-btn-vendas').className = "text-white border-b-2 border-purple-400 pb-1";
+                document.getElementById('tab-btn-produtos').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
+                loadOrders();
             }
-        });
+        }
 
+        // --- PRODUTOS LOGIC ---
         async function loadProducts() {
             try {
-                const res = await fetch('/api/products');
+                const res = await fetch('/api/admin/products');
                 const products = await res.json();
                 
                 const container = document.getElementById('products-list');
@@ -133,6 +203,10 @@
 
                 let html = '';
                 products.forEach(p => {
+                    const hasKey = p.activation_key && p.activation_key.trim() !== '' ? 
+                        '<span class="text-emerald-400 text-[10px] border border-emerald-900 bg-emerald-900/20 px-2 py-0.5 rounded font-orbitron mt-2 inline-block">TEM CHAVE SECRETA</span>' : 
+                        '<span class="text-red-400 text-[10px] border border-red-900 bg-red-900/20 px-2 py-0.5 rounded font-orbitron mt-2 inline-block">SEM CHAVE</span>';
+
                     html += `
                         <div class="flex flex-col sm:flex-row items-center gap-6 bg-slate-950 p-4 rounded-xl border border-slate-800">
                             <img src="${p.image}" class="w-24 h-24 object-cover rounded-lg shadow-lg">
@@ -140,6 +214,8 @@
                                 <span class="bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[10px] px-2 py-0.5 rounded-full uppercase">${p.category}</span>
                                 <h4 class="text-white font-orbitron font-bold text-lg mt-1">${p.title}</h4>
                                 <span class="text-toxicgreen font-bold text-sm">R$ ${parseFloat(p.price).toFixed(2).replace('.', ',')}</span>
+                                <br>
+                                ${hasKey}
                             </div>
                             <div class="flex items-center gap-2">
                                 <button onclick='editProduct(${JSON.stringify(p).replace(/'/g, "\\'")})' class="p-2 bg-slate-800 text-electricblue rounded hover:bg-slate-700 transition" title="Editar">
@@ -168,7 +244,8 @@
                 category: document.getElementById('prod-category').value,
                 price: document.getElementById('prod-price').value,
                 image: document.getElementById('prod-image').value,
-                description: document.getElementById('prod-desc').value
+                description: document.getElementById('prod-desc').value,
+                activation_key: document.getElementById('prod-activation').value
             };
 
             const url = id ? '/api/admin/products/' + id : '/api/admin/products';
@@ -199,6 +276,7 @@
             document.getElementById('prod-price').value = p.price;
             document.getElementById('prod-image').value = p.image;
             document.getElementById('prod-desc').value = p.description;
+            document.getElementById('prod-activation').value = p.activation_key || '';
             
             document.getElementById('btn-save').innerText = "ATUALIZAR PRODUTO";
             document.getElementById('btn-save').classList.replace('bg-toxicgreen', 'bg-electricblue');
@@ -215,7 +293,7 @@
         };
 
         window.deleteProduct = async (id) => {
-            if(!confirm("Tem certeza que deseja DELETAR este produto para sempre?")) return;
+            if(!confirm("Tem certeza que deseja DELETAR este produto?")) return;
             try {
                 await fetch('/api/admin/products/' + id, { method: 'DELETE' });
                 loadProducts();
@@ -223,6 +301,114 @@
                 alert("Erro ao deletar.");
             }
         };
+
+        // --- VENDAS & CHAT LOGIC ---
+        async function loadOrders() {
+            try {
+                const res = await fetch('/api/admin/orders');
+                allOrders = await res.json();
+                
+                const container = document.getElementById('orders-list');
+                if(allOrders.length === 0) {
+                    container.innerHTML = '<div class="text-center text-slate-500 py-10">Nenhuma transação registrada.</div>';
+                    return;
+                }
+
+                let html = '';
+                allOrders.forEach(o => {
+                    let statusColor = "bg-slate-800 text-slate-400";
+                    let statusText = "PENDENTE";
+                    if(o.status === 'approved') {
+                        statusColor = "bg-emerald-900/50 border-emerald-500/50 text-emerald-400";
+                        statusText = "APROVADO";
+                    }
+                    
+                    let itemsHtml = o.items.map(i => `<span class="text-xs text-slate-400">${i.quantity}x ${i.title}</span>`).join(', ');
+
+                    const unreadStyle = o.chat.length > 0 && o.chat[o.chat.length-1].sender_type === 'user' ? 'border-cyberrose shadow-lg shadow-cyberrose/20' : 'border-slate-800 hover:border-slate-600';
+
+                    html += `
+                        <div onclick="openChat(${o.id})" class="cursor-pointer bg-slate-950 p-4 rounded-xl border ${unreadStyle} transition-all">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="font-orbitron font-bold text-white text-sm">#PEDIDO-${o.id}</span>
+                                <span class="font-orbitron text-[9px] px-2 py-1 rounded border ${statusColor}">${statusText}</span>
+                            </div>
+                            <div class="text-sm text-slate-300 mb-1"><i data-lucide="user" class="w-3 h-3 inline"></i> ${o.user_email}</div>
+                            <div class="text-xs text-slate-500 truncate mb-2">${itemsHtml}</div>
+                            <div class="font-orbitron text-electricblue text-sm font-bold">R$ ${parseFloat(o.total_amount).toFixed(2).replace('.', ',')}</div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+                lucide.createIcons();
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        window.openChat = (orderId) => {
+            currentOrderId = orderId;
+            document.getElementById('chat-placeholder').classList.add('hidden');
+            document.getElementById('chat-order-id').innerText = "#PEDIDO-" + orderId;
+            
+            const order = allOrders.find(o => o.id === orderId);
+            renderChat(order.chat);
+        };
+
+        function renderChat(messages) {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = '';
+            
+            if(messages.length === 0) {
+                container.innerHTML = '<div class="text-center text-slate-500 text-xs py-4">Nenhuma mensagem neste pedido.</div>';
+                return;
+            }
+
+            messages.forEach(m => {
+                const isAdmin = m.sender_type === 'admin';
+                const alignClass = isAdmin ? 'justify-end' : 'justify-start';
+                const bubbleClass = isAdmin ? 'bg-cyberrose text-white rounded-br-none' : 'bg-slate-800 text-slate-200 rounded-bl-none';
+                const senderName = isAdmin ? 'SUPORTE' : 'CLIENTE';
+
+                container.innerHTML += `
+                    <div class="flex ${alignClass}">
+                        <div class="max-w-[80%] ${bubbleClass} p-3 rounded-xl shadow-lg">
+                            <div class="text-[9px] font-orbitron opacity-50 mb-1">${senderName}</div>
+                            <div class="text-sm">${m.message}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        document.getElementById('chat-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!currentOrderId) return;
+            
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if(!message) return;
+
+            input.value = '';
+
+            try {
+                const res = await fetch(`/api/admin/orders/${currentOrderId}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                
+                if(res.ok) {
+                    // reload orders silently to get new chat
+                    await loadOrders();
+                    const order = allOrders.find(o => o.id === currentOrderId);
+                    renderChat(order.chat);
+                }
+            } catch(err) {
+                console.error(err);
+            }
+        });
 
         // Init
         loadProducts();
