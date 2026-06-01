@@ -423,10 +423,13 @@
                 </div>
             </div>
             
-            <!-- Corpo / Vídeo Patrocinado Simulated -->
+            <!-- Corpo / Vídeo Patrocinado Real (Iframe) -->
             <div class="w-full aspect-video bg-black rounded-xl overflow-hidden relative border border-slate-800 flex items-center justify-center mb-6 shadow-rose shadow-2xl/10" id="ad-player-container">
-                <!-- Conteúdo do Anúncio Simulado -->
-                <div class="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-900 to-slate-950 p-8 flex flex-col justify-center items-center gap-4">
+                <!-- Iframe do Anúncio Real -->
+                <iframe id="ad-iframe" class="w-full h-full border-none hidden" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
+                
+                <!-- Conteúdo do Anúncio Simulado / Placeholder -->
+                <div id="ad-placeholder" class="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-900 to-slate-950 p-8 flex flex-col justify-center items-center gap-4">
                     <div class="w-16 h-16 rounded-full bg-cyberrose/10 border border-cyberrose/20 text-cyberrose flex items-center justify-center animate-bounce">
                         <i data-lucide="zap" class="w-8 h-8"></i>
                     </div>
@@ -2439,6 +2442,13 @@
         function closeAdModal() {
             const adModal = document.getElementById('rewarded-ad-modal');
             adModal.classList.add('opacity-0', 'pointer-events-none');
+            
+            // Reseta iframe e exibe placeholder de volta
+            const iframe = document.getElementById('ad-iframe');
+            if (iframe) iframe.src = 'about:blank';
+            document.getElementById('ad-iframe').classList.add('hidden');
+            document.getElementById('ad-placeholder').classList.remove('hidden');
+            
             setTimeout(() => {
                 adModal.classList.add('hidden');
                 document.body.style.overflow = '';
@@ -2452,6 +2462,14 @@
             // Fecha modal de game over
             const goModal = document.getElementById('game-over-modal');
             goModal.classList.add('hidden');
+
+            // Carrega o anúncio no iframe interno do site
+            const iframe = document.getElementById('ad-iframe');
+            if (iframe) {
+                iframe.src = 'https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f';
+                iframe.classList.remove('hidden');
+            }
+            document.getElementById('ad-placeholder').classList.add('hidden');
 
             const adModal = document.getElementById('rewarded-ad-modal');
             adModal.classList.remove('hidden');
@@ -2555,6 +2573,14 @@
         function watchQuickAdForPoints() {
             // Abre o Direct Link real da Adsterra em uma nova aba
             window.open('https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f', '_blank');
+            
+            // Carrega o anúncio no iframe interno do site
+            const iframe = document.getElementById('ad-iframe');
+            if (iframe) {
+                iframe.src = 'https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f';
+                iframe.classList.remove('hidden');
+            }
+            document.getElementById('ad-placeholder').classList.add('hidden');
             
             // Abre o modal de cronômetro do anúncio (10 segundos para tarefas rápidas)
             const adModal = document.getElementById('rewarded-ad-modal');
