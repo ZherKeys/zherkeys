@@ -136,8 +136,13 @@ async function initDB() {
         pool.query("UPDATE products SET genres = 'Terror, Sobrevivência' WHERE (title ILIKE '%Resident Evil%' OR title ILIKE '%Silent Hill%') AND genres IS NULL").catch(()=>{});
         pool.query("UPDATE products SET genres = 'Streaming' WHERE (category = 'GIFT CARD' OR title ILIKE '%Netflix%' OR title ILIKE '%Spotify%') AND genres IS NULL").catch(()=>{});
 
-        // Atualizar imagens de baixa resolução para posters de alta resolução (600x900) automaticamente
-        pool.query("UPDATE products SET image = REPLACE(image, '/header.jpg', '/library_600x900.jpg') WHERE image LIKE '%/header.jpg%'").catch(()=>{});
+        // Atualizar imagens de baixa resolução para posters de alta resolução (600x900) e locais automaticamente
+        pool.query("UPDATE products SET image = '/human_fall_flat.jpg' WHERE title = 'Human: Fall Flat'").catch(()=>{});
+        pool.query("UPDATE products SET image = '/batman_arkham_origins.jpg' WHERE title = 'Batman: Arkham Origins'").catch(()=>{});
+        pool.query("UPDATE products SET image = '/lego_the_incredibles.jpg' WHERE title = 'LEGO The Incredibles'").catch(()=>{});
+        pool.query("UPDATE products SET image = '/lego_dc_super_villains.jpg' WHERE title = 'LEGO DC Super-Villains Deluxe'").catch(()=>{});
+        pool.query("UPDATE products SET image = '/shadow_of_war.jpg' WHERE title = 'Middle-earth: Shadow of War Definitive'").catch(()=>{});
+        pool.query("UPDATE products SET image = '/lego_movie.jpg' WHERE title = 'The LEGO Movie Videogame'").catch(()=>{});
 
         // Popular produtos iniciais se estiver vazio
         const checkProducts = await pool.query('SELECT COUNT(*) FROM products');
@@ -146,7 +151,7 @@ async function initDB() {
                 {
                     title: "Human: Fall Flat",
                     price: 7.79,
-                    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/477160/library_600x900.jpg",
+                    image: "/human_fall_flat.jpg",
                     description: "Human: Fall Flat é um jogo hilário e leve de plataforma baseado em física, ambientado em paisagens flutuantes e oníricas que podem ser jogadas solo ou com até 8 amigos online. Ativação via Steam.",
                     category: "STEAM KEY",
                     activation_key: "ABCD-1234-EFGH-5678"
@@ -154,7 +159,7 @@ async function initDB() {
                 {
                     title: "Batman: Arkham Origins",
                     price: 8.09,
-                    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/209000/library_600x900.jpg",
+                    image: "/batman_arkham_origins.jpg",
                     description: "Batman: Arkham Origins apresenta uma Gotham City expandida e uma história original prequela ambientada vários anos antes dos eventos de Batman: Arkham Asylum e Batman: Arkham City.",
                     category: "STEAM KEY",
                     activation_key: "WXYZ-9876-QWER-TYUI"
@@ -162,7 +167,7 @@ async function initDB() {
                 {
                     title: "LEGO The Incredibles",
                     price: 7.50,
-                    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/818320/library_600x900.jpg",
+                    image: "/lego_the_incredibles.jpg",
                     description: "Experimente as aventuras emocionantes da família Pera e use seus superpoderes para derrotar o crime e reviver momentos memoráveis dos filmes Os Incríveis e Os Incríveis 2 no mundo LEGO.",
                     category: "STEAM KEY",
                     activation_key: "LKJH-GFDS-MNBV-CXZA"
@@ -170,7 +175,7 @@ async function initDB() {
                 {
                     title: "LEGO DC Super-Villains Deluxe",
                     price: 12.01,
-                    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/829110/library_600x900.jpg",
+                    image: "/lego_dc_super_villains.jpg",
                     description: "É bom ser mau... Embarque em uma nova aventura da DC/LEGO tornando-se o melhor vilão que o universo já viu. A Deluxe Edition inclui conteúdo extra e DLCs exclusivos.",
                     category: "STEAM KEY",
                     activation_key: "POIU-YTRE-WQAS-DFGH"
@@ -178,7 +183,7 @@ async function initDB() {
                 {
                     title: "Middle-earth: Shadow of War Definitive",
                     price: 15.28,
-                    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/356190/library_600x900.jpg",
+                    image: "/shadow_of_war.jpg",
                     description: "Experimente um mundo épico aberto trazido à vida pelo Sistema Nêmesis premiado. Forje um novo Anel do Poder, conquiste Fortalezas e domine Mordor com seu próprio exército de orcs nesta Edição Definitiva completa.",
                     category: "STEAM KEY",
                     activation_key: "MKOI-JNBH-UYGV-CFTX"
@@ -186,7 +191,7 @@ async function initDB() {
                 {
                     title: "The LEGO Movie Videogame",
                     price: 5.28,
-                    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/267530/library_600x900.jpg",
+                    image: "/lego_movie.jpg",
                     description: "Junte-se a Emmet e um grupo improvável de rebeldes em sua busca heroica para impedir o plano maligno do Senhor Negócios. Construa com peças de LEGO nesta incrível aventura em formato de jogo.",
                     category: "STEAM KEY",
                     activation_key: "ZZZZ-XXXX-CCCC-VVVV"
@@ -1542,6 +1547,7 @@ app.get('/robots.txt', (req, res) => {
     res.type('text/plain');
     res.send(`User-agent: *
 Allow: /
+Allow: /api/products
 Disallow: /admin.html
 Disallow: /account.html
 Disallow: /api/
