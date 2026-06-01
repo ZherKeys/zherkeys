@@ -96,7 +96,7 @@
                     </li>
                     <li class="flex gap-2">
                         <i data-lucide="tv" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
-                        <span>No fim de cada partida, assista a um rápido anúncio patrocinado de 15s para **multiplicar seus lucros em 5x**!</span>
+                        <span>No fim de cada partida, assista a anúncios patrocinados de 15s para reivindicar ou **multiplicar seus lucros em até 2x**! Nenhum resgate é grátis.</span>
                     </li>
                     <li class="flex gap-2">
                         <i data-lucide="coins" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
@@ -372,7 +372,7 @@
                     <!-- Barra de Instruções -->
                     <div class="w-full bg-slate-900/80 border-t border-slate-800 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs">
                         <span id="game-instructions-text" class="text-slate-400 flex items-center gap-1.5"><i data-lucide="keyboard" class="w-4 h-4 text-electricblue"></i> Use as setas ou clique e arraste para mover o Decodificador</span>
-                        <span id="game-reward-info" class="text-slate-400 flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">250 Z-Points</b> (com Multi-Boost)</span>
+                        <span id="game-reward-info" class="text-slate-400 flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">100 Z-Points</b> (com Multi-Boost 2x)</span>
                     </div>
                 </div>
                 
@@ -485,19 +485,28 @@
             
             <div class="bg-slate-950 border border-slate-850 p-4 rounded-xl mb-6">
                 <span class="text-[9px] text-slate-500 font-orbitron tracking-widest uppercase block mb-1">PONTOS NESTA SESSÃO</span>
-                <span id="final-score" class="text-white font-orbitron font-black text-3xl">0</span>
-                <span class="text-[9px] text-slate-500 font-orbitron tracking-widest uppercase block mt-3">RECOMPENSA OBTIDA</span>
-                <span id="base-reward" class="text-slate-300 font-orbitron font-bold text-sm block">0 Z-Points</span>
+                <span id="final-score" class="text-white font-orbitron font-black text-3xl font-mono">0</span>
+                
+                <div class="mt-3 pt-3 border-t border-slate-800/50 flex flex-col gap-2 text-left text-xs font-orbitron">
+                    <div class="flex justify-between items-center text-slate-400">
+                        <span>⭐ NORMAL 1X (1 ANÚNCIO):</span>
+                        <b class="text-slate-100 text-[13px]" id="reward-1x-val">0 Z-Points</b>
+                    </div>
+                    <div class="flex justify-between items-center text-toxicgreen">
+                        <span>⚡ MULTI-BOOST 2X (2 ANÚNCIOS):</span>
+                        <b class="text-toxicgreen text-[13px] font-bold" id="reward-2x-val">0 Z-Points</b>
+                    </div>
+                </div>
             </div>
 
             <!-- Ações -->
             <div class="space-y-3">
                 <div id="reward-actions-container" class="space-y-3">
-                    <button id="ad-reward-btn" onclick="watchRewardedAdAndClaim()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-xs tracking-widest font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all uppercase flex items-center justify-center gap-2 cursor-pointer">
-                        ⚡ MULTI-BOOST 5X (ASSISTIR ANÚNCIO) <i data-lucide="zap" class="w-4.5 h-4.5 animate-bounce"></i>
+                    <button id="ad-reward-2x-btn" onclick="startRewardedAdFlow(2)" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-xs tracking-widest font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all uppercase flex items-center justify-center gap-2 cursor-pointer">
+                        ⚡ MULTI-BOOST 2X (ASSISTIR 2 ANÚNCIOS) <i data-lucide="zap" class="w-4.5 h-4.5 animate-bounce"></i>
                     </button>
-                    <button id="base-reward-btn" onclick="claimBaseReward()" class="w-full bg-slate-850 hover:bg-slate-800 text-slate-300 font-orbitron text-xs tracking-widest font-bold py-3.5 rounded-xl border border-slate-700 hover:border-slate-500 transition-colors uppercase cursor-pointer">
-                        Receber Apenas Recompensa Base (Sem Anúncio)
+                    <button id="ad-reward-1x-btn" onclick="startRewardedAdFlow(1)" class="w-full bg-slate-850 hover:bg-slate-800 text-slate-300 font-orbitron text-xs tracking-widest font-bold py-3.5 rounded-xl border border-slate-700 hover:border-slate-500 transition-colors uppercase flex items-center justify-center gap-2 cursor-pointer">
+                        ⭐ RECOMPENSA NORMAL 1X (ASSISTIR 1 ANÚNCIO) <i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i>
                     </button>
                 </div>
                 <button id="retry-game-btn" onclick="resetGame()" class="w-full bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-white font-orbitron text-[10px] tracking-widest py-2.5 rounded-xl transition-all uppercase cursor-pointer">
@@ -576,6 +585,8 @@
         let dailyLimitBRL = 2.00;
         let sessionPoints = 0;
         let pointsToClaim = 0;
+        let targetMultiplier = 1;
+        let adsWatchedCount = 0;
 
         let userPoints = 0;
         
@@ -1014,22 +1025,22 @@
             
             if (gameName === 'hacker') {
                 instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-electricblue"></i> Use as setas ou clique e arraste para mover o Decodificador`;
-                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">250 Z-Points</b> (com Multi-Boost)`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">100 Z-Points</b> (com Multi-Boost 2x)`;
             } else if (gameName === 'flappy') {
                 instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-cyberrose"></i> Pressione ESPAÇO, SETA PARA CIMA ou clique no canvas para voar`;
-                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">250 Z-Points</b> (com Multi-Boost)`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">100 Z-Points</b> (com Multi-Boost 2x)`;
             } else if (gameName === 'clicker') {
                 instEl.innerHTML = `<i data-lucide="mouse-pointer" class="w-4 h-4 text-toxicgreen"></i> Clique no Database central. Desvie dos glitches vermelhos!`;
-                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">250 Z-Points</b> (com Multi-Boost)`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">100 Z-Points</b> (com Multi-Boost 2x)`;
             } else if (gameName === 'runner') {
                 instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-amber-500"></i> Pressione ESPAÇO, SETA PARA CIMA ou clique para pular as barreiras`;
-                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">250 Z-Points</b> (com Multi-Boost)`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">100 Z-Points</b> (com Multi-Boost 2x)`;
             } else if (gameName === 'casino') {
                 instEl.innerHTML = `<i data-lucide="dices" class="w-4 h-4 text-purple-500"></i> Clique no SPIN para testar os Slots. <b class="text-red-500 font-bold ml-1.5">[CUSTO: 5 Z-POINTS POR GIRO - NÃO É GRÁTIS]</b>`;
                 if (rewardEl) rewardEl.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-red-500 animate-pulse"></i> Custo: <b class="text-red-500 font-bold">5 Z-Points/Jogada</b>`;
             } else if (gameName === 'quiz') {
                 instEl.innerHTML = `<i data-lucide="help-circle" class="w-4 h-4 text-indigo-500"></i> Clique na opção correta de A a D. Errar encerra o jogo!`;
-                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">250 Z-Points</b> (com Multi-Boost)`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">100 Z-Points</b> (com Multi-Boost 2x)`;
             } else if (gameName === 'roulette') {
                 instEl.innerHTML = `<i data-lucide="disc" class="w-4 h-4 text-pink-500"></i> Clique no SPIN central para girar a roleta. <b class="text-red-500 font-bold ml-1.5">[CUSTO: 10 Z-POINTS POR GIRO - NÃO É GRÁTIS]</b>`;
                 if (rewardEl) rewardEl.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-red-500 animate-pulse"></i> Custo: <b class="text-red-500 font-bold">10 Z-Points/Jogada</b>`;
@@ -2527,8 +2538,8 @@
             document.getElementById('game-over-desc').innerText = 'Que pena você perdeu, boa sorte na próxima!';
             
             document.getElementById('final-score').innerText = '0';
-            document.getElementById('base-reward').innerText = '0 Z-Points';
-            document.getElementById('ad-reward-val').innerText = '0 Z-Points';
+            document.getElementById('reward-1x-val').innerText = '0 Z-Points';
+            document.getElementById('reward-2x-val').innerText = '0 Z-Points';
 
             // Hide the claim reward options and update retry button
             document.getElementById('reward-actions-container').classList.add('hidden');
@@ -2563,11 +2574,11 @@
             document.getElementById('game-over-desc').innerText = 'Você realizou o cash out com segurança! Escolha uma das opções abaixo para reivindicar seus Z-Points.';
 
             const valBase = Math.round(score * 0.5); 
-            const valBoost = Math.round(score * 2.5); 
+            const valBoost = Math.round(score * 1.0); // 2x recompensa base (fator 1.0)
             
             document.getElementById('final-score').innerText = score;
-            document.getElementById('base-reward').innerText = `${valBase} Z-Points`;
-            document.getElementById('ad-reward-val').innerText = `${valBoost} Z-Points`;
+            document.getElementById('reward-1x-val').innerText = `${valBase} Z-Points`;
+            document.getElementById('reward-2x-val').innerText = `${valBoost} Z-Points`;
 
             // Show the claim reward options and update retry button
             document.getElementById('reward-actions-container').classList.remove('hidden');
@@ -2623,8 +2634,11 @@
             }, 300);
         }
 
-        function watchRewardedAdAndClaim() {
-            // Abre o Direct Link real do usuário para monetização imediata com método robusto de tag <a>
+        function startRewardedAdFlow(multiplierCount) {
+            targetMultiplier = multiplierCount;
+            adsWatchedCount = 0;
+            
+            // Abre o Direct Link real do usuário para monetização imediata
             safeOpenAdLink('https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f');
 
             // Fecha modal de game over
@@ -2641,8 +2655,11 @@
             }, 10);
             
             document.body.style.overflow = 'hidden';
+            
+            runAdCountdownTimer();
+        }
 
-            // Inicia cronômetro do anúncio premiado (15 segundos)
+        function runAdCountdownTimer() {
             let remaining = 15;
             const textEl = document.getElementById('ad-countdown');
             const progressEl = document.getElementById('ad-progress-bar');
@@ -2653,7 +2670,14 @@
             
             collectBtn.disabled = true;
             collectBtn.className = "w-full bg-slate-800 opacity-50 cursor-not-allowed text-slate-500 font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl transition-all uppercase flex items-center justify-center gap-2";
-            collectBtn.innerHTML = `ASSISTINDO ANÚNCIO... <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>`;
+            
+            const currentAdNum = adsWatchedCount + 1;
+            collectBtn.innerHTML = `ASSISTINDO ANÚNCIO ${currentAdNum}/${targetMultiplier}... <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>`;
+            
+            // Atualiza texto de recompensa no modal
+            const calculatedReward = Math.round(pointsToClaim * (targetMultiplier === 2 ? 1.0 : 0.5));
+            document.getElementById('ad-reward-val').innerText = `${calculatedReward} Z-Points`;
+            
             lucide.createIcons();
 
             const step = 100 / remaining;
@@ -2670,14 +2694,27 @@
                     progressEl.style.width = '100%';
                     textEl.innerText = '0s';
                     
-                    // Libera recompensa
+                    adsWatchedCount++;
+                    
                     collectBtn.disabled = false;
                     collectBtn.className = "w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl shadow-lg shadow-emerald-500/20 hover:scale-[1.02] transition-all cursor-pointer uppercase flex items-center justify-center gap-2";
-                    collectBtn.innerHTML = `CONCLUÍDO! RECEBER RECOMPENSA ⚡ <i data-lucide="award" class="w-5 h-5"></i>`;
-                    collectBtn.onclick = () => {
-                        closeAdModal();
-                        sendClaimToBackend(pointsToClaim, true);
-                    };
+                    
+                    if (adsWatchedCount < targetMultiplier) {
+                        // Precisa assistir mais um anúncio
+                        collectBtn.innerHTML = `AVANÇAR PARA O 2º ANÚNCIO ➔ <i data-lucide="zap" class="w-5 h-5 animate-pulse"></i>`;
+                        collectBtn.onclick = () => {
+                            // Abre o segundo anúncio
+                            safeOpenAdLink('https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f');
+                            runAdCountdownTimer();
+                        };
+                    } else {
+                        // Todos os anúncios assistidos
+                        collectBtn.innerHTML = `CONCLUÍDO! RECEBER RECOMPENSA ⚡ <i data-lucide="award" class="w-5 h-5"></i>`;
+                        collectBtn.onclick = () => {
+                            closeAdModal();
+                            sendClaimToBackend(pointsToClaim, targetMultiplier);
+                        };
+                    }
                     lucide.createIcons();
                 } else {
                     textEl.innerText = `${remaining}s`;
@@ -2685,20 +2722,13 @@
             }, 1000);
         }
 
-        // Reivindica recompensa base sem assistir anúncios
-        function claimBaseReward() {
-            const goModal = document.getElementById('game-over-modal');
-            goModal.classList.add('hidden');
-            sendClaimToBackend(pointsToClaim, false);
-        }
-
         // Envia requisição segura ao servidor
-        async function sendClaimToBackend(scoreValue, watchedAd) {
+        async function sendClaimToBackend(scoreValue, multiplierValue) {
             try {
                 const response = await fetch('/api/minigames/claim', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ points: scoreValue, adWatched: watchedAd })
+                    body: JSON.stringify({ points: scoreValue, adMultiplier: multiplierValue })
                 });
 
                 if (response.status === 401) {

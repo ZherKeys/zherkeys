@@ -2449,17 +2449,23 @@ app.get('/api/minigames/daily-total', requireAuth, async (req, res) => {
 
 // Reivindicar recompensa em pontos do Minigame (auto-sustentável baseada em anúncios)
 app.post('/api/minigames/claim', requireAuth, async (req, res) => {
-    const { points, adWatched } = req.body;
+    const { points, adMultiplier } = req.body;
     
     const scorePoints = parseInt(points);
     if (isNaN(scorePoints) || scorePoints < 0) {
         return res.status(400).json({ error: 'Pontuação inválida.' });
     }
     
+    const multiplier = parseInt(adMultiplier);
+    if (isNaN(multiplier) || (multiplier !== 1 && multiplier !== 2)) {
+        return res.status(400).json({ error: 'Operação não permitida. Para manter o auto-sustento do site, nenhum recebimento de moedas é grátis. Você precisa assistir a pelo menos 1 anúncio para receber!' });
+    }
+    
     // Cálculo ultra-fracionado baseado no CPM de $ 0.10 USD (1 Z-Point = R$ 0.000001 BRL)
-    // Sem Ad: 0.5 ponto por cada ponto de score (fator 0.5)
-    // Com Ad: 2.5 pontos por cada ponto de score (fator 2.5) -> Multi-Boost 5x
-    const factor = adWatched ? 2.5 : 0.5;
+    // Recompensa de anúncios reduzida de 5x para 2x como solicitado pelo administrador:
+    // 1x Normal (1 anúncio): fator de 0.5 pontos por score
+    // 2x Multi-Boost (2 anúncios): fator de 1.0 pontos por score (dobro da recompensa normal)
+    const factor = multiplier === 2 ? 1.0 : 0.5;
     let rewardPoints = Math.round(scorePoints * factor);
     
     // Segurança contra exploits/bots: limitar recompensa máxima por partida a 1500 pontos
