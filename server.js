@@ -1466,9 +1466,26 @@ app.get('/produto/:id', async (req, res) => {
         const description = product.description.substring(0, 160).replace(/"/g, '&quot;');
         const fullDescription = product.description;
         const image = product.image.startsWith('http') ? product.image : `https://zherkeys.onrender.com${product.image}`;
-        const price = parseFloat(product.price).toFixed(2);
-        const oldPriceHtml = product.old_price ? `<del class="text-rose-500 text-sm font-orbitron -mb-1 opacity-80">R$ ${parseFloat(product.old_price).toFixed(2)}</del>` : '';
-        const priceHtml = `R$ ${price}`;
+        
+        // Multi-conversão dinâmica de moedas via Query Parameter (ex: ?currency=USD)
+        const exchangeRates = { BRL: 1.0, USD: 0.19, EUR: 0.17 };
+        const currency = (req.query.currency || 'BRL').toUpperCase();
+        const rate = exchangeRates[currency] || 1.0;
+        
+        const price = (parseFloat(product.price) * rate).toFixed(2);
+        
+        let priceHtml, oldPriceHtml;
+        if (currency === 'USD') {
+            priceHtml = `$ ${price}`;
+            oldPriceHtml = product.old_price ? `<del class="text-rose-500 text-sm font-orbitron -mb-1 opacity-80">$ ${(parseFloat(product.old_price) * rate).toFixed(2)}</del>` : '';
+        } else if (currency === 'EUR') {
+            priceHtml = `€ ${price}`;
+            oldPriceHtml = product.old_price ? `<del class="text-rose-500 text-sm font-orbitron -mb-1 opacity-80">€ ${(parseFloat(product.old_price) * rate).toFixed(2)}</del>` : '';
+        } else {
+            priceHtml = `R$ ${price.replace('.', ',')}`;
+            oldPriceHtml = product.old_price ? `<del class="text-rose-500 text-sm font-orbitron -mb-1 opacity-80">R$ ${(parseFloat(product.old_price) * rate).toFixed(2).replace('.', ',')}</del>` : '';
+        }
+        
         const stockStatus = product.in_stock ? 'Em estoque' : 'Esgotado';
         const availability = product.in_stock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
         const regionBadge = product.is_global === false 
@@ -1487,7 +1504,7 @@ app.get('/produto/:id', async (req, res) => {
             "offers": {
                 "@type": "Offer",
                 "url": `https://zherkeys.onrender.com/produto/${product.id}`,
-                "priceCurrency": "BRL",
+                "priceCurrency": currency,
                 "price": price,
                 "availability": availability,
                 "itemCondition": "https://schema.org/NewCondition"

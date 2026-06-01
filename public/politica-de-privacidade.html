@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/logo.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO Meta Tags -->
+    <title>Política de Privacidade | Zher Keys</title>
+    <meta name="description" content="Leia nossa Política de Privacidade. Transparência no tratamento de dados cadastrais, segurança, cookies e conformidade com a LGPD na Zher Keys.">
+    <link rel="canonical" href="https://zherkeys.onrender.com/politica-de-privacidade.html" />
+    
+    <!-- Tailwind CSS -->
+    <script src="/tailwind.js"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        obsidian: '#020617',
+                        cyberrose: '#F43F5E',
+                        electricblue: '#3B82F6',
+                        surface: 'rgba(15, 23, 42, 0.8)',
+                    },
+                    boxShadow: {
+                        cyber: '0 0 20px rgba(59, 130, 246, 0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            overflow-x: hidden;
+        }
+        
+        .scanline::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 99999;
+            opacity: 0.15;
+            pointer-events: none;
+            background-size: 100% 4px, 6px 100%;
+        }
+
+        .mesh-bg {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.18) 0px, transparent 50%),
+                radial-gradient(at 90% 10%, rgba(244, 63, 94, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 80%, rgba(147, 51, 234, 0.12) 0px, transparent 50%);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #020617;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3B82F6;
+        }
+    </style>
+</head>
+<body class="text-slate-200 antialiased mesh-bg scanline">
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-slate-950/70 backdrop-blur-xl border-b border-slate-800/60 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3 group cursor-pointer" onclick="window.location.href='/'">
+                <img src="/logo.png" alt="Zher Keys Logo" class="w-10 h-10 object-contain rounded-lg shadow-cyber border border-slate-700/50 bg-slate-950/40 p-1 group-hover:scale-105 transition-transform duration-300">
+                <span class="font-orbitron font-black text-xl tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">ZHER <span class="text-electricblue">KEYS</span></span>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <a href="/" class="text-slate-400 hover:text-white font-orbitron text-xs tracking-widest transition-colors flex items-center gap-1.5 bg-slate-900/40 border border-slate-800 px-4 py-2 rounded-lg">
+                    <i data-lucide="home" class="w-3.5 h-3.5"></i> INÍCIO
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENT WRAPPER -->
+    <main class="pt-32 pb-20 px-4 max-w-4xl mx-auto min-h-screen">
+        
+        <!-- Header -->
+        <div class="text-center mb-16 relative">
+            <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-48 bg-electricblue/10 rounded-full blur-3xl -z-10"></div>
+            <div class="inline-flex items-center gap-2 bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[10px] tracking-widest px-4 py-1.5 rounded-full uppercase font-bold mb-4">
+                🛡️ PROTEÇÃO DE DADOS
+            </div>
+            <h1 class="font-orbitron font-black text-3xl sm:text-5xl text-white uppercase tracking-tight mb-4">
+                POLÍTICA DE <span class="text-electricblue">PRIVACIDADE</span>
+            </h1>
+            <p class="font-inter text-slate-400 text-xs sm:text-sm max-w-xl mx-auto font-light leading-relaxed">
+                Última atualização: 01 de Junho de 2026. Entenda como coletamos, tratamos, protegemos e respeitamos a sua privacidade na Zher Keys.
+            </p>
+        </div>
+
+        <!-- Privacy Body -->
+        <div class="bg-slate-950/50 backdrop-blur-md border border-slate-900 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden font-inter text-slate-400 text-xs sm:text-sm leading-relaxed space-y-8 font-light">
+            
+            <!-- Glow FX -->
+            <div class="absolute -top-32 -right-32 w-64 h-64 bg-purple-600/5 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-32 -left-32 w-64 h-64 bg-electricblue/5 rounded-full blur-3xl pointer-events-none"></div>
+
+            <section class="space-y-3">
+                <h3 class="font-orbitron font-bold text-white text-base tracking-widest flex items-center gap-2 border-b border-slate-900 pb-3">
+                    <i data-lucide="database" class="w-5 h-5 text-electricblue"></i> 1. COLETA DE INFORMAÇÕES
+                </h3>
+                <p>
+                    A plataforma **Zher Keys** coleta informações pessoais necessárias para a prestação adequada dos serviços. Esses dados incluem seu endereço de e-mail (para envio de chaves de jogos digitais e autenticação da conta), nome de exibição e dados transacionais criptografados gerados pelo seu checkout de pagamentos.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="font-orbitron font-bold text-white text-base tracking-widest flex items-center gap-2 border-b border-slate-900 pb-3">
+                    <i data-lucide="eye" class="w-5 h-5 text-electricblue"></i> 2. USO DAS INFORMAÇÕES
+                </h3>
+                <p>
+                    Seus dados pessoais são utilizados de forma confidencial e restrita para fins específicos:
+                </p>
+                <ul class="list-disc pl-5 space-y-1.5 mt-2">
+                    <li>Processar transações e creditar compras e recargas em carteira digital.</li>
+                    <li>Disparar chaves de ativação digitais compradas direto para o e-mail cadastrado.</li>
+                    <li>Fornecer suporte técnico customizado através do sistema de chat interno de tickets.</li>
+                    <li>Garantir a segurança operacional e integridade da sua conta contra atividades fraudulentas.</li>
+                </ul>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="font-orbitron font-bold text-white text-base tracking-widest flex items-center gap-2 border-b border-slate-900 pb-3">
+                    <i data-lucide="cookie" class="w-5 h-5 text-electricblue"></i> 3. COOKIES E SESSÕES
+                </h3>
+                <p>
+                    Utilizamos cookies de sessão seguros e o armazenamento local (`localStorage`) para manter o usuário autenticado na conta, gerenciar a lista de compras do carrinho de compras e carregar as configurações de preferência de idioma e moedas. Cookies analíticos anônimos podem ser coletados para auditoria de tráfego de navegação geral.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="font-orbitron font-bold text-white text-base tracking-widest flex items-center gap-2 border-b border-slate-900 pb-3">
+                    <i data-lucide="share-2" class="w-5 h-5 text-electricblue"></i> 4. COMPARTILHAMENTO COM TERCEIROS
+                </h3>
+                <p>
+                    Nós **nunca vendemos ou comercializamos** seus dados pessoais a terceiros. Suas informações são compartilhadas estritamente de forma necessária com parceiros integrados cruciais para a operação do site:
+                </p>
+                <ul class="list-disc pl-5 space-y-1.5 mt-2">
+                    <li>**Mercado Pago:** Para processar e auditar seus pagamentos eletrônicos com total segurança e criptografia de ponta.</li>
+                    <li>**Brevo API:** Para realizar os disparos técnicos de e-mails transacionais contendo suas credenciais e chaves digitais compradas.</li>
+                </ul>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="font-orbitron font-bold text-white text-base tracking-widest flex items-center gap-2 border-b border-slate-900 pb-3">
+                    <i data-lucide="lock" class="w-5 h-5 text-electricblue"></i> 5. SEGURANÇA E CRIPTOGRAFIA
+                </h3>
+                <p>
+                    Para garantir que sua navegação e dados estejam blindados, toda a nossa plataforma trafega sob o protocolo de segurança HTTPS com certificação **SSL de 256 bits**. As senhas de cadastro são encriptadas de forma unidirecional e irreversível (hashing) no nosso banco de dados em PostgreSQL usando o algoritmo seguro `bcryptjs`, garantindo que ninguém (inclusive a própria administração) tenha acesso ao seu código de segurança.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h3 class="font-orbitron font-bold text-white text-base tracking-widest flex items-center gap-2 border-b border-slate-900 pb-3">
+                    <i data-lucide="users" class="w-5 h-5 text-electricblue"></i> 6. SEUS DIREITOS (LGPD)
+                </h3>
+                <p>
+                    Em total conformidade com a Lei Geral de Proteção de Dados (LGPD), o usuário possui o direito irrevogável de solicitar a qualquer momento a confirmação da existência de tratamento dos seus dados, a retificação de dados incorretos ou desatualizados, ou a **exclusão definitiva** da sua conta de cadastro de nossos bancos de dados, bastando entrar em contato com o nosso e-mail de suporte.
+                </p>
+            </section>
+
+        </div>
+
+        <!-- Botão de Voltar -->
+        <div class="text-center mt-12">
+            <a href="/" class="inline-flex items-center gap-2 bg-gradient-to-r from-electricblue to-blue-600 hover:from-blue-500 hover:to-blue-600 text-white font-orbitron font-bold text-xs tracking-widest px-8 py-4 rounded-xl shadow-lg hover:shadow-blue-500/20 transition-all duration-300">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> VOLTAR AO INÍCIO
+            </a>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 border-t border-slate-900 py-10 text-center text-xs text-slate-500 font-orbitron tracking-widest">
+        <div class="max-w-7xl mx-auto px-4">
+            <p class="mb-2">© 2026 ZHER KEYS • SEGURANÇA E LICENÇAS DIGITAIS ORIGINAIS</p>
+            <p class="text-[10px] text-slate-600 font-inter tracking-normal mt-1">
+                E-mail: <a href="mailto:zherkeys@gmail.com" class="hover:text-white transition-colors">zherkeys@gmail.com</a> • Tel: +55 (22) 99999-9999
+            </p>
+            <div class="flex items-center justify-center gap-4 text-[10px] text-slate-600 mt-4">
+                <a href="/" class="hover:text-slate-400 transition-colors">HOME</a>
+                <span>•</span>
+                <a href="/politica-de-devolucao.html" class="hover:text-slate-400 transition-colors">POLÍTICA DE DEVOLUÇÃO</a>
+                <span>•</span>
+                <a href="/termos-de-servico.html" class="hover:text-slate-400 transition-colors">TERMOS DE SERVIÇO</a>
+                <span>•</span>
+                <a href="/politica-de-privacidade.html" class="text-slate-400 hover:text-white transition-colors">POLÍTICA DE PRIVACIDADE</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
