@@ -1470,7 +1470,7 @@ app.get('/produto/:id', async (req, res) => {
         const title = product.title;
         const description = product.description.substring(0, 160).replace(/"/g, '&quot;');
         const fullDescription = product.description;
-        const image = product.image.startsWith('http') ? product.image : `https://zherkeys.onrender.com${product.image}`;
+        const image = product.image.startsWith('http') ? product.image : `https://zherkeys.com${product.image}`;
         
         // Multi-conversão dinâmica de moedas via Query Parameter (ex: ?currency=USD)
         const exchangeRates = { BRL: 1.0, USD: 0.19, EUR: 0.17 };
@@ -1508,7 +1508,7 @@ app.get('/produto/:id', async (req, res) => {
             "description": fullDescription,
             "offers": {
                 "@type": "Offer",
-                "url": `https://zherkeys.onrender.com/produto/${product.id}`,
+                "url": `https://zherkeys.com/produto/${product.id}`,
                 "priceCurrency": currency,
                 "price": price,
                 "availability": availability,
