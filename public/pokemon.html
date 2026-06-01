@@ -367,43 +367,57 @@
                         <div class="grid grid-cols-4 gap-2 w-full">
                             <!-- Basic Ball -->
                             <button onclick="throwBall('basic')" id="ball-basic-btn" class="bg-slate-900 border border-slate-800 hover:border-slate-750 hover:bg-slate-850 p-2.5 rounded-xl text-center transition-all flex flex-col items-center gap-1">
-                                <span class="w-8 h-8 rounded-full bg-gradient-to-b from-red-500 to-slate-200 border-2 border-slate-900 flex items-center justify-center relative overflow-hidden shadow-md">
-                                    <span class="absolute left-0 right-0 top-1/2 h-0.5 bg-slate-900 -translate-y-1/2"></span>
-                                    <span class="w-2.5 h-2.5 rounded-full bg-white border border-slate-900 z-10 flex items-center justify-center"></span>
-                                </span>
+                                <svg viewBox="0 0 100 100" class="w-8 h-8 drop-shadow-[0_0_6px_rgba(239,68,68,0.5)]">
+                                    <circle cx="50" cy="50" r="45" fill="#1E293B" stroke="#475569" stroke-width="3"/>
+                                    <path d="M5,50 A45,45 0 0,1 95,50 Z" fill="#EF4444"/>
+                                    <line x1="5" y1="50" x2="95" y2="50" stroke="#0F172A" stroke-width="6"/>
+                                    <circle cx="50" cy="50" r="15" fill="#0F172A"/>
+                                    <circle cx="50" cy="50" r="8" fill="#FFFFFF"/>
+                                </svg>
                                 <span class="text-[9px] font-orbitron font-bold text-white block">Basic</span>
                                 <span id="count-ball-basic" class="text-[8px] text-slate-400 block mt-0.5">0 uni.</span>
                             </button>
                             
                             <!-- Great Ball -->
                             <button onclick="throwBall('great')" id="ball-great-btn" class="bg-slate-900 border border-slate-800 hover:border-slate-750 hover:bg-slate-850 p-2.5 rounded-xl text-center transition-all flex flex-col items-center gap-1">
-                                <span class="w-8 h-8 rounded-full bg-gradient-to-b from-blue-500 to-slate-200 border-2 border-slate-900 flex items-center justify-center relative overflow-hidden shadow-md">
-                                    <span class="absolute left-0 right-0 top-1/2 h-0.5 bg-slate-900 -translate-y-1/2"></span>
-                                    <span class="absolute top-0 right-0 w-2.5 h-2 bg-red-500"></span>
-                                    <span class="absolute top-0 left-0 w-2.5 h-2 bg-red-500"></span>
-                                    <span class="w-2.5 h-2.5 rounded-full bg-white border border-slate-900 z-10 flex items-center justify-center"></span>
-                                </span>
+                                <svg viewBox="0 0 100 100" class="w-8 h-8 drop-shadow-[0_0_6px_rgba(59,130,246,0.5)]">
+                                    <circle cx="50" cy="50" r="45" fill="#1E293B" stroke="#475569" stroke-width="3"/>
+                                    <path d="M5,50 A45,45 0 0,1 95,50 Z" fill="#3B82F6"/>
+                                    <path d="M25,12 L35,32 L40,10 Z M75,12 L65,32 L60,10 Z" fill="#EF4444"/>
+                                    <line x1="5" y1="50" x2="95" y2="50" stroke="#0F172A" stroke-width="6"/>
+                                    <circle cx="50" cy="50" r="15" fill="#0F172A"/>
+                                    <circle cx="50" cy="50" r="8" fill="#FFFFFF"/>
+                                </svg>
                                 <span class="text-[9px] font-orbitron font-bold text-white block">Mega</span>
                                 <span id="count-ball-great" class="text-[8px] text-slate-400 block mt-0.5">0 uni.</span>
                             </button>
 
                             <!-- Ultra Ball -->
                             <button onclick="throwBall('ultra')" id="ball-ultra-btn" class="bg-slate-900 border border-slate-800 hover:border-slate-750 hover:bg-slate-850 p-2.5 rounded-xl text-center transition-all flex flex-col items-center gap-1">
-                                <span class="w-8 h-8 rounded-full bg-gradient-to-b from-yellow-400 via-slate-850 to-slate-200 border-2 border-slate-900 flex items-center justify-center relative overflow-hidden shadow-md">
-                                    <span class="absolute left-0 right-0 top-1/2 h-0.5 bg-slate-900 -translate-y-1/2"></span>
-                                    <span class="w-2.5 h-2.5 rounded-full bg-white border border-slate-900 z-10 flex items-center justify-center"></span>
-                                </span>
+                                <svg viewBox="0 0 100 100" class="w-8 h-8 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]">
+                                    <circle cx="50" cy="50" r="45" fill="#1E293B" stroke="#475569" stroke-width="3"/>
+                                    <path d="M5,50 A45,45 0 0,1 95,50 Z" fill="#111827"/>
+                                    <path d="M20,25 Q35,5 50,25 Q65,5 80,25" stroke="#F59E0B" stroke-width="8" fill="none"/>
+                                    <line x1="5" y1="50" x2="95" y2="50" stroke="#0F172A" stroke-width="6"/>
+                                    <circle cx="50" cy="50" r="15" fill="#0F172A"/>
+                                    <circle cx="50" cy="50" r="8" fill="#FFFFFF"/>
+                                </svg>
                                 <span class="text-[9px] font-orbitron font-bold text-white block">Ultra</span>
                                 <span id="count-ball-ultra" class="text-[8px] text-slate-400 block mt-0.5">0 uni.</span>
                             </button>
 
                             <!-- Master Ball -->
                             <button onclick="throwBall('master')" id="ball-master-btn" class="bg-slate-900 border border-slate-800 hover:border-slate-750 hover:bg-slate-850 p-2.5 rounded-xl text-center transition-all flex flex-col items-center gap-1">
-                                <span class="w-8 h-8 rounded-full bg-gradient-to-b from-purple-500 to-slate-200 border-2 border-slate-900 flex items-center justify-center relative overflow-hidden shadow-md">
-                                    <span class="absolute left-0 right-0 top-1/2 h-0.5 bg-slate-900 -translate-y-1/2"></span>
-                                    <span class="absolute top-1 left-1 font-orbitron font-black text-2xs text-purple-200">M</span>
-                                    <span class="w-2.5 h-2.5 rounded-full bg-white border border-slate-900 z-10 flex items-center justify-center"></span>
-                                </span>
+                                <svg viewBox="0 0 100 100" class="w-8 h-8 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">
+                                    <circle cx="50" cy="50" r="45" fill="#1E293B" stroke="#475569" stroke-width="3"/>
+                                    <path d="M5,50 A45,45 0 0,1 95,50 Z" fill="#A855F7"/>
+                                    <circle cx="25" cy="25" r="10" fill="#EC4899"/>
+                                    <circle cx="75" cy="25" r="10" fill="#EC4899"/>
+                                    <path d="M38,36 L43,22 L50,30 L57,22 L62,36" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <line x1="5" y1="50" x2="95" y2="50" stroke="#0F172A" stroke-width="6"/>
+                                    <circle cx="50" cy="50" r="15" fill="#0F172A"/>
+                                    <circle cx="50" cy="50" r="8" fill="#FFFFFF"/>
+                                </svg>
                                 <span class="text-[9px] font-orbitron font-bold text-white block">Master</span>
                                 <span id="count-ball-master" class="text-[8px] text-slate-400 block mt-0.5">0 uni.</span>
                             </button>
@@ -506,15 +520,17 @@
                     <h3 class="font-orbitron font-extrabold text-xs text-white uppercase tracking-wider mb-4 flex items-center gap-2 text-cyan-400">
                         <i data-lucide="shopping-bag" class="w-4 h-4"></i> Centro de Abastecimento Cyber
                     </h3>
-
                     <div class="space-y-3">
                         <!-- Shop Item: Basic Ball -->
                         <div class="bg-slate-900/60 border border-slate-800 p-3 rounded-xl flex items-center justify-between group">
                             <div class="flex items-center gap-3">
-                                <span class="w-10 h-10 rounded-full bg-gradient-to-b from-red-500 to-slate-200 border-2 border-slate-900 flex items-center justify-center relative overflow-hidden shadow-md">
-                                    <span class="absolute left-0 right-0 top-1/2 h-0.5 bg-slate-900 -translate-y-1/2"></span>
-                                    <span class="w-2 h-2 rounded-full bg-white border border-slate-900 z-10"></span>
-                                </span>
+                                <svg viewBox="0 0 100 100" class="w-10 h-10 drop-shadow-[0_0_6px_rgba(239,68,68,0.5)]">
+                                    <circle cx="50" cy="50" r="45" fill="#1E293B" stroke="#475569" stroke-width="3"/>
+                                    <path d="M5,50 A45,45 0 0,1 95,50 Z" fill="#EF4444"/>
+                                    <line x1="5" y1="50" x2="95" y2="50" stroke="#0F172A" stroke-width="6"/>
+                                    <circle cx="50" cy="50" r="15" fill="#0F172A"/>
+                                    <circle cx="50" cy="50" r="8" fill="#FFFFFF"/>
+                                </svg>
                                 <div>
                                     <span class="font-orbitron font-bold text-xs text-white block">Cyber-Bola Básica</span>
                                     <span class="text-[10px] text-slate-400 block">Chance de captura base: 30%</span>
@@ -529,12 +545,14 @@
                         <!-- Shop Item: Great Ball -->
                         <div class="bg-slate-900/60 border border-slate-800 p-3 rounded-xl flex items-center justify-between group">
                             <div class="flex items-center gap-3">
-                                <span class="w-10 h-10 rounded-full bg-gradient-to-b from-blue-500 to-slate-200 border-2 border-slate-900 flex items-center justify-center relative overflow-hidden shadow-md">
-                                    <span class="absolute left-0 right-0 top-1/2 h-0.5 bg-slate-900 -translate-y-1/2"></span>
-                                    <span class="absolute top-0 right-0 w-2.5 h-1.5 bg-red-500"></span>
-                                    <span class="absolute top-0 left-0 w-2.5 h-1.5 bg-red-500"></span>
-                                    <span class="w-2 h-2 rounded-full bg-white border border-slate-900 z-10"></span>
-                                </span>
+                                <svg viewBox="0 0 100 100" class="w-10 h-10 drop-shadow-[0_0_6px_rgba(59,130,246,0.5)]">
+                                    <circle cx="50" cy="50" r="45" fill="#1E293B" stroke="#475569" stroke-width="3"/>
+                                    <path d="M5,50 A45,45 0 0,1 95,50 Z" fill="#3B82F6"/>
+                                    <path d="M25,12 L35,32 L40,10 Z M75,12 L65,32 L60,10 Z" fill="#EF4444"/>
+                                    <line x1="5" y1="50" x2="95" y2="50" stroke="#0F172A" stroke-width="6"/>
+                                    <circle cx="50" cy="50" r="15" fill="#0F172A"/>
+                                    <circle cx="50" cy="50" r="8" fill="#FFFFFF"/>
+                                </svg>
                                 <div>
                                     <span class="font-orbitron font-bold text-xs text-white block">Cyber-Bola Mega</span>
                                     <span class="text-[10px] text-slate-400 block">Chance de captura base: 50%</span>
@@ -549,10 +567,14 @@
                         <!-- Shop Item: Ultra Ball -->
                         <div class="bg-slate-900/60 border border-slate-800 p-3 rounded-xl flex items-center justify-between group">
                             <div class="flex items-center gap-3">
-                                <span class="w-10 h-10 rounded-full bg-gradient-to-b from-yellow-400 via-slate-800 to-slate-200 border-2 border-slate-900 flex items-center justify-center relative overflow-hidden shadow-md">
-                                    <span class="absolute left-0 right-0 top-1/2 h-0.5 bg-slate-900 -translate-y-1/2"></span>
-                                    <span class="w-2 h-2 rounded-full bg-white border border-slate-900 z-10"></span>
-                                </span>
+                                <svg viewBox="0 0 100 100" class="w-10 h-10 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]">
+                                    <circle cx="50" cy="50" r="45" fill="#1E293B" stroke="#475569" stroke-width="3"/>
+                                    <path d="M5,50 A45,45 0 0,1 95,50 Z" fill="#111827"/>
+                                    <path d="M20,25 Q35,5 50,25 Q65,5 80,25" stroke="#F59E0B" stroke-width="8" fill="none"/>
+                                    <line x1="5" y1="50" x2="95" y2="50" stroke="#0F172A" stroke-width="6"/>
+                                    <circle cx="50" cy="50" r="15" fill="#0F172A"/>
+                                    <circle cx="50" cy="50" r="8" fill="#FFFFFF"/>
+                                </svg>
                                 <div>
                                     <span class="font-orbitron font-bold text-xs text-white block">Cyber-Bola Ultra</span>
                                     <span class="text-[10px] text-slate-400 block">Chance de captura base: 75%</span>
@@ -567,11 +589,16 @@
                         <!-- Shop Item: Master Ball -->
                         <div class="bg-slate-900/60 border border-slate-800 p-3 rounded-xl flex items-center justify-between group">
                             <div class="flex items-center gap-3">
-                                <span class="w-10 h-10 rounded-full bg-gradient-to-b from-purple-500 to-slate-200 border-2 border-slate-900 flex items-center justify-center relative overflow-hidden shadow-md">
-                                    <span class="absolute left-0 right-0 top-1/2 h-0.5 bg-slate-900 -translate-y-1/2"></span>
-                                    <span class="absolute top-1 left-1.5 font-orbitron font-black text-2xs text-purple-200">M</span>
-                                    <span class="w-2 h-2 rounded-full bg-white border border-slate-900 z-10"></span>
-                                </span>
+                                <svg viewBox="0 0 100 100" class="w-10 h-10 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">
+                                    <circle cx="50" cy="50" r="45" fill="#1E293B" stroke="#475569" stroke-width="3"/>
+                                    <path d="M5,50 A45,45 0 0,1 95,50 Z" fill="#A855F7"/>
+                                    <circle cx="25" cy="25" r="10" fill="#EC4899"/>
+                                    <circle cx="75" cy="25" r="10" fill="#EC4899"/>
+                                    <path d="M38,36 L43,22 L50,30 L57,22 L62,36" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <line x1="5" y1="50" x2="95" y2="50" stroke="#0F172A" stroke-width="6"/>
+                                    <circle cx="50" cy="50" r="15" fill="#0F172A"/>
+                                    <circle cx="50" cy="50" r="8" fill="#FFFFFF"/>
+                                </svg>
                                 <div>
                                     <span class="font-orbitron font-bold text-xs text-white block">Cyber-Bola Master</span>
                                     <span class="text-[10px] text-slate-400 block">Chance de captura base: 100%</span>
@@ -966,7 +993,7 @@
             };
 
             // Inject monster SVG and updates
-            document.getElementById('monster-svg-box').innerHTML = currentMonster.svg;
+            document.getElementById('monster-svg-box').innerHTML = `<svg viewBox="0 0 100 100" class="w-full h-full animate-float" xmlns="http://www.w3.org/2000/svg">${currentMonster.svg}</svg>`;
             document.getElementById('monster-name').innerText = currentMonster.name;
             document.getElementById('monster-level').innerText = `Lvl ${currentMonster.level}`;
             document.getElementById('monster-type').innerText = currentMonster.type;
@@ -1226,7 +1253,7 @@
                 
                 // Nested minimal representation SVG
                 item.innerHTML = `
-                    <div class="w-full h-full flex items-center justify-center p-0.5">${dbInfo.svg}</div>
+                    <div class="w-full h-full flex items-center justify-center p-0.5"><svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">${dbInfo.svg}</svg></div>
                     <span class="absolute bottom-0.5 right-1 text-[7px] font-orbitron font-extrabold bg-slate-950/80 px-1 py-0.2 rounded text-slate-300">L${mon.lvl}</span>
                     ${isActive ? `<span class="absolute top-0.5 left-0.5 w-1.5 h-1.5 rounded-full bg-indigo-500"></span>` : ''}
                 `;
@@ -1248,7 +1275,7 @@
             const details = document.getElementById('cybermon-details');
             details.classList.remove('hidden');
 
-            document.getElementById('detail-svg-box').innerHTML = dbInfo.svg;
+            document.getElementById('detail-svg-box').innerHTML = `<svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">${dbInfo.svg}</svg>`;
             document.getElementById('detail-name').innerText = dbInfo.name;
             document.getElementById('detail-level').innerText = `Lvl ${mon.lvl}`;
             document.getElementById('detail-type').innerText = dbInfo.type;
