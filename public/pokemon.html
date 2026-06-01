@@ -3,71 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ Cyberdex Quest: Clicker RPG ⚡</title>
+    <title>🔥 Cybermon FireRed Arena: Turn-Based RPG 🔥</title>
     <!-- Tailwind CSS local -->
     <script src="tailwind.js"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #030712;
+            background-color: #02040a;
         }
         .font-orbitron {
             font-family: 'Orbitron', sans-serif;
         }
-        /* Custom animations */
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-8px) rotate(1deg); }
+        .font-retro {
+            font-family: 'Press Start 2P', monospace;
         }
-        .animated-float {
-            animation: float 4s ease-in-out infinite;
+        
+        /* Floating animations */
+        @keyframes float-opp {
+            0%, 100% { transform: translateY(0px) scaleX(-1) scale(1); }
+            50% { transform: translateY(-6px) scaleX(-1) scale(1.02); }
         }
-        @keyframes pulse-slow {
-            0%, 100% { opacity: 0.2; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(1.05); }
+        @keyframes float-player {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-4px) scale(1.03); }
         }
-        .animated-pulse-slow {
-            animation: pulse-slow 3s ease-in-out infinite;
+        .animate-float-opp {
+            animation: float-opp 4s ease-in-out infinite;
         }
-        /* Shake animation for Pokéball capture */
+        .animate-float-player {
+            animation: float-player 4.5s ease-in-out infinite;
+        }
+
+        /* Screen shake for taking damage */
         @keyframes shake {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            10% { transform: translate(-4px, -2px) rotate(-8deg); }
-            20% { transform: translate(4px, 2px) rotate(8deg); }
-            30% { transform: translate(-4px, 2px) rotate(-6deg); }
-            40% { transform: translate(4px, -2px) rotate(6deg); }
-            50% { transform: translate(-2px, 1px) rotate(-4deg); }
-            60% { transform: translate(2px, -1px) rotate(4deg); }
-            70% { transform: translate(-1px, -1px) rotate(-2deg); }
-            80% { transform: translate(1px, 1px) rotate(2deg); }
-            90% { transform: translate(0, 0) rotate(-1deg); }
-            100% { transform: translate(0, 0) rotate(0deg); }
+            0% { transform: translate(0, 0); }
+            10% { transform: translate(-8px, -4px); }
+            20% { transform: translate(8px, 4px); }
+            30% { transform: translate(-8px, 4px); }
+            40% { transform: translate(8px, -4px); }
+            50% { transform: translate(-4px, 2px); }
+            60% { transform: translate(4px, -2px); }
+            70% { transform: translate(-2px, -2px); }
+            80% { transform: translate(2px, 2px); }
+            90% { transform: translate(0, 0); }
+            100% { transform: translate(0, 0); }
         }
-        .shake-animation {
-            animation: shake 0.6s ease-in-out infinite;
+        .shake-screen {
+            animation: shake 0.4s ease-in-out;
         }
-        /* Custom scrollbars */
+
+        /* Flash animation for taking damage */
+        @keyframes flash {
+            0%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.2; }
+            50% { opacity: 0.8; }
+        }
+        .flash-monster {
+            animation: flash 0.4s ease-in-out;
+        }
+
+        /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #0b0f19;
+            background: #060a13;
         }
         ::-webkit-scrollbar-thumb {
-            background: #1f2937;
+            background: #1e293b;
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #374151;
+            background: #334155;
         }
     </style>
 </head>
 <body class="text-slate-100 overflow-x-hidden min-h-screen flex flex-col">
-    <!-- SVGs definition gradients for procedural monster rendering -->
+    <!-- SVG gradients defs -->
     <svg style="width:0; height:0; position:absolute;">
         <defs>
             <radialGradient id="electricGrad" cx="50%" cy="50%" r="50%">
@@ -116,202 +132,171 @@
     <!-- Header bar -->
     <header class="border-b border-slate-800 bg-slate-950/70 backdrop-blur-md sticky top-0 z-40 px-6 py-4 flex justify-between items-center">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-                <i data-lucide="gamepad-2" class="w-5 h-5 text-white"></i>
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-amber-600 flex items-center justify-center shadow-lg shadow-rose-500/20">
+                <i data-lucide="zap" class="w-5 h-5 text-white"></i>
             </div>
             <div>
-                <h1 class="font-orbitron font-extrabold text-white text-lg tracking-wider">CYBERMON QUEST</h1>
-                <p class="text-[10px] text-cyan-400 font-orbitron tracking-widest uppercase">Clicker RPG Arena</p>
+                <h1 class="font-orbitron font-extrabold text-white text-lg tracking-wider">CYBERMON FIRERED</h1>
+                <p class="text-[10px] text-amber-500 font-orbitron tracking-widest uppercase">Turn-Based Tactical Combat</p>
             </div>
         </div>
         
-        <!-- Top Stats / Wallet -->
+        <!-- Top Wallet Stats -->
         <div class="flex items-center gap-6">
-            <!-- Coins -->
             <div class="flex items-center gap-2 bg-slate-900 border border-slate-800 px-3.5 py-1.5 rounded-xl">
-                <i data-lucide="coins" class="w-4 h-4 text-amber-400"></i>
-                <span id="header-coins" class="font-orbitron font-bold text-sm text-amber-400">0</span>
+                <i data-lucide="coins" class="w-4 h-4 text-amber-450"></i>
+                <span id="header-coins" class="font-orbitron font-bold text-sm text-amber-450">0</span>
             </div>
             
-            <!-- Shards -->
             <div class="flex items-center gap-2 bg-slate-900 border border-slate-800 px-3.5 py-1.5 rounded-xl">
                 <i data-lucide="gem" class="w-4 h-4 text-cyan-400"></i>
                 <span id="header-shards" class="font-orbitron font-bold text-sm text-cyan-400">0</span>
             </div>
 
-            <!-- Sound toggle -->
-            <button onclick="toggleMute()" class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-slate-800 transition-colors text-slate-400" id="sound-btn">
+            <button onclick="toggleMute()" class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-slate-850 transition-colors text-slate-400" id="sound-btn">
                 <i data-lucide="volume-2" class="w-4 h-4"></i>
             </button>
 
-            <!-- Back to Arcade -->
             <a href="minigames.html" class="flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 rounded-xl transition-all text-xs font-orbitron font-bold text-slate-300">
                 <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Voltar ao Arcade
             </a>
         </div>
     </header>
 
-    <!-- Main Content Grid -->
+    <!-- Main Content Container Grid -->
     <main class="flex-grow p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1600px] w-full mx-auto">
         
-        <!-- LEFT SIDEBAR: Trainer stats & Upgrades (Grid span 3) -->
+        <!-- LEFT COLUMN: Trainer Status & Upgrades (span 3) -->
         <section class="lg:col-span-3 flex flex-col gap-6">
-            <!-- Trainer Card -->
+            <!-- Trainer stats card -->
             <div class="bg-slate-950/40 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-sm relative overflow-hidden">
-                <div class="absolute -top-12 -left-12 w-28 h-28 bg-indigo-500/10 rounded-full blur-2xl animated-pulse-slow"></div>
+                <div class="absolute -top-12 -left-12 w-28 h-28 bg-rose-500/10 rounded-full blur-2xl animate-pulse-slow"></div>
                 <div class="flex items-center gap-4 mb-4">
-                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700/50 flex items-center justify-center relative overflow-hidden" id="trainer-avatar-box">
-                        <!-- Neon Trainer Avatar SVG -->
-                        <svg viewBox="0 0 100 100" class="w-10 h-10 text-cyan-400">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-750 flex items-center justify-center relative overflow-hidden">
+                        <svg viewBox="0 0 100 100" class="w-10 h-10 text-rose-500">
                             <circle cx="50" cy="35" r="18" fill="none" stroke="currentColor" stroke-width="4"/>
                             <path d="M20,80 Q20,55 50,55 Q80,55 80,80" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-                            <circle cx="50" cy="35" r="6" fill="currentColor"/>
                         </svg>
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="font-orbitron font-black text-white text-sm" id="trainer-name">CYBER-TRAINER</span>
-                            <span class="text-[10px] bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-orbitron px-1.5 py-0.5 rounded" id="trainer-badge">NÍVEL 1</span>
+                            <span class="font-orbitron font-black text-white text-sm" id="trainer-name">MESTRE RED</span>
+                            <span class="text-[10px] bg-rose-500/10 border border-rose-500/30 text-rose-400 font-orbitron px-1.5 py-0.5 rounded" id="trainer-badge">LVL 1</span>
                         </div>
-                        <p class="text-[11px] text-slate-400 mt-0.5" id="active-zone-label">Navegando pela Grade</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5" id="active-zone-label">Batalhando nas Rotas</p>
                     </div>
                 </div>
 
-                <!-- Trainer Level progress -->
+                <!-- Trainer progress -->
                 <div class="space-y-1 mb-4">
                     <div class="flex justify-between text-[10px] font-orbitron text-slate-400">
-                        <span>EXP DO TREINADOR</span>
+                        <span>XP DO TREINADOR</span>
                         <span id="trainer-xp-text">0 / 100</span>
                     </div>
-                    <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800/80">
-                        <div id="trainer-xp-bar" class="h-full bg-gradient-to-r from-cyan-500 to-indigo-500 shadow-[0_0_8px_rgba(6,182,212,0.4)] transition-all duration-300" style="width: 0%;"></div>
+                    <div class="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                        <div id="trainer-xp-bar" class="h-full bg-gradient-to-r from-rose-500 to-amber-500 shadow-[0_0_8px_rgba(239,68,68,0.4)] transition-all duration-300" style="width: 0%;"></div>
                     </div>
                 </div>
 
-                <!-- Stats summary -->
+                <!-- Stats card info -->
                 <div class="grid grid-cols-2 gap-3 bg-slate-900/50 border border-slate-800/40 p-3 rounded-xl">
                     <div class="text-center border-r border-slate-800">
-                        <span class="text-[10px] font-orbitron text-slate-400 block uppercase">Dano / Clique</span>
-                        <span id="stat-click-dmg" class="font-orbitron font-black text-white text-sm text-cyan-400">1</span>
+                        <span class="text-[9px] font-orbitron text-slate-400 block uppercase">Poder de Ataque</span>
+                        <span id="stat-click-dmg" class="font-orbitron font-black text-rose-500 text-sm">+0 DMG</span>
                     </div>
                     <div class="text-center">
-                        <span class="text-[10px] font-orbitron text-slate-400 block uppercase">DPS Passivo</span>
-                        <span id="stat-passive-dps" class="font-orbitron font-black text-white text-sm text-indigo-400">0</span>
+                        <span class="text-[9px] font-orbitron text-slate-400 block uppercase">Auto-Reparo</span>
+                        <span id="stat-passive-dps" class="font-orbitron font-black text-emerald-400 text-sm">+0 HP/Turn</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Shop / Upgrades -->
+            <!-- Upgrades section -->
             <div class="bg-slate-950/40 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-sm flex-grow flex flex-col">
-                <h3 class="font-orbitron font-extrabold text-xs text-white uppercase tracking-wider mb-4 flex items-center gap-2 text-cyan-400">
-                    <i data-lucide="trending-up" class="w-4 h-4"></i> Melhores e Upgrades
+                <h3 class="font-orbitron font-extrabold text-xs text-white uppercase tracking-wider mb-4 flex items-center gap-2 text-rose-500">
+                    <i data-lucide="trending-up" class="w-4 h-4"></i> Módulos de Suporte
                 </h3>
                 
-                <!-- Upgrade List Scrollable -->
-                <div class="space-y-3.5 flex-grow overflow-y-auto pr-1 max-h-[420px] lg:max-h-none">
-                    <!-- Click Power Upgrade -->
-                    <div class="bg-slate-900/60 border border-slate-800 hover:border-slate-700/80 p-3.5 rounded-xl flex items-center justify-between transition-colors group">
+                <!-- Upgrade List -->
+                <div class="space-y-3 flex-grow overflow-y-auto pr-1 max-h-[380px] lg:max-h-none">
+                    <!-- Chip de Ataque (Click power) -->
+                    <div class="bg-slate-900/60 border border-slate-800 p-3.5 rounded-xl flex items-center justify-between transition-colors group">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center p-1.5">
-                                <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_0_4px_rgba(6,182,212,0.5)]">
-                                    <path d="M30,70 L30,45 A8,8 0 0,1 46,45 L46,70 Z" fill="#0891B2" stroke="#22D3EE" stroke-width="2"/>
-                                    <path d="M46,70 L46,40 A8,8 0 0,1 62,40 L62,70 Z" fill="#0891B2" stroke="#22D3EE" stroke-width="2"/>
-                                    <path d="M62,70 L62,48 A8,8 0 0,1 78,48 L78,70 Z" fill="#0891B2" stroke="#22D3EE" stroke-width="2"/>
-                                    <rect x="25" y="65" width="55" height="25" rx="6" fill="#1E293B" stroke="#06B6D4" stroke-width="3"/>
-                                    <circle cx="52" cy="77" r="4" fill="#00FFFF" class="animate-pulse"/>
-                                    <line x1="35" y1="77" x2="48" y2="77" stroke="#22D3EE" stroke-width="2"/>
-                                    <line x1="56" y1="77" x2="70" y2="77" stroke="#22D3EE" stroke-width="2"/>
+                            <div class="w-9 h-9 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center p-1">
+                                <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_0_4px_rgba(239,68,68,0.5)]">
+                                    <path d="M30,70 L30,45 A8,8 0 0,1 46,45 Z" fill="#991B1B" stroke="#EF4444" stroke-width="2"/>
+                                    <rect x="25" y="65" width="50" height="20" rx="4" fill="#1E293B" stroke="#F87171" stroke-width="3"/>
                                 </svg>
                             </div>
                             <div>
-                                <span class="font-orbitron font-bold text-xs text-white block">Luvas de Alta Tensão</span>
-                                <span class="text-[10px] text-slate-400 block" id="click-up-desc">+1 Dano / Click (Lvl 1)</span>
+                                <span class="font-orbitron font-bold text-xs text-white block">Chip de Ataque</span>
+                                <span class="text-[10px] text-slate-400 block" id="click-up-desc">+1 Dano em Combate (Lvl 1)</span>
                             </div>
                         </div>
-                        <button onclick="buyUpgrade('click')" id="btn-upgrade-click" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-orbitron font-bold text-2xs rounded-lg transition-all flex flex-col items-center">
+                        <button onclick="buyUpgrade('click')" id="btn-upgrade-click" class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-orbitron font-bold text-2xs rounded-lg transition-all flex flex-col items-center">
                             <span>UPGRADE</span>
-                            <span class="text-cyan-200 mt-0.5" id="cost-upgrade-click">50 Coins</span>
+                            <span class="text-rose-200 mt-0.5" id="cost-upgrade-click">50 Coins</span>
                         </button>
                     </div>
 
-                    <!-- Passive Auto Click Upgrade -->
-                    <div class="bg-slate-900/60 border border-slate-800 hover:border-slate-700/80 p-3.5 rounded-xl flex items-center justify-between transition-colors group">
+                    <!-- Reparo de Turno (Auto heals) -->
+                    <div class="bg-slate-900/60 border border-slate-800 p-3.5 rounded-xl flex items-center justify-between transition-colors group">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center p-1.5">
-                                <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_0_4px_rgba(99,102,241,0.5)]">
-                                    <circle cx="50" cy="50" r="16" fill="#1E293B" stroke="#6366F1" stroke-width="3"/>
-                                    <line x1="25" y1="25" x2="75" y2="75" stroke="#4F46E5" stroke-width="4" stroke-linecap="round"/>
-                                    <line x1="25" y1="75" x2="75" y2="25" stroke="#4F46E5" stroke-width="4" stroke-linecap="round"/>
-                                    <circle cx="25" cy="25" r="8" fill="#312E81" stroke="#818CF8" stroke-width="1.5"/>
-                                    <circle cx="75" cy="25" r="8" fill="#312E81" stroke="#818CF8" stroke-width="1.5"/>
-                                    <circle cx="25" cy="75" r="8" fill="#312E81" stroke="#818CF8" stroke-width="1.5"/>
-                                    <circle cx="75" cy="75" r="8" fill="#312E81" stroke="#818CF8" stroke-width="1.5"/>
-                                    <circle cx="50" cy="50" r="6" fill="#818CF8"/>
-                                    <circle cx="50" cy="50" r="2.5" fill="#00FFFF" class="animate-pulse"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <span class="font-orbitron font-bold text-xs text-white block">Drones Autônomos</span>
-                                <span class="text-[10px] text-slate-400 block" id="auto-up-desc">+0.5 DPS (Lvl 0)</span>
-                            </div>
-                        </div>
-                        <button onclick="buyUpgrade('auto')" id="btn-upgrade-auto" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-orbitron font-bold text-2xs rounded-lg transition-all flex flex-col items-center">
-                            <span>UPGRADE</span>
-                            <span class="text-indigo-200 mt-0.5" id="cost-upgrade-auto">120 Coins</span>
-                        </button>
-                    </div>
-
-                    <!-- Cyber-Shards Scanner Upgrade -->
-                    <div class="bg-slate-900/60 border border-slate-800 hover:border-slate-700/80 p-3.5 rounded-xl flex items-center justify-between transition-colors group">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center p-1.5">
+                            <div class="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center p-1">
                                 <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_0_4px_rgba(16,185,129,0.5)]">
-                                    <rect x="25" y="20" width="50" height="60" rx="8" fill="#022C22" stroke="#10B981" stroke-width="3"/>
-                                    <circle cx="50" cy="50" r="16" fill="none" stroke="#34D399" stroke-width="2" stroke-dasharray="4,2"/>
-                                    <circle cx="50" cy="50" r="8" fill="none" stroke="#34D399" stroke-width="2"/>
-                                    <line x1="50" y1="50" x2="62" y2="38" stroke="#A7F3D0" stroke-width="2.5" stroke-linecap="round"/>
-                                    <circle cx="62" cy="38" r="2.5" fill="#FFFFFF"/>
+                                    <circle cx="50" cy="50" r="16" fill="#1E293B" stroke="#10B981" stroke-width="3"/>
+                                    <path d="M25,25 L75,75 M25,75 L75,25" stroke="#047857" stroke-width="4"/>
+                                    <circle cx="50" cy="50" r="5" fill="#34D399" class="animate-pulse"/>
                                 </svg>
                             </div>
                             <div>
-                                <span class="font-orbitron font-bold text-xs text-white block">Filtro de Ruído</span>
+                                <span class="font-orbitron font-bold text-xs text-white block">Drones de Reparo</span>
+                                <span class="text-[10px] text-slate-400 block" id="auto-up-desc">+0 HP por Turno (Lvl 0)</span>
+                            </div>
+                        </div>
+                        <button onclick="buyUpgrade('auto')" id="btn-upgrade-auto" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-orbitron font-bold text-2xs rounded-lg transition-all flex flex-col items-center">
+                            <span>UPGRADE</span>
+                            <span class="text-emerald-200 mt-0.5" id="cost-upgrade-auto">120 Coins</span>
+                        </button>
+                    </div>
+
+                    <!-- Filtro de Ruido (Scanner shards) -->
+                    <div class="bg-slate-900/60 border border-slate-800 p-3.5 rounded-xl flex items-center justify-between transition-colors group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center p-1">
+                                <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_0_4px_rgba(6,182,212,0.5)]">
+                                    <rect x="25" y="20" width="50" height="60" rx="8" fill="#083344" stroke="#06B6D4" stroke-width="3"/>
+                                    <circle cx="50" cy="50" r="12" fill="none" stroke="#22D3EE" stroke-width="2"/>
+                                    <line x1="50" y1="50" x2="60" y2="40" stroke="#E0F2FE" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <span class="font-orbitron font-bold text-xs text-white block">Scanner de Shards</span>
                                 <span class="text-[10px] text-slate-400 block" id="shard-up-desc">+5% Drop Chance (Lvl 1)</span>
                             </div>
                         </div>
-                        <button onclick="buyUpgrade('shard')" id="btn-upgrade-shard" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-orbitron font-bold text-2xs rounded-lg transition-all flex flex-col items-center">
+                        <button onclick="buyUpgrade('shard')" id="btn-upgrade-shard" class="px-2.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-orbitron font-bold text-2xs rounded-lg transition-all flex flex-col items-center">
                             <span>UPGRADE</span>
-                            <span class="text-emerald-200 mt-0.5" id="cost-upgrade-shard">250 Coins</span>
+                            <span class="text-cyan-200 mt-0.5" id="cost-upgrade-shard">250 Coins</span>
                         </button>
                     </div>
 
-                    <!-- Critical Chance Upgrade -->
-                    <div class="bg-slate-900/60 border border-slate-800 hover:border-slate-700/80 p-3.5 rounded-xl flex items-center justify-between transition-colors group">
+                    <!-- Processador Critico (Crit chance) -->
+                    <div class="bg-slate-900/60 border border-slate-800 p-3.5 rounded-xl flex items-center justify-between transition-colors group">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center p-1.5">
+                            <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center p-1">
                                 <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_0_4px_rgba(245,158,11,0.5)]">
                                     <rect x="20" y="20" width="60" height="60" rx="10" fill="#1E293B" stroke="#D97706" stroke-width="3"/>
                                     <rect x="35" y="35" width="30" height="30" rx="4" fill="#78350F" stroke="#F59E0B" stroke-width="2"/>
-                                    <line x1="12" y1="35" x2="20" y2="35" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
-                                    <line x1="12" y1="50" x2="20" y2="50" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
-                                    <line x1="12" y1="65" x2="20" y2="65" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
-                                    <line x1="80" y1="35" x2="88" y2="35" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
-                                    <line x1="80" y1="50" x2="88" y2="50" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
-                                    <line x1="80" y1="65" x2="88" y2="65" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
-                                    <line x1="35" y1="12" x2="35" y2="20" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
-                                    <line x1="50" y1="12" x2="50" y2="20" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
-                                    <line x1="65" y1="12" x2="65" y2="20" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
-                                    <line x1="35" y1="80" x2="35" y2="88" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
-                                    <line x1="50" y1="80" x2="50" y2="88" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
-                                    <line x1="65" y1="80" x2="65" y2="88" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
-                                    <circle cx="50" cy="50" r="4.5" fill="#FFFFFF" class="animate-pulse"/>
+                                    <circle cx="50" cy="50" r="4.5" fill="#FFF" class="animate-pulse"/>
                                 </svg>
                             </div>
                             <div>
-                                <span class="font-orbitron font-bold text-xs text-white block">Processador de Fluxo</span>
-                                <span class="text-[10px] text-slate-400 block" id="crit-up-desc">+5% Crit Chance (Lvl 1)</span>
+                                <span class="font-orbitron font-bold text-xs text-white block">Núcleo Crítico</span>
+                                <span class="text-[10px] text-slate-400 block" id="crit-up-desc">+5% Crit Rate (Lvl 1)</span>
                             </div>
                         </div>
-                        <button onclick="buyUpgrade('crit')" id="btn-upgrade-crit" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white font-orbitron font-bold text-2xs rounded-lg transition-all flex flex-col items-center">
+                        <button onclick="buyUpgrade('crit')" id="btn-upgrade-crit" class="px-2.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white font-orbitron font-bold text-2xs rounded-lg transition-all flex flex-col items-center">
                             <span>UPGRADE</span>
                             <span class="text-amber-200 mt-0.5" id="cost-upgrade-crit">400 Coins</span>
                         </button>
@@ -320,157 +305,150 @@
             </div>
         </section>
 
-        <!-- CENTER AREA: Battle Arena (Grid span 5) -->
-        <section class="lg:col-span-5 flex flex-col gap-6">
-            <!-- Zone selector bar -->
-            <div class="bg-slate-950/40 border border-slate-800/80 rounded-2xl p-3 flex justify-between items-center backdrop-blur-sm">
+        <!-- CENTER COLUMN: Pokemon FireRed Turn-Based Battlefield (span 5) -->
+        <section class="lg:col-span-5 flex flex-col gap-5">
+            <!-- Zone indicators -->
+            <div class="bg-slate-950/40 border border-slate-800/80 rounded-2xl p-3.5 flex justify-between items-center backdrop-blur-sm">
                 <button onclick="prevZone()" id="btn-prev-zone" class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-850 flex items-center justify-center transition-colors text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed">
                     <i data-lucide="chevron-left" class="w-5 h-5"></i>
                 </button>
                 <div class="text-center">
-                    <span id="zone-indicator" class="text-[9px] font-orbitron font-bold tracking-widest text-cyan-400 block uppercase">GRADE DE ENTRADA (ZONA 1)</span>
+                    <span id="zone-indicator" class="text-[9px] font-orbitron font-bold tracking-widest text-rose-500 block uppercase">ROTA 1 (1/10 COMBATES)</span>
                     <h2 id="zone-name" class="font-orbitron font-black text-sm text-white tracking-wide">FLORESTA DOS NEONS</h2>
                 </div>
-                <button onclick="nextZone()" id="btn-next-zone" class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-850 flex items-center justify-center transition-colors text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed">
+                <button onclick="nextZone()" id="btn-next-zone" class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-850 hover:bg-slate-800 flex items-center justify-center transition-colors text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed">
                     <i data-lucide="chevron-right" class="w-5 h-5"></i>
                 </button>
             </div>
 
-            <!-- Active Battlefield Arena -->
-            <div id="battlefield-card" class="bg-gradient-to-b from-slate-950/50 to-slate-900/30 border border-slate-800 rounded-3xl p-6 backdrop-blur-sm relative overflow-hidden flex flex-col items-center justify-between min-h-[480px] group transition-all duration-300">
-                <!-- Glowing particle background -->
-                <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.06),transparent_60%)] pointer-events-none"></div>
-                
-                <!-- Zone Progress indicator -->
-                <div class="w-full flex justify-between items-center border-b border-slate-800/60 pb-3 z-10">
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="sword" class="w-4 h-4 text-cyan-400"></i>
-                        <span id="battle-mode-badge" class="font-orbitron font-bold text-[10px] text-cyan-400 tracking-wider">COMBATE ATIVO</span>
-                    </div>
-                    <div class="flex gap-1.5" id="zone-progress-dots">
-                        <!-- Generated dots dynamically -->
-                        <div class="w-2 h-2 rounded-full bg-cyan-500"></div>
-                        <div class="w-2 h-2 rounded-full bg-slate-800"></div>
-                    </div>
-                </div>
-
-                <!-- Wild Monster display panel -->
-                <div class="flex-grow flex flex-col items-center justify-center py-6 w-full relative">
+            <!-- FireRed Retro Battle Screen Card -->
+            <div id="battlefield-card" class="bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden flex flex-col relative min-h-[460px] group transition-all duration-300 shadow-2xl">
+                <!-- Battlefield Background Grid -->
+                <div class="flex-grow relative overflow-hidden bg-[radial-gradient(circle_at_bottom,#111827_0%,#030712_80%)] flex flex-col justify-between p-4 min-h-[300px]" id="battle-scene-screen">
                     
-                    <!-- Sound / Damage visual node overlay (clicks happen here) -->
-                    <div onclick="dealClickDamage(event)" class="w-64 h-64 rounded-full flex items-center justify-center cursor-pointer relative select-none transition-transform active:scale-95 group-hover:shadow-[0_0_35px_rgba(59,130,246,0.08)]" id="click-target-zone">
-                        <!-- Cybermon SVG Container -->
-                        <div id="monster-svg-box" class="w-44 h-44 flex items-center justify-center animated-float">
-                            <!-- Procedural SVG gets injected here -->
+                    <!-- TOP RIGHT: Opponent Cybermon details & platform -->
+                    <div class="w-full flex justify-end items-start gap-4 mt-2">
+                        <!-- Opponent info box -->
+                        <div class="bg-slate-900/90 border border-slate-750 p-2.5 rounded-2xl w-48 shadow-lg relative flex flex-col gap-1 select-none">
+                            <div class="flex justify-between items-center text-[10px] font-orbitron font-bold">
+                                <span id="opp-name" class="text-white tracking-wide uppercase">FLARIS</span>
+                                <span id="opp-level" class="text-amber-500 text-2xs">Lvl 3</span>
+                            </div>
+                            <span id="opp-type" class="text-[7px] font-orbitron tracking-widest text-slate-400 uppercase">FIRE</span>
+                            <!-- Opp HP bar -->
+                            <div class="space-y-0.5 mt-1">
+                                <div class="w-full h-2 bg-slate-950 rounded-full p-0.5 border border-slate-800 overflow-hidden">
+                                    <div id="opp-hp-bar" class="h-full bg-emerald-500 rounded-full transition-all duration-300" style="width: 100%;"></div>
+                                </div>
+                                <div class="flex justify-between text-[8px] font-orbitron font-bold text-slate-400">
+                                    <span>HP</span>
+                                    <span id="opp-hp-text">40 / 40</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Opponent monster avatar platform -->
+                        <div class="relative w-28 h-28 flex flex-col items-center justify-end">
+                            <!-- Circular Platform -->
+                            <ellipse cx="50" cy="80" rx="36" ry="12" fill="#1e293b" opacity="0.6" stroke="#475569" stroke-width="1.5" class="absolute bottom-0"/>
+                            <!-- Monster SVG container -->
+                            <div id="opp-svg-box" class="w-24 h-24 flex items-center justify-center z-10 animate-float-opp transition-all duration-300">
+                                <!-- Opponent SVG here -->
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Timer Bar overlay for Bosses -->
-                    <div id="boss-timer-box" class="w-64 space-y-1 mb-4 hidden z-10">
-                        <div class="flex justify-between text-[9px] font-orbitron text-rose-400 font-bold">
-                            <span>TEMPO PARA DERROTAR</span>
-                            <span id="boss-timer-val">30s</span>
+                    <!-- BOTTOM LEFT: Player Active Companion details & platform -->
+                    <div class="w-full flex justify-start items-end gap-4 mb-2">
+                        <!-- Player platform -->
+                        <div class="relative w-28 h-28 flex flex-col items-center justify-end">
+                            <ellipse cx="50" cy="80" rx="38" ry="14" fill="#0f172a" opacity="0.8" stroke="#3b82f6" stroke-width="1.5" class="absolute bottom-0"/>
+                            <!-- Back view SVG of player companion -->
+                            <div id="player-svg-box" class="w-24 h-24 flex items-center justify-center z-10 animate-float-player transition-all duration-300">
+                                <!-- Player SVG here -->
+                            </div>
                         </div>
-                        <div class="w-full h-1 bg-slate-950 rounded-full overflow-hidden">
-                            <div id="boss-timer-bar" class="h-full bg-rose-500 transition-all duration-100" style="width: 100%;"></div>
-                        </div>
-                    </div>
 
-                    <!-- Info and stats floating above character -->
-                    <div class="text-center mt-3 z-10">
-                        <div class="flex items-center justify-center gap-2">
-                            <h3 id="monster-name" class="font-orbitron font-black text-lg text-white tracking-wide uppercase">SPARKY</h3>
-                            <span id="monster-level" class="text-xs bg-slate-800 border border-slate-700 px-2 py-0.5 rounded font-orbitron font-semibold text-slate-300">Lvl 1</span>
+                        <!-- Player info box -->
+                        <div id="player-status-panel" class="bg-slate-900/90 border border-slate-750 p-2.5 rounded-2xl w-48 shadow-lg relative flex flex-col gap-1 select-none">
+                            <div class="flex justify-between items-center text-[10px] font-orbitron font-bold">
+                                <span id="player-mon-name" class="text-white tracking-wide uppercase">MEU SPARKY</span>
+                                <span id="player-mon-level" class="text-cyan-400 text-2xs">Lvl 1</span>
+                            </div>
+                            <!-- Player HP bar -->
+                            <div class="space-y-0.5 mt-1">
+                                <div class="w-full h-2 bg-slate-950 rounded-full p-0.5 border border-slate-800 overflow-hidden">
+                                    <div id="player-hp-bar" class="h-full bg-emerald-500 rounded-full transition-all duration-300" style="width: 100%;"></div>
+                                </div>
+                                <div class="flex justify-between text-[8px] font-orbitron font-bold text-slate-400">
+                                    <span>HP</span>
+                                    <span id="player-hp-text">45 / 45</span>
+                                </div>
+                            </div>
+                            <!-- Player Exp bar -->
+                            <div class="space-y-0.5 mt-0.5 border-t border-slate-800 pt-1">
+                                <div class="w-full h-1 bg-slate-950 rounded-full overflow-hidden">
+                                    <div id="player-exp-bar" class="h-full bg-cyan-400 transition-all duration-300" style="width: 0%;"></div>
+                                </div>
+                            </div>
                         </div>
-                        <span id="monster-type" class="text-[9px] font-orbitron font-bold tracking-widest text-cyan-400 uppercase mt-0.5 block">ELECTRIC</span>
                     </div>
                 </div>
 
-                <!-- HP / Capture Panel -->
-                <div class="w-full space-y-4 z-10">
-                    <!-- HP bar -->
-                    <div id="monster-hp-box" class="space-y-1.5">
-                        <div class="flex justify-between text-[11px] font-orbitron">
-                            <span class="text-slate-400">INTEGRIDADE DO NÓ</span>
-                            <span id="monster-hp-text" class="text-white font-bold">80 / 80 HP</span>
-                        </div>
-                        <div class="w-full h-3.5 bg-slate-950 border border-slate-850 rounded-full p-0.5 overflow-hidden">
-                            <div id="monster-hp-bar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-150" style="width: 100%;"></div>
-                        </div>
+                <!-- BOTTOM RETRO CONSOLE: Message bar & commands -->
+                <div class="bg-slate-900 border-t border-slate-800 min-h-[140px] flex flex-col md:flex-row relative" id="retro-control-console">
+                    <!-- Dynamic Turn Log Message Pane -->
+                    <div class="flex-grow p-4 font-retro text-[9px] leading-relaxed text-slate-300 flex items-center max-w-full md:max-w-[60%] border-b md:border-b-0 md:border-r border-slate-800 select-none min-h-[70px] md:min-h-0" id="dialogue-box">
+                        O que SPARKY deve fazer?
                     </div>
 
-                    <!-- Capture phase control panel (displays when monster hp is 0) -->
-                    <div id="capture-control-box" class="hidden animate-pulse flex flex-col items-center gap-3">
-                        <span class="font-orbitron font-extrabold text-xs text-toxicgreen text-center uppercase tracking-widest block">🛡️ NÓ VULNERÁVEL! ENVIE CYBER-BOLA PARA CAPTURAR 🛡️</span>
-                        
-                        <!-- Poke-balls Grid -->
-                        <div class="grid grid-cols-4 gap-2 w-full">
-                            <!-- Basic Ball -->
-                            <button onclick="throwBall('basic')" id="ball-basic-btn" class="bg-slate-900 border border-slate-800 hover:border-slate-750 hover:bg-slate-850 p-2.5 rounded-xl text-center transition-all flex flex-col items-center gap-1">
-                                <svg viewBox="0 0 100 100" class="w-8 h-8 drop-shadow-[0_0_6px_rgba(239,68,68,0.5)]">
-                                    <circle cx="50" cy="50" r="45" fill="#1E293B" stroke="#475569" stroke-width="3"/>
-                                    <path d="M5,50 A45,45 0 0,1 95,50 Z" fill="#EF4444"/>
-                                    <line x1="5" y1="50" x2="95" y2="50" stroke="#0F172A" stroke-width="6"/>
-                                    <circle cx="50" cy="50" r="15" fill="#0F172A"/>
-                                    <circle cx="50" cy="50" r="8" fill="#FFFFFF"/>
-                                </svg>
-                                <span class="text-[9px] font-orbitron font-bold text-white block">Basic</span>
-                                <span id="count-ball-basic" class="text-[8px] text-slate-400 block mt-0.5">0 uni.</span>
+                    <!-- Commands Menu / Moves Deck -->
+                    <div class="w-full md:w-[40%] flex flex-col justify-center items-center p-3 relative" id="interaction-box">
+                        <!-- Standard FireRed commands grid -->
+                        <div class="grid grid-cols-2 gap-2 w-full h-full" id="menu-classic-commands">
+                            <button onclick="openMovesMenu()" class="py-2.5 bg-gradient-to-tr from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white border border-rose-600/40 rounded-xl font-retro text-[8px] uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-[0_0_10px_rgba(239,68,68,0.15)]">
+                                ⚔️ LUTAR
                             </button>
-                            
-                            <!-- Great Ball -->
-                            <button onclick="throwBall('great')" id="ball-great-btn" class="bg-slate-900 border border-slate-800 hover:border-slate-750 hover:bg-slate-850 p-2.5 rounded-xl text-center transition-all flex flex-col items-center gap-1">
-                                <svg viewBox="0 0 100 100" class="w-8 h-8 drop-shadow-[0_0_6px_rgba(59,130,246,0.5)]">
-                                    <circle cx="50" cy="50" r="45" fill="#1E293B" stroke="#475569" stroke-width="3"/>
-                                    <path d="M5,50 A45,45 0 0,1 95,50 Z" fill="#3B82F6"/>
-                                    <path d="M25,12 L35,32 L40,10 Z M75,12 L65,32 L60,10 Z" fill="#EF4444"/>
-                                    <line x1="5" y1="50" x2="95" y2="50" stroke="#0F172A" stroke-width="6"/>
-                                    <circle cx="50" cy="50" r="15" fill="#0F172A"/>
-                                    <circle cx="50" cy="50" r="8" fill="#FFFFFF"/>
-                                </svg>
-                                <span class="text-[9px] font-orbitron font-bold text-white block">Mega</span>
-                                <span id="count-ball-great" class="text-[8px] text-slate-400 block mt-0.5">0 uni.</span>
+                            <button onclick="switchTab('backpack')" class="py-2.5 bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-750 rounded-xl font-retro text-[8px] uppercase tracking-wider transition-all flex items-center justify-center gap-1.5">
+                                👜 MOCHILA
                             </button>
+                            <button onclick="switchTab('backpack')" class="py-2.5 bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-750 rounded-xl font-retro text-[8px] uppercase tracking-wider transition-all flex items-center justify-center gap-1.5">
+                                👾 CYBERMON
+                            </button>
+                            <button onclick="escapeEncounter()" id="btn-run-cmd" class="py-2.5 bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-750 rounded-xl font-retro text-[8px] uppercase tracking-wider transition-all flex items-center justify-center gap-1.5">
+                                💨 FUGIR
+                            </button>
+                        </div>
 
-                            <!-- Ultra Ball -->
-                            <button onclick="throwBall('ultra')" id="ball-ultra-btn" class="bg-slate-900 border border-slate-800 hover:border-slate-750 hover:bg-slate-850 p-2.5 rounded-xl text-center transition-all flex flex-col items-center gap-1">
-                                <svg viewBox="0 0 100 100" class="w-8 h-8 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]">
-                                    <circle cx="50" cy="50" r="45" fill="#1E293B" stroke="#475569" stroke-width="3"/>
-                                    <path d="M5,50 A45,45 0 0,1 95,50 Z" fill="#111827"/>
-                                    <path d="M20,25 Q35,5 50,25 Q65,5 80,25" stroke="#F59E0B" stroke-width="8" fill="none"/>
-                                    <line x1="5" y1="50" x2="95" y2="50" stroke="#0F172A" stroke-width="6"/>
-                                    <circle cx="50" cy="50" r="15" fill="#0F172A"/>
-                                    <circle cx="50" cy="50" r="8" fill="#FFFFFF"/>
-                                </svg>
-                                <span class="text-[9px] font-orbitron font-bold text-white block">Ultra</span>
-                                <span id="count-ball-ultra" class="text-[8px] text-slate-400 block mt-0.5">0 uni.</span>
+                        <!-- 4 Moves grid overlay (Hidden by default) -->
+                        <div class="grid grid-cols-2 gap-1.5 w-full h-full hidden" id="menu-moves-deck">
+                            <button onclick="executeAttackMove(0)" id="move-0-btn" class="py-2 px-1 text-center bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-750 rounded-xl font-retro text-[6px] transition-all flex flex-col justify-center items-center">
+                                TACKLE <span class="text-[5px] text-slate-500 mt-0.5">PP 35/35</span>
                             </button>
+                            <button onclick="executeAttackMove(1)" id="move-1-btn" class="py-2 px-1 text-center bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-750 rounded-xl font-retro text-[6px] transition-all flex flex-col justify-center items-center">
+                                MOVE 2 <span class="text-[5px] text-slate-500 mt-0.5">PP 15/15</span>
+                            </button>
+                            <button onclick="executeAttackMove(2)" id="move-2-btn" class="py-2 px-1 text-center bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-750 rounded-xl font-retro text-[6px] transition-all flex flex-col justify-center items-center">
+                                MOVE 3 <span class="text-[5px] text-slate-500 mt-0.5">PP 10/10</span>
+                            </button>
+                            <button onclick="closeMovesMenu()" class="py-2 px-1 text-center bg-rose-950/20 hover:bg-rose-950/40 text-rose-400 border border-rose-900/40 rounded-xl font-retro text-[6px] transition-all flex justify-center items-center">
+                                ↩️ VOLTAR
+                            </button>
+                        </div>
 
-                            <!-- Master Ball -->
-                            <button onclick="throwBall('master')" id="ball-master-btn" class="bg-slate-900 border border-slate-800 hover:border-slate-750 hover:bg-slate-850 p-2.5 rounded-xl text-center transition-all flex flex-col items-center gap-1">
-                                <svg viewBox="0 0 100 100" class="w-8 h-8 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">
-                                    <circle cx="50" cy="50" r="45" fill="#1E293B" stroke="#475569" stroke-width="3"/>
-                                    <path d="M5,50 A45,45 0 0,1 95,50 Z" fill="#A855F7"/>
-                                    <circle cx="25" cy="25" r="10" fill="#EC4899"/>
-                                    <circle cx="75" cy="25" r="10" fill="#EC4899"/>
-                                    <path d="M38,36 L43,22 L50,30 L57,22 L62,36" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <line x1="5" y1="50" x2="95" y2="50" stroke="#0F172A" stroke-width="6"/>
-                                    <circle cx="50" cy="50" r="15" fill="#0F172A"/>
-                                    <circle cx="50" cy="50" r="8" fill="#FFFFFF"/>
-                                </svg>
-                                <span class="text-[9px] font-orbitron font-bold text-white block">Master</span>
-                                <span id="count-ball-master" class="text-[8px] text-slate-400 block mt-0.5">0 uni.</span>
-                            </button>
+                        <!-- Capture Balls Throw deck (Displays on wild defeat) -->
+                        <div class="grid grid-cols-4 gap-1.5 w-full h-full hidden" id="menu-capture-deck">
+                            <!-- Balls list dynamic -->
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- RIGHT SIDEBAR: Backpack & Shop (Grid span 4) -->
+        <!-- RIGHT COLUMN: Mochila (Backpack) & Shop (span 4) -->
         <section class="lg:col-span-4 flex flex-col gap-6">
             
-            <!-- Navigation Tabs for Right Panel -->
+            <!-- Tabs -->
             <div class="bg-slate-950/40 border border-slate-800/80 rounded-2xl p-2 flex gap-2 backdrop-blur-sm">
                 <button onclick="switchTab('backpack')" id="tab-btn-backpack" class="flex-grow flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-orbitron text-xs font-bold transition-all bg-cyan-600/10 border border-cyan-500/20 text-cyan-400">
                     <i data-lucide="briefcase" class="w-4 h-4"></i> MOCHILA
@@ -480,8 +458,8 @@
                 </button>
             </div>
 
-            <!-- TAB CONTENT: MOCHILA (Backpack) -->
-            <div id="tab-content-backpack" class="bg-slate-950/40 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-sm flex-grow flex flex-col justify-between gap-5 min-h-[480px]">
+            <!-- Mochila Container -->
+            <div id="tab-content-backpack" class="bg-slate-950/40 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-sm flex-grow flex flex-col justify-between gap-5 min-h-[460px]">
                 <div>
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-orbitron font-extrabold text-xs text-white uppercase tracking-wider flex items-center gap-2 text-cyan-400">
@@ -490,23 +468,23 @@
                         <span id="backpack-count" class="text-[10px] font-orbitron bg-slate-900 border border-slate-800 px-2.5 py-0.5 rounded text-slate-400">0 / 30</span>
                     </div>
 
-                    <!-- Cyberdex list -->
+                    <!-- Cyberdex list grid -->
                     <div id="backpack-list" class="grid grid-cols-5 gap-2.5 max-h-[220px] overflow-y-auto pr-1">
                         <!-- Caught monsters grid slots will render here dynamically -->
                     </div>
                 </div>
 
-                <!-- Selected Cybermon detail pane -->
+                <!-- Selected detail pane -->
                 <div id="companion-detail-box" class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-2xl">
                     <div class="text-center py-6 text-slate-400 text-xs font-orbitron" id="no-cybermon-selected">
                         <i data-lucide="info" class="w-8 h-8 text-slate-600 mx-auto mb-2"></i> Selecione um Cybermon da Mochila para gerenciar
                     </div>
 
-                    <!-- Full details panel (Hidden by default) -->
+                    <!-- Details overlay -->
                     <div id="cybermon-details" class="hidden flex flex-col gap-3">
                         <div class="flex items-center gap-4">
                             <div id="detail-svg-box" class="w-16 h-16 bg-slate-900 border border-slate-850 rounded-xl flex items-center justify-center p-2 relative overflow-hidden">
-                                <!-- Dynamic Mini-SVG -->
+                                <!-- Mini-SVG -->
                             </div>
                             <div class="flex-grow">
                                 <div class="flex justify-between items-start">
@@ -522,30 +500,27 @@
                         <!-- Stats & Levels -->
                         <div class="grid grid-cols-2 gap-2 text-[10px] font-orbitron">
                             <div class="bg-slate-950/40 border border-slate-800/50 p-2 rounded-xl text-center">
-                                <span class="text-slate-500 block">DANO DE COMBATE</span>
+                                <span class="text-slate-500 block">DANO DE ATAQUE</span>
                                 <span id="detail-stat-power" class="font-bold text-white text-xs mt-0.5 block">+1.5 Click Dmg</span>
                             </div>
                             <div class="bg-slate-950/40 border border-slate-800/50 p-2 rounded-xl text-center">
-                                <span class="text-slate-500 block">MULTIPLICADOR DPS</span>
+                                <span class="text-slate-500 block">AUTO-REPARO</span>
                                 <span id="detail-stat-dps" class="font-bold text-white text-xs mt-0.5 block">+2.0 DPS</span>
                             </div>
                         </div>
 
                         <!-- Action Buttons -->
                         <div class="flex gap-2">
-                            <!-- Toggle active companion -->
-                            <button onclick="toggleCompanionActive()" id="btn-companion-active" class="flex-grow py-2 px-3 bg-indigo-600 hover:bg-indigo-500 text-white font-orbitron font-bold text-xs rounded-xl transition-all shadow-[0_0_12px_rgba(99,102,241,0.2)]">
+                            <button onclick="toggleCompanionActive()" id="btn-companion-active" class="flex-grow py-2.5 px-3 bg-indigo-650 hover:bg-indigo-600 text-white font-orbitron font-bold text-xs rounded-xl transition-all shadow-[0_0_12px_rgba(99,102,241,0.2)]">
                                 DEFINIR COMO COMPANHEIRO
                             </button>
                             
-                            <!-- Level up / Feed -->
-                            <button onclick="upgradeCybermon()" id="btn-cybermon-level" class="py-2 px-3 bg-cyan-600 hover:bg-cyan-500 text-white font-orbitron font-bold text-xs rounded-xl transition-all flex flex-col items-center justify-center">
+                            <button onclick="upgradeCybermon()" id="btn-cybermon-level" class="py-2.5 px-3 bg-cyan-600 hover:bg-cyan-500 text-white font-orbitron font-bold text-xs rounded-xl transition-all flex flex-col items-center justify-center">
                                 <span>LEVEL UP</span>
                                 <span id="detail-level-cost" class="text-[9px] text-cyan-200 mt-0.5">30 Shards</span>
                             </button>
 
-                            <!-- Evolve Button (Hidden unless ready to evolve) -->
-                            <button onclick="evolveCybermon()" id="btn-cybermon-evolve" class="hidden py-2 px-3 bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-white font-orbitron font-bold text-xs rounded-xl transition-all flex flex-col items-center justify-center animate-bounce">
+                            <button onclick="evolveCybermon()" id="btn-cybermon-evolve" class="hidden py-2.5 px-3 bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-white font-orbitron font-bold text-xs rounded-xl transition-all flex flex-col items-center justify-center animate-bounce">
                                 <span>EVOLUIR</span>
                                 <span id="detail-evolve-cost" class="text-[9px] text-amber-100 mt-0.5">150 Shards</span>
                             </button>
@@ -554,12 +529,13 @@
                 </div>
             </div>
 
-            <!-- TAB CONTENT: LOJA (Shop) -->
-            <div id="tab-content-shop" class="hidden bg-slate-950/40 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-sm flex-grow flex flex-col justify-between gap-5 min-h-[480px]">
+            <!-- Shop Container -->
+            <div id="tab-content-shop" class="hidden bg-slate-950/40 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-sm flex-grow flex flex-col justify-between gap-5 min-h-[460px]">
                 <div>
-                    <h3 class="font-orbitron font-extrabold text-xs text-white uppercase tracking-wider mb-4 flex items-center gap-2 text-cyan-400">
+                    <h3 class="font-orbitron font-extrabold text-xs text-white uppercase tracking-wider mb-4 flex items-center gap-2 text-rose-500">
                         <i data-lucide="shopping-bag" class="w-4 h-4"></i> Centro de Abastecimento Cyber
                     </h3>
+
                     <div class="space-y-3">
                         <!-- Shop Item: Basic Ball -->
                         <div class="bg-slate-900/60 border border-slate-800 p-3 rounded-xl flex items-center justify-between group">
@@ -652,9 +628,8 @@
                     </div>
                 </div>
 
-                <!-- Auxiliary Information box -->
                 <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl text-center">
-                    <p class="text-[10px] text-slate-400 font-inter leading-relaxed">Gaste seus <b class="text-amber-400">Coins</b> (obtidos em batalhas e cliques) ou <b class="text-cyan-400">Cyber Shards</b> (obtidos ao derrotar Bosses) para estocar munição de captura.</p>
+                    <p class="text-[10px] text-slate-400 font-inter leading-relaxed">Gaste seus <b class="text-amber-400">Coins</b> ou <b class="text-cyan-400">Cyber Shards</b> para estocar munição de captura.</p>
                 </div>
             </div>
         </section>
@@ -663,15 +638,14 @@
     <!-- Settings and saving deck footer bar -->
     <footer class="border-t border-slate-800 bg-slate-950/40 backdrop-blur-md px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
         <div class="flex items-center gap-2">
-            <span class="text-2xs font-orbitron tracking-widest text-slate-500 uppercase">MÓDULO DE DADOS DE SEGURANÇA</span>
-            <span class="w-1.5 h-1.5 rounded-full bg-toxicgreen animate-pulse"></span>
-            <span class="text-[10px] text-toxicgreen font-orbitron">SAVE AUTOMÁTICO ATIVO</span>
+            <span class="text-2xs font-orbitron tracking-widest text-slate-500 uppercase">MÓDULO DE SEGURANÇA</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-[10px] text-emerald-450 font-orbitron">SAVE AUTOMÁTICO ATIVO</span>
         </div>
         
-        <!-- Save and configurations buttons -->
         <div class="flex items-center gap-3">
             <button onclick="saveGame(true)" class="flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-850 text-slate-300 rounded-lg text-xs font-orbitron font-bold transition-all">
-                <i data-lucide="save" class="w-3.5 h-3.5 text-cyan-400"></i> Salvar Jogo
+                <i data-lucide="save" class="w-3.5 h-3.5 text-rose-500"></i> Salvar Jogo
             </button>
             <button onclick="resetGame()" class="flex items-center gap-1.5 px-3.5 py-1.5 bg-red-950/20 hover:bg-red-950/40 border border-red-900/40 text-red-400 rounded-lg text-xs font-orbitron font-bold transition-all">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Resetar Save
@@ -681,7 +655,7 @@
 
     <!-- JS Gaming Logic engine -->
     <script>
-        // --- SOUND EFFECTS SYNTH (WEB AUDIO API) ---
+        // --- SOUND EFFECTS SYNTH (WEB AUDIO API CLASSIC GBA) ---
         class SoundSynth {
             constructor() {
                 this.ctx = null;
@@ -694,46 +668,49 @@
                 }
             }
 
+            // GBA Turn-based select sound
             click() {
                 if (this.muted) return;
                 this.init();
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(600, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(150, this.ctx.currentTime + 0.08);
-                gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                osc.frequency.setValueAtTime(1200, this.ctx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
                 osc.start();
-                osc.stop(this.ctx.currentTime + 0.08);
+                osc.stop(this.ctx.currentTime + 0.12);
             }
 
+            // Hit GBA noise
             hurt() {
                 if (this.muted) return;
                 this.init();
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(180, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.15);
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(60, this.ctx.currentTime + 0.2);
                 gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
                 osc.start();
-                osc.stop(this.ctx.currentTime + 0.15);
+                osc.stop(this.ctx.currentTime + 0.2);
             }
 
+            // Throw Pokéball GBA shake
             captureShake() {
                 if (this.muted) return;
                 this.init();
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
                 osc.type = 'triangle';
-                osc.frequency.setValueAtTime(250, this.ctx.currentTime);
-                osc.frequency.linearRampToValueAtTime(220, this.ctx.currentTime + 0.2);
+                osc.frequency.setValueAtTime(280, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(240, this.ctx.currentTime + 0.2);
                 gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
                 osc.connect(gain);
@@ -742,39 +719,22 @@
                 osc.stop(this.ctx.currentTime + 0.2);
             }
 
-            captureSuccess() {
-                if (this.muted) return;
-                this.init();
-                const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50]; // Ascending C chord
-                notes.forEach((freq, idx) => {
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.08);
-                    gain.gain.setValueAtTime(0.06, this.ctx.currentTime + idx * 0.08);
-                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.08 + 0.25);
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    osc.start(this.ctx.currentTime + idx * 0.08);
-                    osc.stop(this.ctx.currentTime + idx * 0.08 + 0.25);
-                });
-            }
-
+            // Victory theme GameBoy chime
             lvlUp() {
                 if (this.muted) return;
                 this.init();
-                const notes = [587.33, 739.99, 880.00, 1174.66]; // D-Major ascending shimmer
+                const notes = [440, 554.37, 659.25, 880, 783.99, 880];
                 notes.forEach((freq, idx) => {
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.05);
-                    gain.gain.setValueAtTime(0.08, this.ctx.currentTime + idx * 0.05);
-                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.05 + 0.35);
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.1);
+                    gain.gain.setValueAtTime(0.05, this.ctx.currentTime + idx * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.1 + 0.3);
                     osc.connect(gain);
                     gain.connect(this.ctx.destination);
-                    osc.start(this.ctx.currentTime + idx * 0.05);
-                    osc.stop(this.ctx.currentTime + idx * 0.05 + 0.35);
+                    osc.start(this.ctx.currentTime + idx * 0.1);
+                    osc.stop(this.ctx.currentTime + idx * 0.1 + 0.3);
                 });
             }
         }
@@ -794,47 +754,67 @@
             lucide.createIcons();
         }
 
-        // --- CYBERMON DATABASE (27 items: 9 families with 3 evolutions each) ---
+        // --- CYBERMON DATABASE (Moves & Base attributes) ---
         const CYBERMON_DB = {
-            // FIRE FAMILY
-            1: { name: 'Flaris', type: 'fire', stage: 1, evId: 2, evCost: 40, baseHp: 40, baseCoins: 12, baseDmgBoost: 0.5, baseDpsBoost: 1.0, svg: `<circle cx="50" cy="50" r="28" fill="url(#fireGrad)" stroke="#EF4444" stroke-width="2"/><path d="M38,30 Q50,5 62,30 Q50,45 38,30" fill="#EF4444"/><circle cx="42" cy="50" r="4" fill="#FFF"/><circle cx="58" cy="50" r="4" fill="#FFF"/><ellipse cx="50" cy="62" rx="6" ry="3" fill="#000"/>` },
-            2: { name: 'Magmarox', type: 'fire', stage: 2, evId: 3, evCost: 150, baseHp: 180, baseCoins: 35, baseDmgBoost: 2.0, baseDpsBoost: 4.0, svg: `<rect x="22" y="22" width="56" height="56" rx="14" fill="url(#fireGrad2)" stroke="#EA580C" stroke-width="3"/><polygon points="50,10 65,30 35,30" fill="#EA580C"/><circle cx="40" cy="46" r="5" fill="#FFF"/><circle cx="60" cy="46" r="5" fill="#FFF"/><path d="M38,60 Q50,70 62,60" stroke="#000" stroke-width="3" fill="none"/>` },
-            3: { name: 'Nova-Blaze', type: 'fire', stage: 3, evId: null, evCost: null, baseHp: 950, baseCoins: 110, baseDmgBoost: 15.0, baseDpsBoost: 25.0, svg: `<path d="M10,50 Q50,-10 90,50 Q50,110 10,50" fill="url(#fireGrad)" stroke="#EF4444" stroke-width="4"/><circle cx="50" cy="50" r="24" fill="url(#fireGrad2)" stroke="#FFF" stroke-width="2"/><circle cx="44" cy="48" r="4" fill="#FFF"/><circle cx="56" cy="48" r="4" fill="#FFF"/><path d="M40,64 L50,58 L60,64" stroke="#FFF" stroke-width="2" fill="none"/>` },
+            1: { name: 'Flaris', type: 'fire', stage: 1, evId: 2, evCost: 40, baseHp: 40, baseCoins: 12, baseDmgBoost: 0.5, baseDpsBoost: 1.0, 
+                 moves: ['Investida', 'Brasa', 'Brasa Quente', 'Sobrecarga'],
+                 svg: `<circle cx="50" cy="50" r="28" fill="url(#fireGrad)" stroke="#EF4444" stroke-width="2"/><path d="M38,30 Q50,5 62,30 Q50,45 38,30" fill="#EF4444"/><circle cx="42" cy="50" r="4" fill="#FFF"/><circle cx="58" cy="50" r="4" fill="#FFF"/><ellipse cx="50" cy="62" rx="6" ry="3" fill="#000"/>` },
+            2: { name: 'Magmarox', type: 'fire', stage: 2, evId: 3, evCost: 150, baseHp: 180, baseCoins: 35, baseDmgBoost: 2.0, baseDpsBoost: 4.0, 
+                 moves: ['Murro', ' Firewall', 'Canhão Fusão', 'Supernova'],
+                 svg: `<rect x="22" y="22" width="56" height="56" rx="14" fill="url(#fireGrad2)" stroke="#EA580C" stroke-width="3"/><polygon points="50,10 65,30 35,30" fill="#EA580C"/><circle cx="40" cy="46" r="5" fill="#FFF"/><circle cx="60" cy="46" r="5" fill="#FFF"/><path d="M38,60 Q50,70 62,60" stroke="#000" stroke-width="3" fill="none"/>` },
+            3: { name: 'Nova-Blaze', type: 'fire', stage: 3, evId: null, evCost: null, baseHp: 950, baseCoins: 110, baseDmgBoost: 15.0, baseDpsBoost: 25.0, 
+                 moves: ['Brasa Final', 'Fogo de Fusão', 'Raio Térmico', 'Vento Cósmico'],
+                 svg: `<path d="M10,50 Q50,-10 90,50 Q50,110 10,50" fill="url(#fireGrad)" stroke="#EF4444" stroke-width="4"/><circle cx="50" cy="50" r="24" fill="url(#fireGrad2)" stroke="#FFF" stroke-width="2"/><circle cx="44" cy="48" r="4" fill="#FFF"/><circle cx="56" cy="48" r="4" fill="#FFF"/><path d="M40,64 L50,58 L60,64" stroke="#FFF" stroke-width="2" fill="none"/>` },
 
-            // WATER FAMILY
-            4: { name: 'Bubbles', type: 'water', stage: 1, evId: 5, evCost: 40, baseHp: 35, baseCoins: 10, baseDmgBoost: 0.4, baseDpsBoost: 1.2, svg: `<circle cx="50" cy="50" r="26" fill="url(#waterGrad)" stroke="#06B6D4" stroke-width="2"/><ellipse cx="50" cy="30" rx="6" ry="12" fill="#06B6D4"/><circle cx="42" cy="48" r="3.5" fill="#FFF"/><circle cx="58" cy="48" r="3.5" fill="#FFF"/><path d="M44,58 Q50,62 56,58" stroke="#000" stroke-width="2" fill="none"/>` },
-            5: { name: 'Coral-Fins', type: 'water', stage: 2, evId: 6, evCost: 150, baseHp: 160, baseCoins: 30, baseDmgBoost: 1.8, baseDpsBoost: 4.5, svg: `<path d="M20,50 L50,20 L80,50 L50,80 Z" fill="url(#waterGrad2)" stroke="#0891B2" stroke-width="2.5"/><polygon points="50,15 62,35 38,35" fill="#0891B2"/><circle cx="42" cy="46" r="4.5" fill="#FFF"/><circle cx="58" cy="46" r="4.5" fill="#FFF"/><path d="M42,60 Q50,52 58,60" stroke="#000" stroke-width="2.5" fill="none"/>` },
-            6: { name: 'Tidal-Wave', type: 'water', stage: 3, evId: null, evCost: null, baseHp: 880, baseCoins: 100, baseDmgBoost: 12.0, baseDpsBoost: 30.0, svg: `<circle cx="50" cy="50" r="34" fill="url(#waterGrad)" stroke="#0284C7" stroke-width="3"/><path d="M15,45 Q50,15 85,45 L70,80 L30,80 Z" fill="url(#waterGrad2)" opacity="0.8"/><circle cx="44" cy="44" r="5" fill="#FFF"/><circle cx="56" cy="44" r="5" fill="#FFF"/><path d="M38,62 Q50,72 62,62" stroke="#FFF" stroke-width="3" fill="none"/>` },
+            4: { name: 'Bubbles', type: 'water', stage: 1, evId: 5, evCost: 40, baseHp: 35, baseCoins: 10, baseDmgBoost: 0.4, baseDpsBoost: 1.2, 
+                 moves: ['Investida', 'Borrifada', 'Jato D\'água', 'Loop Fluido'],
+                 svg: `<circle cx="50" cy="50" r="26" fill="url(#waterGrad)" stroke="#06B6D4" stroke-width="2"/><ellipse cx="50" cy="30" rx="6" ry="12" fill="#06B6D4"/><circle cx="42" cy="48" r="3.5" fill="#FFF"/><circle cx="58" cy="48" r="3.5" fill="#FFF"/><path d="M44,58 Q50,62 56,58" stroke="#000" stroke-width="2" fill="none"/>` },
+            5: { name: 'Coral-Fins', type: 'water', stage: 2, evId: 6, evCost: 150, baseHp: 160, baseCoins: 30, baseDmgBoost: 1.8, baseDpsBoost: 4.5, 
+                 moves: ['Mordida', 'Jato de Pressão', 'Tempestade Loop', 'Tsunami Net'],
+                 svg: `<path d="M20,50 L50,20 L80,50 L50,80 Z" fill="url(#waterGrad2)" stroke="#0891B2" stroke-width="2.5"/><polygon points="50,15 62,35 38,35" fill="#0891B2"/><circle cx="42" cy="46" r="4.5" fill="#FFF"/><circle cx="58" cy="46" r="4.5" fill="#FFF"/><path d="M42,60 Q50,52 58,60" stroke="#000" stroke-width="2.5" fill="none"/>` },
+            6: { name: 'Tidal-Wave', type: 'water', stage: 3, evId: null, evCost: null, baseHp: 880, baseCoins: 100, baseDmgBoost: 12.0, baseDpsBoost: 30.0, 
+                 moves: ['Hidromicro', 'Dilúvio Net', 'Tidal Wave', 'Pulso Criogênico'],
+                 svg: `<circle cx="50" cy="50" r="34" fill="url(#waterGrad)" stroke="#0284C7" stroke-width="3"/><path d="M15,45 Q50,15 85,45 L70,80 L30,80 Z" fill="url(#waterGrad2)" opacity="0.8"/><circle cx="44" cy="44" r="5" fill="#FFF"/><circle cx="56" cy="44" r="5" fill="#FFF"/><path d="M38,62 Q50,72 62,62" stroke="#FFF" stroke-width="3" fill="none"/>` },
 
-            // ELECTRIC FAMILY
-            7: { name: 'Sparky', type: 'electric', stage: 1, evId: 8, evCost: 45, baseHp: 45, baseCoins: 14, baseDmgBoost: 0.6, baseDpsBoost: 0.8, svg: `<circle cx="50" cy="55" r="25" fill="url(#electricGrad)" stroke="#3B82F6" stroke-width="2"/><polygon points="30,35 15,10 40,28" fill="#1E3A8A" stroke="#3B82F6" stroke-width="2"/><polygon points="70,35 85,10 60,28" fill="#1E3A8A" stroke="#3B82F6" stroke-width="2"/><circle cx="42" cy="52" r="3" fill="#FFF"/><circle cx="58" cy="52" r="3" fill="#FFF"/><path d="M46,65 Q50,68 54,65" stroke="#FFF" stroke-width="2" fill="none"/>` },
-            8: { name: 'Voltron', type: 'electric', stage: 2, evId: 9, evCost: 160, baseHp: 190, baseCoins: 40, baseDmgBoost: 2.2, baseDpsBoost: 3.8, svg: `<circle cx="50" cy="50" r="30" fill="url(#electricGrad2)" stroke="#B45309" stroke-width="2.5"/><polygon points="25,35 40,15 50,30 60,15 75,35 65,65 50,85 35,65" fill="#1E293B" stroke="#3B82F6" stroke-width="2"/><polygon points="40,40 50,32 60,40 55,55 45,55" fill="#1E3A8A" stroke="#60A5FA" stroke-width="1.5"/><circle cx="46" cy="46" r="2" fill="#00FFFF"/><circle cx="54" cy="46" r="2" fill="#00FFFF"/>` },
-            9: { name: 'Giga-Volt', type: 'electric', stage: 3, evId: null, evCost: null, baseHp: 1000, baseCoins: 120, baseDmgBoost: 16.0, baseDpsBoost: 22.0, svg: `<circle cx="50" cy="50" r="32" fill="url(#electricGrad)" stroke="#3B82F6" stroke-width="3"/><path d="M10,25 L35,45 L50,15 L65,45 L90,25 L75,75 L25,75 Z" fill="url(#electricGrad2)" stroke="#B45309" stroke-width="2"/><circle cx="42" cy="48" r="4.5" fill="#000"/><circle cx="58" cy="48" r="4.5" fill="#000"/><path d="M42,62 H58" stroke="#000" stroke-width="2.5" fill="none"/>` },
+            7: { name: 'Sparky', type: 'electric', stage: 1, evId: 8, evCost: 45, baseHp: 45, baseCoins: 14, baseDmgBoost: 0.6, baseDpsBoost: 0.8, 
+                 moves: ['Investida', 'Faísca', 'Carga Choque', 'Eletro-Pulse'],
+                 svg: `<circle cx="50" cy="55" r="25" fill="url(#electricGrad)" stroke="#3B82F6" stroke-width="2"/><polygon points="30,35 15,10 40,28" fill="#1E3A8A" stroke="#3B82F6" stroke-width="2"/><polygon points="70,35 85,10 60,28" fill="#1E3A8A" stroke="#3B82F6" stroke-width="2"/><circle cx="42" cy="52" r="3" fill="#FFF"/><circle cx="58" cy="52" r="3" fill="#FFF"/><path d="M46,65 Q50,68 54,65" stroke="#FFF" stroke-width="2" fill="none"/>` },
+            8: { name: 'Voltron', type: 'electric', stage: 2, evId: 9, evCost: 160, baseHp: 190, baseCoins: 40, baseDmgBoost: 2.2, baseDpsBoost: 3.8, 
+                 moves: ['Arremesso', 'Trovoada', 'Tempestade Bits', 'Disparador Giga'],
+                 svg: `<circle cx="50" cy="50" r="30" fill="url(#electricGrad2)" stroke="#B45309" stroke-width="2.5"/><polygon points="25,35 40,15 50,30 60,15 75,35 65,65 50,85 35,65" fill="#1E293B" stroke="#3B82F6" stroke-width="2"/><polygon points="40,40 50,32 60,40 55,55 45,55" fill="#1E3A8A" stroke="#60A5FA" stroke-width="1.5"/><circle cx="46" cy="46" r="2" fill="#00FFFF"/><circle cx="54" cy="46" r="2" fill="#00FFFF"/>` },
+            9: { name: 'Giga-Volt', type: 'electric', stage: 3, evId: null, evCost: null, baseHp: 1000, baseCoins: 120, baseDmgBoost: 16.0, baseDpsBoost: 22.0, 
+                 moves: ['Hiper-Choque', 'Trovão de Quark', 'Giga Volt', 'Explosão Quântica'],
+                 svg: `<circle cx="50" cy="50" r="32" fill="url(#electricGrad)" stroke="#3B82F6" stroke-width="3"/><path d="M10,25 L35,45 L50,15 L65,45 L90,25 L75,75 L25,75 Z" fill="url(#electricGrad2)" stroke="#B45309" stroke-width="2"/><circle cx="42" cy="48" r="4.5" fill="#000"/><circle cx="58" cy="48" r="4.5" fill="#000"/><path d="M42,62 H58" stroke="#000" stroke-width="2.5" fill="none"/>` },
 
-            // CYBER TECH FAMILY
-            10: { name: 'Bitlet', type: 'tech', stage: 1, evId: 11, evCost: 50, baseHp: 50, baseCoins: 16, baseDmgBoost: 0.8, baseDpsBoost: 0.8, svg: `<rect x="25" y="25" width="50" height="50" rx="10" fill="url(#techGrad)" stroke="#A855F7" stroke-width="2"/><circle cx="40" cy="45" r="4.5" fill="#FFF"/><circle cx="60" cy="45" r="4.5" fill="#FFF"/><rect x="42" y="58" width="16" height="4" rx="2" fill="#000"/>` },
-            11: { name: 'Pico-Giga', type: 'tech', stage: 2, evId: 12, evCost: 180, baseHp: 210, baseCoins: 45, baseDmgBoost: 2.8, baseDpsBoost: 3.2, svg: `<rect x="20" y="20" width="60" height="60" rx="15" fill="url(#techGrad2)" stroke="#DB2777" stroke-width="3"/><polygon points="40,20 50,5 60,20" fill="#DB2777"/><circle cx="38" cy="46" r="5" fill="#FFF"/><circle cx="62" cy="46" r="5" fill="#FFF"/><path d="M38,60 Q50,68 62,60" stroke="#000" stroke-width="3" fill="none"/>` },
-            12: { name: 'Tera-Brain', type: 'tech', stage: 3, evId: null, evCost: null, baseHp: 1100, baseCoins: 130, baseDmgBoost: 18.0, baseDpsBoost: 20.0, svg: `<path d="M30,10 L70,10 L90,50 L70,90 L30,90 L10,50 Z" fill="url(#techGrad)" stroke="#A855F7" stroke-width="3"/><circle cx="50" cy="50" r="28" fill="url(#techGrad2)" stroke="#FFF" stroke-width="2"/><circle cx="42" cy="45" r="5" fill="#FFF"/><circle cx="58" cy="45" r="5" fill="#FFF"/><path d="M38,64 Q50,52 62,64" stroke="#FFF" stroke-width="3" fill="none"/>` }
+            10: { name: 'Bitlet', type: 'tech', stage: 1, evId: 11, evCost: 50, baseHp: 50, baseCoins: 16, baseDmgBoost: 0.8, baseDpsBoost: 0.8, 
+                  moves: ['Tackle Bits', 'Raio Laser', 'Injetor Bug', 'Buffer Overflow'],
+                  svg: `<rect x="25" y="25" width="50" height="50" rx="10" fill="url(#techGrad)" stroke="#A855F7" stroke-width="2"/><circle cx="40" cy="45" r="4.5" fill="#FFF"/><circle cx="60" cy="45" r="4.5" fill="#FFF"/><rect x="42" y="58" width="16" height="4" rx="2" fill="#000"/>` },
+            11: { name: 'Pico-Giga', type: 'tech', stage: 2, evId: 12, evCost: 180, baseHp: 210, baseCoins: 45, baseDmgBoost: 2.8, baseDpsBoost: 3.2, 
+                  moves: ['Disparador', 'Pico Laser', 'Código Malicioso', 'Crash Total'],
+                  svg: `<rect x="20" y="20" width="60" height="60" rx="15" fill="url(#techGrad2)" stroke="#DB2777" stroke-width="3"/><polygon points="40,20 50,5 60,20" fill="#DB2777"/><circle cx="38" cy="46" r="5" fill="#FFF"/><circle cx="62" cy="46" r="5" fill="#FFF"/><path d="M38,60 Q50,68 62,60" stroke="#000" stroke-width="3" fill="none"/>` },
+            12: { name: 'Tera-Brain', type: 'tech', stage: 3, evId: null, evCost: null, baseHp: 1100, baseCoins: 130, baseDmgBoost: 18.0, baseDpsBoost: 20.0, 
+                  moves: ['Tera Eletro', 'Feixe Kernel', 'Comando Root', 'Formatador C:'],
+                  svg: `<path d="M30,10 L70,10 L90,50 L70,90 L30,90 L10,50 Z" fill="url(#techGrad)" stroke="#A855F7" stroke-width="3"/><circle cx="50" cy="50" r="28" fill="url(#techGrad2)" stroke="#FFF" stroke-width="2"/><circle cx="42" cy="45" r="5" fill="#FFF"/><circle cx="58" cy="45" r="5" fill="#FFF"/><path d="M38,64 Q50,52 62,64" stroke="#FFF" stroke-width="3" fill="none"/>` }
         };
 
         // --- ZONES CONFIGURATION ---
         const ZONES = [
-            { id: 0, name: 'Floresta dos Neons', minLvl: 1, maxLvl: 5, families: [1, 4, 7, 10], color: 'from-blue-950 via-slate-900 to-indigo-950', badge: 'ZONA 1' },
-            { id: 1, name: 'Núcleo Vulcânico', minLvl: 6, maxLvl: 10, families: [1, 7], color: 'from-red-950 via-slate-900 to-amber-950', badge: 'ZONA 2' },
-            { id: 2, name: 'Biosfera de Silício', minLvl: 11, maxLvl: 15, families: [4, 10], color: 'from-emerald-950 via-slate-900 to-cyan-950', badge: 'ZONA 3' },
-            { id: 3, name: 'Portal do Vazio', minLvl: 16, maxLvl: 20, families: [1, 4, 7, 10], color: 'from-purple-950 via-slate-900 to-pink-950', badge: 'ZONA 4' }
+            { id: 0, name: 'Floresta dos Neons', minLvl: 1, maxLvl: 5, families: [1, 4, 7, 10], color: 'from-blue-950 via-slate-900 to-indigo-950', badge: 'ROTA 1' },
+            { id: 1, name: 'Núcleo Vulcânico', minLvl: 6, maxLvl: 10, families: [1, 7], color: 'from-red-950 via-slate-900 to-amber-950', badge: 'ROTA 2' },
+            { id: 2, name: 'Biosfera de Silício', minLvl: 11, maxLvl: 15, families: [4, 10], color: 'from-emerald-950 via-slate-900 to-cyan-950', badge: 'ROTA 3' },
+            { id: 3, name: 'Portal do Vazio', minLvl: 16, maxLvl: 20, families: [1, 4, 7, 10], color: 'from-purple-950 via-slate-900 to-pink-950', badge: 'ROTA 4' }
         ];
 
         // --- STATE MANAGEMENT ---
         let gameState = {
             trainerLevel: 1,
             trainerXp: 0,
-            coins: 0,
+            coins: 100, // Starts with some capital to buy balls
             shards: 0,
             currentZoneIdx: 0,
             zoneProgress: 0, // 0 to 9 monsters, 10 is boss
             activeCompanionUid: null,
-            backpack: [], // items form: { uid, dbId, lvl, exp }
+            backpack: [], // format: { uid, dbId, lvl, exp, hp, maxHp }
             balls: {
                 basic: 10,
                 great: 5,
@@ -842,19 +822,32 @@
                 master: 0
             },
             upgrades: {
-                click: 1,
-                auto: 0,
+                click: 1, // Attacks Chip power lvl
+                auto: 0, // Drones repair HP lvl
                 shard: 1,
                 crit: 1
             }
         };
 
-        // --- BATTLE & SPAWN VARIABLES ---
-        let currentMonster = null; // Current wild monster attributes
-        let bossTimer = 30; // 30 seconds for boss
-        let bossTimerInterval = null;
+        // --- GAMEPLAY VARIABLES ---
+        let wildMonster = null;
+        let activeCompanion = null; // References current fighting monster in backpack
+        let turnInProgress = false;
+        let currentTextTypewriter = '';
+        let isCriticalAttack = false;
         let selectedBackpackUid = null;
-        let autoDpsInterval = null;
+
+        // --- AUTH CHECK PROTECTION ---
+        async function checkAuth() {
+            try {
+                const res = await fetch('/api/me');
+                if (!res.ok) {
+                    window.location.href = '/login.html';
+                }
+            } catch(e) {
+                console.error("Erro ao verificar autenticação", e);
+            }
+        }
 
         // --- LOCAL STORAGE ENGINES ---
         function saveGame(verbose = false) {
@@ -870,12 +863,43 @@
             if (save) {
                 try {
                     gameState = JSON.parse(save);
-                    // Standard structural sanity checks
                     if(!gameState.balls) gameState.balls = { basic: 10, great: 5, ultra: 2, master: 0 };
                     if(!gameState.upgrades) gameState.upgrades = { click: 1, auto: 0, shard: 1, crit: 1 };
                 } catch(e) {
                     console.error('Falha ao carregar save', e);
                 }
+            }
+            
+            // Create Starter Cybermon (Sparky) if backpack is empty
+            if (gameState.backpack.length === 0) {
+                const starterUid = 'starter_' + Date.now();
+                const starterHp = CYBERMON_DB[7].baseHp;
+                gameState.backpack.push({
+                    uid: starterUid,
+                    dbId: 7, // Sparky base
+                    lvl: 5,
+                    exp: 0,
+                    hp: starterHp,
+                    maxHp: starterHp
+                });
+                gameState.activeCompanionUid = starterUid;
+            }
+
+            // Align active companion pointer
+            alignActiveCompanion();
+        }
+
+        function alignActiveCompanion() {
+            if (gameState.activeCompanionUid) {
+                activeCompanion = gameState.backpack.find(c => c.uid === gameState.activeCompanionUid);
+                // Fallback in case active companion fainted or missing
+                if (!activeCompanion && gameState.backpack.length > 0) {
+                    activeCompanion = gameState.backpack[0];
+                    gameState.activeCompanionUid = activeCompanion.uid;
+                }
+            } else if (gameState.backpack.length > 0) {
+                activeCompanion = gameState.backpack[0];
+                gameState.activeCompanionUid = activeCompanion.uid;
             }
         }
 
@@ -886,64 +910,33 @@
             }
         }
 
-        async function checkAuth() {
-            try {
-                const res = await fetch('/api/me');
-                if (!res.ok) {
-                    window.location.href = '/login.html';
-                }
-            } catch(e) {
-                console.error("Erro ao verificar autenticação", e);
-            }
-        }
-
         // --- INITIALIZATION ---
         window.addEventListener('DOMContentLoaded', () => {
             checkAuth();
             loadGame();
             renderAllStats();
-            spawnWildMonster();
             renderBackpack();
             renderUpgradesUi();
+            spawnWildMonster();
             
-            // Auto click / Passive DPS ticker (10 ticks/s for smooth progress)
-            autoDpsInterval = setInterval(() => {
-                applyPassiveDps();
-            }, 100);
-
-            // Auto Save Interval (every 15s)
+            // Interval for automatic recovery based on Repair Drones between combats
             setInterval(() => {
-                saveGame(false);
-            }, 15000);
+                if (!wildMonster || wildMonster.hp <= 0) {
+                    applyDronesAutoHeal();
+                }
+            }, 6000);
 
             lucide.createIcons();
         });
 
-        // --- GAME STATS CALCULATIONS ---
-        function getClickDmg() {
-            let dmg = gameState.upgrades.click;
-            // Add active companion boost
-            if (gameState.activeCompanionUid) {
-                const comp = gameState.backpack.find(c => c.uid === gameState.activeCompanionUid);
-                if (comp) {
-                    const dbInfo = CYBERMON_DB[comp.dbId];
-                    dmg += dbInfo.baseDmgBoost * comp.lvl;
-                }
-            }
-            return Math.round(dmg * 10) / 10;
+        // --- COMBAT STAT CALCULATIONS ---
+        function getClickAttackDmg() {
+            let bonus = gameState.upgrades.click * 2; // Increases move damage by +2 per upgrade level
+            return bonus;
         }
 
-        function getPassiveDps() {
-            let dps = gameState.upgrades.auto * 0.5;
-            // Add active companion boost
-            if (gameState.activeCompanionUid) {
-                const comp = gameState.backpack.find(c => c.uid === gameState.activeCompanionUid);
-                if (comp) {
-                    const dbInfo = CYBERMON_DB[comp.dbId];
-                    dps += dbInfo.baseDpsBoost * comp.lvl;
-                }
-            }
-            return Math.round(dps * 10) / 10;
+        function getDronesHpRepair() {
+            return gameState.upgrades.auto * 5; // Heals +5 HP between battles per level
         }
 
         function getCritChance() {
@@ -954,58 +947,59 @@
             return gameState.upgrades.shard * 5; // 5% per level
         }
 
-        // --- RENDERING MODULES ---
+        // --- RENDERING HANDLERS ---
         function renderAllStats() {
-            // Money
+            // Wallet stats
             document.getElementById('header-coins').innerText = Math.floor(gameState.coins);
             document.getElementById('header-shards').innerText = gameState.shards;
             
-            // Trainer UI
-            document.getElementById('trainer-badge').innerText = `NÍVEL ${gameState.trainerLevel}`;
+            // Trainer UI card
+            document.getElementById('trainer-badge').innerText = `LVL ${gameState.trainerLevel}`;
             document.getElementById('trainer-xp-text').innerText = `${gameState.trainerXp} / ${gameState.trainerLevel * 100}`;
             const xpPct = (gameState.trainerXp / (gameState.trainerLevel * 100)) * 100;
             document.getElementById('trainer-xp-bar').style.width = `${xpPct}%`;
 
-            // Upgrades / Panel Stats
-            document.getElementById('stat-click-dmg').innerText = getClickDmg();
-            document.getElementById('stat-passive-dps').innerText = getPassiveDps();
+            // Panel Stats Upgrade info
+            document.getElementById('stat-click-dmg').innerText = `+${getClickAttackDmg()} DMG`;
+            document.getElementById('stat-passive-dps').innerText = `+${getDronesHpRepair()} HP/Turn`;
 
-            // Balls counts
-            document.getElementById('count-ball-basic').innerText = `${gameState.balls.basic} uni.`;
-            document.getElementById('count-ball-great').innerText = `${gameState.balls.great} uni.`;
-            document.getElementById('count-ball-ultra').innerText = `${gameState.balls.ultra} uni.`;
-            document.getElementById('count-ball-master').innerText = `${gameState.balls.master} uni.`;
-
-            // Active Zone updates
+            // Zone details navigation progress indicators
             const zone = ZONES[gameState.currentZoneIdx];
-            document.getElementById('zone-indicator').innerText = `${zone.badge} (${gameState.zoneProgress + 1}/10)`;
+            document.getElementById('zone-indicator').innerText = `${zone.badge} (${gameState.zoneProgress + 1}/10 COMBATES)`;
             document.getElementById('zone-name').innerText = zone.name.toUpperCase();
             document.getElementById('active-zone-label').innerText = `Aventurando-se na ${zone.name}`;
 
-            // Zone dots progress
+            // Progress dots
             const dotsContainer = document.getElementById('zone-progress-dots');
             dotsContainer.innerHTML = '';
             for(let i = 0; i < 10; i++) {
                 const dot = document.createElement('div');
-                dot.className = `w-2 h-2 rounded-full transition-all ${i < gameState.zoneProgress ? 'bg-cyan-500 shadow-[0_0_4px_rgba(6,182,212,0.6)]' : i === gameState.zoneProgress ? 'bg-cyan-400 border border-cyan-300 animate-pulse' : 'bg-slate-800'}`;
+                dot.className = `w-2 h-2 rounded-full transition-all ${i < gameState.zoneProgress ? 'bg-rose-500 shadow-[0_0_4px_rgba(239,68,68,0.6)]' : i === gameState.zoneProgress ? 'bg-amber-400 border border-amber-300 animate-pulse' : 'bg-slate-800'}`;
                 dotsContainer.appendChild(dot);
+            }
+        }
+
+        // Apply Drones Repair out of combat
+        function applyDronesAutoHeal() {
+            const repairAmt = getDronesHpRepair();
+            if (repairAmt > 0 && activeCompanion && activeCompanion.hp < activeCompanion.maxHp) {
+                activeCompanion.hp += repairAmt;
+                if (activeCompanion.hp > activeCompanion.maxHp) activeCompanion.hp = activeCompanion.maxHp;
+                updateCompanionHpBar();
+                writeTypewriterLog(`Drones de Suporte repararam +${repairAmt} HP em ${CYBERMON_DB[activeCompanion.dbId].name}!`);
             }
         }
 
         // --- WILD MONSTER SPAWNING ---
         function spawnWildMonster() {
-            // Stop any running boss timer
-            clearInterval(bossTimerInterval);
-            document.getElementById('boss-timer-box').classList.add('hidden');
-
             const zone = ZONES[gameState.currentZoneIdx];
-            const isBoss = gameState.zoneProgress === 9; // The 10th encounter is the Boss
+            const isBoss = gameState.zoneProgress === 9; // Encounter 10 is the Boss
 
-            // Pick family species index from zone configuration list
+            // Pick random species from zone lists
             const randFamilyIdx = Math.floor(Math.random() * zone.families.length);
-            let familyBaseId = zone.families[randFamilyIdx];
+            const familyBaseId = zone.families[randFamilyIdx];
             
-            // Bosses are stage 3, normal is stage 1 or 2
+            // Choose stages
             let stageId = 1;
             if (isBoss) {
                 stageId = 3;
@@ -1013,7 +1007,6 @@
                 stageId = 2;
             }
             
-            // Get actual database monster entry
             let dbId = familyBaseId;
             if (stageId === 2) dbId = CYBERMON_DB[familyBaseId].evId || familyBaseId;
             if (stageId === 3) {
@@ -1023,15 +1016,14 @@
 
             const dbInfo = CYBERMON_DB[dbId];
             
-            // Random monster level scaling with trainer level & zone difficulty
+            // Level scaling
             const zoneLvlScale = 1 + (gameState.currentZoneIdx * 5);
             const lvl = isBoss ? zoneLvlScale + 4 : Math.floor(Math.random() * 4) + zoneLvlScale;
 
-            // HP and stats scaling
-            const hpMultiplier = isBoss ? 6.5 : 1 + (lvl * 0.15);
+            const hpMultiplier = isBoss ? 5.5 : 1 + (lvl * 0.15);
             const maxHp = Math.round(dbInfo.baseHp * hpMultiplier);
 
-            currentMonster = {
+            wildMonster = {
                 dbId: dbId,
                 name: dbInfo.name,
                 level: lvl,
@@ -1044,218 +1036,342 @@
                 baseCoins: dbInfo.baseCoins * (isBoss ? 5 : 1)
             };
 
-            // Inject monster SVG and updates
-            document.getElementById('monster-svg-box').innerHTML = `<svg viewBox="0 0 100 100" class="w-full h-full animate-float" xmlns="http://www.w3.org/2000/svg">${currentMonster.svg}</svg>`;
-            document.getElementById('monster-name').innerText = currentMonster.name;
-            document.getElementById('monster-level').innerText = `Lvl ${currentMonster.level}`;
-            document.getElementById('monster-type').innerText = currentMonster.type;
+            // Inject Opponent SVG
+            document.getElementById('opp-svg-box').innerHTML = `<svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">${wildMonster.svg}</svg>`;
+            document.getElementById('opp-name').innerText = wildMonster.name.toUpperCase();
+            document.getElementById('opp-level').innerText = `Lvl ${wildMonster.level}`;
+            document.getElementById('opp-type').innerText = wildMonster.type.toUpperCase();
             
-            // Color theme of zone background/border
-            const battleCard = document.getElementById('battlefield-card');
-            battleCard.className = `bg-gradient-to-b ${zone.color} border border-slate-800 rounded-3xl p-6 backdrop-blur-sm relative overflow-hidden flex flex-col items-center justify-between min-h-[480px] group transition-all duration-300`;
+            updateOpponentHpBar();
 
-            // Reset HP panel elements
-            document.getElementById('monster-hp-box').classList.remove('hidden');
-            document.getElementById('capture-control-box').classList.add('hidden');
-            updateMonsterHpBar();
+            // Set Player fighting companion details
+            const activeDbInfo = CYBERMON_DB[activeCompanion.dbId];
+            document.getElementById('player-svg-box').innerHTML = `<svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">${activeDbInfo.svg}</svg>`;
+            document.getElementById('player-mon-name').innerText = activeDbInfo.name.toUpperCase();
+            document.getElementById('player-mon-level').innerText = `Lvl ${activeCompanion.lvl}`;
+            
+            updateCompanionHpBar();
+            renderMovesList();
 
-            // Set Boss timer
-            if (isBoss) {
-                document.getElementById('battle-mode-badge').innerText = '🔥 BOSS COMBAT!';
-                document.getElementById('battle-mode-badge').classList.add('text-rose-400 animate-pulse');
-                document.getElementById('boss-timer-box').classList.remove('hidden');
-                bossTimer = 30;
-                document.getElementById('boss-timer-val').innerText = `${bossTimer}s`;
-                document.getElementById('boss-timer-bar').style.width = '100%';
-                
-                bossTimerInterval = setInterval(() => {
-                    bossTimer -= 0.1;
-                    document.getElementById('boss-timer-val').innerText = `${Math.ceil(bossTimer)}s`;
-                    document.getElementById('boss-timer-bar').style.width = `${(bossTimer / 30) * 100}%`;
-                    
-                    if (bossTimer <= 0) {
-                        clearInterval(bossTimerInterval);
-                        synth.hurt();
-                        // Reset zone progress upon boss failure to retry
-                        gameState.zoneProgress = 0;
-                        spawnWildMonster();
-                        renderAllStats();
-                    }
-                }, 100);
-            } else {
-                document.getElementById('battle-mode-badge').innerText = 'COMBATE ATIVO';
-                document.getElementById('battle-mode-badge').classList.remove('text-rose-400 animate-pulse');
-            }
+            // Reset menu view states
+            document.getElementById('menu-classic-commands').classList.remove('hidden');
+            document.getElementById('menu-moves-deck').classList.add('hidden');
+            document.getElementById('menu-capture-deck').classList.add('hidden');
+            document.getElementById('btn-run-cmd').disabled = false;
+
+            // Welcome typewriter log
+            writeTypewriterLog(`Um ${wildMonster.name.toUpperCase()} selvagem nível ${wildMonster.level} apareceu!`);
         }
 
-        function updateMonsterHpBar() {
-            const pct = (currentMonster.hp / currentMonster.maxHp) * 100;
-            const bar = document.getElementById('monster-hp-bar');
+        function updateOpponentHpBar() {
+            const pct = (wildMonster.hp / wildMonster.maxHp) * 100;
+            const bar = document.getElementById('opp-hp-bar');
             bar.style.width = `${pct}%`;
-            document.getElementById('monster-hp-text').innerText = `${Math.round(currentMonster.hp)} / ${currentMonster.maxHp} HP`;
+            document.getElementById('opp-hp-text').innerText = `${Math.round(wildMonster.hp)} / ${wildMonster.maxHp}`;
 
             if(pct > 50) {
-                bar.className = 'h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-150';
+                bar.className = 'h-full bg-emerald-500 rounded-full transition-all duration-300';
             } else if (pct > 20) {
-                bar.className = 'h-full bg-gradient-to-r from-amber-500 to-orange-400 rounded-full transition-all duration-150';
+                bar.className = 'h-full bg-amber-500 rounded-full transition-all duration-300';
             } else {
-                bar.className = 'h-full bg-gradient-to-r from-red-500 to-rose-500 rounded-full transition-all duration-150';
+                bar.className = 'h-full bg-rose-500 rounded-full transition-all duration-300';
             }
         }
 
-        // --- ATTACK LOGIC ---
-        function dealClickDamage(event) {
-            if (currentMonster.hp <= 0) return; // Vuln/Capture phase
+        function updateCompanionHpBar() {
+            const pct = (activeCompanion.hp / activeCompanion.maxHp) * 100;
+            const bar = document.getElementById('player-hp-bar');
+            bar.style.width = `${pct}%`;
+            document.getElementById('player-hp-text').innerText = `${Math.round(activeCompanion.hp)} / ${activeCompanion.maxHp}`;
 
+            if(pct > 50) {
+                bar.className = 'h-full bg-emerald-500 rounded-full transition-all duration-300';
+            } else if (pct > 20) {
+                bar.className = 'h-full bg-amber-500 rounded-full transition-all duration-300';
+            } else {
+                bar.className = 'h-full bg-rose-500 rounded-full transition-all duration-300';
+            }
+
+            // Exp bar
+            const nextLvlXp = activeCompanion.lvl * 50;
+            const expPct = (activeCompanion.exp / nextLvlXp) * 100;
+            document.getElementById('player-exp-bar').style.width = `${expPct}%`;
+        }
+
+        // --- RETRO TYPEWRITER DIALOGUE SYSTEM ---
+        function writeTypewriterLog(message) {
+            currentTextTypewriter = message;
+            const pane = document.getElementById('dialogue-box');
+            pane.innerHTML = '';
+            
+            let idx = 0;
+            const timer = setInterval(() => {
+                pane.innerHTML += message.charAt(idx);
+                idx++;
+                if (idx >= message.length) {
+                    clearInterval(timer);
+                }
+            }, 12); // Typewriter speed
+        }
+
+        // --- MOVES & LUTAR MENUS ---
+        function renderMovesList() {
+            const dbInfo = CYBERMON_DB[activeCompanion.dbId];
+            
+            for(let i = 0; i < 3; i++) {
+                const moveName = dbInfo.moves[i] || 'Em branco';
+                const ppCount = 35 - (i * 10);
+                const btn = document.getElementById(`move-${i}-btn`);
+                btn.innerHTML = `${moveName.toUpperCase()} <span class="text-[5px] text-slate-500 mt-0.5">PP ${ppCount}/${ppCount}</span>`;
+            }
+        }
+
+        function openMovesMenu() {
+            if (turnInProgress || wildMonster.hp <= 0) return;
+            synth.click();
+            document.getElementById('menu-classic-commands').classList.add('hidden');
+            document.getElementById('menu-moves-deck').classList.remove('hidden');
+        }
+
+        function closeMovesMenu() {
+            synth.click();
+            document.getElementById('menu-classic-commands').classList.remove('hidden');
+            document.getElementById('menu-moves-deck').classList.add('hidden');
+        }
+
+        // --- ATTACK EXECUTION TURN-BASED SYSTEM ---
+        async function executeAttackMove(moveIdx) {
+            if (turnInProgress || wildMonster.hp <= 0 || activeCompanion.hp <= 0) return;
+            
+            turnInProgress = true;
             synth.click();
 
-            // Calculate critical hits
-            const isCrit = Math.random() * 100 < getCritChance();
-            const clickBase = getClickDmg();
-            const dmg = isCrit ? clickBase * 2 : clickBase;
-
-            currentMonster.hp -= dmg;
-            if (currentMonster.hp < 0) currentMonster.hp = 0;
-
-            updateMonsterHpBar();
-            spawnDamageNumber(event.clientX, event.clientY, dmg, isCrit);
-
-            if (currentMonster.hp === 0) {
-                triggerVulnerabilityPhase();
-            }
-        }
-
-        function applyPassiveDps() {
-            if (currentMonster && currentMonster.hp > 0) {
-                const passiveDps = getPassiveDps();
-                if (passiveDps > 0) {
-                    // Ticks run every 100ms, so deal 10% of total DPS per tick
-                    currentMonster.hp -= passiveDps * 0.1;
-                    if (currentMonster.hp < 0) currentMonster.hp = 0;
-                    updateMonsterHpBar();
-
-                    if (currentMonster.hp === 0) {
-                        triggerVulnerabilityPhase();
-                    }
-                }
-            }
-        }
-
-        // Animated neon floating damage text
-        function spawnDamageNumber(x, y, dmg, isCrit) {
-            const body = document.body;
-            const floater = document.createElement('div');
-            floater.className = `fixed font-orbitron font-black pointer-events-none select-none z-50 text-sm transition-all duration-700 ease-out transform -translate-y-2 opacity-100 ${isCrit ? 'text-amber-400 text-lg shadow-amber-500/20 scale-110' : 'text-cyan-400'}`;
-            floater.innerText = `${dmg}${isCrit ? '! CRIT' : ''}`;
-            floater.style.left = `${x}px`;
-            floater.style.top = `${y}px`;
-
-            body.appendChild(floater);
-
-            setTimeout(() => {
-                floater.style.transform = 'translateY(-40px) scale(0.8)';
-                floater.style.opacity = '0';
-            }, 50);
-
-            setTimeout(() => {
-                floater.remove();
-            }, 750);
-        }
-
-        // Vulnerability Capture Phase trigger
-        function triggerVulnerabilityPhase() {
-            clearInterval(bossTimerInterval);
-            document.getElementById('boss-timer-box').classList.add('hidden');
+            // Hide moves menu
+            document.getElementById('menu-moves-deck').classList.add('hidden');
             
-            // Play success synthesis beat
-            synth.lvlUp();
+            const activeDbInfo = CYBERMON_DB[activeCompanion.dbId];
+            const moveName = activeDbInfo.moves[moveIdx].toUpperCase();
 
-            document.getElementById('monster-hp-box').classList.add('hidden');
-            document.getElementById('capture-control-box').classList.remove('hidden');
+            // STEP 1: Player active companion attacks wild monster
+            writeTypewriterLog(`${activeDbInfo.name.toUpperCase()} usou ${moveName}!`);
+            
+            await sleep(1500);
+
+            // Calculate attack damage (based on lvl + click upgrades + crit rolls)
+            const isCrit = Math.random() * 100 < getCritChance();
+            const dmgBase = activeCompanion.lvl * 2 + getClickAttackDmg() + (moveIdx * 5);
+            const actualDmg = isCrit ? Math.round(dmgBase * 1.8) : dmgBase;
+
+            wildMonster.hp -= actualDmg;
+            if (wildMonster.hp < 0) wildMonster.hp = 0;
+
+            // Animate opponent taking damage
+            synth.hurt();
+            document.getElementById('opp-svg-box').className = 'w-24 h-24 flex items-center justify-center z-10 flash-monster';
+            document.getElementById('battlefield-card').className = 'bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden flex flex-col relative min-h-[460px] group transition-all duration-300 shadow-2xl shake-screen';
+            updateOpponentHpBar();
+
+            await sleep(600);
+            
+            // Reset animations classes
+            document.getElementById('opp-svg-box').className = 'w-24 h-24 flex items-center justify-center z-10 animate-float-opp';
+            document.getElementById('battlefield-card').className = 'bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden flex flex-col relative min-h-[460px] group transition-all duration-300 shadow-2xl';
+
+            if (isCrit) {
+                writeTypewriterLog(`Golpe crítico! Causou ${actualDmg} de dano!`);
+                await sleep(1200);
+            }
+
+            // STEP 2: Check if wild monster is defeated
+            if (wildMonster.hp <= 0) {
+                triggerVulnerabilityPhase();
+                turnInProgress = false;
+                return;
+            }
+
+            // STEP 3: Wild monster counter-attacks
+            const wildDbInfo = CYBERMON_DB[wildMonster.dbId];
+            const wildMove = wildDbInfo.moves[Math.floor(Math.random() * 3)].toUpperCase();
+            
+            writeTypewriterLog(`${wildMonster.name.toUpperCase()} selvagem usou ${wildMove}!`);
+            
+            await sleep(1500);
+
+            // Opponent damage scaling
+            const oppDmg = Math.round(wildMonster.level * 1.5 + (Math.random() * 4));
+            activeCompanion.hp -= oppDmg;
+            if (activeCompanion.hp < 0) activeCompanion.hp = 0;
+
+            // Animate player taking damage
+            synth.hurt();
+            document.getElementById('player-svg-box').className = 'w-24 h-24 flex items-center justify-center z-10 flash-monster';
+            document.getElementById('battlefield-card').className = 'bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden flex flex-col relative min-h-[460px] group transition-all duration-300 shadow-2xl shake-screen';
+            updateCompanionHpBar();
+
+            await sleep(600);
+
+            // Reset
+            document.getElementById('player-svg-box').className = 'w-24 h-24 flex items-center justify-center z-10 animate-float-player';
+            document.getElementById('battlefield-card').className = 'bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden flex flex-col relative min-h-[460px] group transition-all duration-300 shadow-2xl';
+
+            // STEP 4: Check if player companion fainted
+            if (activeCompanion.hp <= 0) {
+                writeTypewriterLog(`${activeDbInfo.name.toUpperCase()} faliu e desmaiou!`);
+                await sleep(1500);
+                handleCompanionFainted();
+                turnInProgress = false;
+                return;
+            }
+
+            // Return to classic command selection screen
+            writeTypewriterLog(`O que ${activeDbInfo.name.toUpperCase()} deve fazer?`);
+            document.getElementById('menu-classic-commands').classList.remove('hidden');
+            turnInProgress = false;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // --- WILD DEFEATED (Vulnerability / Capture Deck) ---
+        function triggerVulnerabilityPhase() {
+            // Success audio fanfares
+            synth.lvlUp();
+            writeTypewriterLog(`${wildMonster.name.toUpperCase()} selvagem desabou! Capture-o agora!`);
+            
+            // Build the quick capture balls tray overlay inside interaction box
+            const deck = document.getElementById('menu-capture-deck');
+            deck.innerHTML = '';
+
+            const types = ['basic', 'great', 'ultra', 'master'];
+            const names = ['Básica', 'Mega', 'Ultra', 'Master'];
+            const colors = ['text-rose-500', 'text-cyan-400', 'text-amber-400', 'text-purple-400'];
+
+            types.forEach((type, idx) => {
+                const count = gameState.balls[type];
+                const btn = document.createElement('button');
+                btn.className = `py-2 bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-750 rounded-xl font-retro text-[6px] transition-all flex flex-col items-center justify-center gap-1 ${count <= 0 ? 'opacity-40 cursor-not-allowed' : ''}`;
+                btn.onclick = () => throwBall(type);
+                btn.innerHTML = `
+                    <span class="${colors[idx]} block">${names[idx].toUpperCase()}</span>
+                    <span class="text-[5px] text-slate-400 block">${count} uni</span>
+                `;
+                deck.appendChild(btn);
+            });
+
+            // Add escape/skip button to skips capture and get rewards directly
+            const skipBtn = document.createElement('button');
+            skipBtn.className = 'py-2 bg-slate-900 hover:bg-slate-850 text-slate-400 border border-slate-800 rounded-xl font-retro text-[6px] transition-all flex items-center justify-center';
+            skipBtn.onclick = () => skipCaptureAndGetRewards();
+            skipBtn.innerText = 'PULAR';
+            deck.appendChild(skipBtn);
+
+            document.getElementById('menu-classic-commands').classList.add('hidden');
+            deck.classList.remove('hidden');
+        }
+
+        // Skip capture and get rewards directly (for grinding)
+        function skipCaptureAndGetRewards() {
+            synth.click();
+            writeTypewriterLog(`Você derrotou ${wildMonster.name.toUpperCase()}!`);
+            claimBattleRewards();
         }
 
         // --- CAPTURING SYSTEM ---
-        function throwBall(type) {
+        async function throwBall(type) {
             if (gameState.balls[type] <= 0) {
                 synth.hurt();
-                alert('Você não tem Cyber-bolas suficientes deste tipo!');
+                writeTypewriterLog(`Você não tem Cyber-bolas ${type.toUpperCase()}!`);
                 return;
             }
 
             // Consume ball
             gameState.balls[type]--;
-            renderAllStats();
+            document.getElementById('menu-capture-deck').classList.add('hidden');
 
-            // Set animations of throwing Pokéball
-            const box = document.getElementById('monster-svg-box');
-            box.classList.remove('animated-float');
+            const oppBox = document.getElementById('opp-svg-box');
+            oppBox.className = 'w-24 h-24 flex items-center justify-center z-10'; // Reset float
             
-            // Standard capture chances
-            const baseRates = {
-                basic: 30,
-                great: 50,
-                ultra: 75,
-                master: 100
-            };
+            writeTypewriterLog(`Arremessou Cyber-Bola ${type.toUpperCase()}!`);
+            synth.captureShake();
+            oppBox.className = 'w-24 h-24 flex items-center justify-center z-10 shake-screen';
             
-            // Calculate actual catch rate (bosses are harder, lower levels easier)
-            const captureRate = baseRates[type] / (currentMonster.isBoss ? 2 : 1);
+            await sleep(1000);
+            
+            oppBox.className = 'w-24 h-24 flex items-center justify-center z-10';
+
+            // Capture roll probabilities (Basic, Mega, Ultra, Master)
+            const baseRates = { basic: 30, great: 55, ultra: 80, master: 100 };
+            const captureRate = baseRates[type] / (wildMonster.isBoss ? 2 : 1);
             const rolled = Math.random() * 100;
             const success = rolled <= captureRate;
 
-            synth.captureShake();
-            box.className = 'w-44 h-44 flex items-center justify-center shake-animation';
-
-            // Custom procedural shake intervals
-            setTimeout(() => {
-                synth.captureShake();
-                setTimeout(() => {
-                    if (success) {
-                        captureSuccess();
-                    } else {
-                        captureFailure();
-                    }
-                }, 800);
-            }, 600);
+            if (success) {
+                synth.lvlUp();
+                writeTypewriterLog(`Sucesso! ${wildMonster.name.toUpperCase()} foi adicionado à mochila!`);
+                
+                // Add to inventory
+                const newUid = 'mon_' + Date.now();
+                const dbInfo = CYBERMON_DB[wildMonster.dbId];
+                gameState.backpack.push({
+                    uid: newUid,
+                    dbId: wildMonster.dbId,
+                    lvl: wildMonster.level,
+                    exp: 0,
+                    hp: dbInfo.baseHp * (1 + (wildMonster.level * 0.15)),
+                    maxHp: dbInfo.baseHp * (1 + (wildMonster.level * 0.15))
+                });
+                
+                await sleep(1500);
+                claimBattleRewards();
+            } else {
+                synth.hurt();
+                writeTypewriterLog(`Que pena! ${wildMonster.name.toUpperCase()} quebrou a trava e escapou!`);
+                await sleep(1500);
+                
+                // Escape fails capture but grants normal defeat XP
+                claimBattleRewards();
+            }
         }
 
-        function captureSuccess() {
-            synth.captureSuccess();
+        function claimBattleRewards() {
+            // Rewards payout coins & XP
+            gameState.coins += wildMonster.baseCoins;
             
-            // Reset box classes
-            const box = document.getElementById('monster-svg-box');
-            box.className = 'w-44 h-44 flex items-center justify-center animated-float';
+            // Active Companion EXP gains
+            const activeDbInfo = CYBERMON_DB[activeCompanion.dbId];
+            const earnedXp = Math.round(wildMonster.baseXp * (1 + (wildMonster.level * 0.1)));
+            activeCompanion.exp += earnedXp;
 
-            // Generate captured Cybermon into inventory
-            const newMonsterUid = 'mon_' + Date.now() + Math.floor(Math.random() * 1000);
-            gameState.backpack.push({
-                uid: newMonsterUid,
-                dbId: currentMonster.dbId,
-                lvl: 1,
-                exp: 0
-            });
+            writeTypewriterLog(`${activeDbInfo.name.toUpperCase()} ganhou +${earnedXp} EXP!`);
 
-            // Rewards payout
-            gameState.coins += currentMonster.baseCoins;
-            
-            // Trainer XP gain
-            gameState.trainerXp += currentMonster.baseXp;
-            if (gameState.trainerXp >= gameState.trainerLevel * 100) {
-                gameState.trainerXp -= gameState.trainerLevel * 100;
-                gameState.trainerLevel++;
+            const nextLvlXp = activeCompanion.lvl * 50;
+            if (activeCompanion.exp >= nextLvlXp) {
+                activeCompanion.exp -= nextLvlXp;
+                activeCompanion.lvl++;
+                activeCompanion.maxHp = Math.round(activeCompanion.maxHp * 1.12);
+                activeCompanion.hp = activeCompanion.maxHp;
+                
                 synth.lvlUp();
+                writeTypewriterLog(`Incrível! ${activeDbInfo.name.toUpperCase()} subiu para o Lvl ${activeCompanion.lvl}!`);
             }
 
-            // Drop Cyber Shards on Boss defeat or chance
-            if (currentMonster.isBoss) {
+            // Trainer level progress
+            gameState.trainerXp += Math.round(wildMonster.baseXp / 2);
+            if(gameState.trainerXp >= gameState.trainerLevel * 100) {
+                gameState.trainerXp -= gameState.trainerLevel * 100;
+                gameState.trainerLevel++;
+            }
+
+            // Cyber Shards drop chance
+            if (wildMonster.isBoss) {
                 gameState.shards += 15 + gameState.currentZoneIdx * 5;
             } else if (Math.random() * 100 < getShardDropChance()) {
                 gameState.shards += 1 + gameState.currentZoneIdx;
             }
 
-            // Progress tracking
-            if (currentMonster.isBoss) {
-                // Zone cleared! Push progress
+            // Push grid progress
+            if (wildMonster.isBoss) {
                 gameState.zoneProgress = 0;
                 if(gameState.currentZoneIdx < ZONES.length - 1) {
                     gameState.currentZoneIdx++;
@@ -1266,22 +1382,71 @@
 
             renderAllStats();
             renderBackpack();
-            spawnWildMonster();
             saveGame();
+
+            setTimeout(() => {
+                spawnWildMonster();
+            }, 2000);
         }
 
-        function captureFailure() {
-            synth.hurt();
-            
-            // Reset box classes
-            const box = document.getElementById('monster-svg-box');
-            box.className = 'w-44 h-44 flex items-center justify-center animated-float';
+        // --- COMPANION FAINTED (BLACKOUT SYSTEM) ---
+        async function handleCompanionFainted() {
+            // Check if any other companion has remaining health
+            const healthyCompanion = gameState.backpack.find(c => c.hp > 0);
 
-            alert('O Cybermon escapou e o sinal se perdeu! Um novo monstro está se aproximando...');
+            if (healthyCompanion) {
+                writeTypewriterLog(`Selecione outro Cybermon ativo na mochila para continuar o combate!`);
+                switchTab('backpack');
+            } else {
+                // All companions fainted! Cybermon Center blackout restoration
+                writeTypewriterLog(`Todos os seus Cybermons foram derrotados! Você desmaiou...`);
+                await sleep(2500);
+
+                writeTypewriterLog(`Restaurando conexões no Centro de Reparo...`);
+                // Deduct 25% coins penalty
+                const penalty = Math.round(gameState.coins * 0.25);
+                gameState.coins -= penalty;
+                if (gameState.coins < 0) gameState.coins = 0;
+
+                // Full recovery
+                gameState.backpack.forEach(mon => {
+                    const dbInfo = CYBERMON_DB[mon.dbId];
+                    mon.hp = mon.maxHp;
+                });
+
+                gameState.zoneProgress = 0; // Reset zone route challenge progress
+
+                renderAllStats();
+                renderBackpack();
+                saveGame();
+                alignActiveCompanion();
+
+                await sleep(2000);
+                spawnWildMonster();
+            }
+        }
+
+        // Run from battle command (Run success chance is 50%)
+        function escapeEncounter() {
+            if (turnInProgress || wildMonster.hp <= 0) return;
             
-            // Respawns new monster
-            spawnWildMonster();
-            renderAllStats();
+            synth.click();
+            document.getElementById('btn-run-cmd').disabled = true;
+
+            const runSuccess = Math.random() < 0.6 || currentMonster?.isBoss === false;
+            
+            if (runSuccess && !wildMonster.isBoss) {
+                writeTypewriterLog(`Fugiu da batalha com sucesso!`);
+                setTimeout(() => {
+                    spawnWildMonster();
+                }, 1500);
+            } else {
+                writeTypewriterLog(`Falhou ao tentar fugir do Boss!`);
+                // Skip turn
+                setTimeout(() => {
+                    executeAttackMove(0); // auto normal counter-attack trigger
+                }, 1500);
+            }
         }
 
         // --- BACKPACK COLLECTION & COMPANIONS ---
@@ -1289,25 +1454,24 @@
             const list = document.getElementById('backpack-list');
             list.innerHTML = '';
 
-            // Total units counter
             document.getElementById('backpack-count').innerText = `${gameState.backpack.length} / 30`;
 
-            // Draw captured items
             gameState.backpack.forEach(mon => {
                 const dbInfo = CYBERMON_DB[mon.dbId];
                 const item = document.createElement('button');
                 
                 const isActive = gameState.activeCompanionUid === mon.uid;
                 const isSelected = selectedBackpackUid === mon.uid;
+                const isFainted = mon.hp <= 0;
 
                 item.onclick = () => selectBackpackItem(mon.uid);
-                item.className = `aspect-square bg-slate-900 border-2 rounded-xl flex items-center justify-center p-1 relative overflow-hidden transition-all hover:scale-105 active:scale-95 ${isActive ? 'border-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]' : isSelected ? 'border-cyan-500' : 'border-slate-800 hover:border-slate-750'}`;
+                item.className = `aspect-square bg-slate-900 border-2 rounded-xl flex items-center justify-center p-1 relative overflow-hidden transition-all hover:scale-105 active:scale-95 ${isActive ? 'border-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]' : isSelected ? 'border-cyan-500' : 'border-slate-800 hover:border-slate-750'} ${isFainted ? 'opacity-50' : ''}`;
                 
-                // Nested minimal representation SVG
                 item.innerHTML = `
                     <div class="w-full h-full flex items-center justify-center p-0.5"><svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">${dbInfo.svg}</svg></div>
                     <span class="absolute bottom-0.5 right-1 text-[7px] font-orbitron font-extrabold bg-slate-950/80 px-1 py-0.2 rounded text-slate-300">L${mon.lvl}</span>
                     ${isActive ? `<span class="absolute top-0.5 left-0.5 w-1.5 h-1.5 rounded-full bg-indigo-500"></span>` : ''}
+                    ${isFainted ? `<span class="absolute inset-0 bg-red-950/50 flex items-center justify-center text-[7px] font-retro text-rose-500 font-bold">FAINT</span>` : ''}
                 `;
 
                 list.appendChild(item);
@@ -1330,7 +1494,7 @@
             document.getElementById('detail-svg-box').innerHTML = `<svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">${dbInfo.svg}</svg>`;
             document.getElementById('detail-name').innerText = dbInfo.name;
             document.getElementById('detail-level').innerText = `Lvl ${mon.lvl}`;
-            document.getElementById('detail-type').innerText = dbInfo.type;
+            document.getElementById('detail-type').innerText = dbInfo.type.toUpperCase();
 
             // Display dynamic bonuses
             const dmgBonus = Math.round((dbInfo.baseDmgBoost * mon.lvl) * 10) / 10;
@@ -1343,11 +1507,13 @@
             const isCompanionActive = gameState.activeCompanionUid === mon.uid;
             const btnActive = document.getElementById('btn-companion-active');
             if (isCompanionActive) {
-                btnActive.innerText = 'DESATIVAR COMPANHEIRO';
-                btnActive.className = 'flex-grow py-2 px-3 bg-rose-600 hover:bg-rose-500 text-white font-orbitron font-bold text-xs rounded-xl transition-all';
+                btnActive.innerText = 'COMPANHEIRO ATIVO';
+                btnActive.className = 'flex-grow py-2.5 px-3 bg-indigo-900 border border-indigo-700 cursor-not-allowed text-indigo-200 font-orbitron font-bold text-xs rounded-xl transition-all';
+                btnActive.disabled = true;
             } else {
                 btnActive.innerText = 'DEFINIR COMO COMPANHEIRO';
-                btnActive.className = 'flex-grow py-2 px-3 bg-indigo-600 hover:bg-indigo-500 text-white font-orbitron font-bold text-xs rounded-xl transition-all shadow-[0_0_12px_rgba(99,102,241,0.2)]';
+                btnActive.className = 'flex-grow py-2.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white font-orbitron font-bold text-xs rounded-xl transition-all shadow-[0_0_12px_rgba(99,102,241,0.2)]';
+                btnActive.disabled = false;
             }
 
             // Level upgrade cost scaling
@@ -1367,20 +1533,32 @@
         function toggleCompanionActive() {
             if (!selectedBackpackUid) return;
 
-            synth.click();
-
-            if (gameState.activeCompanionUid === selectedBackpackUid) {
-                // Deactivate
-                gameState.activeCompanionUid = null;
-            } else {
-                // Activate
-                gameState.activeCompanionUid = selectedBackpackUid;
+            const mon = gameState.backpack.find(c => c.uid === selectedBackpackUid);
+            if (mon.hp <= 0) {
+                synth.hurt();
+                alert('Este Cybermon está desmaiado e não pode batalhar!');
+                return;
             }
+
+            synth.click();
+            gameState.activeCompanionUid = selectedBackpackUid;
+            alignActiveCompanion();
+
+            // Refresh battlefield screens
+            const activeDbInfo = CYBERMON_DB[activeCompanion.dbId];
+            document.getElementById('player-svg-box').innerHTML = `<svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">${activeDbInfo.svg}</svg>`;
+            document.getElementById('player-mon-name').innerText = activeDbInfo.name.toUpperCase();
+            document.getElementById('player-mon-level').innerText = `Lvl ${activeCompanion.lvl}`;
+            
+            updateCompanionHpBar();
+            renderMovesList();
 
             renderAllStats();
             renderBackpack();
             selectBackpackItem(selectedBackpackUid);
             saveGame();
+
+            writeTypewriterLog(`Vai, ${activeDbInfo.name.toUpperCase()}! Entrou na batalha!`);
         }
 
         function upgradeCybermon() {
@@ -1395,9 +1573,10 @@
                 return;
             }
 
-            // Consume shards
             gameState.shards -= cost;
             mon.lvl++;
+            mon.maxHp = Math.round(mon.maxHp * 1.1);
+            mon.hp = mon.maxHp;
             
             synth.lvlUp();
             renderAllStats();
@@ -1420,17 +1599,20 @@
                 return;
             }
 
-            // Consume shards and apply evolution
             gameState.shards -= dbInfo.evCost;
             mon.dbId = dbInfo.evId;
+            mon.maxHp = Math.round(mon.maxHp * 1.25);
+            mon.hp = mon.maxHp;
 
-            synth.captureSuccess();
+            synth.lvlUp();
             alert(`Parabéns! Seu Cybermon evoluiu para ${CYBERMON_DB[dbInfo.evId].name}!`);
 
             renderAllStats();
             renderBackpack();
             selectBackpackItem(selectedBackpackUid);
             saveGame();
+            alignActiveCompanion();
+            spawnWildMonster();
         }
 
         // --- SHOP & PURCHASING MECHANICS ---
@@ -1465,7 +1647,6 @@
             saveGame();
         }
 
-        // Buy upgrades logic
         function buyUpgrade(type) {
             let cost = 0;
             let currentLvl = gameState.upgrades[type];
@@ -1486,7 +1667,6 @@
                 return;
             }
 
-            // Deduct cost and level up upgrade
             gameState.coins -= cost;
             gameState.upgrades[type]++;
 
@@ -1500,12 +1680,12 @@
             // Click power
             const clickLvl = gameState.upgrades.click;
             document.getElementById('cost-upgrade-click').innerText = `${clickLvl * 50} Coins`;
-            document.getElementById('click-up-desc').innerText = `+${clickLvl} Dano / Click (Lvl ${clickLvl})`;
+            document.getElementById('click-up-desc').innerText = `+${clickLvl * 2} Dano de Ataque (Lvl ${clickLvl})`;
 
-            // Passive DPS
+            // Passive DPS auto heals
             const autoLvl = gameState.upgrades.auto;
             document.getElementById('cost-upgrade-auto').innerText = `${(autoLvl + 1) * 120} Coins`;
-            document.getElementById('auto-up-desc').innerText = `+${autoLvl * 0.5} Passive DPS (Lvl ${autoLvl})`;
+            document.getElementById('auto-up-desc').innerText = `+${autoLvl * 5} Reparo por Turno (Lvl ${autoLvl})`;
 
             // Shards scanner
             const shardLvl = gameState.upgrades.shard;
@@ -1515,7 +1695,7 @@
             // Critical rate
             const critLvl = gameState.upgrades.crit;
             document.getElementById('cost-upgrade-crit').innerText = `${critLvl * 400} Coins`;
-            document.getElementById('crit-up-desc').innerText = `+${critLvl * 5}% Crit Chance (Lvl ${critLvl})`;
+            document.getElementById('crit-up-desc').innerText = `+${critLvl * 5}% Crit Rate (Lvl ${critLvl})`;
         }
 
         // --- ZONES MOVEMENT NAVIGATION ---
