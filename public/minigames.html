@@ -174,7 +174,7 @@
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-electricblue transition-colors">🕹️ ZHER DECODER</span>
-                            <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Mova o decodificador para capturar chaves digitais e moedas de ouro. Desvie dos vírus de rastreamento do sistema!</p>
+                            <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Mova o decodificador para capturar chaves digitais e moedas de ouro. Desvie dos bugs de rastreamento do sistema!</p>
                             <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
                                 <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
                                 <span class="text-electricblue font-bold flex items-center gap-0.5">Jogar &raquo;</span>
@@ -228,7 +228,7 @@
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-amber-500 transition-colors">🕹️ ZHER RUNNER</span>
-                            <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Desvie dos picos de vírus de segurança correndo em alta velocidade pelo cabo de rede digital.</p>
+                            <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Desvie dos picos de glitch de segurança correndo em alta velocidade pelo cabo de rede digital.</p>
                             <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
                                 <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
                                 <span class="text-amber-500 font-bold flex items-center gap-0.5">Jogar &raquo;</span>
@@ -282,7 +282,7 @@
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-pink-500 transition-colors">🕹️ ROLETA CYBER</span>
-                            <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Gire a roleta de decodificação de chaves. Multiplique seus Z-Points ou desvie do vírus do sistema!</p>
+                            <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Gire a roleta de decodificação de chaves. Multiplique seus Z-Points ou desvie do glitch do sistema!</p>
                             <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
                                 <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
                                 <span class="text-pink-500 font-bold flex items-center gap-0.5">Jogar &raquo;</span>
@@ -826,7 +826,7 @@
             ctx.font = '400 12px Inter';
             ctx.fillStyle = '#94A3B8';
             if (currentGame === 'hacker') {
-                ctx.fillText('Capture chaves e moedas, desvie dos vírus vermelhos!', canvas.width / 2, canvas.height / 2 + 80);
+                ctx.fillText('Capture chaves e moedas, desvie dos firewalls vermelhos!', canvas.width / 2, canvas.height / 2 + 80);
             } else if (currentGame === 'flappy') {
                 ctx.fillText('Desvie das paredes de firewall verde!', canvas.width / 2, canvas.height / 2 + 80);
             } else if (currentGame === 'clicker') {
@@ -868,17 +868,17 @@
             } else if (gameName === 'flappy') {
                 instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-cyberrose"></i> Pressione ESPAÇO, SETA PARA CIMA ou clique no canvas para voar`;
             } else if (gameName === 'clicker') {
-                instEl.innerHTML = `<i data-lucide="mouse-pointer" class="w-4 h-4 text-toxicgreen"></i> Clique no Database central. Desvie dos vírus vermelhos!`;
+                instEl.innerHTML = `<i data-lucide="mouse-pointer" class="w-4 h-4 text-toxicgreen"></i> Clique no Database central. Desvie dos glitches vermelhos!`;
             } else if (gameName === 'runner') {
-                instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-amber-500"></i> Pressione ESPAÇO, SETA PARA CIMA ou clique para pular os vírus`;
+                instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-amber-500"></i> Pressione ESPAÇO, SETA PARA CIMA ou clique para pular as barreiras`;
             } else if (gameName === 'casino') {
-                instEl.innerHTML = `<i data-lucide="dices" class="w-4 h-4 text-purple-500"></i> Clique no botão SPIN para testar os Slots. Evite os vírus!`;
+                instEl.innerHTML = `<i data-lucide="dices" class="w-4 h-4 text-purple-500"></i> Clique no botão SPIN para testar os Slots. Evite os bugs!`;
             } else if (gameName === 'quiz') {
                 instEl.innerHTML = `<i data-lucide="help-circle" class="w-4 h-4 text-indigo-500"></i> Clique na opção correta de A a D. Errar encerra o jogo!`;
             } else if (gameName === 'roulette') {
-                instEl.innerHTML = `<i data-lucide="disc" class="w-4 h-4 text-pink-500"></i> Clique no botão SPIN central para girar a roleta. Evite a fatia de vírus!`;
+                instEl.innerHTML = `<i data-lucide="disc" class="w-4 h-4 text-pink-500"></i> Clique no botão SPIN central para girar a roleta. Evite a fatia de bug!`;
             } else if (gameName === 'treasure') {
-                instEl.innerHTML = `<i data-lucide="gem" class="w-4 h-4 text-emerald-500"></i> Clique nos nós para revelar encriptadores. Cuidado com os vírus!`;
+                instEl.innerHTML = `<i data-lucide="gem" class="w-4 h-4 text-emerald-500"></i> Clique nos nós para revelar encriptadores. Cuidado com os bugs!`;
             }
             lucide.createIcons();
             
@@ -1141,9 +1141,9 @@
                                 treasureStatusText = `💎 ENCRIPTADOR DE CHAVE DETECTADO (${treasureWinCount}/5). +40 PTS.`;
                                 treasureResultColor = '#10B981';
                                 spawnParticles(clickX + cellWidth/2, clickY + cellHeight/2, '#10B981');
-                            } else if (cell.type === 'virus') {
+                            } else if (cell.type === 'glitch') {
                                 synth.hurt();
-                                treasureStatusText = '❌ SISTEMA BLOQUEADO! ALERTA DE RASTREAMENTO VÍRUS!';
+                                treasureStatusText = '❌ SISTEMA BLOQUEADO! ALERTA DE RASTREAMENTO DE GLITCH!';
                                 treasureResultColor = '#EF4444';
                                 setTimeout(() => { endGame(true); }, 1500);
                             } else {
@@ -1324,9 +1324,9 @@
                                 treasureStatusText = `💎 ENCRIPTADOR DE CHAVE DETECTADO (${treasureWinCount}/5). +40 PTS.`;
                                 treasureResultColor = '#10B981';
                                 spawnParticles(clickX + cellWidth/2, clickY + cellHeight/2, '#10B981');
-                            } else if (cell.type === 'virus') {
+                            } else if (cell.type === 'glitch') {
                                 synth.hurt();
-                                treasureStatusText = '❌ SISTEMA BLOQUEADO! ALERTA DE RASTREAMENTO VÍRUS!';
+                                treasureStatusText = '❌ SISTEMA BLOQUEADO! ALERTA DE RASTREAMENTO DE GLITCH!';
                                 treasureResultColor = '#EF4444';
                                 setTimeout(() => { endGame(true); }, 1500);
                             } else {
@@ -1441,11 +1441,11 @@
                     { label: '+50 Pts', val: 50, color: '#0F172A', txtColor: '#3B82F6' },
                     { label: '0 Pts (NADA)', val: 0, color: '#1E293B', txtColor: '#94A3B8' },
                     { label: '+20 Pts', val: 20, color: '#0F172A', txtColor: '#60A5FA' },
-                    { label: 'VÍRUS', val: -1, color: '#EF4444', txtColor: '#FFFFFF' },
+                    { label: 'BUG', val: -1, color: '#EF4444', txtColor: '#FFFFFF' },
                     { label: '+300 Pts', val: 300, color: '#0F172A', txtColor: '#FBBF24' },
                     { label: '0 Pts (NADA)', val: 0, color: '#1E293B', txtColor: '#94A3B8' },
                     { label: '+500 Pts', val: 500, color: '#0F172A', txtColor: '#10B981' },
-                    { label: 'VÍRUS', val: -1, color: '#EF4444', txtColor: '#FFFFFF' }
+                    { label: 'BUG', val: -1, color: '#EF4444', txtColor: '#FFFFFF' }
                 ];
                 rouletteStatusText = 'TOQUE NO BOTÃO SPIN PARA GIRAR A ROLETA';
                 rouletteResultColor = '#94A3B8';
@@ -1456,7 +1456,7 @@
                 treasureGrid = [];
                 const cellTypes = [];
                 for (let i = 0; i < 5; i++) cellTypes.push('treasure');
-                for (let i = 0; i < 3; i++) cellTypes.push('virus');
+                for (let i = 0; i < 3; i++) cellTypes.push('glitch');
                 for (let i = 0; i < 17; i++) cellTypes.push('empty');
                 cellTypes.sort(() => Math.random() - 0.5);
 
@@ -1500,7 +1500,7 @@
                 const types = [
                     { type: 'key', color: '#3B82F6', size: 14, score: 10, speed: Math.random() * 2 + 3 },
                     { type: 'gold', color: '#FBBF24', size: 12, score: 25, speed: Math.random() * 2 + 4 },
-                    { type: 'virus', color: '#EF4444', size: 15, score: -20, speed: Math.random() * 3 + 3 }
+                    { type: 'glitch', color: '#EF4444', size: 15, score: -20, speed: Math.random() * 3 + 3 }
                 ];
                 
                 let rolled = types[0];
@@ -1768,7 +1768,7 @@
                     ctx.globalAlpha = 1.0;
                 }
 
-                // Add random flying security virus spikes to click for extra points (clicker challenge)
+                // Add random flying security glitch spikes to click for extra points (clicker challenge)
                 if (Math.random() < 0.01 && items.length < 3) {
                     items.push({
                         x: Math.random() * (canvas.width - 60) + 30,
@@ -1776,12 +1776,12 @@
                         speed: Math.random() * 2 + 1,
                         size: 15,
                         color: '#EF4444',
-                        score: -15, // if virus is touched, score decreases
-                        type: 'clicker-virus'
+                        score: -15, // if glitch is touched, score decreases
+                        type: 'clicker-glitch'
                     });
                 }
                 
-                // Update and draw flying viruses in clicker mode
+                // Update and draw flying glitches in clicker mode
                 for (let i = items.length - 1; i >= 0; i--) {
                     const item = items[i];
                     item.y += item.speed;
@@ -1958,7 +1958,7 @@
                     if (sym1 === sym2 && sym2 === sym3) {
                         if (sym1 === '❌') {
                             synth.hurt();
-                            casinoStatusText = 'ERRO CRÍTICO: 3 VÍRUS DETECTADOS!';
+                            casinoStatusText = 'ERRO CRÍTICO: 3 BUGS DETECTADOS!';
                             casinoResultColor = '#EF4444';
                             setTimeout(() => { endGame(true); }, 1500);
                         } else {
@@ -1976,7 +1976,7 @@
                         let matchSym = (sym1 === sym2) ? sym1 : sym3;
                         if (matchSym === '❌') {
                             // score += 0;
-                            casinoStatusText = 'ALERTA DE VÍRUS (PAR). +0 PTS.';
+                            casinoStatusText = 'ALERTA DE BUG (PAR). +0 PTS.';
                             casinoResultColor = '#EF4444';
                         } else {
                             score += 30;
@@ -2098,7 +2098,7 @@
 
                         if (sect.val === -1) {
                             synth.hurt();
-                            rouletteStatusText = 'VÍRUS ATIVADO! ACESSO AO SISTEMA NEGADO!';
+                            rouletteStatusText = 'BUG ATIVADO! ACESSO AO SISTEMA NEGADO!';
                             rouletteResultColor = '#EF4444';
                             setTimeout(() => { endGame(true); }, 1500);
                         } else if (sect.val === 0) {
@@ -2209,7 +2209,7 @@
                             ctx.strokeStyle = '#10B981';
                             ctx.shadowColor = '#10B981';
                             ctx.shadowBlur = 8;
-                        } else if (cell.type === 'virus') {
+                        } else if (cell.type === 'glitch') {
                             ctx.fillStyle = '#7F1D1D';
                             ctx.strokeStyle = '#EF4444';
                             ctx.shadowColor = '#EF4444';
@@ -2232,7 +2232,7 @@
                         ctx.font = 'bold 22px Inter';
                         if (cell.type === 'treasure') {
                             ctx.fillText('💎', cx + cellWidth/2, cy + cellHeight/2 + 7);
-                        } else if (cell.type === 'virus') {
+                        } else if (cell.type === 'glitch') {
                             ctx.fillText('❌', cx + cellWidth/2, cy + cellHeight/2 + 7);
                         } else {
                             ctx.fillStyle = '#64748B';
@@ -2255,7 +2255,7 @@
                     
                     const cellTypes = [];
                     for (let i = 0; i < 5; i++) cellTypes.push('treasure');
-                    for (let i = 0; i < 3; i++) cellTypes.push('virus');
+                    for (let i = 0; i < 3; i++) cellTypes.push('glitch');
                     for (let i = 0; i < 17; i++) cellTypes.push('empty');
                     cellTypes.sort(() => Math.random() - 0.5);
 
@@ -2358,7 +2358,7 @@
             // Set modal layout to CRITICAL ERROR / CRASH STATE
             document.getElementById('game-over-title').innerText = 'SISTEMA BLOQUEADO!';
             document.getElementById('game-over-title').className = 'font-orbitron font-black text-2xl text-cyberrose mb-2';
-            document.getElementById('game-over-desc').innerText = 'O sistema de segurança detectou um vírus ou colisão e bloqueou o acesso, resetando seu score para 0 Z-Points nesta rodada.';
+            document.getElementById('game-over-desc').innerText = 'O sistema de segurança detectou um bug ou colisão e bloqueou o acesso, resetando seu score para 0 Z-Points nesta rodada.';
             
             document.getElementById('final-score').innerText = '0';
             document.getElementById('base-reward').innerText = '0 Z-Points';
