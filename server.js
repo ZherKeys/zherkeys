@@ -340,6 +340,50 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
     }
 });
 
+// Criar produtos em lote (Admin Bulk)
+app.post('/api/admin/products/bulk', requireAdmin, async (req, res) => {
+    const products = req.body;
+    if (!Array.isArray(products) || products.length === 0) {
+        return res.status(400).json({ error: 'Nenhum produto enviado ou formato inválido.' });
+    }
+    
+    try {
+        await pool.query('BEGIN');
+        
+        for (const p of products) {
+            const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id } = p;
+            if (!title || !description || isNaN(parseFloat(price)) || !image || !category) {
+                throw new Error(`Dados obrigatórios ausentes no produto: ${title || 'Sem título'}`);
+            }
+            
+            await pool.query(
+                'INSERT INTO products (title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
+                [
+                    title, 
+                    description, 
+                    parseFloat(price), 
+                    old_price ? parseFloat(old_price) : null, 
+                    image, 
+                    category, 
+                    activation_key || '', 
+                    is_global === false ? false : true, 
+                    restricted_countries || '', 
+                    genres || '', 
+                    gameflip_listing_id || ''
+                ]
+            );
+        }
+        
+        await pool.query('COMMIT');
+        productsCache = null; // Limpa o cache público
+        res.status(201).json({ message: `${products.length} produtos adicionados com sucesso!` });
+    } catch(e) {
+        await pool.query('ROLLBACK');
+        console.error("Erro ao adicionar produtos em lote:", e);
+        res.status(500).json({ error: e.message || 'Erro ao adicionar produtos em lote' });
+    }
+});
+
 // Editar produto (Admin)
 app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;

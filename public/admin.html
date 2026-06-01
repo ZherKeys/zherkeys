@@ -67,8 +67,10 @@
         <!-- ABA: PRODUTOS -->
         <div id="section-produtos" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <!-- Formulário de Novo Produto -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit sticky top-28">
+            <!-- Formulário de Novo Produto e Importador -->
+            <div class="lg:col-span-1 h-fit lg:sticky lg:top-28 space-y-6">
+                <!-- Formulário de Novo Produto -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
                 <h3 class="font-orbitron font-bold text-white tracking-widest mb-6 border-b border-slate-800 pb-4 flex items-center gap-2">
                     <i data-lucide="plus-square" class="w-5 h-5 text-toxicgreen"></i> NOVO PRODUTO
                 </h3>
@@ -158,6 +160,25 @@
                     </button>
                 </form>
             </div>
+
+            <!-- Importador em Lote -->
+            <div id="bulk-upload-card" class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                <h3 class="font-orbitron font-bold text-white tracking-widest mb-4 border-b border-slate-800 pb-4 flex items-center gap-2">
+                    <i data-lucide="file-spreadsheet" class="w-5 h-5 text-toxicgreen"></i> IMPORTAR EM LOTE
+                </h3>
+                <div id="drop-zone" class="border-2 border-dashed border-slate-800 rounded-xl p-8 text-center cursor-pointer hover:border-toxicgreen transition-colors">
+                    <i data-lucide="upload-cloud" class="w-10 h-10 mx-auto text-slate-500 mb-2"></i>
+                    <p class="text-xs text-slate-300 font-bold mb-1">Arraste ou clique para carregar</p>
+                    <p class="text-[10px] text-slate-500">Aceita arquivos .csv ou .json</p>
+                    <input type="file" id="bulk-file-input" accept=".csv,.json" class="hidden">
+                </div>
+                <div id="bulk-preview" class="hidden mt-4 bg-slate-950 p-4 rounded-lg border border-slate-800">
+                    <p class="text-xs font-orbitron text-toxicgreen" id="bulk-preview-status"></p>
+                    <div id="bulk-preview-list" class="max-h-32 overflow-y-auto mt-2 text-[10px] text-slate-400 font-mono space-y-1"></div>
+                    <button id="btn-upload-bulk" class="w-full bg-toxicgreen hover:bg-emerald-500 text-obsidian font-orbitron font-bold py-2.5 rounded-lg mt-3 text-xs tracking-wider transition-colors cursor-pointer">CONFIRMAR E ENVIAR</button>
+                </div>
+            </div>
+        </div>
 
             <!-- Lista de Produtos -->
             <div class="lg:col-span-2 bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
@@ -650,6 +671,195 @@
             document.getElementById('btn-remove-upload').classList.add('hidden');
         };
 
+        // --- IMPORTADOR EM LOTE LOGIC ---
+        let bulkProductsQueue = [];
+
+        function parseCSV(text) {
+            let separator = ',';
+            const firstLine = text.split('\n')[0];
+            if (firstLine.includes(';')) {
+                separator = ';';
+            }
+
+            const lines = [];
+            let row = [""];
+            let inQuotes = false;
+
+            for (let i = 0; i < text.length; i++) {
+                let cc = text[i];
+                let nc = text[i+1];
+
+                if (cc === '"') {
+                    if (inQuotes && nc === '"') { 
+                        row[row.length - 1] += cc; 
+                        i++; 
+                    } else { 
+                        inQuotes = !inQuotes; 
+                    }
+                } else if (cc === separator && !inQuotes) {
+                    row.push('');
+                } else if ((cc === '\r' || cc === '\n') && !inQuotes) {
+                    if (cc === '\r' && nc === '\n') { i++; }
+                    lines.push(row);
+                    row = [''];
+                } else {
+                    row[row.length - 1] += cc;
+                }
+            }
+            if (row.length > 1 || row[0] !== '') {
+                lines.push(row);
+            }
+            return lines;
+        }
+
+        function handleBulkFile(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                try {
+                    bulkProductsQueue = [];
+                    if (file.name.endsWith('.json')) {
+                        let data = JSON.parse(text);
+                        if (!Array.isArray(data)) {
+                            data = [data];
+                        }
+                        bulkProductsQueue = data;
+                    } else if (file.name.endsWith('.csv')) {
+                        const rows = parseCSV(text);
+                        if (rows.length < 2) {
+                            throw new Error("O arquivo CSV está vazio ou não possui cabeçalhos.");
+                        }
+                        const headers = rows[0].map(h => h.trim().toLowerCase());
+                        
+                        for (let i = 1; i < rows.length; i++) {
+                            const row = rows[i];
+                            if (row.length < headers.length || row.every(val => val.trim() === '')) {
+                                continue;
+                            }
+                            const product = {};
+                            headers.forEach((header, idx) => {
+                                const val = row[idx] ? row[idx].trim() : '';
+                                if (header === 'title' || header === 'titulo') product.title = val;
+                                else if (header === 'description' || header === 'descricao') product.description = val;
+                                else if (header === 'price' || header === 'preco') product.price = val ? parseFloat(val.replace(',', '.')) : NaN;
+                                else if (header === 'old_price' || header === 'preco_antigo') product.old_price = val ? parseFloat(val.replace(',', '.')) : null;
+                                else if (header === 'image' || header === 'imagem') product.image = val;
+                                else if (header === 'category' || header === 'categoria') product.category = val;
+                                else if (header === 'activation_key' || header === 'chave') product.activation_key = val;
+                                else if (header === 'is_global' || header === 'global') product.is_global = (val.toLowerCase() !== 'false' && val !== '0');
+                                else if (header === 'restricted_countries' || header === 'paises_restritos') product.restricted_countries = val;
+                                else if (header === 'genres' || header === 'generos') product.genres = val;
+                                else if (header === 'gameflip_listing_id' || header === 'gameflip_id') product.gameflip_listing_id = val;
+                            });
+                            
+                            if (product.is_global === undefined) product.is_global = true;
+                            bulkProductsQueue.push(product);
+                        }
+                    } else {
+                        throw new Error("Formato de arquivo não suportado. Use .csv ou .json");
+                    }
+                    
+                    if (bulkProductsQueue.length === 0) {
+                        throw new Error("Nenhum produto válido encontrado no arquivo.");
+                    }
+                    
+                    showBulkPreview();
+                } catch (err) {
+                    alert("Erro ao processar arquivo: " + err.message);
+                    resetBulkUpload();
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function showBulkPreview() {
+            const previewDiv = document.getElementById('bulk-preview');
+            const previewStatus = document.getElementById('bulk-preview-status');
+            const previewList = document.getElementById('bulk-preview-list');
+            
+            previewList.innerHTML = '';
+            let invalidCount = 0;
+            
+            bulkProductsQueue.forEach((p, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'py-1 border-b border-slate-900 flex justify-between items-center';
+                
+                let errors = [];
+                if (!p.title) errors.push("Sem título");
+                if (!p.description) errors.push("Sem descrição");
+                if (!p.image) errors.push("Sem imagem");
+                if (!p.category) errors.push("Sem categoria");
+                if (isNaN(parseFloat(p.price))) errors.push("Preço inválido");
+                
+                if (errors.length > 0) {
+                    invalidCount++;
+                    itemDiv.innerHTML = `
+                        <span class="text-rose-400 font-bold">#${index + 1}: ${p.title || 'Sem Título'}</span>
+                        <span class="text-rose-500 font-bold">[${errors.join(', ')}]</span>
+                    `;
+                } else {
+                    itemDiv.innerHTML = `
+                        <span class="text-slate-300">#${index + 1}: ${p.title}</span>
+                        <span class="text-toxicgreen font-bold">R$ ${parseFloat(p.price).toFixed(2)} (${p.category})</span>
+                    `;
+                }
+                previewList.appendChild(itemDiv);
+            });
+            
+            if (invalidCount > 0) {
+                previewStatus.className = "text-xs font-orbitron text-rose-400 font-bold flex items-center gap-1";
+                previewStatus.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500"></i> ${bulkProductsQueue.length} produtos (${invalidCount} com erros)`;
+                document.getElementById('btn-upload-bulk').disabled = true;
+                document.getElementById('btn-upload-bulk').className = "w-full bg-slate-800 text-slate-500 font-orbitron font-bold py-2.5 rounded-lg mt-3 text-xs tracking-wider cursor-not-allowed";
+            } else {
+                previewStatus.className = "text-xs font-orbitron text-toxicgreen font-bold flex items-center gap-1";
+                previewStatus.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-toxicgreen"></i> ${bulkProductsQueue.length} produtos prontos para importar!`;
+                document.getElementById('btn-upload-bulk').disabled = false;
+                document.getElementById('btn-upload-bulk').className = "w-full bg-toxicgreen hover:bg-emerald-500 text-obsidian font-orbitron font-bold py-2.5 rounded-lg mt-3 text-xs tracking-wider transition-colors cursor-pointer";
+            }
+            
+            previewDiv.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function resetBulkUpload() {
+            bulkProductsQueue = [];
+            document.getElementById('bulk-file-input').value = '';
+            document.getElementById('bulk-preview').classList.add('hidden');
+        }
+
+        async function uploadBulkProducts() {
+            if (bulkProductsQueue.length === 0) return;
+            
+            const btn = document.getElementById('btn-upload-bulk');
+            const originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = "IMPORTANDO...";
+            
+            try {
+                const res = await fetch('/api/admin/products/bulk', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bulkProductsQueue)
+                });
+                
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message || "Produtos importados com sucesso!");
+                    resetBulkUpload();
+                    loadProducts();
+                } else {
+                    alert("Erro ao importar produtos: " + (data.error || "Erro desconhecido"));
+                }
+            } catch (err) {
+                alert("Erro de rede ao conectar com o servidor.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
+        }
+
         // --- VENDAS & CHAT LOGIC ---
         async function loadOrders() {
             try {
@@ -898,6 +1108,45 @@
         loadProducts();
         applyCurrencyMask(document.getElementById('prod-price'));
         applyCurrencyMask(document.getElementById('prod-old-price'));
+
+        // Bulk Init
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('bulk-file-input');
+        if (dropZone && fileInput) {
+            dropZone.addEventListener('click', () => fileInput.click());
+            
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-slate-800');
+                dropZone.classList.add('border-toxicgreen', 'bg-slate-900/40');
+            });
+            
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.add('border-slate-800');
+                dropZone.classList.remove('border-toxicgreen', 'bg-slate-900/40');
+            });
+            
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-slate-800');
+                dropZone.classList.remove('border-toxicgreen', 'bg-slate-900/40');
+                
+                if (e.dataTransfer.files.length > 0) {
+                    handleBulkFile(e.dataTransfer.files[0]);
+                }
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleBulkFile(e.target.files[0]);
+                }
+            });
+            
+            const btnUploadBulk = document.getElementById('btn-upload-bulk');
+            if (btnUploadBulk) {
+                btnUploadBulk.addEventListener('click', uploadBulkProducts);
+            }
+        }
     </script>
 </body>
 </html>
