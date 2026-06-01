@@ -1549,6 +1549,20 @@ Disallow: /api/
 Sitemap: ${domain}/sitemap.xml`);
 });
 
+// Clean URLs for Google Merchant Center compliance
+app.get('/privacy-policy', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'politica-de-privacidade.html'));
+});
+app.get('/refund-policy', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'politica-de-devolucao.html'));
+});
+app.get('/terms-of-service', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'termos-de-servico.html'));
+});
+app.get('/contact', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'contact.html'));
+});
+
 // Dynamic sitemap.xml
 app.get('/sitemap.xml', async (req, res) => {
     try {
@@ -1576,7 +1590,24 @@ app.get('/sitemap.xml', async (req, res) => {
     <url>
         <loc>${domain}/pokemon.html</loc>
         <priority>0.50</priority>
-    </url>\n`;
+    </url>
+    <url>
+        <loc>${domain}/refund-policy</loc>
+        <priority>0.70</priority>
+    </url>
+    <url>
+        <loc>${domain}/terms-of-service</loc>
+        <priority>0.70</priority>
+    </url>
+    <url>
+        <loc>${domain}/privacy-policy</loc>
+        <priority>0.70</priority>
+    </url>
+    <url>
+        <loc>${domain}/contact</loc>
+        <priority>0.70</priority>
+    </url>
+\n`;
 
         products.forEach(p => {
             const slug = (p.title || '')

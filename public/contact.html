@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/logo.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO Meta Tags -->
+    <title>Contato & Suporte | Zher Keys</title>
+    <meta name="description" content="Entre em contato com a equipe de suporte tático da Zher Keys. Atendimento dedicado e seguro para chaves de jogos digitais.">
+    <link rel="canonical" href="https://zherkeys.onrender.com/contact" />
+    
+    <!-- Tailwind CSS -->
+    <script src="/tailwind.js"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        obsidian: '#020617',
+                        cyberrose: '#F43F5E',
+                        electricblue: '#3B82F6',
+                        surface: 'rgba(15, 23, 42, 0.8)',
+                    },
+                    boxShadow: {
+                        cyber: '0 0 20px rgba(59, 130, 246, 0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            overflow-x: hidden;
+        }
+        
+        .scanline::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 99999;
+            opacity: 0.15;
+            pointer-events: none;
+            background-size: 100% 4px, 6px 100%;
+        }
+
+        .mesh-bg {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.18) 0px, transparent 50%),
+                radial-gradient(at 90% 10%, rgba(244, 63, 94, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 80%, rgba(147, 51, 234, 0.12) 0px, transparent 50%);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #020617;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3B82F6;
+        }
+    </style>
+</head>
+<body class="text-slate-200 antialiased mesh-bg scanline">
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-slate-950/70 backdrop-blur-xl border-b border-slate-800/60 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3 group cursor-pointer" onclick="window.location.href='/'">
+                <img src="/logo.png" alt="Zher Keys Logo" class="w-10 h-10 object-contain rounded-lg shadow-cyber border border-slate-700/50 bg-slate-950/40 p-1 group-hover:scale-105 transition-transform duration-300">
+                <span class="font-orbitron font-black text-xl tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">ZHER <span class="text-electricblue">KEYS</span></span>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <a href="/" class="text-slate-400 hover:text-white font-orbitron text-xs tracking-widest transition-colors flex items-center gap-1.5 bg-slate-900/40 border border-slate-800 px-4 py-2 rounded-lg">
+                    <i data-lucide="home" class="w-3.5 h-3.5"></i> INÍCIO
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENT WRAPPER -->
+    <main class="pt-32 pb-20 px-4 max-w-4xl mx-auto min-h-screen">
+        
+        <!-- Header -->
+        <div class="text-center mb-16 relative">
+            <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-48 bg-electricblue/10 rounded-full blur-3xl -z-10"></div>
+            <div class="inline-flex items-center gap-2 bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[10px] tracking-widest px-4 py-1.5 rounded-full uppercase font-bold mb-4">
+                ✉️ ATENDIMENTO TÁTICO
+            </div>
+            <h1 class="font-orbitron font-black text-3xl sm:text-5xl text-white uppercase tracking-tight mb-4">
+                CONTATE A <span class="text-electricblue">ZHER KEYS</span>
+            </h1>
+            <p class="font-inter text-slate-400 text-xs sm:text-sm max-w-xl mx-auto font-light leading-relaxed">
+                Tem alguma dúvida ou precisa de suporte pós-venda? Estamos prontos para te atender nos nossos canais oficiais.
+            </p>
+        </div>
+
+        <!-- Contact Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            
+            <!-- Email Support Card -->
+            <div class="bg-slate-950/50 backdrop-blur-md border border-slate-900 rounded-3xl p-8 relative overflow-hidden font-inter text-slate-400 text-sm leading-relaxed space-y-4 font-light hover:border-slate-800 transition-all duration-300">
+                <div class="w-12 h-12 rounded-xl bg-electricblue/15 flex items-center justify-center text-electricblue border border-electricblue/20">
+                    <i data-lucide="mail" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="font-orbitron font-bold text-white text-base tracking-widest uppercase mb-1">SUPORTE VIA E-MAIL</h3>
+                    <p class="text-xs text-slate-500 mb-4 leading-relaxed">Ideal para dúvidas gerais, parcerias comerciais e questões legais.</p>
+                    <a href="mailto:zherkeys@gmail.com" class="text-electricblue hover:underline font-bold text-sm tracking-wide">zherkeys@gmail.com</a>
+                </div>
+            </div>
+
+            <!-- Phone / WhatsApp Card -->
+            <div class="bg-slate-950/50 backdrop-blur-md border border-slate-900 rounded-3xl p-8 relative overflow-hidden font-inter text-slate-400 text-sm leading-relaxed space-y-4 font-light hover:border-slate-800 transition-all duration-300">
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-400 border border-emerald-500/20">
+                    <i data-lucide="phone" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="font-orbitron font-bold text-white text-base tracking-widest uppercase mb-1">TELEFONE & WHATSAPP</h3>
+                    <p class="text-xs text-slate-500 mb-4 leading-relaxed">Atendimento comercial de segunda a sexta, das 9h às 18h.</p>
+                    <span class="text-emerald-400 font-bold text-sm tracking-wide">+55 (22) 99999-9999</span>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Chat ticket notice -->
+        <div class="bg-slate-950/50 backdrop-blur-md border border-slate-900 rounded-3xl p-8 text-center font-inter text-slate-400 text-sm leading-relaxed space-y-4 font-light">
+            <div class="w-12 h-12 rounded-xl bg-purple-500/15 flex items-center justify-center text-purple-400 border border-purple-500/20 mx-auto">
+                <i data-lucide="message-square" class="w-6 h-6"></i>
+            </div>
+            <div class="max-w-md mx-auto">
+                <h3 class="font-orbitron font-bold text-white text-base tracking-widest uppercase mb-1">SUPORTE DE PEDIDOS VIA CHAT</h3>
+                <p class="text-xs text-slate-500 mb-6 leading-relaxed">
+                    Já fez uma compra? Abra um ticket de atendimento diretamente nos detalhes do seu pedido na página <a href="/account.html" class="text-electricblue hover:underline">Minha Conta</a> para falar com nossos técnicos em tempo real.
+                </p>
+                <a href="/login.html" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-600 text-white font-orbitron font-bold text-xs tracking-widest px-6 py-3 rounded-xl transition-all inline-flex items-center gap-1.5">
+                    ACESSAR TERMINAL <i data-lucide="arrow-right" class="w-4 h-4 text-electricblue"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Botão de Voltar -->
+        <div class="text-center mt-12">
+            <a href="/" class="inline-flex items-center gap-2 bg-gradient-to-r from-electricblue to-blue-600 hover:from-blue-500 hover:to-blue-600 text-white font-orbitron font-bold text-xs tracking-widest px-8 py-4 rounded-xl shadow-lg hover:shadow-blue-500/20 transition-all duration-300">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> VOLTAR AO INÍCIO
+            </a>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 border-t border-slate-900 py-10 text-center text-xs text-slate-500 font-orbitron tracking-widest">
+        <div class="max-w-7xl mx-auto px-4">
+            <p class="mb-2">© 2026 ZHER KEYS • SEGURANÇA E LICENÇAS DIGITAIS ORIGINAIS</p>
+            <p class="text-[10px] text-slate-600 font-inter tracking-normal mt-1">
+                E-mail: <a href="mailto:zherkeys@gmail.com" class="hover:text-white transition-colors">zherkeys@gmail.com</a> • Tel: +55 (22) 99999-9999
+            </p>
+            <div class="flex items-center justify-center gap-4 text-[10px] text-slate-600 mt-4 flex-wrap">
+                <a href="/" class="hover:text-slate-400 transition-colors">HOME</a>
+                <span>•</span>
+                <a href="/refund-policy" class="hover:text-slate-400 transition-colors">POLÍTICA DE DEVOLUÇÃO</a>
+                <span>•</span>
+                <a href="/terms-of-service" class="hover:text-slate-400 transition-colors">TERMOS DE SERVIÇO</a>
+                <span>•</span>
+                <a href="/privacy-policy" class="text-slate-400 hover:text-white transition-colors">POLÍTICA DE PRIVACIDADE</a>
+                <span>•</span>
+                <a href="/contact" class="hover:text-slate-400 transition-colors">CONTATO</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
