@@ -139,7 +139,7 @@
                 <span class="text-[10px] text-slate-500 font-orbitron tracking-widest uppercase mb-2 mt-2">Espaço Publicitário</span>
                 
                 <!-- Mock Banner Ad -->
-                <div class="w-full bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700/80 rounded-xl p-4 flex flex-col items-center gap-3 transition-colors cursor-pointer" onclick="try { window.open('https://zherkeys.com'); } catch(e) { console.warn(e); }">
+                <div class="w-full bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700/80 rounded-xl p-4 flex flex-col items-center gap-3 transition-colors cursor-pointer" onclick="safeOpenAdLink('https://zherkeys.com');">
                     <div class="w-12 h-12 rounded bg-gradient-to-tr from-cyberrose to-orange-500 flex items-center justify-center text-white font-orbitron font-bold">Z</div>
                     <span class="font-orbitron font-bold text-white text-xs tracking-wider uppercase">ZHER KEYS STORE</span>
                     <p class="text-[10px] text-slate-400">Quer economizar? Compre jogos premium com até 90% de desconto e ativação global instantânea!</p>
@@ -307,7 +307,7 @@
                             </div>
                         </div>
                     <!-- Card Jogo 9: Cybermon Quest (Pokémon Clicker) -->
-                    <div onclick="try { window.open('https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f', '_blank'); } catch(e) { console.warn(e); } location.href='pokemon.html';" class="bg-slate-900 border border-slate-800/80 hover:border-cyan-500 rounded-2xl p-6 flex flex-col gap-4 cursor-pointer hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div onclick="safeOpenAdLink('https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f'); location.href='pokemon.html';" class="bg-slate-900 border border-slate-800/80 hover:border-cyan-500 rounded-2xl p-6 flex flex-col gap-4 cursor-pointer hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all duration-300 transform hover:-translate-y-1 group">
                         <div class="w-full aspect-video bg-slate-950 border border-slate-850 rounded-xl relative overflow-hidden flex items-center justify-center">
                             <div class="absolute inset-0 bg-gradient-to-tr from-cyan-950/30 via-transparent to-slate-950"></div>
                             <div class="w-14 h-14 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
@@ -429,7 +429,7 @@
                 <span class="text-[10px] text-slate-500 font-orbitron tracking-widest uppercase mb-2 mt-2">Parceiro Oficial</span>
                 
                 <!-- Mock Banner Ad 2 -->
-                <div class="w-full bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700/80 rounded-xl p-4 flex flex-col items-center gap-3 transition-colors cursor-pointer" onclick="try { window.open('https://brevo.com'); } catch(e) { console.warn(e); }">
+                <div class="w-full bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700/80 rounded-xl p-4 flex flex-col items-center gap-3 transition-colors cursor-pointer" onclick="safeOpenAdLink('https://brevo.com');">
                     <div class="w-12 h-12 rounded bg-gradient-to-tr from-electricblue to-toxicgreen flex items-center justify-center text-white font-orbitron font-bold">B</div>
                     <span class="font-orbitron font-bold text-white text-xs tracking-wider uppercase">BREVO MAILING</span>
                     <p class="text-[10px] text-slate-400 font-inter">Excelente entrega de e-mails transacionais e de marketing com ativação instantânea.</p>
@@ -514,6 +514,29 @@
 
     <!-- JAVASCRIPT DO MINIGAME E COMPATIBILIDADE DE ANÚNCIOS -->
     <script>
+        // CORREÇÃO: Abre links de anúncios de forma robusta por meio de cliques de tags <a> invisíveis
+        // Isso evita que navegadores ou adblockers redirecionem a aba atual ou travem o jogo principal.
+        function safeOpenAdLink(url, newTab = true) {
+            try {
+                const a = document.createElement('a');
+                a.href = url;
+                if (newTab) {
+                    a.target = '_blank';
+                    a.rel = 'noopener noreferrer';
+                }
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } catch(e) {
+                console.warn("safeOpenAdLink: falha ao navegar por <a> tag, usando fallback", e);
+                try {
+                    window.open(url, newTab ? '_blank' : '_self');
+                } catch(err) {
+                    console.error("safeOpenAdLink fallback: falha crítica", err);
+                }
+            }
+        }
+
         let userBalance = 0;
         let dailyLimitBRL = 2.00;
         let sessionPoints = 0;
@@ -872,12 +895,8 @@
 
         // --- Gerenciador do Menu Arcade ---
         function selectAndStartGame(gameName) {
-            // Abre a página de anúncio Direct Link da Adsterra em uma nova aba
-            try {
-                window.open('https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f', '_blank');
-            } catch(e) {
-                console.warn("Anúncio Direct Link Adsterra bloqueado:", e);
-            }
+            // Abre a página de anúncio Direct Link da Adsterra em uma nova aba com método robusto de tag <a>
+            safeOpenAdLink('https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f');
 
             currentGame = gameName;
             
@@ -2482,12 +2501,8 @@
         }
 
         function watchRewardedAdAndClaim() {
-            // Abre o Direct Link real do usuário para monetização imediata
-            try {
-                window.open('https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f', '_blank');
-            } catch(e) {
-                console.warn("Direct Link Adsterra bloqueado no anúncio premiado:", e);
-            }
+            // Abre o Direct Link real do usuário para monetização imediata com método robusto de tag <a>
+            safeOpenAdLink('https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f');
 
             // Fecha modal de game over
             const goModal = document.getElementById('game-over-modal');
@@ -2596,12 +2611,8 @@
 
         // Função para assistir anúncio rápido e ganhar 250 Z-Points
         function watchQuickAdForPoints() {
-            // Abre o Direct Link real da Adsterra em uma nova aba
-            try {
-                window.open('https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f', '_blank');
-            } catch(e) {
-                console.warn("Direct Link Adsterra bloqueado no anúncio rápido:", e);
-            }
+            // Abre o Direct Link real da Adsterra em uma nova aba com método robusto de tag <a>
+            safeOpenAdLink('https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f');
             
             // Inicia simulação de algoritmo de jogo no Canvas
             startAdAlgoSimulation();
