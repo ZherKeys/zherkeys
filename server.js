@@ -1471,6 +1471,10 @@ app.get('/produto/:id', async (req, res) => {
 
 // Dynamic robots.txt
 app.get('/robots.txt', (req, res) => {
+    const host = req.get('host');
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const domain = protocol + '://' + host;
+
     res.type('text/plain');
     res.send(`User-agent: *
 Allow: /
@@ -1478,41 +1482,49 @@ Disallow: /admin.html
 Disallow: /account.html
 Disallow: /api/
 
-Sitemap: https://zherkeys.onrender.com/sitemap.xml`);
+Sitemap: ${domain}/sitemap.xml`);
 });
 
 // Dynamic sitemap.xml
 app.get('/sitemap.xml', async (req, res) => {
     try {
+        const host = req.get('host');
+        const protocol = host.includes('localhost') ? 'http' : 'https';
+        const domain = protocol + '://' + host;
+
         const result = await pool.query('SELECT id, title FROM products');
         const products = result.rows;
         
         let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>https://zherkeys.onrender.com/</loc>
+        <loc>${domain}/</loc>
         <priority>1.00</priority>
     </url>
     <url>
-        <loc>https://zherkeys.onrender.com/carrinho.html</loc>
+        <loc>${domain}/carrinho.html</loc>
         <priority>0.80</priority>
     </url>
     <url>
-        <loc>https://zherkeys.onrender.com/minigames.html</loc>
+        <loc>${domain}/minigames.html</loc>
         <priority>0.80</priority>
     </url>
     <url>
-        <loc>https://zherkeys.onrender.com/pokemon.html</loc>
+        <loc>${domain}/pokemon.html</loc>
         <priority>0.50</priority>
     </url>\n`;
 
         products.forEach(p => {
-            const slug = p.title
+            const slug = (p.title || '')
                 .toLowerCase()
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/(^-|-$)+/g, '');
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '') // remove acentos
+                .replace(/[^a-z0-9]+/g, '-')     // substitui caracteres especiais por hifens
+                .replace(/(^-|-$)+/g, '');       // remove hifens no inicio/fim
+            const safeSlug = slug || 'produto';
+
             xml += `    <url>
-        <loc>https://zherkeys.onrender.com/produto/${p.id}-${slug}</loc>
+        <loc>${domain}/produto/${p.id}-${safeSlug}</loc>
         <priority>0.90</priority>
     </url>\n`;
         });
