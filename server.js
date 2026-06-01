@@ -1539,6 +1539,64 @@ app.get('/sitemap.xml', async (req, res) => {
     }
 });
 
+// Dynamic Google Shopping XML Feed (Google Merchant Center Integration)
+app.get('/google-shopping.xml', async (req, res) => {
+    try {
+        const host = req.get('host');
+        const protocol = host.includes('localhost') ? 'http' : 'https';
+        const domain = protocol + '://' + host;
+
+        const result = await pool.query('SELECT id, title, description, price, image, category, in_stock FROM products');
+        const products = result.rows;
+        
+        let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
+    <channel>
+        <title>Zher Keys</title>
+        <link>${domain}</link>
+        <description>Gaming &amp; Keys Premium Marketplace</description>\n`;
+
+        products.forEach(p => {
+            const slug = (p.title || '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)+/g, '');
+            const safeSlug = slug || 'produto';
+            
+            // Clean XML special characters
+            const titleClean = (p.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+            const descClean = (p.description || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').substring(0, 1000);
+            
+            const imageLink = p.image.startsWith('http') ? p.image : `${domain}${p.image}`;
+            const availability = p.in_stock ? 'in stock' : 'out of stock';
+            const priceFormatted = `${parseFloat(p.price).toFixed(2)} BRL`;
+
+            xml += `        <item>
+            <g:id>${p.id}</g:id>
+            <g:title>${titleClean}</g:title>
+            <g:description>${descClean}</g:description>
+            <g:link>${domain}/produto/${p.id}-${safeSlug}</g:link>
+            <g:image_link>${imageLink}</g:image_link>
+            <g:condition>new</g:condition>
+            <g:availability>${availability}</g:availability>
+            <g:price>${priceFormatted}</g:price>
+            <g:brand>Zher Keys</g:brand>
+        </item>\n`;
+        });
+
+        xml += `    </channel>
+</rss>`;
+
+        res.header('Content-Type', 'application/xml');
+        res.send(xml);
+    } catch(e) {
+        console.error("Erro ao gerar Google Shopping Feed:", e);
+        res.status(500).send('Erro ao gerar Google Shopping Feed.');
+    }
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Retorna a chave do site anti-robô para o front-end (configurável no .env)
