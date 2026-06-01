@@ -1349,11 +1349,15 @@ app.put('/api/admin/orders/:id/approve', requireAdmin, async (req, res) => {
 
 app.delete('/api/admin/orders/:id', requireAdmin, async (req, res) => {
     try {
+        // Remove referências de chaves estrangeiras na tabela de notificações
+        await pool.query('DELETE FROM notifications WHERE order_id = $1', [req.params.id]);
+        
         await pool.query('DELETE FROM order_chats WHERE order_id = $1', [req.params.id]);
         await pool.query('DELETE FROM order_items WHERE order_id = $1', [req.params.id]);
         await pool.query('DELETE FROM orders WHERE id = $1', [req.params.id]);
         res.json({ message: 'Pedido excluído' });
     } catch(e) {
+        console.error("[ADMIN-ORDER-DELETE] Erro ao excluir pedido:", e);
         res.status(500).json({ error: 'Erro ao excluir pedido' });
     }
 });
