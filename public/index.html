@@ -1150,6 +1150,8 @@
                     </button>
                 `;
 
+                const slug = p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
                 grid.innerHTML += `
                     <div class="advantage-card bg-slate-950/80 border border-slate-800/80 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all duration-300 cursor-pointer flex flex-col h-full" onclick="openModal(${p.id})">
                         <div class="h-48 w-full overflow-hidden relative">
@@ -1160,7 +1162,9 @@
                             <span class="absolute bottom-3 right-3 bg-slate-900/80 border border-slate-700 text-slate-300 font-orbitron text-[9px] tracking-widest px-2 py-1 rounded backdrop-blur-md uppercase">${p.category}</span>
                         </div>
                         <div class="p-6 flex flex-col flex-grow">
-                            <h4 class="font-orbitron font-bold text-lg text-white uppercase tracking-wide leading-tight ${p.in_stock === false ? 'text-slate-500' : ''}">${p.title}</h4>
+                            <h4 class="font-orbitron font-bold text-lg text-white uppercase tracking-wide leading-tight ${p.in_stock === false ? 'text-slate-500' : ''}">
+                                <a href="/produto/${p.id}-${slug}" onclick="event.stopPropagation();" class="hover:text-electricblue transition-colors">${p.title}</a>
+                            </h4>
                             <div class="flex flex-wrap gap-1 mt-1 mb-1">${genresTags}</div>
                             ${regionIcon}
                             <div class="mt-auto flex items-center justify-between pt-4">

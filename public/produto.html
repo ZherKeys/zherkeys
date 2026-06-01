@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/logo.png" type="image/png">
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3654713194554139" crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO Meta Tags -->
+    <title>{{PRODUCT_TITLE}} | Zher Keys Premium</title>
+    <meta name="description" content="{{PRODUCT_DESCRIPTION}}">
+    <link rel="canonical" href="https://zherkeys.onrender.com/produto/{{PRODUCT_ID}}" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="product">
+    <meta property="og:title" content="{{PRODUCT_TITLE}} | Zher Keys">
+    <meta property="og:description" content="{{PRODUCT_DESCRIPTION}}">
+    <meta property="og:image" content="{{PRODUCT_IMAGE}}">
+    <meta property="og:url" content="https://zherkeys.onrender.com/produto/{{PRODUCT_ID}}">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{PRODUCT_TITLE}} | Zher Keys">
+    <meta name="twitter:description" content="{{PRODUCT_DESCRIPTION}}">
+    <meta name="twitter:image" content="{{PRODUCT_IMAGE}}">
+
+    <!-- Tailwind CSS (Hospedado Localmente) -->
+    <script src="/tailwind.js"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    
+    <!-- Google Rich Snippets Schema.org -->
+    <script type="application/ld+json">
+    {{SCHEMA_JSON}}
+    </script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        obsidian: '#020617',
+                        cyberrose: '#F43F5E',
+                        electricblue: '#3B82F6',
+                        surface: 'rgba(15, 23, 42, 0.8)',
+                    },
+                    boxShadow: {
+                        cyber: '0 0 20px rgba(59, 130, 246, 0.4)',
+                        roseGlow: '0 0 20px rgba(244, 63, 94, 0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            overflow-x: hidden;
+        }
+        
+        .scanline::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 99999;
+            opacity: 0.15;
+            pointer-events: none;
+            background-size: 100% 4px, 6px 100%;
+        }
+
+        .mesh-bg {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.18) 0px, transparent 50%),
+                radial-gradient(at 90% 10%, rgba(244, 63, 94, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 80%, rgba(147, 51, 234, 0.12) 0px, transparent 50%);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #020617;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3B82F6;
+        }
+
+        .cyber-panel-glow {
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.05);
+        }
+    </style>
+</head>
+<body class="text-slate-200 antialiased mesh-bg scanline">
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-slate-950/70 backdrop-blur-xl border-b border-slate-800/60 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3 group cursor-pointer" onclick="window.location.href='/'">
+                <img src="/logo.png" alt="Zher Keys Logo" class="w-10 h-10 object-contain rounded-lg shadow-cyber border border-slate-700/50 bg-slate-950/40 p-1 group-hover:scale-105 transition-transform duration-300">
+                <span class="font-orbitron font-black text-xl tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">ZHER <span class="text-electricblue">KEYS</span></span>
+            </div>
+            
+            <div class="hidden md:flex items-center gap-8 font-orbitron text-xs tracking-widest text-slate-400">
+                <a href="/#catalogo" class="relative py-2 transition-colors hover:text-white group">
+                    CATÁLOGO
+                    <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-electricblue transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="/#vantagens" class="relative py-2 transition-colors hover:text-white group">
+                    RECURSOS
+                    <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-electricblue transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="/#suporte" class="relative py-2 transition-colors hover:text-white group">
+                    SUPORTE
+                    <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-electricblue transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="/minigames.html" class="relative py-2 transition-colors hover:text-white text-emerald-400 hover:text-emerald-300 font-bold group">
+                    🕹️ JOGUE E GANHE
+                    <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-emerald-400 transition-all duration-300 group-hover:w-full"></span>
+                </a>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <a href="/carrinho.html" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-cyberrose hover:bg-slate-700 transition-all group" title="Carrinho">
+                    <i data-lucide="shopping-cart" class="w-5 h-5 text-slate-300 group-hover:text-white"></i>
+                    <span id="cart-badge" class="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 bg-cyberrose text-white text-[9px] font-bold rounded-full hidden">0</span>
+                </a>
+                <a href="/account.html" class="flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-electricblue hover:bg-slate-700 transition-all group" title="Minha Conta">
+                    <i data-lucide="user" class="w-5 h-5 text-slate-300 group-hover:text-white"></i>
+                </a>
+                <a href="/#catalogo" class="magnetic-button inline-flex items-center gap-2 bg-slate-900 border border-slate-700/80 hover:border-electricblue text-white px-5 py-2.5 rounded-lg font-orbitron text-xs tracking-widest transition-all duration-300 shadow-lg shadow-black/40">
+                    <i data-lucide="arrow-left" class="w-4 h-4 text-electricblue"></i> VOLTAR À LOJA
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- DETALHES DO PRODUTO -->
+    <main class="relative min-h-screen pt-32 pb-20 px-4 max-w-7xl mx-auto flex flex-col justify-center">
+        
+        <!-- Breadcrumb / Voltar -->
+        <div class="mb-6 flex items-center gap-2 text-slate-400 text-xs font-orbitron tracking-widest">
+            <a href="/" class="hover:text-electricblue transition-colors">HOME</a>
+            <i data-lucide="chevron-right" class="w-3 h-3 opacity-60"></i>
+            <span class="text-slate-500 uppercase">{{PRODUCT_CATEGORY}}</span>
+            <i data-lucide="chevron-right" class="w-3 h-3 opacity-60"></i>
+            <span class="text-white truncate">{{PRODUCT_TITLE}}</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+            
+            <!-- Imagem e Mídia do Produto (Col 5) -->
+            <div class="lg:col-span-5 relative group">
+                <div class="relative overflow-hidden rounded-2xl border border-slate-800/85 bg-slate-950/80 p-2 shadow-2xl transition-all duration-300 hover:border-slate-700 shadow-cyber/20">
+                    <img src="{{PRODUCT_IMAGE}}" alt="{{PRODUCT_TITLE}}" class="w-full h-auto object-cover rounded-xl shadow-lg transform transition-transform duration-700 group-hover:scale-102">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/40 to-transparent pointer-events-none"></div>
+                </div>
+            </div>
+
+            <!-- Dados, Preço e Ações do Produto (Col 7) -->
+            <div class="lg:col-span-7 flex flex-col justify-between h-full bg-slate-950/45 border border-slate-900/90 rounded-2xl p-6 sm:p-8 backdrop-blur-md cyber-panel-glow">
+                
+                <div>
+                    <!-- Categoria e Tags -->
+                    <div class="flex flex-wrap items-center gap-2 mb-4">
+                        <span class="bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[10px] tracking-widest px-3 py-1 rounded-md uppercase">{{PRODUCT_CATEGORY}}</span>
+                        {{PRODUCT_REGION_BADGE}}
+                    </div>
+
+                    <!-- Título -->
+                    <h1 class="font-orbitron font-black text-3xl sm:text-4xl text-white uppercase tracking-wider mb-2 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-slate-400">
+                        {{PRODUCT_TITLE}}
+                    </h1>
+
+                    <!-- Gêneros -->
+                    <div class="flex flex-wrap gap-2 mt-3 mb-6">
+                        {{PRODUCT_GENRES}}
+                    </div>
+
+                    <!-- Linha Divisora -->
+                    <div class="h-px bg-slate-900 my-6"></div>
+
+                    <!-- Status de Estoque -->
+                    <div class="flex items-center gap-2 text-xs font-orbitron tracking-widest text-slate-400 mb-6">
+                        <span class="text-slate-500">STATUS:</span>
+                        <span class="text-emerald-400 font-bold flex items-center gap-1.5 bg-emerald-950/30 px-3 py-1 rounded border border-emerald-950/50">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> {{PRODUCT_IN_STOCK}}
+                        </span>
+                    </div>
+
+                    <!-- Preços -->
+                    <div class="bg-slate-950/50 border border-slate-900 rounded-2xl p-6 mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                            <span class="text-[10px] font-orbitron tracking-widest text-slate-500 block mb-1">VALOR DE AQUISIÇÃO</span>
+                            <div class="flex items-baseline gap-3">
+                                {{PRODUCT_OLD_PRICE}}
+                                <span class="font-orbitron font-black text-3xl text-cyberrose tracking-wide filter drop-shadow-[0_0_15px_rgba(244,63,94,0.3)]">{{PRODUCT_PRICE}}</span>
+                            </div>
+                        </div>
+                        <div class="text-[11px] font-inter text-slate-500 leading-relaxed border-l-0 sm:border-l sm:border-slate-900 sm:pl-6 max-w-[240px]">
+                            ⚡ Envio digital imediato após aprovação do pagamento. Produto com chave ativável e garantia vitalícia.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ações -->
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <button onclick="addAndShowCart()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl transition-all duration-300 uppercase flex items-center justify-center gap-2 border border-slate-800 hover:border-slate-600 active:scale-98">
+                            <i data-lucide="shopping-cart" class="w-5 h-5 text-electricblue"></i> ADICIONAR
+                        </button>
+                        
+                        <button onclick="comprarAgora()" class="w-full bg-gradient-to-r from-electricblue to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl shadow-cyber hover:shadow-electricblue/35 transition-all duration-300 uppercase flex items-center justify-center gap-2 active:scale-98">
+                            <i data-lucide="zap" class="w-5 h-5"></i> COMPRAR AGORA
+                        </button>
+                    </div>
+
+                    <a href="/" class="inline-flex items-center gap-1.5 text-xs font-orbitron tracking-widest text-slate-500 hover:text-slate-300 transition-colors py-2">
+                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> CONTINUAR NAVEGANDO NO CATÁLOGO
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Descrição Detalhada -->
+        <div class="mt-16 bg-slate-950/60 border border-slate-900 rounded-2xl p-6 sm:p-8">
+            <h3 class="font-orbitron font-bold text-lg text-white tracking-widest uppercase mb-6 flex items-center gap-2">
+                <i data-lucide="file-text" class="text-electricblue"></i> ESPECIFICAÇÕES E DESCRIÇÃO
+            </h3>
+            
+            <div class="font-inter text-slate-300 text-sm leading-relaxed whitespace-pre-line space-y-4 max-w-none">
+                {{PRODUCT_FULL_DESCRIPTION}}
+            </div>
+            
+            <!-- Selo de Garantia -->
+            <div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-900 pt-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-emerald-950/30 flex items-center justify-center text-emerald-400 border border-emerald-900/50">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-orbitron text-xs text-white font-bold tracking-wider">GARANTIA INTEGRAL</h4>
+                        <p class="text-[10px] text-slate-500 font-inter">Key válida e testada ou seu dinheiro de volta.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-blue-950/30 flex items-center justify-center text-blue-400 border border-blue-900/50">
+                        <i data-lucide="zap" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-orbitron text-xs text-white font-bold tracking-wider">ENVIO EXPRESSO</h4>
+                        <p class="text-[10px] text-slate-500 font-inter">Liberado direto no e-mail em até 1 minuto.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-rose-950/30 flex items-center justify-center text-rose-400 border border-rose-900/50">
+                        <i data-lucide="heart-handshake" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-orbitron text-xs text-white font-bold tracking-wider">SUPORTE 24/7</h4>
+                        <p class="text-[10px] text-slate-500 font-inter">Atendimento dedicado via chat ou ticket.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer id="suporte" class="bg-slate-950 pt-16 pb-8 border-t border-slate-900 px-4 mt-auto">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+            
+            <div class="md:col-span-2">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-8 h-8 rounded-md bg-electricblue flex items-center justify-center">
+                        <i data-lucide="shield-alert" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <span class="font-orbitron font-black text-lg tracking-wider text-white">ZHER <span class="text-electricblue">KEYS</span></span>
+                </div>
+                <p class="font-inter text-slate-500 text-xs max-w-sm leading-relaxed mb-6">
+                    A plataforma definitiva de distribuição de bens digitais de luxo para entusiastas e e-sports competitivos.
+                </p>
+                <div class="flex items-center gap-4 text-slate-400">
+                    <a href="#" class="hover:text-white transition-colors">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </a>
+                    <a href="#" class="hover:text-white transition-colors">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 2H3v16h5v4l4-4h5l4-4V2zm-10 9H9V6h2v5zm4 0h-2V6h2v5z"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="hover:text-white transition-colors"><i data-lucide="message-square" class="w-5 h-5"></i></a>
+                </div>
+            </div>
+
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4">NAVEGAÇÃO SENSÍVEL</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5">
+                    <li><a href="/#catalogo" class="hover:text-electricblue transition-colors">Drops Black</a></li>
+                    <li><a href="/#vantagens" class="hover:text-electricblue transition-colors">Termos de Serviço</a></li>
+                    <li><a href="/#vantagens" class="hover:text-electricblue transition-colors">Segurança Operacional</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4">SEGURANÇA INTERNA</h5>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2 bg-slate-900/60 border border-slate-800 px-3 py-2 rounded-lg">
+                        <i data-lucide="lock" class="w-4 h-4 text-emerald-400"></i>
+                        <span class="font-orbitron text-[9px] tracking-widest text-slate-300">SSL ENCRYPTED 256-BIT</span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-slate-900/60 border border-slate-800 px-3 py-2 rounded-lg">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-electricblue"></i>
+                        <span class="font-orbitron text-[9px] tracking-widest text-slate-300">PAGAMENTO 100% SEGURO</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="max-w-7xl mx-auto pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 font-inter text-[11px] text-slate-600">
+            <p>&copy; 2026 ZHER KEYS. Desenvolvido por Vibe Studio. Direitos Reservados.</p>
+            <p class="font-orbitron tracking-widest">BUILD V2.04_SECURE</p>
+        </div>
+    </footer>
+
+    <script>
+        // Injetado do servidor
+        window.currentProduct = {{{PRODUCT_JSON}}};
+
+        // Lucide
+        lucide.createIcons();
+
+        // Atualizar Badge do Carrinho
+        function updateCartBadge() {
+            const badge = document.getElementById('cart-badge');
+            const cart = JSON.parse(localStorage.getItem('zher_cart')) || [];
+            if(cart.length > 0) {
+                badge.innerText = cart.length;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        // Adicionar ao carrinho
+        window.addAndShowCart = () => {
+            let cart = JSON.parse(localStorage.getItem('zher_cart')) || [];
+            const alreadyInCart = cart.find(item => Number(item.id) === Number(window.currentProduct.id));
+            if (alreadyInCart) {
+                alert("⚠️ Você já adicionou esta chave ao carrinho! Só é possível comprar uma unidade de cada jogo por vez para garantir as keys.");
+            } else {
+                cart.push(window.currentProduct);
+                localStorage.setItem('zher_cart', JSON.stringify(cart));
+                updateCartBadge();
+            }
+            window.location.href = '/carrinho.html';
+        };
+
+        // Comprar Agora
+        window.comprarAgora = () => {
+            let cart = JSON.parse(localStorage.getItem('zher_cart')) || [];
+            const alreadyInCart = cart.find(item => Number(item.id) === Number(window.currentProduct.id));
+            if (!alreadyInCart) {
+                cart.push(window.currentProduct);
+                localStorage.setItem('zher_cart', JSON.stringify(cart));
+            }
+            window.location.href = '/carrinho.html';
+        };
+
+        // Init badge
+        updateCartBadge();
+    </script>
+</body>
+</html>

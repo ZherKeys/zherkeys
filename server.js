@@ -7,6 +7,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 const speakeasy = require('speakeasy');
+const fs = require('fs');
 
 const app = express();
 app.disable('x-powered-by'); // Remove o cabeçalho X-Powered-By por segurança (evita vazamento de tecnologia)
@@ -1391,6 +1392,138 @@ app.get('/admin.html', requireAuth, async (req, res) => {
         }
     } catch(e) {
         res.status(500).send('Erro no banco');
+    }
+});
+
+// Dynamic SEO Product Route
+app.get('/produto/:id', async (req, res) => {
+    try {
+        const idStr = req.params.id.split('-')[0];
+        const id = parseInt(idStr, 10);
+        if (isNaN(id)) {
+            return res.redirect('/');
+        }
+        
+        const result = await pool.query('SELECT id, title, description, price, old_price, image, category, in_stock, is_global, restricted_countries, genres FROM products WHERE id = $1', [id]);
+        
+        if (result.rows.length === 0) {
+            return res.redirect('/');
+        }
+        
+        const product = result.rows[0];
+        
+        const templatePath = path.join(__dirname, 'public', 'produto.html');
+        let html = await fs.promises.readFile(templatePath, 'utf8');
+        
+        const title = product.title;
+        const description = product.description.substring(0, 160).replace(/"/g, '&quot;');
+        const fullDescription = product.description;
+        const image = product.image.startsWith('http') ? product.image : `https://zherkeys.onrender.com${product.image}`;
+        const price = parseFloat(product.price).toFixed(2);
+        const oldPriceHtml = product.old_price ? `<del class="text-rose-500 text-sm font-orbitron -mb-1 opacity-80">R$ ${parseFloat(product.old_price).toFixed(2)}</del>` : '';
+        const priceHtml = `R$ ${price}`;
+        const stockStatus = product.in_stock ? 'Em estoque' : 'Esgotado';
+        const availability = product.in_stock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
+        const regionBadge = product.is_global === false 
+            ? `<div class="inline-flex items-center gap-1.5 bg-rose-950/40 text-rose-400 border border-rose-900/50 font-orbitron text-xs tracking-widest px-3 py-1.5 rounded uppercase" title="Restrito a alguns países"><i data-lucide="globe" class="w-4 h-4"></i> RESTRIÇÃO REGIONAL</div>` 
+            : `<div class="inline-flex items-center gap-1.5 bg-emerald-950/40 text-emerald-400 border border-emerald-900/50 font-orbitron text-xs tracking-widest px-3 py-1.5 rounded uppercase"><i data-lucide="globe" class="w-4 h-4"></i> GLOBAL</div>`;
+        const genresTags = product.genres 
+            ? product.genres.split(',').map(g => `<span class="bg-slate-800 border border-slate-700 text-slate-300 font-orbitron text-[10px] tracking-widest px-2.5 py-1 rounded uppercase">${g.trim()}</span>`).join(' ') 
+            : '';
+            
+        const schemaJson = JSON.stringify({
+            "@context": "https://schema.org/",
+            "@type": "Product",
+            "name": title,
+            "image": image,
+            "description": fullDescription,
+            "offers": {
+                "@type": "Offer",
+                "url": `https://zherkeys.onrender.com/produto/${product.id}`,
+                "priceCurrency": "BRL",
+                "price": price,
+                "availability": availability,
+                "itemCondition": "https://schema.org/NewCondition"
+            }
+        });
+
+        html = html
+            .replace(/{{PRODUCT_TITLE}}/g, title)
+            .replace(/{{PRODUCT_DESCRIPTION}}/g, description)
+            .replace(/{{PRODUCT_FULL_DESCRIPTION}}/g, fullDescription)
+            .replace(/{{PRODUCT_IMAGE}}/g, image)
+            .replace(/{{PRODUCT_PRICE}}/g, priceHtml)
+            .replace(/{{PRODUCT_OLD_PRICE}}/g, oldPriceHtml)
+            .replace(/{{PRODUCT_CATEGORY}}/g, product.category)
+            .replace(/{{PRODUCT_ID}}/g, product.id)
+            .replace(/{{PRODUCT_REGION_BADGE}}/g, regionBadge)
+            .replace(/{{PRODUCT_GENRES}}/g, genresTags)
+            .replace(/{{PRODUCT_IN_STOCK}}/g, stockStatus)
+            .replace(/{{SCHEMA_JSON}}/g, schemaJson)
+            .replace(/{{{PRODUCT_JSON}}}/g, JSON.stringify(product));
+            
+        res.send(html);
+    } catch(e) {
+        console.error("Erro ao carregar produto:", e);
+        res.status(500).send('Erro no servidor.');
+    }
+});
+
+// Dynamic robots.txt
+app.get('/robots.txt', (req, res) => {
+    res.type('text/plain');
+    res.send(`User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /account.html
+Disallow: /api/
+
+Sitemap: https://zherkeys.onrender.com/sitemap.xml`);
+});
+
+// Dynamic sitemap.xml
+app.get('/sitemap.xml', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT id, title FROM products');
+        const products = result.rows;
+        
+        let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>https://zherkeys.onrender.com/</loc>
+        <priority>1.00</priority>
+    </url>
+    <url>
+        <loc>https://zherkeys.onrender.com/carrinho.html</loc>
+        <priority>0.80</priority>
+    </url>
+    <url>
+        <loc>https://zherkeys.onrender.com/minigames.html</loc>
+        <priority>0.80</priority>
+    </url>
+    <url>
+        <loc>https://zherkeys.onrender.com/pokemon.html</loc>
+        <priority>0.50</priority>
+    </url>\n`;
+
+        products.forEach(p => {
+            const slug = p.title
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)+/g, '');
+            xml += `    <url>
+        <loc>https://zherkeys.onrender.com/produto/${p.id}-${slug}</loc>
+        <priority>0.90</priority>
+    </url>\n`;
+        });
+
+        xml += `</urlset>`;
+        
+        res.header('Content-Type', 'application/xml');
+        res.send(xml);
+    } catch(e) {
+        console.error("Erro ao gerar sitemap:", e);
+        res.status(500).send('Erro ao gerar sitemap.');
     }
 });
 
