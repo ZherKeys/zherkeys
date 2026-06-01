@@ -1153,7 +1153,7 @@
                 const slug = p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
                 grid.innerHTML += `
-                    <div class="advantage-card bg-slate-950/80 border border-slate-800/80 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all duration-300 cursor-pointer flex flex-col h-full" onclick="openModal(${p.id})">
+                    <div class="advantage-card bg-slate-950/80 border border-slate-800/80 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all duration-300 cursor-pointer flex flex-col h-full" onclick="window.location.href='/produto/${p.id}-${slug}'">
                         <div class="h-48 w-full overflow-hidden relative">
                             ${steamBadge}
                             ${favoriteBtn}
@@ -1163,7 +1163,7 @@
                         </div>
                         <div class="p-6 flex flex-col flex-grow">
                             <h4 class="font-orbitron font-bold text-lg text-white uppercase tracking-wide leading-tight ${p.in_stock === false ? 'text-slate-500' : ''}">
-                                <a href="/produto/${p.id}-${slug}" onclick="event.stopPropagation();" class="hover:text-electricblue transition-colors">${p.title}</a>
+                                <a href="/produto/${p.id}-${slug}" class="hover:text-electricblue transition-colors">${p.title}</a>
                             </h4>
                             <div class="flex flex-wrap gap-1 mt-1 mb-1">${genresTags}</div>
                             ${regionIcon}
