@@ -437,22 +437,11 @@
                 </div>
             </div>
             
-            <!-- Corpo / Vídeo Patrocinado Real (Iframe) -->
+            <!-- Corpo / Vídeo Patrocinado Real (Canvas de Algoritmo) -->
             <div class="w-full aspect-video bg-black rounded-xl overflow-hidden relative border border-slate-800 flex items-center justify-center mb-6 shadow-rose shadow-2xl/10" id="ad-player-container">
-                <!-- Iframe do Anúncio Real -->
-                <iframe id="ad-iframe" class="w-full h-full border-none hidden" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
+                <!-- Canvas de Simulação de Algoritmo de Jogo -->
+                <canvas id="ad-algo-canvas" class="w-full h-full bg-[#030712]"></canvas>
                 
-                <!-- Conteúdo do Anúncio Simulado / Placeholder -->
-                <div id="ad-placeholder" class="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-900 to-slate-950 p-8 flex flex-col justify-center items-center gap-4">
-                    <div class="w-16 h-16 rounded-full bg-cyberrose/10 border border-cyberrose/20 text-cyberrose flex items-center justify-center animate-bounce">
-                        <i data-lucide="zap" class="w-8 h-8"></i>
-                    </div>
-                    <h3 class="font-orbitron font-black text-xl text-white tracking-widest uppercase">GTA VI - PRE-ORDER AGORA</h3>
-                    <p class="text-xs text-slate-400 max-w-md">O jogo mais aguardado da década já está com reservas abertas na ZHER KEYS! Compre antecipado e garanta brindes exclusivos de pré-venda.</p>
-                    <div class="flex items-center gap-2 text-toxicgreen font-orbitron text-[10px] tracking-widest font-bold uppercase mt-2">
-                        <i data-lucide="shield-check" class="w-4 h-4"></i> PROVEDOR DE ANÚNCIOS ZHER P2E SECURE
-                    </div>
-                </div>
                 <!-- Barra de Progresso do Anúncio -->
                 <div class="absolute bottom-0 left-0 h-1 bg-cyberrose transition-all duration-100" id="ad-progress-bar" style="width: 0%;"></div>
             </div>
@@ -2457,11 +2446,8 @@
             const adModal = document.getElementById('rewarded-ad-modal');
             adModal.classList.add('opacity-0', 'pointer-events-none');
             
-            // Reseta iframe e exibe placeholder de volta
-            const iframe = document.getElementById('ad-iframe');
-            if (iframe) iframe.src = 'about:blank';
-            document.getElementById('ad-iframe').classList.add('hidden');
-            document.getElementById('ad-placeholder').classList.remove('hidden');
+            // Para a simulação de algoritmo de jogo
+            stopAdAlgoSimulation();
             
             setTimeout(() => {
                 adModal.classList.add('hidden');
@@ -2477,16 +2463,11 @@
             const goModal = document.getElementById('game-over-modal');
             goModal.classList.add('hidden');
 
-            // Carrega o anúncio no iframe interno do site
-            const iframe = document.getElementById('ad-iframe');
-            if (iframe) {
-                iframe.src = 'https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f';
-                iframe.classList.remove('hidden');
-            }
-            document.getElementById('ad-placeholder').classList.add('hidden');
-
             const adModal = document.getElementById('rewarded-ad-modal');
             adModal.classList.remove('hidden');
+            
+            // Inicia simulação de algoritmo de jogo no Canvas
+            startAdAlgoSimulation();
             setTimeout(() => {
                 adModal.classList.remove('opacity-0', 'pointer-events-none');
             }, 10);
@@ -2588,13 +2569,8 @@
             // Abre o Direct Link real da Adsterra em uma nova aba
             window.open('https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f', '_blank');
             
-            // Carrega o anúncio no iframe interno do site
-            const iframe = document.getElementById('ad-iframe');
-            if (iframe) {
-                iframe.src = 'https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f';
-                iframe.classList.remove('hidden');
-            }
-            document.getElementById('ad-placeholder').classList.add('hidden');
+            // Inicia simulação de algoritmo de jogo no Canvas
+            startAdAlgoSimulation();
             
             // Abre o modal de cronômetro do anúncio (10 segundos para tarefas rápidas)
             const adModal = document.getElementById('rewarded-ad-modal');
@@ -2759,6 +2735,234 @@
             drawStartScreen();
             lucide.createIcons();
         });
+
+        // ==========================================
+        // SIMULAÇÃO DE ALGORITMO DE JOGO (PATHFINDING A*)
+        // ==========================================
+        let adAlgoActive = false;
+        let adAlgoCanvas = null;
+        let adAlgoCtx = null;
+        let adAlgoAnimFrame = null;
+
+        function startAdAlgoSimulation() {
+            adAlgoCanvas = document.getElementById('ad-algo-canvas');
+            if (!adAlgoCanvas) return;
+            adAlgoCtx = adAlgoCanvas.getContext('2d');
+            adAlgoActive = true;
+            
+            // Ajusta tamanho lógico
+            adAlgoCanvas.width = 640;
+            adAlgoCanvas.height = 360;
+            
+            const cols = 20;
+            const rows = 11;
+            const w = adAlgoCanvas.width / cols;
+            const h = adAlgoCanvas.height / rows;
+            
+            let grid = [];
+            let openSet = [];
+            let closedSet = [];
+            let startNode;
+            let endNode;
+            let path = [];
+            let searchComplete = false;
+            let pathIndex = 0;
+            let playerPos = null;
+            let frameCount = 0;
+
+            class Node {
+                constructor(i, j) {
+                    this.i = i;
+                    this.j = j;
+                    this.f = 0;
+                    this.g = 0;
+                    this.h = 0;
+                    this.neighbors = [];
+                    this.previous = undefined;
+                    this.wall = Math.random() < 0.28;
+                }
+                
+                show(color) {
+                    adAlgoCtx.fillStyle = color;
+                    adAlgoCtx.fillRect(this.i * w + 2, this.j * h + 2, w - 4, h - 4);
+                }
+                
+                addNeighbors() {
+                    let i = this.i;
+                    let j = this.j;
+                    if (i < cols - 1) this.neighbors.push(grid[i + 1][j]);
+                    if (i > 0) this.neighbors.push(grid[i - 1][j]);
+                    if (j < rows - 1) this.neighbors.push(grid[i][j + 1]);
+                    if (j > 0) this.neighbors.push(grid[i][j - 1]);
+                }
+            }
+
+            function initGrid() {
+                grid = [];
+                openSet = [];
+                closedSet = [];
+                path = [];
+                searchComplete = false;
+                pathIndex = 0;
+                
+                for (let i = 0; i < cols; i++) {
+                    grid[i] = [];
+                    for (let j = 0; j < rows; j++) {
+                        grid[i][j] = new Node(i, j);
+                    }
+                }
+                
+                for (let i = 0; i < cols; i++) {
+                    for (let j = 0; j < rows; j++) {
+                        grid[i][j].addNeighbors();
+                    }
+                }
+                
+                startNode = grid[0][0];
+                endNode = grid[cols - 1][rows - 1];
+                startNode.wall = false;
+                endNode.wall = false;
+                
+                openSet.push(startNode);
+                playerPos = { x: startNode.i * w, y: startNode.j * h };
+            }
+
+            initGrid();
+
+            function draw() {
+                if (!adAlgoActive) return;
+                
+                adAlgoCtx.fillStyle = '#030712';
+                adAlgoCtx.fillRect(0, 0, adAlgoCanvas.width, adAlgoCanvas.height);
+                
+                adAlgoCtx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+                adAlgoCtx.lineWidth = 1;
+                for (let i = 0; i < cols; i++) {
+                    for (let j = 0; j < rows; j++) {
+                        adAlgoCtx.strokeRect(i * w, j * h, w, h);
+                    }
+                }
+
+                for (let i = 0; i < cols; i++) {
+                    for (let j = 0; j < rows; j++) {
+                        if (grid[i][j].wall) {
+                            grid[i][j].show('rgba(244, 63, 94, 0.25)');
+                        }
+                    }
+                }
+
+                if (!searchComplete && openSet.length > 0) {
+                    let winner = 0;
+                    for (let i = 0; i < openSet.length; i++) {
+                        if (openSet[i].f < openSet[winner].f) {
+                            winner = i;
+                        }
+                    }
+                    
+                    let current = openSet[winner];
+                    
+                    if (current === endNode) {
+                        searchComplete = true;
+                        let temp = current;
+                        path.push(temp);
+                        while (temp.previous) {
+                            path.push(temp.previous);
+                            temp = temp.previous;
+                        }
+                        path.reverse();
+                    }
+                    
+                    openSet.splice(winner, 1);
+                    closedSet.push(current);
+                    
+                    let neighbors = current.neighbors;
+                    for (let i = 0; i < neighbors.length; i++) {
+                        let neighbor = neighbors[i];
+                        
+                        if (!closedSet.includes(neighbor) && !neighbor.wall) {
+                            let tempG = current.g + 1;
+                            
+                            let newPath = false;
+                            if (openSet.includes(neighbor)) {
+                                if (tempG < neighbor.g) {
+                                    neighbor.g = tempG;
+                                    newPath = true;
+                                }
+                            } else {
+                                neighbor.g = tempG;
+                                newPath = true;
+                                openSet.push(neighbor);
+                            }
+                            
+                            if (newPath) {
+                                neighbor.h = Math.abs(neighbor.i - endNode.i) + Math.abs(neighbor.j - endNode.j);
+                                neighbor.f = neighbor.g + neighbor.h;
+                                neighbor.previous = current;
+                            }
+                        }
+                    }
+                } else if (!searchComplete && openSet.length === 0) {
+                    initGrid();
+                }
+
+                for (let i = 0; i < closedSet.length; i++) {
+                    closedSet[i].show('rgba(59, 130, 246, 0.08)');
+                }
+                for (let i = 0; i < openSet.length; i++) {
+                    openSet[i].show('rgba(16, 185, 129, 0.12)');
+                }
+
+                endNode.show('#F59E0B');
+                adAlgoCtx.fillStyle = '#FFFFFF';
+                adAlgoCtx.font = '10px sans-serif';
+                adAlgoCtx.fillText('🔑', endNode.i * w + w/2 - 6, endNode.j * h + h/2 + 4);
+
+                if (path.length > 0) {
+                    adAlgoCtx.beginPath();
+                    adAlgoCtx.strokeStyle = '#10B981';
+                    adAlgoCtx.lineWidth = 3;
+                    for (let i = 0; i < path.length; i++) {
+                        let x = path[i].i * w + w/2;
+                        let y = path[i].j * h + h/2;
+                        if (i === 0) adAlgoCtx.moveTo(x, y);
+                        else adAlgoCtx.lineTo(x, y);
+                    }
+                    adAlgoCtx.stroke();
+                    
+                    if (frameCount % 6 === 0 && pathIndex < path.length - 1) {
+                        pathIndex++;
+                        playerPos.x = path[pathIndex].i * w;
+                        playerPos.y = path[pathIndex].j * h;
+                    }
+                    
+                    if (pathIndex >= path.length - 1) {
+                        if (frameCount % 60 === 0) {
+                            initGrid();
+                        }
+                    }
+                }
+
+                adAlgoCtx.fillStyle = '#3B82F6';
+                adAlgoCtx.fillRect(playerPos.x + 4, playerPos.y + 4, w - 8, h - 8);
+                adAlgoCtx.strokeStyle = '#FFFFFF';
+                adAlgoCtx.lineWidth = 1;
+                adAlgoCtx.strokeRect(playerPos.x + 4, playerPos.y + 4, w - 8, h - 8);
+                
+                adAlgoCtx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                adAlgoCtx.font = '10px Orbitron, sans-serif';
+                adAlgoCtx.fillText('ALGORITMO A* (PATHFINDING EM GAMES) - SIMULAÇÃO', 15, 25);
+                
+                frameCount++;
+                adAlgoAnimFrame = requestAnimationFrame(draw);
+            }
+
+            draw();
+        }
+
+        function stopAdAlgoSimulation() {
+            adAlgoActive = false;
+            if (adAlgoAnimFrame) cancelAnimationFrame(adAlgoAnimFrame);
+        }
     </script>
     <script src="https://pl29603465.effectivecpmnetwork.com/35/aa/1a/35aa1a870f394a7f5dead17288cc7940.js"></script>
     <script src="https://pl29603466.effectivecpmnetwork.com/c3/d8/49/c3d849b200b6c19a26af5930dc3cb7f9.js"></script>
