@@ -2537,11 +2537,10 @@
 
         function triggerCrash() {
             gameActive = false;
-            score = 0; // Wipe score on crash
+            pointsToClaim = score;
             document.getElementById('session-score-display').innerText = `0 Pts`;
             
             synth.gameover();
-            pointsToClaim = 0;
             
             // Draw grey transparent overlay on canvas
             ctx.fillStyle = 'rgba(2, 6, 23, 0.85)';
@@ -2550,15 +2549,18 @@
             // Set modal layout to CRITICAL ERROR / CRASH STATE
             document.getElementById('game-over-title').innerText = 'GAME OVER!';
             document.getElementById('game-over-title').className = 'font-orbitron font-black text-2xl text-cyberrose mb-2';
-            document.getElementById('game-over-desc').innerText = 'Que pena você perdeu, boa sorte na próxima!';
+            document.getElementById('game-over-desc').innerText = 'Que pena você colidiu! Mas você ainda pode resgatar seus Z-Points com anúncio.';
             
-            document.getElementById('final-score').innerText = '0';
-            document.getElementById('reward-1x-val').innerText = '0 Z-Points';
-            document.getElementById('reward-2x-val').innerText = '0 Z-Points';
+            const valBase = Math.round(score * 0.5); 
+            const valBoost = Math.round(score * 1.0);
+            
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('reward-1x-val').innerText = `${valBase} Z-Points`;
+            document.getElementById('reward-2x-val').innerText = `${valBoost} Z-Points`;
 
-            // Hide the claim reward options and update retry button
-            document.getElementById('reward-actions-container').classList.add('hidden');
-            document.getElementById('retry-game-btn').innerText = 'Tentar Novamente';
+            // Mostra os botões de recompensa por anúncios
+            document.getElementById('reward-actions-container').classList.remove('hidden');
+            document.getElementById('retry-game-btn').innerText = 'Voltar ao Arcade / Novo Jogo';
             document.getElementById('cashout-btn').classList.add('hidden');
 
             const modal = document.getElementById('game-over-modal');
