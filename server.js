@@ -2247,13 +2247,13 @@ app.post('/api/minigames/watch-ad-points', requireAuth, async (req, res) => {
     }
 });
 
-// Converter pontos do Minigame em Saldo real de Carteira (10.000 pontos = R$ 0,01 BRL)
+// Converter pontos do Minigame em Saldo real de Carteira (100.000 pontos = R$ 0,01 BRL)
 app.post('/api/minigames/convert-points', requireAuth, async (req, res) => {
     const { pointsToConvert } = req.body;
     const pointsNum = parseInt(pointsToConvert);
     
-    if (isNaN(pointsNum) || pointsNum < 10000 || pointsNum % 10000 !== 0) {
-        return res.status(400).json({ error: 'Por favor, insira uma quantidade de pontos válida (mínimo de 10.000 pontos e em múltiplos de 10.000).' });
+    if (isNaN(pointsNum) || pointsNum < 100000 || pointsNum % 100000 !== 0) {
+        return res.status(400).json({ error: 'Por favor, insira uma quantidade de pontos válida (mínimo de 100.000 pontos e em múltiplos de 100.000).' });
     }
     
     const userId = req.session.userId;
@@ -2274,8 +2274,8 @@ app.post('/api/minigames/convert-points', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'Pontos insuficientes para realizar a conversão.' });
         }
         
-        // Conversão: 10.000 pontos = R$ 0,01 BRL (1.000.000 pontos = R$ 1,00 BRL)
-        const convertedBRL = parseFloat((pointsNum / 1000000).toFixed(2));
+        // Conversão: 100.000 pontos = R$ 0,01 BRL (10.000.000 pontos = R$ 1,00 BRL)
+        const convertedBRL = parseFloat((pointsNum / 10000000).toFixed(2));
         if (convertedBRL <= 0) {
             await client.query('ROLLBACK');
             return res.status(400).json({ error: 'Quantidade de pontos muito baixa para gerar saldo em reais.' });

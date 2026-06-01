@@ -123,9 +123,9 @@
                 <!-- Conversor de Pontos -->
                 <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl flex flex-col gap-3">
                     <span class="text-[9px] text-slate-500 font-orbitron tracking-widest uppercase">Conversor Z-Points</span>
-                    <span class="text-[10px] text-slate-400 font-inter leading-relaxed">Taxa: <b class="text-toxicgreen font-orbitron">10.000 Pontos = R$ 0,01 BRL</b>. Digite em múltiplos de 10.000 para converter.</span>
+                    <span class="text-[10px] text-slate-400 font-inter leading-relaxed">Taxa: <b class="text-toxicgreen font-orbitron">100.000 Pontos = R$ 0,01 BRL</b>. Digite em múltiplos de 100.000 para converter.</span>
                     <div class="flex gap-2">
-                        <input type="number" id="convert-points-input" placeholder="Ex: 10000" min="10000" step="10000" class="w-full bg-slate-900 border border-slate-800 text-white text-xs px-3 py-2 rounded-lg font-orbitron focus:outline-none focus:border-toxicgreen focus:ring-1 focus:ring-toxicgreen transition-all" />
+                        <input type="number" id="convert-points-input" placeholder="Ex: 100000" min="100000" step="100000" class="w-full bg-slate-900 border border-slate-800 text-white text-xs px-3 py-2 rounded-lg font-orbitron focus:outline-none focus:border-toxicgreen focus:ring-1 focus:ring-toxicgreen transition-all" />
                         <button onclick="convertPointsToCash()" class="bg-toxicgreen hover:bg-emerald-500 text-obsidian font-orbitron text-[10px] tracking-widest font-black px-4 py-2 rounded-lg transition-colors uppercase cursor-pointer">
                             TROCAR
                         </button>
@@ -248,7 +248,7 @@
                             <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-purple-500 transition-colors">🕹️ CASSINO FAKE</span>
                             <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Tente a sorte nos caça-níqueis cibernéticos do Zher. Combine chaves e diamantes para bônus gigantescos!</p>
                             <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
-                                <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
+                                <span>Custo: <b class="text-red-500">5 Z-Points/Jogada</b></span>
                                 <span class="text-purple-500 font-bold flex items-center gap-0.5">Jogar &raquo;</span>
                             </div>
                         </div>
@@ -284,7 +284,7 @@
                             <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-pink-500 transition-colors">🕹️ ROLETA CYBER</span>
                             <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Gire a roleta de decodificação de chaves. Multiplique seus Z-Points ou desvie do glitch do sistema!</p>
                             <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
-                                <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
+                                <span>Custo: <b class="text-red-500">10 Z-Points/Jogada</b></span>
                                 <span class="text-pink-500 font-bold flex items-center gap-0.5">Jogar &raquo;</span>
                             </div>
                         </div>
@@ -372,7 +372,7 @@
                     <!-- Barra de Instruções -->
                     <div class="w-full bg-slate-900/80 border-t border-slate-800 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs">
                         <span id="game-instructions-text" class="text-slate-400 flex items-center gap-1.5"><i data-lucide="keyboard" class="w-4 h-4 text-electricblue"></i> Use as setas ou clique e arraste para mover o Decodificador</span>
-                        <span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">250 Z-Points</b> (com Multi-Boost)</span>
+                        <span id="game-reward-info" class="text-slate-400 flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">250 Z-Points</b> (com Multi-Boost)</span>
                     </div>
                 </div>
                 
@@ -582,6 +582,13 @@
         // Clicker entities
         let clickerNode;
         let floatingTexts = [];
+        
+        // Anti-Cheat Clicker variables
+        let lastClickTime = 0;
+        let lastClickX = -999;
+        let lastClickY = -999;
+        let exactSameCoordsCount = 0;
+        let clickerCpsHistory = [];
 
         // Runner entities
         let runnerPlayer;
@@ -637,6 +644,68 @@
                 document.getElementById('nav-balance').innerText = 'Offline';
                 document.getElementById('nav-points').innerText = 'Offline';
             }
+        }
+
+        function validateClick(e, clickX, clickY) {
+            // 1. Check isTrusted (stops standard JS dispatchEvent / element.click() macro injections)
+            if (e && e.isTrusted === false) {
+                alert('⚠️ Segurança: Ação simulada detectada! O uso de scripts de automação é proibido.');
+                endGame(true);
+                return false;
+            }
+
+            const now = Date.now();
+            let interval = 9999;
+
+            // 2. Minimum interval between consecutive clicks (stops super-fast spamming)
+            // Human physical limit is around 10-12 CPS (clicks per second), meaning average ~85-100ms interval.
+            // Consecutive clicks in < 45ms is physically impossible.
+            if (lastClickTime > 0) {
+                interval = now - lastClickTime;
+                if (interval < 45) {
+                    alert('⚠️ Segurança: Cliques rápidos demais detectados (Auto-Clicker)!');
+                    endGame(true);
+                    return false;
+                }
+            }
+
+            // 3. Exact same coordinates consecutive check (stops pixel-perfect clickers)
+            // Legitimate PC mouse players might click perfectly still.
+            // We ONLY count same-coordinate clicks as violations if they are also incredibly fast (interval < 75ms).
+            if (clickX === lastClickX && clickY === lastClickY) {
+                if (interval < 75) {
+                    exactSameCoordsCount++;
+                    if (exactSameCoordsCount > 8) {
+                        alert('⚠️ Segurança: Cliques no mesmo pixel detectados repetidamente (Auto-Clicker)!');
+                        endGame(true);
+                        return false;
+                    }
+                }
+            } else {
+                exactSameCoordsCount = 0;
+            }
+
+            // 4. Click rate limit in a rolling window of 1 second (stops high-frequency clicking)
+            // A rolling window of 1 second checking CPS. Humans cannot easily sustain > 15 clicks per second.
+            // Let's cap maximum rolling CPS at 15 to be very safe against fast legit clickers.
+            const oneSecondAgo = now - 1000;
+            // Remove clicks older than 1 second
+            while (clickerCpsHistory.length > 0 && clickerCpsHistory[0] < oneSecondAgo) {
+                clickerCpsHistory.shift();
+            }
+            clickerCpsHistory.push(now);
+            if (clickerCpsHistory.length > 15) {
+                alert('⚠️ Segurança: Frequência de cliques excessiva (>15 CPS) detectada!');
+                endGame(true);
+                return false;
+            }
+
+            // Update variables
+            lastClickTime = now;
+            lastClickX = clickX;
+            lastClickY = clickY;
+
+            return true;
         }
 
         function formatPrice(val) {
@@ -941,22 +1010,32 @@
             
             // Altera instruções do rodapé do canvas
             const instEl = document.getElementById('game-instructions-text');
+            const rewardEl = document.getElementById('game-reward-info');
+            
             if (gameName === 'hacker') {
                 instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-electricblue"></i> Use as setas ou clique e arraste para mover o Decodificador`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">250 Z-Points</b> (com Multi-Boost)`;
             } else if (gameName === 'flappy') {
                 instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-cyberrose"></i> Pressione ESPAÇO, SETA PARA CIMA ou clique no canvas para voar`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">250 Z-Points</b> (com Multi-Boost)`;
             } else if (gameName === 'clicker') {
                 instEl.innerHTML = `<i data-lucide="mouse-pointer" class="w-4 h-4 text-toxicgreen"></i> Clique no Database central. Desvie dos glitches vermelhos!`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">250 Z-Points</b> (com Multi-Boost)`;
             } else if (gameName === 'runner') {
                 instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-amber-500"></i> Pressione ESPAÇO, SETA PARA CIMA ou clique para pular as barreiras`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">250 Z-Points</b> (com Multi-Boost)`;
             } else if (gameName === 'casino') {
-                instEl.innerHTML = `<i data-lucide="dices" class="w-4 h-4 text-purple-500"></i> Clique no botão SPIN para testar os Slots. Evite os bugs!`;
+                instEl.innerHTML = `<i data-lucide="dices" class="w-4 h-4 text-purple-500"></i> Clique no SPIN para testar os Slots. <b class="text-red-500 font-bold ml-1.5">[CUSTO: 5 Z-POINTS POR GIRO - NÃO É GRÁTIS]</b>`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-red-500 animate-pulse"></i> Custo: <b class="text-red-500 font-bold">5 Z-Points/Jogada</b>`;
             } else if (gameName === 'quiz') {
                 instEl.innerHTML = `<i data-lucide="help-circle" class="w-4 h-4 text-indigo-500"></i> Clique na opção correta de A a D. Errar encerra o jogo!`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">250 Z-Points</b> (com Multi-Boost)`;
             } else if (gameName === 'roulette') {
-                instEl.innerHTML = `<i data-lucide="disc" class="w-4 h-4 text-pink-500"></i> Clique no botão SPIN central para girar a roleta. Evite a fatia de bug!`;
+                instEl.innerHTML = `<i data-lucide="disc" class="w-4 h-4 text-pink-500"></i> Clique no SPIN central para girar a roleta. <b class="text-red-500 font-bold ml-1.5">[CUSTO: 10 Z-POINTS POR GIRO - NÃO É GRÁTIS]</b>`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-red-500 animate-pulse"></i> Custo: <b class="text-red-500 font-bold">10 Z-Points/Jogada</b>`;
             } else if (gameName === 'treasure') {
                 instEl.innerHTML = `<i data-lucide="gem" class="w-4 h-4 text-emerald-500"></i> Clique nos nós para revelar encriptadores. Cuidado com os bugs!`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">250 Z-Points</b> (com Multi-Boost)`;
             }
             lucide.createIcons();
             
@@ -1069,6 +1148,8 @@
                     const rect = canvas.getBoundingClientRect();
                     const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
                     const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+                    
+                    if (!validateClick(e, clickX, clickY)) return;
                     
                     const dx = clickX - clickerNode.x;
                     const dy = clickY - clickerNode.y;
@@ -1252,6 +1333,8 @@
                     const rect = canvas.getBoundingClientRect();
                     const clickX = (touch.clientX - rect.left) * (canvas.width / rect.width);
                     const clickY = (touch.clientY - rect.top) * (canvas.height / rect.height);
+                    
+                    if (!validateClick(e, clickX, clickY)) return;
                     
                     const dx = clickX - clickerNode.x;
                     const dy = clickY - clickerNode.y;
@@ -1458,6 +1541,11 @@
                     pulse: 0
                 };
                 floatingTexts = [];
+                lastClickTime = 0;
+                lastClickX = -999;
+                lastClickY = -999;
+                exactSameCoordsCount = 0;
+                clickerCpsHistory = [];
             }
             
             // Zher Runner Setup
@@ -2736,8 +2824,8 @@
             const inputVal = document.getElementById('convert-points-input').value;
             const pointsToConvert = parseInt(inputVal);
             
-            if (isNaN(pointsToConvert) || pointsToConvert < 10000 || pointsToConvert % 10000 !== 0) {
-                alert('⚠️ Por favor, insira uma quantidade de pontos válida (mínimo de 10.000 e em múltiplos de 10.000).');
+            if (isNaN(pointsToConvert) || pointsToConvert < 100000 || pointsToConvert % 100000 !== 0) {
+                alert('⚠️ Por favor, insira uma quantidade de pontos válida (mínimo de 100.000 e em múltiplos de 100.000).');
                 return;
             }
             
@@ -2746,7 +2834,7 @@
                 return;
             }
             
-            if (!confirm(`Deseja converter ${pointsToConvert} Z-Points em R$ ${(pointsToConvert / 1000000).toFixed(2)} de saldo real na carteira?`)) {
+            if (!confirm(`Deseja converter ${pointsToConvert} Z-Points em R$ ${(pointsToConvert / 10000000).toFixed(2)} de saldo real na carteira?`)) {
                 return;
             }
             
