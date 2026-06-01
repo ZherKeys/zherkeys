@@ -441,7 +441,7 @@
             </div>
 
             <p class="text-xs text-slate-400 leading-relaxed max-w-lg mb-6">
-                Não feche esta tela! Assista ao anúncio completo para validar sua recompensa de <b class="text-toxicgreen font-orbitron" id="ad-reward-val">R$ 0,10</b> diretamente no seu saldo.
+                Não feche esta tela! Assista ao anúncio completo para validar sua recompensa de <b class="text-toxicgreen font-orbitron" id="ad-reward-val">0 Z-Points</b> em sua conta.
             </p>
 
             <!-- Botão de Fechar e Coletar Recompensa -->
@@ -2551,7 +2551,7 @@
             drawStartScreen();
         }
 
-        // Função para assistir anúncio rápido e ganhar 15 pontos fixos
+        // Função para assistir anúncio rápido e ganhar 250 Z-Points
         function watchQuickAdForPoints() {
             // Abre o Direct Link real da Adsterra em uma nova aba
             window.open('https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f', '_blank');
@@ -2572,6 +2572,9 @@
             
             textEl.innerText = `${remaining}s`;
             progressEl.style.width = '0%';
+            
+            // Define o texto de recompensa no modal como Z-Points
+            document.getElementById('ad-reward-val').innerText = '250 Z-Points';
             
             collectBtn.disabled = true;
             collectBtn.className = "w-full bg-slate-800 opacity-50 cursor-not-allowed text-slate-500 font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl transition-all uppercase flex items-center justify-center gap-2";
@@ -2594,7 +2597,7 @@
                     
                     collectBtn.disabled = false;
                     collectBtn.className = "w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl shadow-lg shadow-emerald-500/20 hover:scale-[1.02] transition-all cursor-pointer uppercase flex items-center justify-center gap-2";
-                    collectBtn.innerHTML = `CONCLUÍDO! RESGATAR 15 PONTOS ⚡ <i data-lucide="award" class="w-5 h-5"></i>`;
+                    collectBtn.innerHTML = `CONCLUÍDO! RESGATAR 250 Z-Points ⚡ <i data-lucide="award" class="w-5 h-5"></i>`;
                     collectBtn.onclick = async () => {
                         closeAdModal();
                         await claimQuickAdPoints();
