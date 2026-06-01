@@ -361,7 +361,7 @@
 
                 <!-- Botão de Cash Out / Sacar Pontos (Apenas visível em jogo ativo de sobrevivência) -->
                 <button id="cashout-btn" onclick="cashOutGame()" class="hidden w-full bg-gradient-to-r from-toxicgreen to-emerald-600 hover:from-emerald-500 hover:to-emerald-600 text-obsidian font-orbitron text-[10px] tracking-widest font-black py-4 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all uppercase flex items-center justify-center gap-2 cursor-pointer mt-2">
-                    CASH OUT - RETIRAR DADOS E SACAR PONTOS OBTIDOS ⚡ <i data-lucide="zap" class="w-4.5 h-4.5 animate-pulse"></i>
+                    CASH OUT - RETIRAR E SACAR [TECLADO: ENTER ou C] ⚡ <i data-lucide="zap" class="w-4.5 h-4.5 animate-pulse"></i>
                 </button>
 
                 <!-- VIEWPORT DO JOGO -->
@@ -1122,6 +1122,21 @@
             if (gameActive && currentGame === 'flappy' && (e.code === 'Space' || e.code === 'ArrowUp')) {
                 bird.velocity = bird.jump;
                 synth.point();
+            }
+            // Ação de pulo no Runner (Teclado)
+            if (gameActive && currentGame === 'runner' && (e.code === 'Space' || e.code === 'ArrowUp')) {
+                if (runnerPlayer.isGrounded) {
+                    runnerPlayer.vy = runnerPlayer.jumpPower;
+                    synth.point();
+                }
+            }
+            // Atalho de Cash Out instantâneo (ENTER, Tecla C ou ESCAPE) para evitar colisão ao mover o mouse
+            if (gameActive && (e.code === 'Enter' || e.code === 'KeyC' || e.code === 'Escape')) {
+                const cashoutBtn = document.getElementById('cashout-btn');
+                if (cashoutBtn && !cashoutBtn.classList.contains('hidden')) {
+                    e.preventDefault();
+                    cashOutGame();
+                }
             }
         });
         window.addEventListener('keyup', (e) => { keysPressed[e.code] = false; });
