@@ -349,8 +349,8 @@
                         
                         <!-- Opponent monster avatar platform -->
                         <div class="relative w-28 h-28 flex flex-col items-center justify-end">
-                            <!-- Circular Platform -->
-                            <ellipse cx="50" cy="80" rx="36" ry="12" fill="#1e293b" opacity="0.6" stroke="#475569" stroke-width="1.5" class="absolute bottom-0"/>
+                            <!-- Circular Platform Container -->
+                            <div id="opp-platform-container" class="absolute bottom-0 w-full h-8 flex justify-center items-center"></div>
                             <!-- Monster SVG container -->
                             <div id="opp-svg-box" class="w-24 h-24 flex items-center justify-center z-10 animate-float-opp transition-all duration-300">
                                 <!-- Opponent SVG here -->
@@ -362,7 +362,8 @@
                     <div class="w-full flex justify-start items-end gap-4 mb-2">
                         <!-- Player platform -->
                         <div class="relative w-28 h-28 flex flex-col items-center justify-end">
-                            <ellipse cx="50" cy="80" rx="38" ry="14" fill="#0f172a" opacity="0.8" stroke="#3b82f6" stroke-width="1.5" class="absolute bottom-0"/>
+                            <!-- Circular Platform Container -->
+                            <div id="player-platform-container" class="absolute bottom-0 w-full h-8 flex justify-center items-center"></div>
                             <!-- Back view SVG of player companion -->
                             <div id="player-svg-box" class="w-24 h-24 flex items-center justify-center z-10 animate-float-player transition-all duration-300">
                                 <!-- Player SVG here -->
@@ -866,17 +867,18 @@
                     if(!gameState.balls) gameState.balls = { basic: 10, great: 5, ultra: 2, master: 0 };
                     if(!gameState.upgrades) gameState.upgrades = { click: 1, auto: 0, shard: 1, crit: 1 };
                     
-                    // CORREÇÃO: Garante HP/MaxHP para saves antigos da versão clicker
+                    // CORREÇÃO: Garante HP/MaxHP para saves antigos da versão clicker e limpa itens inválidos
                     if (gameState.backpack && Array.isArray(gameState.backpack)) {
+                        gameState.backpack = gameState.backpack.filter(mon => mon && mon.dbId && CYBERMON_DB[mon.dbId]);
                         gameState.backpack.forEach(mon => {
                             const dbInfo = CYBERMON_DB[mon.dbId];
-                            if (dbInfo) {
-                                if (!mon.maxHp || isNaN(mon.maxHp)) {
-                                    mon.maxHp = Math.round(dbInfo.baseHp * (1 + (mon.lvl * 0.15)));
-                                }
-                                if (!mon.hp || isNaN(mon.hp) || mon.hp <= 0) {
-                                    mon.hp = mon.maxHp;
-                                }
+                            if (!mon.lvl || isNaN(mon.lvl) || mon.lvl < 1) mon.lvl = 1;
+                            if (!mon.exp || isNaN(mon.exp)) mon.exp = 0;
+                            if (!mon.maxHp || isNaN(mon.maxHp)) {
+                                mon.maxHp = Math.round(dbInfo.baseHp * (1 + (mon.lvl * 0.15)));
+                            }
+                            if (mon.hp === undefined || isNaN(mon.hp) || mon.hp <= 0) {
+                                mon.hp = mon.maxHp;
                             }
                         });
                     }
@@ -906,16 +908,46 @@
         }
 
         function alignActiveCompanion() {
+            if (!gameState.backpack || !Array.isArray(gameState.backpack) || gameState.backpack.length === 0) {
+                gameState.backpack = [];
+                const starterUid = 'starter_' + Date.now();
+                const starterHp = CYBERMON_DB[7].baseHp * (1 + (5 * 0.15));
+                gameState.backpack.push({
+                    uid: starterUid,
+                    dbId: 7,
+                    lvl: 5,
+                    exp: 0,
+                    hp: starterHp,
+                    maxHp: starterHp
+                });
+                gameState.activeCompanionUid = starterUid;
+            }
+
+            activeCompanion = null;
             if (gameState.activeCompanionUid) {
-                activeCompanion = gameState.backpack.find(c => c.uid === gameState.activeCompanionUid);
-                // Fallback in case active companion fainted or missing
-                if (!activeCompanion && gameState.backpack.length > 0) {
-                    activeCompanion = gameState.backpack[0];
+                activeCompanion = gameState.backpack.find(c => c.uid === gameState.activeCompanionUid && CYBERMON_DB[c.dbId]);
+            }
+            
+            if (!activeCompanion) {
+                activeCompanion = gameState.backpack.find(c => CYBERMON_DB[c.dbId]);
+                if (activeCompanion) {
                     gameState.activeCompanionUid = activeCompanion.uid;
+                } else {
+                    // Force rebuild backpack if all elements are invalid
+                    gameState.backpack = [];
+                    const starterUid = 'starter_' + Date.now();
+                    const starterHp = CYBERMON_DB[7].baseHp * (1 + (5 * 0.15));
+                    gameState.backpack.push({
+                        uid: starterUid,
+                        dbId: 7,
+                        lvl: 5,
+                        exp: 0,
+                        hp: starterHp,
+                        maxHp: starterHp
+                    });
+                    gameState.activeCompanionUid = starterUid;
+                    activeCompanion = gameState.backpack[0];
                 }
-            } else if (gameState.backpack.length > 0) {
-                activeCompanion = gameState.backpack[0];
-                gameState.activeCompanionUid = activeCompanion.uid;
             }
         }
 
@@ -928,21 +960,35 @@
 
         // --- INITIALIZATION ---
         window.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
-            loadGame();
-            renderAllStats();
-            renderBackpack();
-            renderUpgradesUi();
-            spawnWildMonster();
+            try {
+                checkAuth();
+                loadGame();
+                renderAllStats();
+                renderBackpack();
+                renderUpgradesUi();
+                spawnWildMonster();
+            } catch(e) {
+                console.error("Erro fatal na inicialização do jogo:", e);
+            }
             
             // Interval for automatic recovery based on Repair Drones between combats
             setInterval(() => {
-                if (!wildMonster || wildMonster.hp <= 0) {
-                    applyDronesAutoHeal();
+                try {
+                    if (!wildMonster || wildMonster.hp <= 0) {
+                        applyDronesAutoHeal();
+                    }
+                } catch(e) {
+                    console.error("Erro no drone de autoreparo:", e);
                 }
             }, 6000);
 
-            lucide.createIcons();
+            if (window.lucide) {
+                try {
+                    lucide.createIcons();
+                } catch(e) {
+                    console.error("Erro ao renderizar ícones Lucide:", e);
+                }
+            }
         });
 
         // --- COMBAT STAT CALCULATIONS ---
@@ -992,6 +1038,76 @@
                 const dot = document.createElement('div');
                 dot.className = `w-2 h-2 rounded-full transition-all ${i < gameState.zoneProgress ? 'bg-rose-500 shadow-[0_0_4px_rgba(239,68,68,0.6)]' : i === gameState.zoneProgress ? 'bg-amber-400 border border-amber-300 animate-pulse' : 'bg-slate-800'}`;
                 dotsContainer.appendChild(dot);
+            }
+
+            // CORREÇÃO: Atualiza a arena de combate com o tema da zona atual
+            updateBattlefieldArena();
+        }
+
+        // CORREÇÃO: Atualiza dinamicamente o plano de fundo do campo de batalha e as plataformas (arenas)
+        function updateBattlefieldArena() {
+            const zoneIdx = gameState.currentZoneIdx;
+            const screen = document.getElementById('battle-scene-screen');
+            if (!screen) return;
+            const oppPlatform = document.getElementById('opp-platform-container');
+            const playerPlatform = document.getElementById('player-platform-container');
+            
+            const themes = [
+                {
+                    bg: "bg-[radial-gradient(circle_at_bottom,#065f46_0%,#064e3b_40%,#022c22_85%,#030712_100%)]",
+                    oppPlatformColor: "#10b981", // Emerald/Neon Green
+                    oppPlatformFill: "#064e3b",
+                    playerPlatformColor: "#10b981",
+                    playerPlatformFill: "#022c22"
+                },
+                {
+                    bg: "bg-[radial-gradient(circle_at_bottom,#991b1b_0%,#7f1d1d_40%,#450a0a_85%,#030712_100%)]",
+                    oppPlatformColor: "#f97316", // Orange/Molten Lava
+                    oppPlatformFill: "#7c2d12",
+                    playerPlatformColor: "#f97316",
+                    playerPlatformFill: "#450a0a"
+                },
+                {
+                    bg: "bg-[radial-gradient(circle_at_bottom,#0891b2_0%,#0e7490_40%,#155e75_85%,#030712_100%)]",
+                    oppPlatformColor: "#06b6d4", // Cyan/Tech Silicon
+                    oppPlatformFill: "#164e63",
+                    playerPlatformColor: "#06b6d4",
+                    playerPlatformFill: "#083344"
+                },
+                {
+                    bg: "bg-[radial-gradient(circle_at_bottom,#6b21a8_0%,#581c87_40%,#3b0764_85%,#030712_100%)]",
+                    oppPlatformColor: "#d946ef", // Purple/Void Portal
+                    oppPlatformFill: "#4a044e",
+                    playerPlatformColor: "#d946ef",
+                    playerPlatformFill: "#3b0764"
+                }
+            ];
+            
+            const theme = themes[zoneIdx] || themes[0];
+            
+            // Set dynamic background classes
+            screen.className = `flex-grow relative overflow-hidden ${theme.bg} flex flex-col justify-between p-4 min-h-[300px]`;
+            
+            if (oppPlatform) {
+                oppPlatform.innerHTML = `
+                    <svg viewBox="0 0 100 30" class="w-28 h-8 transition-all duration-300 drop-shadow-[0_0_6px_${theme.oppPlatformColor}]" xmlns="http://www.w3.org/2000/svg">
+                        <ellipse cx="50" cy="15" rx="44" ry="12" fill="none" stroke="${theme.oppPlatformColor}" stroke-dasharray="3,3" stroke-width="0.8" opacity="0.6"/>
+                        <ellipse cx="50" cy="15" rx="38" ry="10" fill="${theme.oppPlatformFill}" opacity="0.85" stroke="${theme.oppPlatformColor}" stroke-width="2"/>
+                        <line x1="20" y1="15" x2="80" y2="15" stroke="${theme.oppPlatformColor}" stroke-width="0.5" opacity="0.4"/>
+                        <line x1="50" y1="5" x2="50" y2="25" stroke="${theme.oppPlatformColor}" stroke-width="0.5" opacity="0.4"/>
+                    </svg>
+                `;
+            }
+            
+            if (playerPlatform) {
+                playerPlatform.innerHTML = `
+                    <svg viewBox="0 0 100 30" class="w-32 h-8 transition-all duration-300 drop-shadow-[0_0_8px_${theme.playerPlatformColor}]" xmlns="http://www.w3.org/2000/svg">
+                        <ellipse cx="50" cy="15" rx="46" ry="13" fill="none" stroke="${theme.playerPlatformColor}" stroke-dasharray="4,2" stroke-width="0.8" opacity="0.7"/>
+                        <ellipse cx="50" cy="15" rx="40" ry="11" fill="${theme.playerPlatformFill}" opacity="0.9" stroke="${theme.playerPlatformColor}" stroke-width="2.5"/>
+                        <line x1="16" y1="15" x2="84" y2="15" stroke="${theme.playerPlatformColor}" stroke-width="0.5" opacity="0.5"/>
+                        <line x1="50" y1="4" x2="50" y2="26" stroke="${theme.playerPlatformColor}" stroke-width="0.5" opacity="0.5"/>
+                    </svg>
+                `;
             }
         }
 
@@ -1449,7 +1565,7 @@
             synth.click();
             document.getElementById('btn-run-cmd').disabled = true;
 
-            const runSuccess = Math.random() < 0.6 || currentMonster?.isBoss === false;
+            const runSuccess = Math.random() < 0.6 || wildMonster?.isBoss === false;
             
             if (runSuccess && !wildMonster.isBoss) {
                 writeTypewriterLog(`Fugiu da batalha com sucesso!`);
@@ -1468,12 +1584,17 @@
         // --- BACKPACK COLLECTION & COMPANIONS ---
         function renderBackpack() {
             const list = document.getElementById('backpack-list');
+            if (!list) return;
             list.innerHTML = '';
 
-            document.getElementById('backpack-count').innerText = `${gameState.backpack.length} / 30`;
+            document.getElementById('backpack-count').innerText = `${gameState.backpack ? gameState.backpack.length : 0} / 30`;
+
+            if (!gameState.backpack || !Array.isArray(gameState.backpack)) return;
 
             gameState.backpack.forEach(mon => {
                 const dbInfo = CYBERMON_DB[mon.dbId];
+                if (!dbInfo) return; // safety check
+
                 const item = document.createElement('button');
                 
                 const isActive = gameState.activeCompanionUid === mon.uid;
@@ -1484,7 +1605,7 @@
                 item.className = `aspect-square bg-slate-900 border-2 rounded-xl flex items-center justify-center p-1 relative overflow-hidden transition-all hover:scale-105 active:scale-95 ${isActive ? 'border-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]' : isSelected ? 'border-cyan-500' : 'border-slate-800 hover:border-slate-750'} ${isFainted ? 'opacity-50' : ''}`;
                 
                 item.innerHTML = `
-                    <div class="w-full h-full flex items-center justify-center p-0.5"><svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">${dbInfo.svg}</svg></div>
+                    <div class="w-full h-full flex items-center justify-center p-0.5"><svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">${dbInfo.svg || ''}</svg></div>
                     <span class="absolute bottom-0.5 right-1 text-[7px] font-orbitron font-extrabold bg-slate-950/80 px-1 py-0.2 rounded text-slate-300">L${mon.lvl}</span>
                     ${isActive ? `<span class="absolute top-0.5 left-0.5 w-1.5 h-1.5 rounded-full bg-indigo-500"></span>` : ''}
                     ${isFainted ? `<span class="absolute inset-0 bg-red-950/50 flex items-center justify-center text-[7px] font-retro text-rose-500 font-bold">FAINT</span>` : ''}
