@@ -1548,11 +1548,18 @@ app.get('/robots.txt', (req, res) => {
     res.send(`User-agent: *
 Allow: /
 Allow: /api/products
+Allow: /api/notifications/unread-count
 Disallow: /admin.html
 Disallow: /account.html
 Disallow: /api/
 
 Sitemap: ${domain}/sitemap.xml`);
+});
+
+// Dynamic ads.txt for Google AdSense compliance
+app.get('/ads.txt', (req, res) => {
+    res.type('text/plain');
+    res.send('google.com, pub-3654713194554139, DIRECT, f08c47fec0942fa0');
 });
 
 // Clean URLs for Google Merchant Center compliance
