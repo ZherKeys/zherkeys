@@ -865,15 +865,31 @@
                     gameState = JSON.parse(save);
                     if(!gameState.balls) gameState.balls = { basic: 10, great: 5, ultra: 2, master: 0 };
                     if(!gameState.upgrades) gameState.upgrades = { click: 1, auto: 0, shard: 1, crit: 1 };
+                    
+                    // CORREÇÃO: Garante HP/MaxHP para saves antigos da versão clicker
+                    if (gameState.backpack && Array.isArray(gameState.backpack)) {
+                        gameState.backpack.forEach(mon => {
+                            const dbInfo = CYBERMON_DB[mon.dbId];
+                            if (dbInfo) {
+                                if (!mon.maxHp || isNaN(mon.maxHp)) {
+                                    mon.maxHp = Math.round(dbInfo.baseHp * (1 + (mon.lvl * 0.15)));
+                                }
+                                if (!mon.hp || isNaN(mon.hp) || mon.hp <= 0) {
+                                    mon.hp = mon.maxHp;
+                                }
+                            }
+                        });
+                    }
                 } catch(e) {
                     console.error('Falha ao carregar save', e);
                 }
             }
             
             // Create Starter Cybermon (Sparky) if backpack is empty
-            if (gameState.backpack.length === 0) {
+            if (!gameState.backpack || !Array.isArray(gameState.backpack) || gameState.backpack.length === 0) {
+                gameState.backpack = [];
                 const starterUid = 'starter_' + Date.now();
-                const starterHp = CYBERMON_DB[7].baseHp;
+                const starterHp = CYBERMON_DB[7].baseHp * (1 + (5 * 0.15));
                 gameState.backpack.push({
                     uid: starterUid,
                     dbId: 7, // Sparky base
