@@ -886,8 +886,20 @@
             }
         }
 
+        async function checkAuth() {
+            try {
+                const res = await fetch('/api/me');
+                if (!res.ok) {
+                    window.location.href = '/login.html';
+                }
+            } catch(e) {
+                console.error("Erro ao verificar autenticação", e);
+            }
+        }
+
         // --- INITIALIZATION ---
         window.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
             loadGame();
             renderAllStats();
             spawnWildMonster();
