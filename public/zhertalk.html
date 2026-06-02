@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ZherTalk — Assistente</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#0b1220;color:#e6eef8;margin:0;padding:0;display:flex;align-items:center;justify-content:center;height:100vh}
+    .card{width:720px;background:#071026;padding:18px;border-radius:10px;box-shadow:0 8px 30px rgba(2,6,23,.6)}
+    .messages{height:360px;overflow:auto;padding:12px;border:1px solid #0f1724;background:#03111b;border-radius:8px}
+    .msg{margin:10px 0;padding:8px;border-radius:6px}
+    .user{background:#0f1724;text-align:right}
+    .bot{background:#07273a}
+    .controls{display:flex;gap:8px;margin-top:12px}
+    input[type=text]{flex:1;padding:10px;border-radius:6px;border:1px solid #123}
+    button{padding:10px 14px;border-radius:6px;border:none;background:#0ea5a3;color:white;cursor:pointer}
+    .study{margin-top:12px;display:flex;gap:8px}
+    textarea{width:100%;height:80px;padding:8px;border-radius:6px;background:#03111b;border:1px solid #123;color:#e6eef8}
+    small{color:#93c5fd}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>ZherTalk — Assistente</h2>
+    <div class="messages" id="messages"></div>
+
+    <div class="controls">
+      <input id="inputMsg" type="text" placeholder="Digite sua pergunta...">
+      <button id="sendBtn">Enviar</button>
+    </div>
+
+    <div class="study">
+      <input id="studyQuery" type="text" placeholder="Solicitar estudo (apenas admin): tópico ou URL">
+      <button id="studyBtn">Estudar (admin)</button>
+    </div>
+
+    <p><small>Dica: Use o botão "Estudar" para que o ZherTalk pesquise e armazene conhecimento usando a API externa. As respostas do chat usam apenas o conhecimento armazenado.</small></p>
+  </div>
+
+  <script>
+    const messagesEl = document.getElementById('messages');
+    const input = document.getElementById('inputMsg');
+    const sendBtn = document.getElementById('sendBtn');
+    const studyInput = document.getElementById('studyQuery');
+    const studyBtn = document.getElementById('studyBtn');
+
+    function append(text, cls){
+      const d = document.createElement('div'); d.className = 'msg ' + cls; d.textContent = text; messagesEl.appendChild(d); messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    sendBtn.addEventListener('click', async ()=>{
+      const v = input.value.trim(); if(!v) return;
+      append(v, 'user'); input.value='';
+      append('Pensando...', 'bot');
+      try{
+        const r = await fetch('/api/zhertalk/chat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({message:v})});
+        const j = await r.json();
+        // remove last placeholder
+        messagesEl.lastChild && messagesEl.lastChild.textContent=== 'Pensando...' && messagesEl.removeChild(messagesEl.lastChild);
+        if(j.reply){ append(j.reply,'bot'); } else if(j.error){ append('Erro: '+j.error,'bot'); }
+      }catch(e){ messagesEl.lastChild && messagesEl.lastChild.textContent==='Pensando...' && messagesEl.removeChild(messagesEl.lastChild); append('Erro ao conectar','bot'); }
+    });
+
+    studyBtn.addEventListener('click', async ()=>{
+      const q = studyInput.value.trim(); if(!q) return alert('Digite um tópico para estudo');
+      studyBtn.disabled = true; studyBtn.textContent='Enviando...';
+      try{
+        const r = await fetch('/api/zhertalk/study',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({query:q})});
+        const j = await r.json();
+        if (j.success){ alert('Estudo salvo no conhecimento.'); studyInput.value=''; }
+        else alert('Falha: '+(j.error||'Erro desconhecido'));
+      }catch(e){ alert('Erro na requisição'); }
+      studyBtn.disabled=false; studyBtn.textContent='Estudar (admin)';
+    });
+
+    // Enter key handling
+    input.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ sendBtn.click(); } });
+    studyInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ studyBtn.click(); } });
+  </script>
+</body>
+</html>

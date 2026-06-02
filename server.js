@@ -4405,6 +4405,380 @@ app.post('/api/admin/reading/upload-pages', requireAdmin, uploadGeneric.array('f
     res.json({ urls });
 });
 
+// ========================
+// ZHER TALK - Chatbot knowledge ingestion (estudo) e chat local
+// ========================
+const ZHER_DATA_DIR = path.join(__dirname, 'data');
+const ZHER_KNOWLEDGE_FILE = path.join(ZHER_DATA_DIR, 'zhertalk_knowledge.json');
+
+if (!fs.existsSync(ZHER_DATA_DIR)) {
+    fs.mkdirSync(ZHER_DATA_DIR, { recursive: true });
+}
+if (!fs.existsSync(ZHER_KNOWLEDGE_FILE)) {
+    fs.writeFileSync(ZHER_KNOWLEDGE_FILE, '[]', 'utf8');
+}
+
+function loadZherKnowledge() {
+    try {
+        const raw = fs.readFileSync(ZHER_KNOWLEDGE_FILE, 'utf8');
+        return JSON.parse(raw || '[]');
+    } catch (e) {
+        console.error('Erro ao ler conhecimento do ZherTalk:', e);
+        return [];
+    }
+}
+
+function saveZherKnowledge(arr) {
+    try {
+        fs.writeFileSync(ZHER_KNOWLEDGE_FILE, JSON.stringify(arr, null, 2), 'utf8');
+    } catch (e) {
+        console.error('Erro ao salvar conhecimento do ZherTalk:', e);
+    }
+}
+
+// Endpoint para pedir que o bot "estude" um tópico (usa API externa apenas para pesquisa/sumarização)
+app.post('/api/zhertalk/study', requireAdmin, async (req, res) => {
+    const { query } = req.body;
+    if (!query || typeof query !== 'string') return res.status(400).json({ error: 'query obrigatório' });
+
+    if (!process.env.OPENAI_API_KEY) return res.status(400).json({ error: 'OPENAI_API_KEY não configurada no servidor' });
+
+    try {
+        // Pedimos à API um resumo/estudo sobre o tópico — o resultado será armazenado como conhecimento
+        const prompt = `Resuma de forma concisa e organizada conhecimento útil sobre o seguinte tópico para uso em uma base de conhecimento: "${query}". Forneça um título curto, um parágrafo resumo e uma lista de 4-6 bullets com fatos, sem incluir opiniões. Retorne apenas o texto.`;
+
+        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
+                messages: [{ role: 'user', content: prompt }],
+                max_tokens: 800,
+                temperature: 0.0
+            })
+        });
+
+        if (!resp.ok) {
+            const txt = await resp.text();
+            console.error('OpenAI study error:', txt);
+            return res.status(500).json({ error: 'Erro na API de pesquisa externa' });
+        }
+
+        const data = await resp.json();
+        const content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+
+        // Monta item de conhecimento simples
+        const item = { id: crypto.randomUUID(), query: query, content: content.trim(), created_at: Date.now() };
+        const kb = loadZherKnowledge(); kb.unshift(item); if (kb.length > 100) kb.length = 100; saveZherKnowledge(kb);
+
+        // cria embedding e salva
+        try {
+            const embedding = await createEmbedding(item.content);
+            const embeds = loadEmbeddings();
+            embeds.push({ id: item.id, query: item.query, embedding, created_at: item.created_at });
+            saveEmbeddings(embeds);
+        } catch(e) {
+            console.error('Falha ao criar embedding para estudo:', e);
+        }
+
+        res.json({ success: true, item });
+    } catch (err) {
+        console.error('Erro em /api/zhertalk/study:', err);
+        res.status(500).json({ error: 'Erro interno' });
+    }
+});
+
+// Listar conhecimento armazenado
+app.get('/api/zhertalk/knowledge', async (req, res) => {
+    const kb = loadZherKnowledge();
+    res.json(kb);
+});
+
+// Chat endpoint: responde usando apenas o conhecimento local (NÃO consulta a API para gerar a resposta)
+app.post('/api/zhertalk/chat', async (req, res) => {
+    const { message } = req.body;
+    if (!message || typeof message !== 'string') return res.status(400).json({ error: 'message obrigatório' });
+
+    try {
+        // Detecta se o solicitante é admin (sessão ativa)
+        let isAdmin = false;
+        if (req.session && req.session.userId) {
+            try {
+                const u = await pool.query('SELECT email FROM users WHERE id = $1', [req.session.userId]);
+                const email = u.rows[0]?.email || '';
+                if (email === 'zherkeys@gmail.com' || email.endsWith('@zherkeys.com')) isAdmin = true;
+            } catch (e) {
+                // ignore
+            }
+        }
+
+        // Se for admin e enviar comando de estudo via chat (prefixos: /study, /estudar, estudar:)
+        const trimmed = message.trim();
+        const studyMatch = trimmed.match(/^(?:\/study|\/estudar|estudar:|estudar\s+)([\s\S]+)$/i);
+        if (isAdmin && studyMatch) {
+            const queryText = studyMatch[1].trim();
+            if (!process.env.OPENAI_API_KEY) return res.status(400).json({ error: 'OPENAI_API_KEY não configurada' });
+
+            // chama a mesma lógica de estudo (resumo via OpenAI) e salva no KB
+            const prompt = `Resuma de forma concisa e organizada conhecimento útil sobre o seguinte tópico para uso em uma base de conhecimento: "${queryText}". Forneça um título curto, um parágrafo resumo e uma lista de 4-6 bullets com fatos, sem incluir opiniões. Retorne apenas o texto.`;
+            try {
+                const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
+                        messages: [{ role: 'user', content: prompt }],
+                        max_tokens: 800,
+                        temperature: 0.0
+                    })
+                });
+
+                if (!resp.ok) {
+                    const txt = await resp.text();
+                    console.error('OpenAI study error:', txt);
+                    return res.status(500).json({ error: 'Erro na API externa ao estudar' });
+                }
+
+                const data = await resp.json();
+                const content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+
+                const item = { id: crypto.randomUUID(), query: queryText, content: content.trim(), created_at: Date.now() };
+                const kb = loadZherKnowledge(); kb.unshift(item); if (kb.length > 100) kb.length = 100; saveZherKnowledge(kb);
+                try {
+                    const embedding = await createEmbedding(item.content);
+                    const embeds = loadEmbeddings(); embeds.push({ id: item.id, query: item.query, embedding, created_at: item.created_at }); saveEmbeddings(embeds);
+                } catch(e){ console.error('Falha ao criar embedding (admin study):', e); }
+
+                return res.json({ reply: `✅ Estudo concluído e salvo para: "${queryText}".`, item });
+            } catch (err) {
+                console.error('Erro ao processar estudo via chat admin:', err);
+                return res.status(500).json({ error: 'Erro interno ao estudar' });
+            }
+        }
+
+        // Recuperação simples por palavra-chave (não-admin ou perguntas normais)
+        // Tenta recuperação semântica via embeddings (se disponível), senão fallback para busca por palavra-chave
+        let reply = '';
+        try {
+            const sem = await semanticSearch(message, 3);
+            if (sem && sem.length > 0) {
+                reply = 'Baseado no meu conhecimento armazenado (busca semântica):\n\n' + sem.map(s=>`Fonte: "${s.query}"\n`).join('\n') + '\nUse /study se quiser que eu aprofunde esse tópico.';
+                return res.json({ reply });
+            }
+        } catch(e) { console.error('Erro na busca semântica:', e); }
+
+        // fallback: keyword match
+        const kb = loadZherKnowledge();
+        const q = message.toLowerCase();
+        const scored = kb.map(k => {
+            const text = (k.content || '').toLowerCase();
+            const score = q.split(/\s+/).reduce((s, term) => {
+                if (!term) return s;
+                const re = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+                const matches = text.match(re);
+                return s + (matches ? matches.length : 0);
+            }, 0);
+            return { k, score };
+        }).filter(x => x.score > 0).sort((a,b)=>b.score-a.score);
+
+        if (scored.length === 0) {
+            reply = `Desculpe, não encontrei referências no meu conhecimento. Se você for administrador, envie "/study <tópico>" para que eu pesquise e armazene esse assunto.`;
+        } else {
+            const top = scored.slice(0,3).map(s => `Fonte: "${s.k.query}"\n${s.k.content}`).join('\n\n---\n\n');
+            reply = `Baseado no meu conhecimento armazenado:\n\n${top}`;
+        }
+
+        res.json({ reply });
+    } catch (err) {
+        console.error('Erro em /api/zhertalk/chat:', err);
+        res.status(500).json({ error: 'Erro interno' });
+    }
+});
+
+// ------------------------
+// Logs, gerenciamento e alteração de código (admin)
+// ------------------------
+const ZHER_LOGS_FILE = path.join(ZHER_DATA_DIR, 'zhertalk_logs.json');
+const ZHER_PENDING_FILE = path.join(ZHER_DATA_DIR, 'zhertalk_pending.json');
+
+if (!fs.existsSync(ZHER_LOGS_FILE)) fs.writeFileSync(ZHER_LOGS_FILE, '[]', 'utf8');
+if (!fs.existsSync(ZHER_PENDING_FILE)) fs.writeFileSync(ZHER_PENDING_FILE, '[]', 'utf8');
+
+function loadJsonFile(p) {
+    try { return JSON.parse(fs.readFileSync(p, 'utf8') || '[]'); } catch (e) { return []; }
+}
+function saveJsonFile(p, v) { try { fs.writeFileSync(p, JSON.stringify(v, null, 2), 'utf8'); } catch(e){ console.error('Erro ao salvar', p, e); } }
+
+function appendZherLog(entry) {
+    try {
+        const logs = loadJsonFile(ZHER_LOGS_FILE);
+        logs.unshift(Object.assign({ ts: Date.now() }, entry));
+        if (logs.length > 1000) logs.length = 1000;
+        saveJsonFile(ZHER_LOGS_FILE, logs);
+    } catch (e) { console.error('Erro ao gravar log ZherTalk', e); }
+}
+
+// ------------------------
+// Cleanup automático de pendências expiradas
+// ------------------------
+async function cleanupPendingRequests() {
+    try {
+        const pending = loadJsonFile(ZHER_PENDING_FILE);
+        let changed = false;
+        const now = Date.now();
+        for (let p of pending) {
+            if (p.status === 'pending' && now > p.expiresAt) {
+                p.status = 'expired';
+                p.expiredAt = now;
+                appendZherLog({ action: 'pending_expired', id: p.id, relPath: p.relPath, requestedBy: p.requestedBy });
+                // notifica por email ao solicitante
+                if (p.requestedBy) {
+                    sendEmailViaBrevo(p.requestedBy, `Solicitação expirada: ${p.relPath}`, `Sua solicitação de alteração no arquivo ${p.relPath} expirou sem confirmação.`, `<p>Sua solicitação de alteração no arquivo <b>${p.relPath}</b> expirou sem confirmação.</p>`).catch(()=>{});
+                }
+                changed = true;
+            }
+        }
+        if (changed) saveJsonFile(ZHER_PENDING_FILE, pending);
+    } catch (e) { console.error('Erro no cleanupPendingRequests', e); }
+}
+
+// roda a limpeza a cada 10 minutos
+setInterval(cleanupPendingRequests, 10 * 60 * 1000);
+
+// ------------------------
+// Embeddings: OpenAI + armazenamento local simples
+// ------------------------
+const ZHER_EMBEDDINGS_FILE = path.join(ZHER_DATA_DIR, 'zhertalk_embeddings.json');
+if (!fs.existsSync(ZHER_EMBEDDINGS_FILE)) fs.writeFileSync(ZHER_EMBEDDINGS_FILE, '[]', 'utf8');
+
+function loadEmbeddings() { return loadJsonFile(ZHER_EMBEDDINGS_FILE); }
+function saveEmbeddings(arr) { saveJsonFile(ZHER_EMBEDDINGS_FILE, arr); }
+
+async function createEmbedding(text) {
+    if (!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY não configurada');
+    const model = process.env.OPENAI_EMBEDDINGS_MODEL || 'text-embedding-3-small';
+    const resp = await fetch('https://api.openai.com/v1/embeddings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}` },
+        body: JSON.stringify({ model, input: text })
+    });
+    if (!resp.ok) {
+        const t = await resp.text(); throw new Error('OpenAI embeddings error: ' + t);
+    }
+    const j = await resp.json();
+    const vec = j.data && j.data[0] && j.data[0].embedding;
+    return vec;
+}
+
+function dot(a,b){ let s=0; for(let i=0;i<a.length;i++) s += a[i]*b[i]; return s; }
+function norm(a){ return Math.sqrt(dot(a,a)); }
+function cosineSim(a,b){ return dot(a,b)/(norm(a)*norm(b) + 1e-10); }
+
+async function semanticSearch(query, topK=3) {
+    try {
+        const emb = await createEmbedding(query);
+        const items = loadEmbeddings();
+        const scored = items.map(it => ({ it, score: cosineSim(emb, it.embedding) || 0 }));
+        scored.sort((a,b)=>b.score-a.score);
+        return scored.slice(0, topK).filter(s=>s.score>0.60).map(s=>s.it); // threshold
+    } catch (e) {
+        console.error('semanticSearch error', e); return [];
+    }
+}
+
+// Listar logs (admin)
+app.get('/api/zhertalk/logs', requireAdmin, async (req, res) => {
+    const logs = loadJsonFile(ZHER_LOGS_FILE);
+    res.json(logs);
+});
+
+// Deletar item de conhecimento (admin)
+app.delete('/api/zhertalk/knowledge/:id', requireAdmin, async (req, res) => {
+    const id = req.params.id;
+    const kb = loadZherKnowledge();
+    const idx = kb.findIndex(x => x.id === id);
+    if (idx === -1) return res.status(404).json({ error: 'Item não encontrado' });
+    const removed = kb.splice(idx,1)[0];
+    saveZherKnowledge(kb);
+    appendZherLog({ action: 'delete_knowledge', id: removed.id, query: removed.query, by: req.session.userId });
+    res.json({ success: true, removed });
+});
+
+// Solicitar alteração de código: gera código por e-mail que deve ser confirmado
+app.post('/api/zhertalk/request-code-change', requireAdmin, async (req, res) => {
+    const { filePath: relPath, newContent, commitMessage } = req.body;
+    if (!relPath || typeof newContent !== 'string') return res.status(400).json({ error: 'filePath e newContent obrigatórios' });
+
+    try {
+        const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [req.session.userId]);
+        const email = userRes.rows[0]?.email;
+        if (!email) return res.status(400).json({ error: 'Email do admin não encontrado' });
+
+        const code = (Math.floor(100000 + Math.random()*900000)).toString();
+        const pending = loadJsonFile(ZHER_PENDING_FILE);
+        const id = crypto.randomUUID();
+        const entry = { id, code, relPath, newContent, commitMessage: commitMessage || `ZherTalk change by ${email}`, requestedBy: email, requestedAt: Date.now(), expiresAt: Date.now() + 30*60*1000, status: 'pending' };
+        pending.push(entry);
+        saveJsonFile(ZHER_PENDING_FILE, pending);
+
+        // enviar email com código e link de confirmação
+        const confirmUrl = `${APP_URL.replace(/\/$/, '')}/zhertalk_admin.html?code=${code}`;
+        await sendEmailViaBrevo(email, `Confirme alteração de site - código ${code}`, `Seu código de confirmação: ${code}\nConfirme: ${confirmUrl}`, `<p>Seu código de confirmação para alteração do site é <b>${code}</b></p><p>Confirme aqui: <a href="${confirmUrl}">${confirmUrl}</a></p><pre style="background:#f6f8fa;padding:10px;border-radius:6px;white-space:pre-wrap;">Arquivo: ${relPath}\nMensagem: ${entry.commitMessage}</pre>`).catch(e=>console.error('Erro ao enviar email de confirmação:', e));
+
+        appendZherLog({ action: 'request_code_change', id, relPath, by: email });
+        res.json({ success: true, id });
+    } catch (e) {
+        console.error('Erro em request-code-change:', e);
+        res.status(500).json({ error: 'Erro interno' });
+    }
+});
+
+// Confirmar e aplicar alteração de código (admin)
+app.post('/api/zhertalk/confirm-code-change', requireAdmin, async (req, res) => {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ error: 'Código obrigatório' });
+
+    try {
+        const pending = loadJsonFile(ZHER_PENDING_FILE);
+        const idx = pending.findIndex(p => p.code === code && p.status === 'pending');
+        if (idx === -1) return res.status(404).json({ error: 'Código inválido ou expirado' });
+        const item = pending[idx];
+        if (Date.now() > item.expiresAt) { pending[idx].status = 'expired'; saveJsonFile(ZHER_PENDING_FILE, pending); return res.status(400).json({ error: 'Código expirado' }); }
+
+        // segurança: caminho absoluto resolvido dentro do projeto
+        const abs = path.resolve(__dirname, item.relPath);
+        if (!abs.startsWith(path.resolve(__dirname))) return res.status(400).json({ error: 'Caminho inválido' });
+
+        // grava arquivo
+        fs.writeFileSync(abs, item.newContent, 'utf8');
+
+        // commit e push (depende de credenciais git configuradas no servidor)
+        const { spawnSync } = require('child_process');
+        const relForGit = path.relative(__dirname, abs).replace(/\\/g, '/');
+        let gitAdd = spawnSync('git', ['add', relForGit], { cwd: __dirname, encoding: 'utf8' });
+        let gitCommit = spawnSync('git', ['commit', '-m', item.commitMessage], { cwd: __dirname, encoding: 'utf8' });
+        let gitPush = spawnSync('git', ['push'], { cwd: __dirname, encoding: 'utf8' });
+
+        pending[idx].status = 'applied'; pending[idx].appliedAt = Date.now(); pending[idx].git = { add: gitAdd.stdout||gitAdd.stderr, commit: gitCommit.stdout||gitCommit.stderr, push: gitPush.stdout||gitPush.stderr };
+        saveJsonFile(ZHER_PENDING_FILE, pending);
+
+        appendZherLog({ action: 'apply_code_change', id: item.id, relPath: item.relPath, by: item.requestedBy, git: pending[idx].git });
+
+        res.json({ success: true, git: pending[idx].git });
+    } catch (e) {
+        console.error('Erro em confirm-code-change:', e);
+        res.status(500).json({ error: 'Erro interno' });
+    }
+});
+
+
+
 // Start Server
 app.listen(port, () => {
     console.log(`🚀 ZHER KEYS SECURE SERVER INICIADO!`);
