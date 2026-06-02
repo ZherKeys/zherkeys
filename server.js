@@ -3449,6 +3449,7 @@ app.post('/api/admin/users/:id/credits', requireAdmin, async (req, res) => {
 // ==========================================
 
 const multer = require('multer');
+const { spawn } = require('child_process');
 
 // Configuração do Multer para Uploads do Streaming
 const storageGeneric = multer.diskStorage({
@@ -3817,7 +3818,7 @@ app.get('/api/streaming/translate-subtitle', async (req, res) => {
 // ==========================================
 
 // Endpoint Genérico de Upload de Arquivos (Admin)
-app.post('/api/admin/streaming/upload', requireAdmin, uploadGeneric.single('file'), (req, res) => {
+app.post('/api/admin/streaming/upload', requireAdmin, uploadGeneric.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
     
     const ext = path.extname(req.file.originalname).toLowerCase();
@@ -3844,6 +3845,41 @@ app.post('/api/admin/streaming/upload', requireAdmin, uploadGeneric.single('file
     const newPath = path.join(destDir, req.file.filename);
     try {
         fs.renameSync(req.file.path, newPath);
+
+        // If uploaded a video in a non-MP4 container, transcode to MP4 (H.264 + AAC)
+        if (mime.startsWith('video/') && ext !== '.mp4') {
+            const parsed = path.parse(req.file.filename);
+            const convertedName = parsed.name + '.mp4';
+            const convertedPath = path.join(destDir, convertedName);
+
+            try {
+                await new Promise((resolve, reject) => {
+                    const ff = spawn('ffmpeg', [
+                        '-y', '-i', newPath,
+                        '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
+                        '-c:a', 'aac', '-b:a', '192k',
+                        convertedPath
+                    ]);
+
+                    ff.on('error', (e) => reject(e));
+                    ff.stderr.on('data', () => {});
+                    ff.on('close', (code) => {
+                        if (code === 0) resolve();
+                        else reject(new Error('ffmpeg exit code ' + code));
+                    });
+                });
+
+                // Remove original uploaded file to save space (optional)
+                try { fs.unlinkSync(newPath); } catch (e) { /* ignore */ }
+
+                return res.json({ url: `/uploads/${subfolder}/${convertedName}`, converted: true });
+            } catch (e) {
+                console.error('Erro na transcodificação do vídeo:', e);
+                // On failure, return original uploaded file URL
+                return res.json({ url: `/uploads/${subfolder}/${req.file.filename}`, converted: false, warning: 'Falha na transcodificação' });
+            }
+        }
+
         res.json({ url: `/uploads/${subfolder}/${req.file.filename}` });
     } catch (err) {
         console.error("Erro ao mover arquivo de upload:", err);
