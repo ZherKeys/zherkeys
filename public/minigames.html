@@ -176,7 +176,7 @@
                             <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-electricblue transition-colors">🕹️ ZHER DECODER</span>
                             <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Mova o decodificador para capturar chaves digitais e moedas de ouro. Desvie dos bugs de rastreamento do sistema!</p>
                             <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
-                                <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
+                                <span>Custo: <b class="text-red-500">100 Z-Points/Partida</b></span>
                                 <span class="text-electricblue font-bold flex items-center gap-0.5">Jogar &raquo;</span>
                             </div>
                         </div>
@@ -194,7 +194,7 @@
                             <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-cyberrose transition-colors">🕹️ ZHER BIRD (FLAPPY)</span>
                             <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Bata asas no ambiente neon cibernético desviando das paredes de firewall eletrônico sem colidir!</p>
                             <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
-                                <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
+                                <span>Custo: <b class="text-red-500">100 Z-Points/Partida</b></span>
                                 <span class="text-cyberrose font-bold flex items-center gap-0.5">Jogar &raquo;</span>
                             </div>
                         </div>
@@ -212,7 +212,7 @@
                             <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-toxicgreen transition-colors">🕹️ ZHER CLICKER</span>
                             <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Clique no servidor central para descriptografar pacotes de dados. Quanto mais rápido clicar, mais ganha!</p>
                             <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
-                                <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
+                                <span>Custo: <b class="text-red-500">100 Z-Points/Partida</b></span>
                                 <span class="text-toxicgreen font-bold flex items-center gap-0.5">Jogar &raquo;</span>
                             </div>
                         </div>
@@ -230,7 +230,7 @@
                             <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-amber-500 transition-colors">🕹️ ZHER RUNNER</span>
                             <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Desvie dos picos de glitch de segurança correndo em alta velocidade pelo cabo de rede digital.</p>
                             <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
-                                <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
+                                <span>Custo: <b class="text-red-500">100 Z-Points/Partida</b></span>
                                 <span class="text-amber-500 font-bold flex items-center gap-0.5">Jogar &raquo;</span>
                             </div>
                         </div>
@@ -266,7 +266,7 @@
                             <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-indigo-500 transition-colors">🕹️ QUIZ GAMER</span>
                             <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Responda a perguntas do mundo dos games e da programação para provar que é um verdadeiro decoder!</p>
                             <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
-                                <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
+                                <span>Custo: <b class="text-red-500">100 Z-Points/Partida</b></span>
                                 <span class="text-indigo-500 font-bold flex items-center gap-0.5">Jogar &raquo;</span>
                             </div>
                         </div>
@@ -302,7 +302,7 @@
                             <span class="font-orbitron font-bold text-white text-sm uppercase tracking-wider group-hover:text-emerald-500 transition-colors">🕹️ CAÇA TESOURO</span>
                             <p class="text-[11px] text-slate-400 font-inter leading-relaxed">Vasculhe um banco de dados em grade atrás de drives de chaves ocultas. Cuidado para não ativar a segurança!</p>
                             <div class="flex justify-between items-center text-[10px] font-orbitron border-t border-slate-800/60 pt-2.5 mt-1.5 text-slate-500">
-                                <span>Multi-Boost: <b class="text-toxicgreen">2.5 Z-Points/pt</b></span>
+                                <span>Custo: <b class="text-red-500">100 Z-Points/Partida</b></span>
                                 <span class="text-emerald-500 font-bold flex items-center gap-0.5">Jogar &raquo;</span>
                             </div>
                         </div>
@@ -597,6 +597,868 @@
             };
         }
 
+        function generateAllQuizQuestions() {
+            const list = [];
+            
+            function makeQ(q, correct, wrongs) {
+                const options = [correct, ...wrongs];
+                for (let i = options.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [options[i], options[j]] = [options[j], options[i]];
+                }
+                return { q, a: options, correct: options.indexOf(correct) };
+            }
+
+            // 1. Games & Protagonists (50 items -> 100 questions)
+            const protData = [
+                { g: "Super Mario Bros", p: "Mario", w: ["Luigi", "Bowser", "Wario"] },
+                { g: "Sonic the Hedgehog", p: "Sonic", w: ["Tails", "Knuckles", "Shadow"] },
+                { g: "The Legend of Zelda", p: "Link", w: ["Zelda", "Ganondorf", "Tingle"] },
+                { g: "Halo", p: "Master Chief", w: ["Arbiter", "Cortana", "Sgt. Johnson"] },
+                { g: "God of War", p: "Kratos", w: ["Atreus", "Zeus", "Ares"] },
+                { g: "The Witcher", p: "Geralt de Rívia", w: ["Vesemir", "Dandelion", "Jaskier"] },
+                { g: "Tomb Raider", p: "Lara Croft", w: ["Nathan Drake", "Indiana Jones", "Sam Croft"] },
+                { g: "Minecraft", p: "Steve", w: ["Alex", "Herobrine", "Notch"] },
+                { g: "GTA San Andreas", p: "CJ", w: ["Big Smoke", "Ryder", "Sweet"] },
+                { g: "Red Dead Redemption 2", p: "Arthur Morgan", w: ["John Marston", "Dutch van der Linde", "Micah Bell"] },
+                { g: "Assassin's Creed II", p: "Ezio Auditore", w: ["Altaïr", "Connor", "Desmond"] },
+                { g: "Doom", p: "Doom Slayer", w: ["Imps", "Cyberdemon", "Sarge"] },
+                { g: "Final Fantasy VII", p: "Cloud Strife", w: ["Sephiroth", "Zack Fair", "Tifa Lockhart"] },
+                { g: "Uncharted", p: "Nathan Drake", w: ["Sully", "Elena", "Sam Drake"] },
+                { g: "Half-Life", p: "Gordon Freeman", w: ["Barney", "G-Man", "Eli Vance"] },
+                { g: "Horizon Zero Dawn", p: "Aloy", w: ["Rost", "Sylens", "Erend"] },
+                { g: "Portal", p: "Chell", w: ["GLaDOS", "Wheatley", "Cave Johnson"] },
+                { g: "The Last of Us", p: "Joel", w: ["Ellie", "Tommy", "Tess"] },
+                { g: "Gears of War", p: "Marcus Fenix", w: ["Dom Santiago", "Cole Train", "Baird"] },
+                { g: "Mass Effect", p: "Commander Shepard", w: ["Garrus", "Liara", "Wrex"] },
+                { g: "GTA V", p: "Trevor Philips", w: ["Franklin Clinton", "Michael De Santa", "Lamar Davis"] },
+                { g: "Resident Evil 4", p: "Leon S. Kennedy", w: ["Chris Redfield", "Albert Wesker", "Luis Sera"] },
+                { g: "Metroid", p: "Samus Aran", w: ["Ridley", "Mother Brain", "Dark Samus"] },
+                { g: "Crash Bandicoot", p: "Crash", w: ["Neo Cortex", "Coco", "Crunch"] },
+                { g: "Spyro the Dragon", p: "Spyro", w: ["Ripto", "Gnasty Gnorc", "Hunter"] },
+                { g: "Devil May Cry", p: "Dante", w: ["Vergil", "Nero", "Sparda"] },
+                { g: "Sekiro", p: "Sekiro", w: ["Genichiro", "Isshin", "Kuro"] },
+                { g: "Metal Gear Solid", p: "Solid Snake", w: ["Liquid Snake", "Big Boss", "Raiden"] },
+                { g: "Ghost of Tsushima", p: "Jin Sakai", w: ["Shimura", "Khotun Khan", "Yuna"] },
+                { g: "Watch Dogs", p: "Aiden Pearce", w: ["Marcus Holloway", "Wrench", "Clara"] },
+                { g: "Kingdom Hearts", p: "Sora", w: ["Riku", "Kairi", "Mickey"] },
+                { g: "Silent Hill 2", p: "James Sunderland", w: ["Harry Mason", "Heather Mason", "Travis Grady"] },
+                { g: "Alan Wake", p: "Alan Wake", w: ["Barry Wheeler", "Sheriff Breaker", "Saga Anderson"] },
+                { g: "Control", p: "Jesse Faden", w: ["Dylan Faden", "Zachariah Trench", "Casper Darling"] },
+                { g: "BioShock Infinite", p: "Booker DeWitt", w: ["Zachary Comstock", "Andrew Ryan", "Jack"] },
+                { g: "BioShock", p: "Jack", w: ["Booker DeWitt", "Subject Delta", "Frank Fontaine"] },
+                { g: "Dishonored", p: "Corvo Attano", w: ["The Outsider", "Daud", "Emily Kaldwin"] },
+                { g: "Dead Space", p: "Isaac Clarke", w: ["John Carver", "Ellie Langford", "Nicole Brennan"] },
+                { g: "Castlevania: Symphony of the Night", p: "Alucard", w: ["Richter Belmont", "Dracula", "Simon Belmont"] },
+                { g: "Street Fighter", p: "Ryu", w: ["Ken", "Chun-Li", "M. Bison"] },
+                { g: "Tekken", p: "Jin Kazama", w: ["Kazuya Mishima", "Heihachi Mishima", "Paul Phoenix"] },
+                { g: "Splinter Cell", p: "Sam Fisher", w: ["Lambert", "Grim", "Kobin"] },
+                { g: "Pac-Man", p: "Pac-Man", w: ["Blinky", "Inky", "Clyde"] },
+                { g: "Donkey Kong Country", p: "Donkey Kong", w: ["Diddy Kong", "King K. Rool", "Cranky Kong"] },
+                { g: "Star Fox", p: "Fox McCloud", w: ["Falco Lombardi", "Slippy Toad", "Peppy Hare"] },
+                { g: "F-Zero", p: "Captain Falcon", w: ["Samurai Goroh", "Jody Summer", "Dr. Stewart"] },
+                { g: "Kirby's Dream Land", p: "Kirby", w: ["King Dedede", "Meta Knight", "Bandana Waddle Dee"] },
+                { g: "EarthBound", p: "Ness", w: ["Lucas", "Poo", "Jeff"] },
+                { g: "Cyberpunk 2077", p: "V", w: ["Johnny Silverhand", "Jackie Welles", "Judy Alvarez"] },
+                { g: "Fallout 4", p: "Sole Survivor", w: ["Lone Wanderer", "Courier 6", "Vault Boy"] }
+            ];
+
+            for (let i = 0; i < protData.length; i++) {
+                const item = protData[i];
+                list.push(makeQ(`Quem é o protagonista do jogo ${item.g}?`, item.p, item.w));
+                const otherGames = protData.filter((_, idx) => idx !== i).map(x => x.g);
+                const wrongGames = [];
+                while (wrongGames.length < 3) {
+                    const rg = otherGames[Math.floor(Math.random() * otherGames.length)];
+                    if (!wrongGames.includes(rg)) wrongGames.push(rg);
+                }
+                list.push(makeQ(`De qual jogo o personagem ${item.p} é protagonista?`, item.g, wrongGames));
+            }
+
+            // 2. Games & Developers (50 items -> 100 questions)
+            const devData = [
+                { g: "The Witcher 3", d: "CD Projekt Red", w: ["Bethesda", "Bioware", "Ubisoft"] },
+                { g: "Grand Theft Auto V", d: "Rockstar Games", w: ["Ubisoft", "EA", "Activision"] },
+                { g: "Elden Ring", d: "FromSoftware", w: ["Capcom", "Square Enix", "Kojima Productions"] },
+                { g: "Skyrim", d: "Bethesda Game Studios", w: ["Obsidian", "BioWare", "EA"] },
+                { g: "Half-Life 2", d: "Valve", w: ["Epic Games", "id Software", "Gearbox"] },
+                { g: "League of Legends", d: "Riot Games", w: ["Blizzard", "Valve", "Epic Games"] },
+                { g: "Minecraft", d: "Mojang", w: ["Microsoft", "Roblox Corp", "Epic Games"] },
+                { g: "Fortnite", d: "Epic Games", w: ["Riot Games", "Valve", "PUBG Corp"] },
+                { g: "The Last of Us", d: "Naughty Dog", w: ["Santa Monica Studio", "Insomniac Games", "Guerrilla Games"] },
+                { g: "God of War (2018)", d: "Santa Monica Studio", w: ["Naughty Dog", "Sucker Punch", "Insomniac Games"] },
+                { g: "Marvel's Spider-Man", d: "Insomniac Games", w: ["Rocksteady", "Naughty Dog", "Sucker Punch"] },
+                { g: "Halo: Combat Evolved", d: "Bungie", w: ["343 Industries", "Epic Games", "Respawn"] },
+                { g: "Assassin's Creed Valhalla", d: "Ubisoft", w: ["EA", "Activision", "Bethesda"] },
+                { g: "Resident Evil 4", d: "Capcom", w: ["Konami", "Square Enix", "Sega"] },
+                { g: "Baldur's Gate 3", d: "Larian Studios", w: ["BioWare", "Obsidian", "Bethesda"] },
+                { g: "Super Mario Odyssey", d: "Nintendo", w: ["Sega", "Sony", "Microsoft"] },
+                { g: "Sonic Frontiers", d: "Sega", w: ["Nintendo", "Capcom", "Bandai Namco"] },
+                { g: "FIFA 23", d: "EA Sports", w: ["Konami", "2K Games", "Sega"] },
+                { g: "Apex Legends", d: "Respawn Entertainment", w: ["Infinity Ward", "Treyarch", "DICE"] },
+                { g: "World of Warcraft", d: "Blizzard Entertainment", w: ["Riot Games", "Valve", "Square Enix"] },
+                { g: "Death Stranding", d: "Kojima Productions", w: ["Konami", "Sony", "Capcom"] },
+                { g: "Silent Hill 2", d: "Konami", w: ["Capcom", "Sega", "Bandai Namco"] },
+                { g: "Borderlands 2", d: "Gearbox Software", w: ["Bungie", "Respawn", "Epic Games"] },
+                { g: "BioShock", d: "Irrational Games", w: ["Bethesda", "Arkane Studios", "Valve"] },
+                { g: "Civilization VI", d: "Firaxis Games", w: ["Paradox Interactive", "Creative Assembly", "Blizzard"] },
+                { g: "Diablo IV", d: "Blizzard Entertainment", w: ["Grinding Gear Games", "Path of Exile", "Larian Studios"] },
+                { g: "Cyberpunk 2077", d: "CD Projekt Red", w: ["Rockstar Games", "Ubisoft", "Techland"] },
+                { g: "Fallout: New Vegas", d: "Obsidian Entertainment", w: ["Bethesda", "BioWare", "Larian Studios"] },
+                { g: "Starfield", d: "Bethesda Game Studios", w: ["Obsidian", "BioWare", "EA"] },
+                { g: "Ghost of Tsushima", d: "Sucker Punch Productions", w: ["Insomniac Games", "Naughty Dog", "Guerrilla Games"] },
+                { g: "Horizon Zero Dawn", d: "Guerrilla Games", w: ["Naughty Dog", "Santa Monica Studio", "Sucker Punch"] },
+                { g: "Doom Eternal", d: "id Software", w: ["Epic Games", "Gearbox", "MachineGames"] },
+                { g: "Wolfenstein: The New Order", d: "MachineGames", w: ["id Software", "Respawn", "Infinity Ward"] },
+                { g: "Detroit: Become Human", d: "Quantic Dream", w: ["Telltale Games", "Supermassive Games", "Dontnod"] },
+                { g: "Hollow Knight", d: "Team Cherry", w: ["Supergiant Games", "Motion Twin", "Mega Crit"] },
+                { g: "Hades", d: "Supergiant Games", w: ["Team Cherry", "Motion Twin", "Mega Crit"] },
+                { g: "Dead Cells", d: "Motion Twin", w: ["Team Cherry", "Supergiant Games", "Klei Entertainment"] },
+                { g: "Don't Starve", d: "Klei Entertainment", w: ["Motion Twin", "Team Cherry", "Supergiant Games"] },
+                { g: "Celeste", d: "Extremely OK Games", w: ["Team Cherry", "Matt Makes Games", "Supergiant Games"] },
+                { g: "Stardew Valley", d: "ConcernedApe", w: ["Chucklefish", "Mojang", "Extremely OK Games"] },
+                { g: "Dark Souls", d: "FromSoftware", w: ["Capcom", "Square Enix", "Kojima Productions"] },
+                { g: "Bloodborne", d: "FromSoftware", w: ["Capcom", "Square Enix", "Sony Studio"] },
+                { g: "Red Dead Redemption 2", d: "Rockstar Games", w: ["Bethesda", "Ubisoft", "EA"] },
+                { g: "Bully", d: "Rockstar Games", w: ["Ubisoft", "Sega", "Capcom"] },
+                { g: "Max Payne 3", d: "Rockstar Games", w: ["Remedy Entertainment", "Sega", "EA"] },
+                { g: "Control", d: "Remedy Entertainment", w: ["Arkane Studios", "Bethesda", "Ubisoft"] },
+                { g: "Alan Wake 2", d: "Remedy Entertainment", w: ["Bethesda", "Capcom", "Konami"] },
+                { g: "Dishonored", d: "Arkane Studios", w: ["Bethesda", "Remedy", "Valve"] },
+                { g: "Prey (2017)", d: "Arkane Studios", w: ["id Software", "MachineGames", "Bethesda"] },
+                { g: "Deathloop", d: "Arkane Studios", w: ["Bethesda", "Remedy", "Gearbox"] }
+            ];
+
+            for (let i = 0; i < devData.length; i++) {
+                const item = devData[i];
+                list.push(makeQ(`Qual empresa desenvolveu o jogo ${item.g}?`, item.d, item.w));
+                const otherGames = devData.filter((_, idx) => idx !== i).map(x => x.g);
+                const wrongGames = [];
+                while (wrongGames.length < 3) {
+                    const rg = otherGames[Math.floor(Math.random() * otherGames.length)];
+                    if (!wrongGames.includes(rg)) wrongGames.push(rg);
+                }
+                list.push(makeQ(`Qual desses jogos foi desenvolvido pela empresa ${item.d}?`, item.g, wrongGames));
+            }
+
+            // 3. Games & Release Years (50 items -> 50 questions)
+            const yearData = [
+                { g: "Super Mario Bros", y: 1985 },
+                { g: "Sonic the Hedgehog", y: 1991 },
+                { g: "Doom (original)", y: 1993 },
+                { g: "Resident Evil (original)", y: 1996 },
+                { g: "Tomb Raider (original)", y: 1996 },
+                { g: "Final Fantasy VII", y: 1997 },
+                { g: "The Legend of Zelda: Ocarina of Time", y: 1998 },
+                { g: "Half-Life", y: 1998 },
+                { g: "Counter-Strike 1.6", y: 2003 },
+                { g: "GTA Vice City", y: 2002 },
+                { g: "GTA San Andreas", y: 2004 },
+                { g: "World of Warcraft", y: 2004 },
+                { g: "Half-Life 2", y: 2004 },
+                { g: "Resident Evil 4", y: 2005 },
+                { g: "God of War", y: 2005 },
+                { g: "Portal", y: 2007 },
+                { g: "BioShock", y: 2007 },
+                { g: "GTA IV", y: 2008 },
+                { g: "League of Legends", y: 2009 },
+                { g: "Call of Duty: Black Ops", y: 2010 },
+                { g: "Minecraft", y: 2011 },
+                { g: "The Elder Scrolls V: Skyrim", y: 2011 },
+                { g: "Dark Souls", y: 2011 },
+                { g: "CS:GO", y: 2012 },
+                { g: "GTA V", y: 2013 },
+                { g: "The Last of Us", y: 2013 },
+                { g: "The Witcher 3: Wild Hunt", y: 2015 },
+                { g: "Bloodborne", y: 2015 },
+                { g: "Overwatch", y: 2016 },
+                { g: "Zelda: Breath of the Wild", y: 2017 },
+                { g: "Fortnite", y: 2017 },
+                { g: "God of War (PS4)", y: 2018 },
+                { g: "Red Dead Redemption 2", y: 2018 },
+                { g: "Sekiro: Shadows Die Twice", y: 2019 },
+                { g: "Cyberpunk 2077", y: 2020 },
+                { g: "Elden Ring", y: 2022 },
+                { g: "Baldur's Gate 3", y: 2023 },
+                { g: "Starfield", y: 2023 },
+                { g: "Marvel's Spider-Man 2", y: 2023 },
+                { g: "Alan Wake 2", y: 2023 },
+                { g: "Zelda: Tears of the Kingdom", y: 2023 },
+                { g: "Death Stranding", y: 2019 },
+                { g: "Horizon Zero Dawn", y: 2017 },
+                { g: "PUBG", y: 2017 },
+                { g: "Hollow Knight", y: 2017 },
+                { g: "Undertale", y: 2015 },
+                { g: "Terraria", y: 2011 },
+                { g: "Stardew Valley", y: 2016 },
+                { g: "Doom Eternal", y: 2020 },
+                { g: "Ghost of Tsushima", y: 2020 }
+            ];
+
+            for (let i = 0; i < yearData.length; i++) {
+                const item = yearData[i];
+                list.push(makeQ(`Em qual ano foi lançado o jogo ${item.g}?`, String(item.y), [
+                    String(item.y - 2),
+                    String(item.y + 1),
+                    String(item.y + 3)
+                ]));
+            }
+
+            // 4. Games & Villains (30 items -> 60 questions)
+            const villainData = [
+                { g: "Super Mario Bros", v: "Bowser", w: ["Wario", "Waluigi", "Donkey Kong"] },
+                { g: "The Legend of Zelda", v: "Ganondorf", w: ["Skull Kid", "Vaati", "Ghirahim"] },
+                { g: "Final Fantasy VII", v: "Sephiroth", w: ["Kefka", "Seymour", "Kuja"] },
+                { g: "Portal", v: "GLaDOS", w: ["Wheatley", "Cave Johnson", "Chell"] },
+                { g: "Borderlands 2", v: "Handsome Jack", w: ["Claptrap", "Roland", "Lilith"] },
+                { g: "Far Cry 3", v: "Vaas Montenegro", w: ["Pagan Min", "Joseph Seed", "Hoyt Volker"] },
+                { g: "Batman Arkham Asylum", v: "Coringa", w: ["Pinguim", "Charada", "Duas-Caras"] },
+                { g: "Resident Evil", v: "Albert Wesker", w: ["Nemesis", "Mr. X", "William Birkin"] },
+                { g: "Silent Hill 2", v: "Pyramid Head", w: ["Nemesis", "Slender Man", "Walter Sullivan"] },
+                { g: "Diablo", v: "Diablo", w: ["Baal", "Mephisto", "Butcher"] },
+                { g: "Warcraft III", v: "Arthas Menethil", w: ["Thrall", "Illidan", "Malfurion"] },
+                { g: "Sonic the Hedgehog", v: "Dr. Eggman (Robotnik)", w: ["Shadow", "Metal Sonic", "Chaos"] },
+                { g: "Halo 2", v: "Prophet of Truth", w: ["Arbiter", "Tartarus", "Gravemind"] },
+                { g: "Metal Gear Solid 3", v: "The Boss", w: ["Ocelot", "Colonel Volgin", "Solidus Snake"] },
+                { g: "Marvel's Spider-Man", v: "Doutor Octopus", w: ["Duende Verde", "Venom", "Rino"] },
+                { g: "God of War 3", v: "Zeus", w: ["Ares", "Hades", "Poseidon"] },
+                { g: "Red Dead Redemption", v: "Edgar Ross", w: ["Dutch van der Linde", "Micah Bell", "John Marston"] },
+                { g: "The Witcher 3: Wild Hunt", v: "Eredin", w: ["Gaunter O'Dimm", "Detlaff", "Radovid"] },
+                { g: "Spider-Man: Miles Morales", v: "Tinkerer", w: ["Prowler", "Rhino", "Kingpin"] },
+                { g: "GTA San Andreas", v: "Oficial Tenpenny", w: ["Big Smoke", "Ryder", "Pulaski"] },
+                { g: "Half-Life 2", v: "Dr. Breen", w: ["G-Man", "Combine Advisor", "Barney"] },
+                { g: "Resident Evil 3", v: "Nemesis", w: ["Mr. X", "Albert Wesker", "William Birkin"] },
+                { g: "Minecraft", v: "Ender Dragon", w: ["Wither", "Herobrine", "Creeper"] },
+                { g: "Mega Man", v: "Dr. Wily", w: ["Dr. Light", "Proto Man", "Sigma"] },
+                { g: "Crash Bandicoot", v: "Dr. Neo Cortex", w: ["Dr. N. Gin", "Tiny Tiger", "Uka Uka"] },
+                { g: "Spyro the Dragon", v: "Gnasty Gnorc", w: ["Ripto", "The Sorceress", "Red"] },
+                { g: "Devil May Cry 3", v: "Vergil", w: ["Mundus", "Arkham", "Dante"] },
+                { g: "Street Fighter II", v: "M. Bison", w: ["Sagat", "Vega", "Balrog"] },
+                { g: "Tekken 3", v: "Ogre", w: ["Heihachi Mishima", "Kazuya Mishima", "Jin Kazama"] },
+                { g: "System Shock", v: "SHODAN", w: ["GLaDOS", "Cortana", "HAL 9000"] }
+            ];
+
+            for (let i = 0; i < villainData.length; i++) {
+                const item = villainData[i];
+                list.push(makeQ(`Qual é o principal antagonista/vilão no jogo ${item.g}?`, item.v, item.w));
+                const otherGames = villainData.filter((_, idx) => idx !== i).map(x => x.g);
+                const wrongGames = [];
+                while (wrongGames.length < 3) {
+                    const rg = otherGames[Math.floor(Math.random() * otherGames.length)];
+                    if (!wrongGames.includes(rg)) wrongGames.push(rg);
+                }
+                list.push(makeQ(`De qual jogo de videogame o personagem ${item.v} é o vilão principal?`, item.g, wrongGames));
+            }
+
+            // 5. Iconic Quotes (30 items -> 30 questions)
+            const quoteData = [
+                { q: "The Cake is a Lie", g: "Portal", w: ["Half-Life", "BioShock", "Fallout"] },
+                { q: "Praise the Sun", g: "Dark Souls", w: ["Skyrim", "Zelda", "Witcher 3"] },
+                { q: "War never changes", g: "Fallout", w: ["Call of Duty", "Battlefield", "Metal Gear Solid"] },
+                { q: "It's time to kick ass and chew bubble gum... and I'm all out of gum", g: "Duke Nukem 3D", w: ["Doom", "Serious Sam", "Wolfenstein"] },
+                { q: "Would you kindly?", g: "BioShock", w: ["Portal", "Half-Life 2", "System Shock"] },
+                { q: "Ah shit, here we go again", g: "GTA San Andreas", w: ["GTA V", "GTA IV", "Max Payne"] },
+                { q: "Hey you, you're finally awake", g: "The Elder Scrolls V: Skyrim", w: ["Witcher 3", "Dragon Age", "Dark Souls"] },
+                { q: "Thank you Mario! But our princess is in another castle!", g: "Super Mario Bros", w: ["Zelda", "Sonic", "Donkey Kong"] },
+                { q: "Boy!", g: "God of War (2018)", w: ["The Last of Us", "Witcher 3", "Red Dead Redemption 2"] },
+                { q: "Hadouken!", g: "Street Fighter", w: ["Mortal Kombat", "Tekken", "Fatal Fury"] },
+                { q: "Get over here!", g: "Mortal Kombat", w: ["Street Fighter", "Tekken", "Soulcalibur"] },
+                { q: "Nothing is true, everything is permitted", g: "Assassin's Creed", w: ["Dishonored", "Thief", "Hitman"] },
+                { q: "Finish Him!", g: "Mortal Kombat", w: ["Street Fighter", "Tekken", "Killer Instinct"] },
+                { q: "Snake? Snake!? SNAAAAKE!", g: "Metal Gear Solid", w: ["Splinter Cell", "Syphon Filter", "Hitman"] },
+                { q: "What is a man? A miserable little pile of secrets!", g: "Castlevania: SNES/PlayStation", w: ["Devil May Cry", "Dark Souls", "Resident Evil"] },
+                { q: "O vento está uivando", g: "The Witcher 3: Wild Hunt", w: ["Skyrim", "Zelda", "Fable"] },
+                { q: "Determinei que as chances de sucesso de nossa missão são de 0%", g: "Portal 2", w: ["Detroit: Become Human", "Prey", "System Shock"] },
+                { q: "You Died", g: "Dark Souls", w: ["Bloodborne", "Sekiro", "Elden Ring"] },
+                { q: "Wasted", g: "Grand Theft Auto", w: ["Red Dead Redemption", "Saints Row", "Cyberpunk 2077"] },
+                { q: "Fuselagem ativa, flaps em 50%", g: "Microsoft Flight Simulator", w: ["Ace Combat", "Kerbal Space Program", "Grand Theft Auto V"] },
+                { q: "Você colheu o que plantou, Artyom", g: "Metro 2033", w: ["S.T.A.L.K.E.R.", "Fallout 3", "Half-Life"] },
+                { q: "Você quer brincar com fogo?", g: "League of Legends", w: ["Dota 2", "World of Warcraft", "Diablo"] },
+                { q: "A dor é temporária, a vitória é eterna", g: "League of Legends", w: ["Valorant", "Overwatch", "CS:GO"] },
+                { q: "Eu sou o homem que vai queimar a sua casa! Com os limões!", g: "Portal 2", w: ["BioShock", "Half-Life 2", "Borderlands 2"] },
+                { q: "Eu costumava ser um aventureiro como você, então levei uma flechada no joelho", g: "The Elder Scrolls V: Skyrim", w: ["The Witcher 3", "Dragon Age", "Fable"] },
+                { q: "Não restam mais humanos vivos", g: "Portal 2", w: ["Dead Space", "Left 4 Dead", "Resident Evil"] },
+                { q: "É perigoso ir sozinho! Pegue isto", g: "The Legend of Zelda", w: ["Super Mario Bros", "Metroid", "Castlevania"] },
+                { q: "Você não está preparado!", g: "World of Warcraft", w: ["Diablo III", "StarCraft II", "Hearthstone"] },
+                { q: "Apenas um homem tolo confia sua vida a uma arma", g: "Metal Gear Solid", w: ["Call of Duty", "Splinter Cell", "Halo"] },
+                { q: "Escolha suas palavras com cuidado, garoto. Elas podem ser as suas últimas", g: "God of War (2018)", w: ["The Witcher 3", "Uncharted 4", "Red Dead Redemption 2"] }
+            ];
+
+            for (let i = 0; i < quoteData.length; i++) {
+                const item = quoteData[i];
+                list.push(makeQ(`De qual jogo de videogame é a famosa frase: "${item.q}"?`, item.g, item.w));
+            }
+
+            // 6. Consoles & Developers (30 items -> 60 questions)
+            const consoleData = [
+                { c: "PlayStation 1", m: "Sony", w: ["Nintendo", "Microsoft", "Sega"] },
+                { c: "PlayStation 2", m: "Sony", w: ["Nintendo", "Microsoft", "Sega"] },
+                { c: "PlayStation 3", m: "Sony", w: ["Nintendo", "Microsoft", "Sega"] },
+                { c: "PlayStation 4", m: "Sony", w: ["Nintendo", "Microsoft", "Sega"] },
+                { c: "PlayStation 5", m: "Sony", w: ["Nintendo", "Microsoft", "Sega"] },
+                { c: "Xbox (Original)", m: "Microsoft", w: ["Sony", "Nintendo", "Sega"] },
+                { c: "Xbox 360", m: "Microsoft", w: ["Sony", "Nintendo", "Sega"] },
+                { c: "Xbox One", m: "Microsoft", w: ["Sony", "Nintendo", "Sega"] },
+                { c: "Xbox Series X/S", m: "Microsoft", w: ["Sony", "Nintendo", "Sega"] },
+                { c: "NES", m: "Nintendo", w: ["Sony", "Sega", "Atari"] },
+                { c: "SNES", m: "Nintendo", w: ["Sony", "Sega", "Atari"] },
+                { c: "Nintendo 64", m: "Nintendo", w: ["Sony", "Sega", "Microsoft"] },
+                { c: "GameCube", m: "Nintendo", w: ["Sony", "Sega", "Microsoft"] },
+                { c: "Nintendo Wii", m: "Nintendo", w: ["Sony", "Sega", "Microsoft"] },
+                { c: "Nintendo Wii U", m: "Nintendo", w: ["Sony", "Sega", "Microsoft"] },
+                { c: "Nintendo Switch", m: "Nintendo", w: ["Sony", "Sega", "Microsoft"] },
+                { c: "Game Boy", m: "Nintendo", w: ["Sega", "Atari", "Sony"] },
+                { c: "Game Boy Advance", m: "Nintendo", w: ["Sega", "Atari", "Sony"] },
+                { c: "Nintendo DS", m: "Nintendo", w: ["Sega", "Sony", "Nokia"] },
+                { c: "Nintendo 3DS", m: "Nintendo", w: ["Sega", "Sony", "Nokia"] },
+                { c: "Sega Genesis (Mega Drive)", m: "Sega", w: ["Nintendo", "Sony", "Atari"] },
+                { c: "Sega Saturn", m: "Sega", w: ["Nintendo", "Sony", "Microsoft"] },
+                { c: "Dreamcast", m: "Sega", w: ["Nintendo", "Sony", "Microsoft"] },
+                { c: "Atari 2600", m: "Atari", w: ["Nintendo", "Sega", "Coleco"] },
+                { c: "Atari Jaguar", m: "Atari", w: ["Nintendo", "Sega", "Sony"] },
+                { c: "Neo Geo", m: "SNK", w: ["Sega", "Nintendo", "Atari"] },
+                { c: "TurboGrafx-16", m: "Hudson Soft / NEC", w: ["Sega", "Nintendo", "Atari"] },
+                { c: "PSP", m: "Sony", w: ["Nintendo", "Sega", "Microsoft"] },
+                { c: "PlayStation Vita", m: "Sony", w: ["Nintendo", "Sega", "Microsoft"] },
+                { c: "Steam Deck", m: "Valve", w: ["Sony", "Nintendo", "Microsoft"] }
+            ];
+
+            for (let i = 0; i < consoleData.length; i++) {
+                const item = consoleData[i];
+                const otherConsoles = consoleData.filter((_, idx) => idx !== i).map(x => x.c);
+                const wrongConsoles = [];
+                while (wrongConsoles.length < 3) {
+                    const rc = otherConsoles[Math.floor(Math.random() * otherConsoles.length)];
+                    if (!wrongConsoles.includes(rc)) wrongConsoles.push(rc);
+                }
+                list.push(makeQ(`Qual empresa fabricou o console ${item.c}?`, item.m, item.w));
+                list.push(makeQ(`Qual desses consoles foi fabricado pela empresa ${item.m}?`, item.c, wrongConsoles));
+            }
+
+            // 7. Consoles & Release Years (20 items -> 20 questions)
+            const consoleYearData = [
+                { c: "PlayStation 1", y: 1994 },
+                { c: "PlayStation 2", y: 2000 },
+                { c: "PlayStation 3", y: 2006 },
+                { c: "PlayStation 4", y: 2013 },
+                { c: "PlayStation 5", y: 2020 },
+                { c: "Xbox (Original)", y: 2001 },
+                { c: "Xbox 360", y: 2005 },
+                { c: "Xbox One", y: 2013 },
+                { c: "Xbox Series X/S", y: 2020 },
+                { c: "NES", y: 1983 },
+                { c: "SNES", y: 1990 },
+                { c: "Nintendo 64", y: 1996 },
+                { c: "GameCube", y: 2001 },
+                { c: "Nintendo Wii", y: 2006 },
+                { c: "Nintendo Switch", y: 2017 },
+                { c: "Sega Genesis", y: 1988 },
+                { c: "Dreamcast", y: 1998 },
+                { c: "Atari 2600", y: 1977 },
+                { c: "Steam Deck", y: 2022 },
+                { c: "PSP", y: 2004 }
+            ];
+
+            for (let i = 0; i < consoleYearData.length; i++) {
+                const item = consoleYearData[i];
+                list.push(makeQ(`Em qual ano foi lançado o console ${item.c}?`, String(item.y), [
+                    String(item.y - 2),
+                    String(item.y + 1),
+                    String(item.y + 3)
+                ]));
+            }
+
+            // 8. Consoles & Bits (15 items -> 15 questions)
+            const consoleBitsData = [
+                { c: "NES (Nintendinho)", b: "8 bits", w: ["16 bits", "4 bits", "32 bits"] },
+                { c: "Master System", b: "8 bits", w: ["16 bits", "32 bits", "64 bits"] },
+                { c: "Super Nintendo (SNES)", b: "16 bits", w: ["8 bits", "32 bits", "64 bits"] },
+                { c: "Sega Genesis (Mega Drive)", b: "16 bits", w: ["8 bits", "32 bits", "128 bits"] },
+                { c: "PlayStation 1", b: "32 bits", w: ["16 bits", "64 bits", "128 bits"] },
+                { c: "Sega Saturn", b: "32 bits", w: ["16 bits", "64 bits", "8 bits"] },
+                { c: "Nintendo 64", b: "64 bits", w: ["32 bits", "128 bits", "16 bits"] },
+                { c: "Atari Jaguar", b: "64 bits", w: ["32 bits", "16 bits", "128 bits"] },
+                { c: "Dreamcast", b: "128 bits", w: ["64 bits", "32 bits", "256 bits"] },
+                { c: "PlayStation 2", b: "128 bits", w: ["64 bits", "32 bits", "256 bits"] },
+                { c: "Nintendo GameCube", b: "128 bits", w: ["64 bits", "32 bits", "256 bits"] },
+                { c: "Original Xbox", b: "32 bits", w: ["64 bits", "128 bits", "16 bits"] },
+                { c: "Atari 2600", b: "8 bits", w: ["4 bits", "16 bits", "32 bits"] },
+                { c: "TurboGrafx-16", b: "16 bits (GPU) / 8 bits (CPU)", w: ["32 bits", "64 bits", "4 bits"] },
+                { c: "Neo Geo", b: "24 bits", w: ["16 bits", "32 bits", "64 bits"] }
+            ];
+
+            for (let i = 0; i < consoleBitsData.length; i++) {
+                const item = consoleBitsData[i];
+                list.push(makeQ(`Qual era a arquitetura de bits promovida no console ${item.c}?`, item.b, item.w));
+            }
+
+            // 9. Programming Languages & Creators (20 items -> 40 questions)
+            const langData = [
+                { l: "Python", c: "Guido van Rossum", w: ["Bjarne Stroustrup", "James Gosling", "Brendan Eich"] },
+                { l: "C++", c: "Bjarne Stroustrup", w: ["Guido van Rossum", "Dennis Ritchie", "James Gosling"] },
+                { l: "Java", c: "James Gosling", w: ["Anders Hejlsberg", "Guido van Rossum", "Rasmus Lerdorf"] },
+                { l: "JavaScript", c: "Brendan Eich", w: ["Douglas Crockford", "John Resig", "Tim Berners-Lee"] },
+                { l: "C", c: "Dennis Ritchie", w: ["Ken Thompson", "Linus Torvalds", "Bjarne Stroustrup"] },
+                { l: "Ruby", c: "Yukihiro Matsumoto", w: ["DHH", "Guido van Rossum", "Larry Wall"] },
+                { l: "Go", c: "Ken Thompson, Rob Pike e Robert Griesemer", w: ["Linus Torvalds", "Graydon Hoare", "Rich Hickey"] },
+                { l: "Rust", c: "Graydon Hoare", w: ["Bjarne Stroustrup", "Guido van Rossum", "James Gosling"] },
+                { l: "Linux", c: "Linus Torvalds", w: ["Richard Stallman", "Steve Jobs", "Bill Gates"] },
+                { l: "PHP", c: "Rasmus Lerdorf", w: ["Brendan Eich", "James Gosling", "Yukihiro Matsumoto"] },
+                { l: "Swift", c: "Chris Lattner", w: ["Steve Jobs", "Craig Federighi", "Anders Hejlsberg"] },
+                { l: "Perl", c: "Larry Wall", w: ["Guido van Rossum", "Yukihiro Matsumoto", "Dennis Ritchie"] },
+                { l: "TypeScript", c: "Anders Hejlsberg", w: ["Brendan Eich", "Douglas Crockford", "Guido van Rossum"] },
+                { l: "C#", c: "Anders Hejlsberg", w: ["James Gosling", "Bjarne Stroustrup", "Dennis Ritchie"] },
+                { l: "HTML", c: "Tim Berners-Lee", w: ["Håkon Wium Lie", "Brendan Eich", "Guido van Rossum"] },
+                { l: "CSS", c: "Håkon Wium Lie", w: ["Tim Berners-Lee", "Brendan Eich", "Guido van Rossum"] },
+                { l: "Pascal", c: "Niklaus Wirth", w: ["Dennis Ritchie", "Bjarne Stroustrup", "James Gosling"] },
+                { l: "Lisp", c: "John McCarthy", w: ["Alonzo Church", "Alan Turing", "Donald Knuth"] },
+                { l: "SQL", c: "Donald D. Chamberlin e Raymond F. Boyce", w: ["Edgar F. Codd", "Larry Ellison", "Bill Gates"] },
+                { l: "Git", c: "Linus Torvalds", w: ["Richard Stallman", "Bram Moolenaar", "Guido van Rossum"] }
+            ];
+
+            for (let i = 0; i < langData.length; i++) {
+                const item = langData[i];
+                const otherLangs = langData.filter((_, idx) => idx !== i).map(x => x.l);
+                const wrongLangs = [];
+                while (wrongLangs.length < 3) {
+                    const rl = otherLangs[Math.floor(Math.random() * otherLangs.length)];
+                    if (!wrongLangs.includes(rl)) wrongLangs.push(rl);
+                }
+                list.push(makeQ(`Quem é o principal criador/autor do ${item.l}?`, item.c, item.w));
+                list.push(makeQ(`Qual linguagem de programação ou tecnologia de codificação foi criada por ${item.c}?`, item.l, wrongLangs));
+            }
+
+            // 10. Tech Acronyms (50 items -> 50 questions)
+            const acronymData = [
+                { a: "CPU", d: "Central Processing Unit (Unidade Central de Processamento)" },
+                { a: "RAM", d: "Random Access Memory (Memória de Acesso Aleatório)" },
+                { a: "SSD", d: "Solid State Drive (Disco de Estado Sólido)" },
+                { a: "GPU", d: "Graphics Processing Unit (Unidade de Processamento Gráfico)" },
+                { a: "BIOS", d: "Basic Input Output System (Sistema Básico de Entrada e Saída)" },
+                { a: "HTTP", d: "Hypertext Transfer Protocol (Protocolo de Transferência de Hipertexto)" },
+                { a: "HTTPS", d: "Hypertext Transfer Protocol Secure (Protocolo Seguro de Transferência de Hipertexto)" },
+                { a: "FTP", d: "File Transfer Protocol (Protocolo de Transferência de Arquivos)" },
+                { a: "IP", d: "Internet Protocol (Protocolo de Internet)" },
+                { a: "DNS", d: "Domain Name System (Sistema de Nomes de Domínio)" },
+                { a: "HTML", d: "Hypertext Markup Language (Linguagem de Marcação de Hipertexto)" },
+                { a: "CSS", d: "Cascading Style Sheets (Folhas de Estilo em Cascata)" },
+                { a: "USB", d: "Universal Serial Bus (Barramento Serial Universal)" },
+                { a: "API", d: "Application Programming Interface (Interface de Programação de Aplicações)" },
+                { a: "SQL", d: "Structured Query Language (Linguagem de Consulta Estruturada)" },
+                { a: "JSON", d: "JavaScript Object Notation (Notação de Objetos JavaScript)" },
+                { a: "AJAX", d: "Asynchronous JavaScript and XML (JavaScript e XML Assíncronos)" },
+                { a: "VPN", d: "Virtual Private Network (Rede Privada Virtual)" },
+                { a: "URL", d: "Uniform Resource Locator (Localizador Padrão de Recursos)" },
+                { a: "LAN", d: "Local Area Network (Rede de Área Local)" },
+                { a: "WAN", d: "Wide Area Network (Rede de Área Ampliada)" },
+                { a: "IoT", d: "Internet of Things (Internet das Coisas)" },
+                { a: "AI (IA)", d: "Artificial Intelligence (Inteligência Artificial)" },
+                { a: "ML", d: "Machine Learning (Aprendizado de Máquina)" },
+                { a: "UI", d: "User Interface (Interface do Usuário)" },
+                { a: "UX", d: "User Experience (Experiência do Usuário)" },
+                { a: "CLI", d: "Command Line Interface (Interface de Linha de Comando)" },
+                { a: "GUI", d: "Graphical User Interface (Interface Gráfica do Usuário)" },
+                { a: "IDE", d: "Integrated Development Environment (Ambiente de Desenvolvimento Integrado)" },
+                { a: "SDK", d: "Software Development Kit (Kit de Desenvolvimento de Software)" },
+                { a: "REST", d: "Representational State Transfer (Transferência de Estado Representativo)" },
+                { a: "TCP", d: "Transmission Control Protocol (Protocolo de Controle de Transmissão)" },
+                { a: "UDP", d: "User Datagram Protocol (Protocolo de Datagrama do Usuário)" },
+                { a: "SSL", d: "Secure Sockets Layer (Camada de Sockets Segura)" },
+                { a: "TLS", d: "Transport Layer Security (Segurança da Camada de Transporte)" },
+                { a: "CORS", d: "Cross-Origin Resource Sharing (Compartilhamento de Recursos de Origem Cruzada)" },
+                { a: "JWT", d: "JSON Web Token (Token Web JSON)" },
+                { a: "XML", d: "Extensible Markup Language (Linguagem de Marcação Estendível)" },
+                { a: "PNG", d: "Portable Network Graphics (Gráficos Portáteis de Rede)" },
+                { a: "JPEG", d: "Joint Photographic Experts Group (Grupo Conjunto de Especialistas Fotográficos)" },
+                { a: "PDF", d: "Portable Document Format (Formato de Documento Portátil)" },
+                { a: "DHCP", d: "Dynamic Host Configuration Protocol (Protocolo de Configuração Dinâmica de Host)" },
+                { a: "SMTP", d: "Simple Mail Transfer Protocol (Protocolo de Transferência de Correio Simples)" },
+                { a: "SSID", d: "Service Set Identifier (Identificador de Conjunto de Serviços)" },
+                { a: "MAC (Redes)", d: "Media Access Control (Controle de Acesso ao Meio)" },
+                { a: "SATA", d: "Serial Advanced Technology Attachment" },
+                { a: "RAID", d: "Redundant Array of Independent Disks (Conjunto Redundante de Discos Independentes)" },
+                { a: "ASCII", d: "American Standard Code for Information Interchange" },
+                { a: "VOIP", d: "Voice over Internet Protocol (Voz sobre IP)" },
+                { a: "WIFI", d: "Wireless Fidelity (Fidelidade Sem Fio)" }
+            ];
+
+            for (let i = 0; i < acronymData.length; i++) {
+                const item = acronymData[i];
+                const otherDefs = acronymData.filter((_, idx) => idx !== i).map(x => x.d);
+                const wrongDefs = [];
+                while (wrongDefs.length < 3) {
+                    const rd = otherDefs[Math.floor(Math.random() * otherDefs.length)];
+                    if (!wrongDefs.includes(rd)) wrongDefs.push(rd);
+                }
+                list.push(makeQ(`O que significa a sigla tecnológica ${item.a}?`, item.d, wrongDefs));
+            }
+
+            // 11. Tech Founders (20 items -> 40 questions)
+            const founderData = [
+                { f: "Steve Jobs e Steve Wozniak", c: "Apple", w: ["Microsoft", "Google", "IBM"] },
+                { f: "Bill Gates e Paul Allen", c: "Microsoft", w: ["Apple", "Linux", "Intel"] },
+                { f: "Larry Page e Sergey Brin", c: "Google", w: ["Yahoo", "Bing", "AltaVista"] },
+                { f: "Mark Zuckerberg", c: "Facebook (Meta)", w: ["Twitter", "Snapchat", "MySpace"] },
+                { f: "Jeff Bezos", c: "Amazon", w: ["Ebay", "Walmart", "Alibaba"] },
+                { f: "Elon Musk", c: "Tesla / SpaceX (e cofundou PayPal)", w: ["Amazon", "Google", "Apple"] },
+                { f: "Gabe Newell", c: "Valve", w: ["Epic Games", "Blizzard", "id Software"] },
+                { f: "Tim Sweeney", c: "Epic Games", w: ["Valve", "Unity", "id Software"] },
+                { f: "Linus Torvalds", c: "Linux (Kernel)", w: ["GNU", "Unix", "Minix"] },
+                { f: "Brendan Eich", c: "Brave Software (e criou JS)", w: ["Netscape", "Google", "Opera"] },
+                { f: "Jack Dorsey", c: "Twitter (X)", w: ["Instagram", "Pinterest", "Tumblr"] },
+                { f: "Reed Hastings e Marc Randolph", c: "Netflix", w: ["Blockbuster", "Hulu", "Disney+"] },
+                { f: "Marc Tarpenning e Martin Eberhard", c: "Tesla", w: ["SpaceX", "SolarCity", "PayPal"] },
+                { f: "Nolan Bushnell e Ted Dabney", c: "Atari", w: ["Nintendo", "Coleco", "Sega"] },
+                { f: "Hiroshi Yamauchi", c: "Nintendo", w: ["Sony", "Sega", "SNK"] },
+                { f: "Ken Kutaragi", c: "PlayStation", w: ["Xbox", "Nintendo 64", "Dreamcast"] },
+                { f: "Palmer Luckey", c: "Oculus VR", w: ["HTC Vive", "PlayStation VR", "Valve Index"] },
+                { f: "Bobby Kotick", c: "Activision Blizzard", w: ["EA", "Ubisoft", "Take-Two"] },
+                { f: "Sam Altman", c: "OpenAI", w: ["DeepMind", "Anthropic", "Google Brain"] },
+                { f: "Satya Nadella", c: "Microsoft (CEO atual)", w: ["Google", "Apple", "Oracle"] }
+            ];
+
+            for (let i = 0; i < founderData.length; i++) {
+                const item = founderData[i];
+                const otherComps = founderData.filter((_, idx) => idx !== i).map(x => x.c);
+                const wrongComps = [];
+                while (wrongComps.length < 3) {
+                    const rc = otherComps[Math.floor(Math.random() * otherComps.length)];
+                    if (!wrongComps.includes(rc)) wrongComps.push(rc);
+                }
+                list.push(makeQ(`Quem foi o fundador/criador principal da empresa/tecnologia ${item.c}?`, item.f, item.w));
+                list.push(makeQ(`Qual empresa/tecnologia foi fundada por ${item.f}?`, item.c, wrongComps));
+            }
+
+            // 12. Marvel Names (20 items -> 40 questions)
+            const marvelData = [
+                { h: "Homem de Ferro (Iron Man)", n: "Tony Stark", w: ["Bruce Wayne", "Steve Rogers", "Peter Parker"] },
+                { h: "Homem-Aranha (Spider-Man)", n: "Peter Parker", w: ["Miles Morales", "Bruce Banner", "Clark Kent"] },
+                { h: "Capitão América", n: "Steve Rogers", w: ["Bucky Barnes", "Sam Wilson", "Tony Stark"] },
+                { h: "Hulk", n: "Bruce Banner", w: ["Bruce Wayne", "Reed Richards", "Logan"] },
+                { h: "Thor", n: "Thor Odinson", w: ["Loki", "Odin", "Balder"] },
+                { h: "Viúva Negra", n: "Natasha Romanoff", w: ["Wanda Maximoff", "Carol Danvers", "Kate Bishop"] },
+                { h: "Gavião Arqueiro", n: "Clint Barton", w: ["Oliver Queen", "Kate Bishop", "Barney Barton"] },
+                { h: "Pantera Negra", n: "T'Challa", w: ["Killmonger", "M'Baku", "T'Chaka"] },
+                { h: "Doutor Estranho", n: "Stephen Strange", w: ["Wong", "Barão Mordo", "Bruce Banner"] },
+                { h: "Wolverine", n: "Logan (James Howlett)", w: ["Sabretooth", "Cyclops", "Beast"] },
+                { h: "Deadpool", n: "Wade Wilson", w: ["Slade Wilson", "Cable", "Peter Parker"] },
+                { h: "Homem-Formiga", n: "Scott Lang", w: ["Hank Pym", "Janet Van Dyne", "Hope Van Dyne"] },
+                { h: "Senhor das Estrelas", n: "Peter Quill", w: ["Rocket Raccoon", "Drax", "T'Challa"] },
+                { h: "Demolidor", n: "Matt Murdock", w: ["Foggy Nelson", "Wilson Fisk", "Frank Castle"] },
+                { h: "Justiceiro", n: "Frank Castle", w: ["Billy Russo", "Matt Murdock", "Wade Wilson"] },
+                { h: "Ciclope", n: "Scott Summers", w: ["Alex Summers", "Jean Grey", "Charles Xavier"] },
+                { h: "Jean Grey", n: "Jean Grey", w: ["Emma Frost", "Wanda Maximoff", "Storm"] },
+                { h: "Magneto", n: "Erik Lehnsherr", w: ["Charles Xavier", "Sebastian Shaw", "Wolverine"] },
+                { h: "Professor X", n: "Charles Xavier", w: ["Erik Lehnsherr", "Hank McCoy", "Scott Summers"] },
+                { h: "Fera", n: "Hank McCoy", w: ["Bruce Banner", "Logan", "Charles Xavier"] }
+            ];
+
+            for (let i = 0; i < marvelData.length; i++) {
+                const item = marvelData[i];
+                const otherHeroes = marvelData.filter((_, idx) => idx !== i).map(x => x.h);
+                const wrongHeroes = [];
+                while (wrongHeroes.length < 3) {
+                    const rh = otherHeroes[Math.floor(Math.random() * otherHeroes.length)];
+                    if (!wrongHeroes.includes(rh)) wrongHeroes.push(rh);
+                }
+                list.push(makeQ(`Qual é a identidade secreta / nome real do herói ${item.h}?`, item.n, item.w));
+                list.push(makeQ(`Qual herói da Marvel tem a identidade secreta de ${item.n}?`, item.h, wrongHeroes));
+            }
+
+            // 13. DC Names (15 items -> 15 questions)
+            const dcData = [
+                { h: "Batman", n: "Bruce Wayne", w: ["Clark Kent", "Dick Grayson", "Tony Stark"] },
+                { h: "Superman", n: "Clark Kent (Kal-El)", w: ["Bruce Wayne", "Lex Luthor", "Barry Allen"] },
+                { h: "Mulher-Maravilha", n: "Diana Prince", w: ["Lois Lane", "Barbara Gordon", "Kara Zor-El"] },
+                { h: "Flash", n: "Barry Allen", w: ["Wally West", "Hal Jordan", "Oliver Queen"] },
+                { h: "Lanterna Verde", n: "Hal Jordan", w: ["John Stewart", "Kyle Rayner", "Guy Gardner"] },
+                { h: "Aquaman", n: "Arthur Curry", w: ["Orm", "Black Manta", "Namor"] },
+                { h: "Arqueiro Verde", n: "Oliver Queen", w: ["Clint Barton", "Roy Harper", "Connor Hawke"] },
+                { h: "Asa Noturna", n: "Dick Grayson", w: ["Jason Todd", "Tim Drake", "Damian Wayne"] },
+                { h: "Robin (segundo)", n: "Jason Todd", w: ["Dick Grayson", "Tim Drake", "Damian Wayne"] },
+                { h: "Robin (terceiro)", n: "Tim Drake", w: ["Dick Grayson", "Jason Todd", "Damian Wayne"] },
+                { h: "Batgirl", n: "Barbara Gordon", w: ["Cassandra Cain", "Stephanie Brown", "Diana Prince"] },
+                { h: "Supergirl", n: "Kara Zor-El", w: ["Lois Lane", "Diana Prince", "Barbara Gordon"] },
+                { h: "Ciborgue", n: "Victor Stone", w: ["Silas Stone", "Grid", "Steel"] },
+                { h: "John Constantine", n: "John Constantine", w: ["Zatanna", "Lucifer", "Chas Chandler"] },
+                { h: "Arqueiro Vermelho", n: "Roy Harper", w: ["Oliver Queen", "Dick Grayson", "Wally West"] }
+            ];
+
+            for (let i = 0; i < dcData.length; i++) {
+                const item = dcData[i];
+                list.push(makeQ(`Qual é o nome real do super-herói da DC ${item.h}?`, item.n, item.w));
+            }
+
+            // 14. Anime & Series (30 items -> 60 questions)
+            const animeData = [
+                { c: "Naruto Uzumaki", p: "Rasengan", s: "Naruto", wP: ["Chidori", "Kamehameha", "Getsuga Tenshou"], wS: ["Bleach", "One Piece", "Dragon Ball"] },
+                { c: "Sasuke Uchiha", p: "Chidori", s: "Naruto", wP: ["Rasengan", "Amaterasu", "Kamehameha"], wS: ["Bleach", "One Piece", "Dragon Ball"] },
+                { c: "Son Goku", p: "Kamehameha", s: "Dragon Ball", wP: ["Galick Gun", "Rasengan", "Getsuga Tenshou"], wS: ["Naruto", "One Piece", "Bleach"] },
+                { c: "Vegeta", p: "Galick Gun", s: "Dragon Ball", wP: ["Kamehameha", "Final Flash", "Rasengan"], wS: ["Naruto", "One Piece", "Bleach"] },
+                { c: "Monkey D. Luffy", p: "Gomu Gomu no Mi", s: "One Piece", wP: ["Santoryu", "Rasengan", "Diable Jambe"], wS: ["Naruto", "Dragon Ball", "Bleach"] },
+                { c: "Roronoa Zoro", p: "Santoryu", s: "One Piece", wP: ["Gomu Gomu no Mi", "Diable Jambe", "Chidori"], wS: ["Naruto", "Dragon Ball", "Bleach"] },
+                { c: "Ichigo Kurosaki", p: "Getsuga Tenshou", s: "Bleach", wP: ["Rasengan", "Chidori", "Kamehameha"], wS: ["Naruto", "Dragon Ball", "One Piece"] },
+                { c: "Yusuke Urameshi", p: "Leigan", s: "Yu Yu Hakusho", wP: ["Reigun", "Rasengan", "Kamehameha"], wS: ["Naruto", "Bleach", "Dragon Ball"] },
+                { c: "Gon Freecss", p: "Jajanken", s: "Hunter x Hunter", wP: ["Godspeed", "Bungee Gum", "Rasengan"], wS: ["Naruto", "Bleach", "One Piece"] },
+                { c: "Killua Zoldyck", p: "Godspeed", s: "Hunter x Hunter", wP: ["Jajanken", "Bungee Gum", "Rasengan"], wS: ["Naruto", "Bleach", "One Piece"] },
+                { c: "Saitama", p: "Soco Sério (Serious Punch)", s: "One Punch Man", wP: ["Soco Normal", "Kamehameha", "Rasengan"], wS: ["Dragon Ball", "Naruto", "Bleach"] },
+                { c: "Shigeo Kageyama (Mob)", p: "Telecinese Psíquica", s: "Mob Psycho 100", wP: ["Leigan", "Getsuga Tenshou", "Rasengan"], wS: ["Bleach", "Naruto", "Dragon Ball"] },
+                { c: "Edward Elric", p: "Alquimia do Aço", s: "Fullmetal Alchemist", wP: ["Alquimia de Fogo", "Telecinese", "Rasengan"], wS: ["Bleach", "Naruto", "Dragon Ball"] },
+                { c: "Light Yagami", p: "Death Note", s: "Death Note", wP: ["L Lawliet", "Shinigami Eye", "Rasengan"], wS: ["Naruto", "Bleach", "Dragon Ball"] },
+                { c: "Tanjiro Kamado", p: "Respiração da Água", s: "Demon Slayer", wP: ["Respiração do Trovão", "Respiração do Fogo", "Rasengan"], wS: ["Naruto", "Bleach", "One Piece"] },
+                { c: "Nezuko Kamado", p: "Arte de Sangue Demoníaco", s: "Demon Slayer", wP: ["Respiração da Água", "Telecinese", "Rasengan"], wS: ["Naruto", "Bleach", "One Piece"] },
+                { c: "Izuku Midoriya", p: "One For All", s: "My Hero Academia", wP: ["All For One", "Explosão", "Meio-Quente Meio-Frio"], wS: ["Naruto", "Dragon Ball", "Bleach"] },
+                { c: "Katsuki Bakugo", p: "Explosão", s: "My Hero Academia", wP: ["One For All", "Meio-Quente Meio-Frio", "Chidori"], wS: ["Naruto", "Dragon Ball", "Bleach"] },
+                { c: "Shoto Todoroki", p: "Meio-Quente Meio-Frio", s: "My Hero Academia", wP: ["One For All", "Explosão", "Chidori"], wS: ["Naruto", "Dragon Ball", "Bleach"] },
+                { c: "Natsu Dragneel", p: "Magia de Matador de Dragões de Fogo", s: "Fairy Tail", wP: ["Magia de Gelo", "Rasengan", "Kamehameha"], wS: ["Naruto", "Bleach", "Dragon Ball"] },
+                { c: "Meliodas", p: "Full Counter", s: "Os Sete Pecados Capitais", wP: ["Gomu Gomu no Mi", "Getsuga Tenshou", "Rasengan"], wS: ["Naruto", "Bleach", "One Piece"] },
+                { c: "Rimuru Tempest", p: "Predador / Grande Sábio", s: "Slime Isekai", wP: ["Kamehameha", "Getsuga Tenshou", "Rasengan"], wS: ["Bleach", "Naruto", "Dragon Ball"] },
+                { c: "Eren Jaeger", p: "Titã de Ataque", s: "Attack on Titan", wP: ["Titã Colossal", "Titã Blindado", "Rasengan"], wS: ["Bleach", "Naruto", "Dragon Ball"] },
+                { c: "Mikasa Ackerman", p: "Equipamento de Manobra Tridimensional", s: "Attack on Titan", wP: ["Alquimia", "Rasengan", "Chidori"], wS: ["Bleach", "Naruto", "Dragon Ball"] },
+                { c: "Levi Ackerman", p: "Equipamento de Manobra Tridimensional", s: "Attack on Titan", wP: ["Alquimia", "Rasengan", "Chidori"], wS: ["Bleach", "Naruto", "Dragon Ball"] },
+                { c: "Ken Kaneki", p: "Kagune", s: "Tokyo Ghoul", wP: ["Quinque", "Rasengan", "Chidori"], wS: ["Bleach", "Naruto", "Dragon Ball"] },
+                { c: "Guts", p: "Dragon Slayer", s: "Berserk", wP: ["Excalibur", "Buster Sword", "Soul Edge"], wS: ["Bleach", "Naruto", "Dragon Ball"] },
+                { c: "Jotaro Kujo", p: "Star Platinum", s: "JoJo's Bizarre Adventure", wP: ["The World", "Crazy Diamond", "Killer Queen"], wS: ["Bleach", "Naruto", "Dragon Ball"] },
+                { c: "Joseph Joestar", p: "Hermit Purple", s: "JoJo's Bizarre Adventure", wP: ["Star Platinum", "The World", "Crazy Diamond"], wS: ["Bleach", "Naruto", "Dragon Ball"] },
+                { c: "Dio Brando", p: "The World", s: "JoJo's Bizarre Adventure", wP: ["Star Platinum", "Hermit Purple", "Crazy Diamond"], wS: ["Bleach", "Naruto", "Dragon Ball"] }
+            ];
+
+            for (let i = 0; i < animeData.length; i++) {
+                const item = animeData[i];
+                list.push(makeQ(`Qual é a habilidade/técnica ou poder assinatura do personagem ${item.c}?`, item.p, item.wP));
+                list.push(makeQ(`De qual anime/mangá de sucesso é o personagem ${item.c}?`, item.s, item.wS));
+            }
+
+            // 15. Star Wars Planet (15 items -> 15 questions)
+            const swData = [
+                { n: "Luke Skywalker", p: "Tatooine", w: ["Coruscant", "Naboo", "Alderaan"] },
+                { n: "Darth Vader", p: "Estrela da Morte", w: ["Tatooine", "Naboo", "Coruscant"] },
+                { n: "Yoda", p: "Dagobah", w: ["Coruscant", "Naboo", "Kamino"] },
+                { n: "Obi-Wan Kenobi", p: "Stewjon", w: ["Tatooine", "Coruscant", "Naboo"] },
+                { n: "Han Solo", p: "Corellia", w: ["Tatooine", "Coruscant", "Naboo"] },
+                { n: "Chewbacca", p: "Kashyyyk", w: ["Tatooine", "Endor", "Hoth"] },
+                { n: "Kylo Ren", p: "Chandrila", w: ["Coruscant", "Tatooine", "Naboo"] },
+                { n: "Rey", p: "Jakku", w: ["Tatooine", "Coruscant", "Naboo"] },
+                { n: "Palpatine", p: "Naboo", w: ["Coruscant", "Tatooine", "Alderaan"] },
+                { n: "Boba Fett", p: "Kamino", w: ["Tatooine", "Coruscant", "Geonosis"] },
+                { n: "Din Djarin (Mandaloriano)", p: "Mandalore", w: ["Tatooine", "Coruscant", "Nevarro"] },
+                { n: "Ahsoka Tano", p: "Shili", w: ["Tatooine", "Coruscant", "Naboo"] },
+                { n: "Mace Windu", p: "Haruun Kal", w: ["Tatooine", "Coruscant", "Naboo"] },
+                { n: "Lando Calrissian", p: "Socorro", w: ["Tatooine", "Coruscant", "Bespin"] },
+                { n: "Qui-Gon Jinn", p: "Coruscant", w: ["Tatooine", "Naboo", "Alderaan"] }
+            ];
+
+            for (let i = 0; i < swData.length; i++) {
+                const item = swData[i];
+                list.push(makeQ(`Em Star Wars, qual é o planeta natal / base icônica do personagem ${item.n}?`, item.p, item.w));
+            }
+
+            // 16. Harry Potter Spells (15 items -> 15 questions)
+            const hpData = [
+                { s: "Expecto Patronum", e: "Conjurar um Patrono para afastar Dementadores", w: ["Desarmar o oponente", "Fazer objetos levitarem", "Apagar a memória"] },
+                { s: "Avada Kedavra", e: "A Maldição da Morte instantânea", w: ["Torturar o oponente", "Controlar a mente", "Desarmar o oponente"] },
+                { s: "Wingardium Leviosa", e: "Fazer objetos levitarem", w: ["Destrancar portas", "Desarmar o oponente", "Acender luz na varinha"] },
+                { s: "Expelliarmus", e: "Desarmar o oponente", w: ["Fazer objetos levitarem", "Torturar o oponente", "Apagar memórias"] },
+                { s: "Lumos", e: "Acender a ponta da varinha com luz", w: ["Apagar a luz", "Fazer objetos levitarem", "Destrancar portas"] },
+                { s: "Alohomora", e: "Destrancar portas e fechaduras trancadas", w: ["Fazer objetos levitarem", "Desarmar o oponente", "Acender luz"] },
+                { s: "Crucio", e: "A Maldição da tortura extrema (Cruciatus)", w: ["Morte instantânea", "Controle mental", "Desarmar o oponente"] },
+                { s: "Imperio", e: "A Maldição do controle mental total (Imperius)", w: ["Morte instantânea", "Torturar o oponente", "Desarmar o oponente"] },
+                { s: "Sectumsempra", e: "Cortar e causar feridas profundas como uma espada", w: ["Fazer objetos levitarem", "Desarmar o oponente", "Apagar a memória"] },
+                { s: "Obliviate", e: "Apagar ou alterar memórias do alvo", w: ["Desarmar o oponente", "Fazer objetos levitarem", "Controlar a mente"] },
+                { s: "Accio", e: "Atrair objetos distantes para a mão do bruxo", w: ["Desarmar o oponente", "Destrancar portas", "Fazer objetos levitarem"] },
+                { s: "Incendio", e: "Conjurar e lançar chamas de fogo", w: ["Congelar o alvo", "Fazer objetos levitarem", "Apagar memórias"] },
+                { s: "Petrificus Totalus", e: "Paralizar o corpo inteiro do oponente", w: ["Desarmar o oponente", "Fazer objetos levitarem", "Apagar memórias"] },
+                { s: "Riddikulus", e: "Transformar um bicho-papão em algo engraçado", w: ["Desarmar o oponente", "Fazer objetos levitarem", "Apagar memórias"] },
+                { s: "Stupefy (Estupefaça)", e: "Lançar um feitiço de estuporamento (desmaio)", w: ["Desarmar o oponente", "Fazer objetos levitarem", "Morte instantânea"] }
+            ];
+
+            for (let i = 0; i < hpData.length; i++) {
+                const item = hpData[i];
+                list.push(makeQ(`No universo Harry Potter, qual é o efeito principal do feitiço "${item.s}"?`, item.e, item.w));
+            }
+
+            // 17. Fixed Geek Questions (300 items)
+            const fixedGeekQuestions = [
+                makeQ("Quem é o criador de Tetris?", "Alexey Pajitnov", ["Shigeru Miyamoto", "Nolan Bushnell", "Satoshi Tajiri"]),
+                makeQ("Qual jogo popularizou o gênero Battle Royale?", "PUBG (PlayerUnknown's Battlegrounds)", ["Fortnite", "H1Z1", "Apex Legends"]),
+                makeQ("De qual país é a desenvolvedora CD Projekt Red?", "Polônia", ["Ucrânia", "Rússia", "Alemanha"]),
+                makeQ("Qual foi o primeiro console doméstico de videogame comercializado?", "Magnavox Odyssey", ["Atari 2600", "NES", "Telejogo"]),
+                makeQ("Qual o nome do protagonista de Minecraft?", "Steve", ["Alex", "Notch", "Jeb"]),
+                makeQ("No jogo League of Legends, qual campeão é conhecido como o 'Cego'?", "Lee Sin", ["Yasuo", "Teemo", "Jax"]),
+                makeQ("Qual é o principal item coletável em Sonic?", "Argolas (Rings)", ["Moedas", "Esmeraldas", "Estrelas"]),
+                makeQ("Em Fallout, qual é o nome do mascote da Vault-Tec?", "Vault Boy", ["Pip-Boy", "Vault Man", "Fallout Boy"]),
+                makeQ("No jogo Resident Evil, qual é a corporação farmacêutica vilã?", "Umbrella Corporation", ["Aperture Science", "Abstergo", "Cyberdyne"]),
+                makeQ("Quem é a Princesa do Reino dos Cogumelos em Super Mario?", "Princess Peach", ["Princess Daisy", "Princess Zelda", "Rosalina"]),
+                makeQ("Qual o nome do dinossauro de estimação de Mario?", "Yoshi", ["Bowser", "Toad", "Donkey Kong"]),
+                makeQ("Qual a principal franquia de RPG da Square Enix?", "Final Fantasy", ["Dragon Quest", "Kingdom Hearts", "Chrono Trigger"]),
+                makeQ("Qual o nome do protagonista de Assassin's Creed 4: Black Flag?", "Edward Kenway", ["Ezio Auditore", "Connor Kenway", "Haytham Kenway"]),
+                makeQ("No jogo Undertale, qual personagem faz piadas com esqueletos?", "Sans", ["Papyrus", "Toriel", "Asgore"]),
+                makeQ("Em Red Dead Redemption 2, qual o nome da gangue de Arthur?", "Gangue Van der Linde", ["Gangue O'Driscoll", "Gangue de Rodes", "Os Dalton"]),
+                makeQ("No jogo BioShock, onde fica situada a cidade submarina de Rapture?", "Oceano Atlântico", ["Oceano Pacífico", "Mar Mediterrâneo", "Oceano Índico"]),
+                makeQ("Quem é o criador do jogo Metal Gear?", "Hideo Kojima", ["Shigeru Miyamoto", "Shinji Mikami", "Keiji Inafune"]),
+                makeQ("Qual é o nome da inteligência artificial de Portal?", "GLaDOS", ["Wheatley", "HAL 9000", "Cortana"]),
+                makeQ("No jogo Half-Life, qual o nome do pé de cabra icônico de Gordon?", "Crowbar", ["Wrench", "Hammer", "Screwdriver"]),
+                makeQ("Qual o nome da cidade fictícia de GTA 5?", "Los Santos", ["Liberty City", "Vice City", "San Fierro"]),
+                makeQ("Em qual jogo encontramos as facções Horda e Aliança?", "World of Warcraft", ["Guild Wars", "Lineage II", "Tibia"]),
+                makeQ("Qual jogo de cartas da Blizzard é baseado no universo de Warcraft?", "Hearthstone", ["Gwent", "Magic", "Legends of Runeterra"]),
+                makeQ("Quem é o Deus da Guerra original que Kratos derrota no primeiro God of War?", "Ares", ["Zeus", "Hades", "Poseidon"]),
+                makeQ("Qual o nome da filha de Joel no início de The Last of Us?", "Sarah", ["Ellie", "Tess", "Maria"]),
+                makeQ("No jogo Hollow Knight, qual o nome do reino decadente?", "Hallownest", ["Deepnest", "Greenpath", "Hallownest"]),
+                makeQ("Qual o nome do console híbrido da Nintendo lançado em 2017?", "Nintendo Switch", ["Wii U", "Nintendo Switch Lite", "Nintendo 3DS"]),
+                makeQ("Qual console da Sony introduziu o leitor de Blu-ray?", "PlayStation 3", ["PlayStation 2", "PlayStation 4", "PlayStation 5"]),
+                makeQ("Qual o sistema operacional de código aberto criado por Linus Torvalds?", "Linux", ["Unix", "Windows", "MacOS"]),
+                makeQ("Qual linguagem de programação é a base do desenvolvimento Web?", "JavaScript", ["Python", "C++", "Java"]),
+                makeQ("Quem é conhecido como o 'Pai da Computação'?", "Alan Turing", ["Charles Babbage", "Bill Gates", "Ada Lovelace"]),
+                makeQ("Qual foi a primeira programadora da história?", "Ada Lovelace", ["Grace Hopper", "Margaret Hamilton", "Marie Curie"]),
+                makeQ("O que significa a extensão de arquivo '.exe'?", "Executável (Executable)", ["Texto", "Imagem", "Vídeo"]),
+                makeQ("Qual protocolo de rede é usado para navegar de forma segura na Web?", "HTTPS", ["HTTP", "FTP", "SSH"]),
+                makeQ("Qual a principal linguagem de banco de dados relacional?", "SQL", ["NoSQL", "Python", "PHP"]),
+                makeQ("Quem fundou a empresa de satélites Starlink?", "Elon Musk", ["Jeff Bezos", "Bill Gates", "Richard Branson"]),
+                makeQ("Qual é a menor unidade de dados em um computador?", "Bit", ["Byte", "Kilobyte", "Megabyte"]),
+                makeQ("Quantos bits existem em um único Byte?", "8", ["4", "16", "32"]),
+                makeQ("Qual empresa desenvolveu o sistema operacional Android?", "Google (adquiriu da Android Inc.)", ["Apple", "Microsoft", "Samsung"]),
+                makeQ("Qual o nome do óculos de realidade virtual da Sony para o PS4?", "PlayStation VR", ["Oculus Rift", "HTC Vive", "Valve Index"]),
+                makeQ("Em qual ano foi lançado o primeiro iPhone?", "2007", ["2005", "2008", "2010"]),
+                makeQ("Qual o nome do navegador de internet oficial da Microsoft atualmente?", "Microsoft Edge", ["Internet Explorer", "Microsoft Edge Legacy", "Bing"]),
+                makeQ("Qual linguagem de programação usa a extensão '.py'?", "Python", ["Ruby", "PHP", "JavaScript"]),
+                makeQ("Qual o nome do robô mascote da franquia Android?", "Bugdroid", ["R2-D2", "C-3PO", "Wall-E"]),
+                makeQ("Qual linguagem é usada na estilização de páginas Web?", "CSS", ["HTML", "JavaScript", "XML"]),
+                makeQ("O que significa 'URL'?", "Uniform Resource Locator", ["Universal Resource Link", "United Resource Locator", "Uniform Registry Locator"]),
+                makeQ("Qual tecnologia permite transações seguras de criptomoedas como Bitcoin?", "Blockchain", ["Database", "SQL", "Cloud"]),
+                makeQ("Qual o nome da assistente virtual da Apple?", "Siri", ["Cortana", "Alexa", "Google Assistant"]),
+                makeQ("Qual a assistente virtual da Amazon?", "Alexa", ["Siri", "Cortana", "Bixby"]),
+                makeQ("No jogo Portal, qual o nome do dispositivo que o jogador segura?", "Aperture Science Handheld Portal Device", ["Gravity Gun", "Portal Gun", "Tool Gun"]),
+                makeQ("Em Counter-Strike, qual o nome do mapa de bomba clássico na Itália?", "de_italy", ["de_dust2", "de_inferno", "cs_italy"]),
+                makeQ("Qual o nome do planeta natal dos elfos no Senhor dos Anéis?", "Valinor (ou terras imortais)", ["Terra Média", "Mordor", "Rohan"]),
+                makeQ("No anime Dragon Ball, qual item realiza desejos quando reunidos 7 deles?", "Esferas do Dragão", ["Esferas de Cristal", "Relíquias Sagradas", "Pergaminhos"]),
+                makeQ("Qual o nome do protagonista de One Piece?", "Monkey D. Luffy", ["Roronoa Zoro", "Portgas D. Ace", "Sanji"]),
+                makeQ("No anime Naruto, quem é o professor original do Time 7?", "Kakashi Hatake", ["Jiraiya", "Orochimaru", "Tsunade"]),
+                makeQ("Qual super-herói tem o codinome de Homem de Aço?", "Superman", ["Iron Man", "Steel Man", "Cyborg"]),
+                makeQ("Quem é o vilão principal do filme Avengers: Infinity War?", "Thanos", ["Loki", "Ultron", "Hela"]),
+                makeQ("Qual metal fictício reveste o esqueleto de Wolverine?", "Adamantium", ["Vibranium", "Mithril", "Uru"]),
+                makeQ("Qual a velocidade necessária para o carro de De Volta Para o Futuro viajar no tempo?", "88 milhas por hora", ["100 milhas por hora", "50 milhas por hora", "120 milhas por hora"]),
+                makeQ("No universo Star Wars, quem é o pai de Luke Skywalker?", "Darth Vader (Anakin Skywalker)", ["Obi-Wan Kenobi", "Imperador Palpatine", "Yoda"]),
+                makeQ("Qual o nome da escola de magia que Harry Potter frequenta?", "Hogwarts", ["Beauxbatons", "Durmstrang", "Ilvermorny"]),
+                makeQ("No anime Death Note, qual o nome do Shinigami que acompanha Light?", "Ryuk", ["Rem", "Sidoh", "L"]),
+                makeQ("Qual personagem de HQ é conhecido por dizer 'Eu sou o Batman'?", "Batman (Bruce Wayne)", ["Robin", "Coringa", "Superman"]),
+                makeQ("No filme Matrix, o que acontece se Neo tomar a pílula azul?", "Ele acorda em sua cama e acredita no que quiser", ["Ele morre", "Ele descobre a verdade", "Ele voa"]),
+                makeQ("Qual o nome do herói de vermelho da Nintendo que usa chapéu com a letra M?", "Mario", ["Luigi", "Wario", "Mushroom"]),
+                makeQ("Qual campeão de League of Legends é conhecido por dizer 'A lâmina que não se vê é a mais mortífera'?", "Zed", ["Yasuo", "Talon", "Shen"]),
+                makeQ("Qual a inteligência artificial do sistema operacional Windows 10?", "Cortana", ["Siri", "Alexa", "Copilot"]),
+                makeQ("No jogo Minecraft, qual mob explode quando chega muito perto?", "Creeper", ["Zombie", "Skeleton", "Enderman"]),
+                makeQ("Qual o nome da espada icônica de Link em Zelda?", "Master Sword", ["Excalibur", "Buster Sword", "Soul Edge"]),
+                makeQ("Qual console da Microsoft sucedeu o Xbox 360?", "Xbox One", ["Xbox Series X", "Xbox One X", "Xbox Original"]),
+                makeQ("Quem é a deusa da sabedoria que Kratos encontra em God of War?", "Athena", ["Aphrodite", "Hera", "Artemis"]),
+                makeQ("Qual o nome do fundador da Valve, amado pela comunidade de PC?", "Gabe Newell", ["Tim Sweeney", "Todd Howard", "Hideo Kojima"]),
+                makeQ("Quantos botões de ação frontais principais tem o controle do Super Nintendo?", "4", ["2", "6", "8"]),
+                makeQ("No jogo Grand Theft Auto: San Andreas, qual a rua da casa de CJ?", "Grove Street", ["Ballas Street", "Vinewood", "Glen Park"]),
+                makeQ("Qual jogo é conhecido por ter a frase 'Praise the Sun' (Louve o Sol)?", "Dark Souls", ["Skyrim", "Zelda", "Bloodborne"]),
+                makeQ("Qual o nome do robô companheiro de Clank na franquia da Insomniac?", "Ratchet", ["Jak", "Sly", "Daxter"]),
+                makeQ("Em qual jogo de RPG controlamos Geralt de Rívia?", "The Witcher", ["Skyrim", "Dark Souls", "Fallout"]),
+                makeQ("No jogo Red Dead Redemption 2, quem é o vilão traidor da gangue?", "Micah Bell", ["Dutch", "John Marston", "Arthur Morgan"]),
+                makeQ("No jogo Tomb Raider, qual a profissão de Lara Croft?", "Arqueóloga", ["Historiadora", "Detetive", "Cientista"]),
+                makeQ("Quem é o criador da franquia Super Mario?", "Shigeru Miyamoto", ["Hideo Kojima", "Satoshi Tajiri", "Masahiro Sakurai"]),
+                makeQ("Qual o nome do pokémon inicial de tipo elétrico de Ash Ketchum?", "Pikachu", ["Charmander", "Squirtle", "Bulbasaur"]),
+                makeQ("No anime Naruto, qual a técnica proibida que clona o usuário?", "Kage Bunshin no Jutsu", ["Rasengan", "Chidori", "Amaterasu"]),
+                makeQ("Qual super-herói de Gotham City é conhecido como o Cavaleiro das Trevas?", "Batman", ["Robin", "Coringa", "Asa Noturna"]),
+                makeQ("Qual o nome do martelo mágico de Thor em Marvel?", "Mjolnir", ["Stormbreaker", "Gungnir", "Aegis"]),
+                makeQ("Qual vilão de Harry Potter é conhecido como o Lorde das Trevas?", "Lord Voldemort", ["Snape", "Grindelwald", "Draco Malfoy"]),
+                makeQ("No anime Dragon Ball Z, quem é o pai de Gohan?", "Goku", ["Vegeta", "Piccolo", "Raditz"]),
+                makeQ("No filme Star Wars, quem pilota a nave Millennium Falcon com Han Solo?", "Chewbacca", ["Luke Skywalker", "C-3PO", "R2-D2"]),
+                makeQ("No jogo Portal, qual cor é um dos portais gerados pela arma?", "Azul (ou Laranja)", ["Verde", "Vermelho", "Amarelo"]),
+                makeQ("No jogo Resident Evil 4, quem Leon resgata?", "Ashley Graham", ["Ada Wong", "Claire Redfield", "Jill Valentine"]),
+                makeQ("Qual o nome do protagonista de Halo?", "Master Chief", ["Arbiter", "Noble Six", "Sgt. Johnson"]),
+                makeQ("Qual o console de videogame de 64 bits da Nintendo?", "Nintendo 64", ["Super Nintendo", "GameCube", "Nintendo Wii"]),
+                makeQ("Qual linguagem de programação usa chaves e foi criada por James Gosling?", "Java", ["Python", "HTML", "SQL"]),
+                makeQ("Qual a moeda digital mais famosa baseada em criptografia?", "Bitcoin", ["Ethereum", "Ripple", "Litecoin"]),
+                makeQ("Quem fundou a rede social Facebook (Meta)?", "Mark Zuckerberg", ["Elon Musk", "Bill Gates", "Jack Dorsey"]),
+                makeQ("No jogo Doom, qual a arma mais poderosa de destruição em massa?", "BFG 9000", ["Shotgun", "Plasma Rifle", "Rocket Launcher"]),
+                makeQ("Qual o nome da cidade fictícia onde se passa Resident Evil 2?", "Raccoon City", ["Silent Hill", "Liberty City", "Los Santos"]),
+                makeQ("No anime One Piece, quem é o caçador de piratas que usa 3 espadas?", "Roronoa Zoro", ["Luffy", "Sanji", "Usopp"]),
+                makeQ("Qual o nome da armadura tecnológica que Tony Stark usa?", "Iron Man (Homem de Ferro)", ["War Machine", "Hulkbuster", "Rescue"]),
+                makeQ("Qual o nome do dragão da montanha solitária em O Hobbit?", "Smaug", ["Alduin", "Deathwing", "Shenlong"]),
+                makeQ("Qual o nome da inteligência artificial de Homem de Ferro?", "J.A.R.V.I.S.", ["F.R.I.D.A.Y.", "Cortana", "HAL 9000"]),
+                makeQ("Qual herói da Marvel usa um escudo redondo com uma estrela?", "Capitão América", ["Homem de Ferro", "Thor", "Gavião Arqueiro"]),
+                makeQ("No anime Death Note, quem é o rival genial de Light Yagami?", "L", ["Near", "Mello", "Ryuk"]),
+                makeQ("Em qual jogo encontramos o protagonista Nathan Drake?", "Uncharted", ["Tomb Raider", "The Last of Us", "Far Cry"]),
+                makeQ("Qual o nome da assistente de voz da Samsung?", "Bixby", ["Siri", "Alexa", "Cortana"]),
+                makeQ("Qual o nome da tecnologia de conexões sem fio de curto alcance?", "Bluetooth", ["Wi-Fi", "Infravermelho", "NFC"]),
+                makeQ("Qual super-herói da DC corre na velocidade da luz?", "Flash", ["Superman", "Batman", "Lanterna Verde"]),
+                makeQ("No filme Matrix, qual pílula Neo toma?", "Vermelha", ["Azul", "Verde", "Branca"]),
+                makeQ("Qual o nome da criadora de Harry Potter?", "J.K. Rowling", ["Stephenie Meyer", "George R.R. Martin", "J.R.R. Tolkien"]),
+                makeQ("No jogo League of Legends, qual o objetivo principal para vencer o jogo?", "Destruir o Nexus inimigo", ["Matar o Barão", "Ter mais abates", "Destruir todas as torres"]),
+                makeQ("Qual o nome do protagonista de Assassin's Creed II?", "Ezio Auditore", ["Altaïr", "Connor", "Desmond Miles"]),
+                makeQ("No jogo Minecraft, de que material é feita a picareta mais forte na versão 1.16+?", "Netherita", ["Diamante", "Ferro", "Ouro"]),
+                makeQ("Qual o console doméstico de videogame da Sega de 128 bits?", "Dreamcast", ["Sega Saturn", "Mega Drive", "Master System"]),
+                makeQ("Qual o nome da namorada de Peter Parker nos filmes clássicos?", "Mary Jane Watson", ["Gwen Stacy", "Lois Lane", "Iris West"]),
+                makeQ("No anime Naruto, quem é o melhor amigo/rival de Naruto?", "Sasuke Uchiha", ["Sasuke", "Gaara", "Kakashi"]),
+                makeQ("Quem é o criador da franquia Star Wars?", "George Lucas", ["Steven Spielberg", "Ridley Scott", "James Cameron"]),
+                makeQ("No jogo God of War, qual a arma principal de Kratos nos jogos nórdicos?", "Machado Leviatã", ["Lâminas do Caos", "Lâmina do Olimpo", "Garras de Hades"]),
+                makeQ("Qual o nome da empresa fundada por Gabe Newell?", "Valve", ["Epic Games", "EA", "Ubisoft"]),
+                makeQ("Qual o nome do protagonista da franquia Legend of Zelda?", "Link", ["Zelda", "Ganon", "Navi"]),
+                makeQ("Qual o nome do robô azul de Mega Man?", "Mega Man (Rockman)", ["Proto Man", "Zero", "Bass"]),
+                makeQ("Qual o nome do protagonista da série de jogos The Witcher?", "Geralt de Rívia", ["Vesemir", "Ciri", "Yennefer"]),
+                makeQ("Qual o nome do console portátil da Sony lançado em 2004?", "PSP (PlayStation Portable)", ["PS Vita", "Game Boy", "Nintendo DS"]),
+                makeQ("Qual o nome do protagonista de Red Dead Redemption 2?", "Arthur Morgan", ["John Marston", "Dutch van der Linde", "Micah Bell"]),
+                makeQ("Quem fundou a Microsoft junto com Bill Gates?", "Paul Allen", ["Steve Jobs", "Steve Wozniak", "Elon Musk"]),
+                makeQ("Qual o nome da inteligência artificial de Halo?", "Cortana", ["GLaDOS", "SHODAN", "HAL 9000"]),
+                makeQ("Qual super-herói tem garras de adamantium?", "Wolverine", ["Deadpool", "Magneto", "Ciclope"]),
+                makeQ("No filme De Volta para o Futuro, qual carro viaja no tempo?", "DeLorean DMC-12", ["Mustang", "Camaro", "Corvette"]),
+                makeQ("Qual o nome do criador do sistema operacional Linux?", "Linus Torvalds", ["Richard Stallman", "Bill Gates", "Steve Jobs"]),
+                makeQ("Qual o nome da inteligência artificial de 2001: Uma Odisseia no Espaço?", "HAL 9000", ["Cortana", "GLaDOS", "Skynet"]),
+                makeQ("Qual vilão de ficção científica comanda o Exército de Exterminadores em O Exterminador do Futuro?", "Skynet", ["Matrix", "HAL 9000", "Ultron"]),
+                makeQ("No anime Saint Seiya, qual a constelação protetora de Seiya?", "Pégaso", ["Dragão", "Cisne", "Andrômeda"]),
+                makeQ("Qual o nome do dragão protetor no anime Dragon Ball?", "Shenlong", ["Porunga", "Shenron", "Smaug"]),
+                makeQ("Qual herói é conhecido como o Cavaleiro Solitário do espaço em Metroid?", "Samus Aran", ["Fox McCloud", "Captain Falcon", "Doomguy"]),
+                makeQ("Qual o nome da megacorporação tecnológica vilã em Cyberpunk 2077?", "Arasaka", ["Abstergo", "Umbrella", "Weyland-Yutani"]),
+                makeQ("No filme Alien, o Oitavo Passageiro, qual a corporação vilã?", "Weyland-Yutani", ["Umbrella", "Cyberdyne", "Aperture"]),
+                makeQ("Em qual jogo online de tiro temos os personagens Jett, Phoenix e Sage?", "Valorant", ["Overwatch", "Apex Legends", "CS:GO"]),
+                makeQ("No jogo The Last of Us Part II, qual o nome da facção de soldados de Seattle?", "WLF (Frente de Libertação de Seattle)", ["Vaga-lumes", "Cicatrizes", "Serafitas"]),
+                makeQ("Qual console portátil foi lançado pela Nintendo em 1989?", "Game Boy", ["Game Gear", "Atari Lynx", "Nintendo DS"]),
+                makeQ("Qual console portátil da Sega concorria com o Game Boy da Nintendo?", "Game Gear", ["Nomad", "Dreamcast Portable", "Genesis Pocket"]),
+                makeQ("Qual a linguagem padrão para estilizar folhas de estilo em páginas web?", "CSS", ["HTML", "JSON", "JavaScript"]),
+                makeQ("Qual o nome da rede de transações seguras de criptomoedas?", "Blockchain", ["Database", "SQL", "Cloud"]),
+                makeQ("Quem inventou o termo 'cibespaço' e escreveu a obra Neuromancer?", "William Gibson", ["Philip K. Dick", "Isaac Asimov", "Arthur C. Clarke"]),
+                makeQ("No universo DC Comics, qual a cidade que o Superman protege?", "Metropolis", ["Gotham City", "Central City", "Smallville"]),
+                makeQ("No universo Marvel, de qual país fictício é o Pantera Negra?", "Wakanda", ["Zamunda", "Latveria", "Genosha"]),
+                makeQ("No anime Hunter x Hunter, qual o nome da energia espiritual?", "Nen", ["Ki", "Chakra", "Reiatsu"]),
+                makeQ("No anime Bleach, qual o nome da espada espiritual de Shinigami?", "Zanpakutou", ["Kunai", "Katana", "Shuriken"]),
+                makeQ("No jogo Elden Ring, quem é o semideus enxertado?", "Godrick", ["Margit", "Radahn", "Malenia"]),
+                makeQ("Qual o nome do protagonista do jogo Bloodborne?", "Caçador (The Hunter)", ["Geralt", "Chosen Undead", "Bearer of the Curse"]),
+                makeQ("No jogo CS:GO, qual a arma sniper mais famosa e letal?", "AWP", ["AK-47", "M4A4", "Desert Eagle"]),
+                makeQ("Qual jogo indie simula fazenda e foi criado por ConcernedApe?", "Stardew Valley", ["Harvest Moon", "Animal Crossing", "Farming Simulator"]),
+                makeQ("No jogo Hollow Knight, qual a arma do protagonista inseto?", "Ferroada (Nail)", ["Espada", "Machado", "Lança"]),
+                makeQ("Qual console de videogame doméstico é o mais vendido de todos os tempos?", "PlayStation 2", ["Nintendo DS", "Nintendo Switch", "PlayStation 4"]),
+                makeQ("Quem fundou a empresa aeroespacial SpaceX?", "Elon Musk", ["Jeff Bezos", "Richard Branson", "Bill Gates"]),
+                makeQ("Qual super-herói da Marvel é conhecido como o Amigão da Vizinhança?", "Homem-Aranha", ["Demolidor", "Homem de Ferro", "Deadpool"]),
+                makeQ("Qual a cor do sabre de luz do Mestre Mace Windu em Star Wars?", "Roxo", ["Vermelho", "Verde", "Azul"]),
+                makeQ("Quem dirigiu os clássicos do cinema Blade Runner e Alien?", "Ridley Scott", ["James Cameron", "Steven Spielberg", "George Lucas"]),
+                makeQ("Qual o nome do vilão virtual no filme Matrix?", "Agente Smith", ["Neo", "Morpheus", "Cypher"]),
+                makeQ("No anime Naruto, qual clã possui a técnica do Sharingan?", "Clã Uchiha", ["Clã Hyuga", "Clã Uzumaki", "Clã Senju"]),
+                makeQ("No jogo The Witcher 3, qual o nome do cavalo de Geralt?", "Carpeado", ["Épona", "Sombra", "Bucéfalo"]),
+                makeQ("Quem é o principal vilão do Batman?", "Coringa", ["Pinguim", "Bane", "Duas-Caras"]),
+                makeQ("No anime Dragon Ball, quem é o príncipe dos Saiyajins?", "Vegeta", ["Goku", "Gohan", "Trunks"]),
+                makeQ("Qual linguagem de programação usa chaves e foi projetada para rodar em navegadores?", "JavaScript", ["Python", "HTML", "C++"]),
+                makeQ("Qual o nome do óculos de Realidade Virtual desenvolvido pela Meta?", "Meta Quest", ["HTC Vive", "PlayStation VR", "Valve Index"]),
+                makeQ("Quem escreveu a aclamada trilogia O Senhor dos Anéis?", "J.R.R. Tolkien", ["J.K. Rowling", "George R.R. Martin", "C.S. Lewis"]),
+                makeQ("No jogo Overwatch, qual personagem controla o tempo voltando alguns segundos atrás?", "Tracer", ["Reaper", "Genji", "Winston"]),
+                makeQ("Qual o nome do dispositivo eletrônico de braço em Fallout?", "Pip-Boy", ["Vault-Tec", "RobCo", "Terminal"]),
+                makeQ("Qual console portátil concorria com o Game Boy?", "Game Gear", ["Nomad", "Atari Lynx", "Genesis Pocket"]),
+                makeQ("Qual o nome da namorada de Peter Parker nos filmes originais?", "Mary Jane Watson", ["Gwen Stacy", "Lois Lane", "Iris West"]),
+                makeQ("No anime Naruto, quem é o rival/amigo de Naruto?", "Sasuke Uchiha", ["Sasuke", "Gaara", "Kakashi"]),
+                makeQ("Quem é o principal criador da franquia de ficção científica Star Wars?", "George Lucas", ["Steven Spielberg", "Ridley Scott", "James Cameron"]),
+                makeQ("No jogo God of War, qual a arma nórdica de Kratos?", "Machado Leviatã", ["Lâminas do Caos", "Lâmina do Olimpo", "Garras de Hades"]),
+                makeQ("Qual o nome da empresa de Gabe Newell?", "Valve", ["Epic Games", "EA", "Ubisoft"]),
+                makeQ("Qual o nome do protagonista de Legend of Zelda?", "Link", ["Zelda", "Ganon", "Navi"]),
+                makeQ("Qual o nome da inteligência artificial de Halo?", "Cortana", ["GLaDOS", "SHODAN", "HAL 9000"]),
+                makeQ("Quem fundou a Microsoft com Bill Gates?", "Paul Allen", ["Steve Jobs", "Steve Wozniak", "Elon Musk"]),
+                makeQ("Qual o nome da assistente virtual da Amazon?", "Alexa", ["Siri", "Cortana", "Google Assistant"])
+            ];
+
+            list.push(...fixedGeekQuestions);
+            return list;
+        }
+
         let userBalance = 0;
         let dailyLimitBRL = 2.00;
         let sessionPoints = 0;
@@ -634,6 +1496,7 @@
         let quizIndex = 0;
         let quizActive;
         let quizFinished = false;
+        let quizQuestionStartTime = 0;
         let quizResultMsg = '';
         let quizMsgColor = '';
 
@@ -925,8 +1788,16 @@
 
         function handleStartTrigger() {
             if (!gameActive && !gameInitialized) {
-                gameInitialized = true;
-                startGame();
+                const paidGames = ['hacker', 'flappy', 'clicker', 'runner', 'quiz', 'treasure'];
+                if (paidGames.includes(currentGame)) {
+                    spendPointsForGame(100, () => {
+                        gameInitialized = true;
+                        startGame();
+                    });
+                } else {
+                    gameInitialized = true;
+                    startGame();
+                }
             }
         }
 
@@ -944,29 +1815,29 @@
             const rewardEl = document.getElementById('game-reward-info');
             
             if (gameName === 'hacker') {
-                instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-electricblue"></i> Use as setas ou clique e arraste para mover o Decodificador`;
-                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">100 Z-Points</b> (com Multi-Boost 2x)`;
+                instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-electricblue"></i> Use as setas ou arraste para mover o Decodificador. <b class="text-red-500 font-bold ml-1.5">[CUSTO: 100 Z-POINTS POR PARTIDA]</b>`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-red-500 animate-pulse"></i> Custo: <b class="text-red-500 font-bold">100 Z-Points/Partida</b>`;
             } else if (gameName === 'flappy') {
-                instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-cyberrose"></i> Pressione ESPAÇO, SETA PARA CIMA ou clique no canvas para voar`;
-                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">100 Z-Points</b> (com Multi-Boost 2x)`;
+                instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-cyberrose"></i> Pressione ESPAÇO, SETA PARA CIMA ou clique no canvas para voar. <b class="text-red-500 font-bold ml-1.5">[CUSTO: 100 Z-POINTS POR PARTIDA]</b>`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-red-500 animate-pulse"></i> Custo: <b class="text-red-500 font-bold">100 Z-Points/Partida</b>`;
             } else if (gameName === 'clicker') {
-                instEl.innerHTML = `<i data-lucide="mouse-pointer" class="w-4 h-4 text-toxicgreen"></i> Clique no Database central. Desvie dos glitches vermelhos!`;
-                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">100 Z-Points</b> (com Multi-Boost 2x)`;
+                instEl.innerHTML = `<i data-lucide="mouse-pointer" class="w-4 h-4 text-toxicgreen"></i> Clique no Database central. Desvie dos glitches vermelhos! <b class="text-red-500 font-bold ml-1.5">[CUSTO: 100 Z-POINTS POR PARTIDA]</b>`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-red-500 animate-pulse"></i> Custo: <b class="text-red-500 font-bold">100 Z-Points/Partida</b>`;
             } else if (gameName === 'runner') {
-                instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-amber-500"></i> Pressione ESPAÇO, SETA PARA CIMA ou clique para pular as barreiras`;
-                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">100 Z-Points</b> (com Multi-Boost 2x)`;
+                instEl.innerHTML = `<i data-lucide="keyboard" class="w-4 h-4 text-amber-500"></i> Pressione ESPAÇO, SETA PARA CIMA ou clique para pular. <b class="text-red-500 font-bold ml-1.5">[CUSTO: 100 Z-POINTS POR PARTIDA]</b>`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-red-500 animate-pulse"></i> Custo: <b class="text-red-500 font-bold">100 Z-Points/Partida</b>`;
             } else if (gameName === 'casino') {
                 instEl.innerHTML = `<i data-lucide="dices" class="w-4 h-4 text-purple-500"></i> Clique no SPIN para testar os Slots. <b class="text-red-500 font-bold ml-1.5">[CUSTO: 25 Z-POINTS POR GIRO - NÃO É GRÁTIS]</b>`;
                 if (rewardEl) rewardEl.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-red-500 animate-pulse"></i> Custo: <b class="text-red-500 font-bold">25 Z-Points/Jogada</b>`;
             } else if (gameName === 'quiz') {
-                instEl.innerHTML = `<i data-lucide="help-circle" class="w-4 h-4 text-indigo-500"></i> Clique na opção correta de A a D. Errar encerra o jogo!`;
-                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">100 Z-Points</b> (com Multi-Boost 2x)`;
+                instEl.innerHTML = `<i data-lucide="help-circle" class="w-4 h-4 text-indigo-500"></i> Clique na opção correta de A a D. Tempo limite: 10s! <b class="text-red-500 font-bold ml-1.5">[CUSTO: 100 Z-POINTS POR PARTIDA]</b>`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-red-500 animate-pulse"></i> Custo: <b class="text-red-500 font-bold">100 Z-Points/Partida</b>`;
             } else if (gameName === 'roulette') {
                 instEl.innerHTML = `<i data-lucide="disc" class="w-4 h-4 text-pink-500"></i> Clique no SPIN central para girar a roleta. <b class="text-red-500 font-bold ml-1.5">[CUSTO: 100 Z-POINTS POR GIRO - NÃO É GRÁTIS]</b>`;
                 if (rewardEl) rewardEl.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-red-500 animate-pulse"></i> Custo: <b class="text-red-500 font-bold">100 Z-Points/Jogada</b>`;
             } else if (gameName === 'treasure') {
-                instEl.innerHTML = `<i data-lucide="gem" class="w-4 h-4 text-emerald-500"></i> Clique nos nós para revelar encriptadores. Cuidado com os bugs!`;
-                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-toxicgreen"></i> 100 pontos de score = <b class="text-white">250 Z-Points</b> (com Multi-Boost)`;
+                instEl.innerHTML = `<i data-lucide="gem" class="w-4 h-4 text-emerald-500"></i> Clique nos nós para revelar encriptadores. Cuidado com os bugs! <b class="text-red-500 font-bold ml-1.5">[CUSTO: 100 Z-POINTS POR PARTIDA]</b>`;
+                if (rewardEl) rewardEl.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-red-500 animate-pulse"></i> Custo: <b class="text-red-500 font-bold">100 Z-Points/Partida</b>`;
             }
             lucide.createIcons();
             
@@ -994,7 +1865,7 @@
                 casinoSymbols = ['🔑', '💎', '💰', '❌'];
                 casinoReels = [{ symbol: '🔑' }, { symbol: '💎' }, { symbol: '💰' }];
             } else if (currentGame === 'quiz') {
-                quizQuestions = [{ q: "Qual a porta padrao do HTTP?", a: ["80", "443", "21", "22"], correct: 0 }];
+                quizQuestions = generateAllQuizQuestions();
                 quizIndex = 0;
                 quizActive = quizQuestions[0];
                 quizFinished = false;
@@ -1189,6 +2060,7 @@
                                 quizActive = quizQuestions[quizIndex];
                                 quizResultMsg = 'RESPOSTA EXATA! +35 Z-POINTS OBTIDOS';
                                 quizMsgColor = '#10B981';
+                                quizQuestionStartTime = Date.now();
                             }
                         } else {
                             synth.hurt();
@@ -1374,6 +2246,7 @@
                                 quizActive = quizQuestions[quizIndex];
                                 quizResultMsg = 'RESPOSTA EXATA! +35 Z-POINTS OBTIDOS';
                                 quizMsgColor = '#10B981';
+                                quizQuestionStartTime = Date.now();
                             }
                         } else {
                             synth.hurt();
@@ -1527,22 +2400,14 @@
             
             // Zher Quiz Setup
             if (currentGame === 'quiz') {
-                quizQuestions = [
-                    { q: "Qual a porta padrao do HTTP?", a: ["80", "443", "21", "22"], correct: 0 },
-                    { q: "O que e HTML?", a: ["Marcacao de Texto", "Programacao", "Rede", "Compilador"], correct: 0 },
-                    { q: "Qual o maior buscador?", a: ["Yahoo", "Bing", "Google", "DuckDuckGo"], correct: 2 },
-                    { q: "O que e um malware?", a: ["Hardware bom", "Software nocivo", "Provedor", "Placa de Video"], correct: 1 },
-                    { q: "A extensao do JavaScript?", a: [".css", ".html", ".js", ".json"], correct: 2 },
-                    { q: "Qual a porta SSL do HTTPS?", a: ["80", "443", "8080", "23"], correct: 1 },
-                    { q: "Qual linguagem e compilada?", a: ["HTML", "Python", "C++", "PHP"], correct: 2 },
-                    { q: "Sigla CPU em hardware?", a: ["Central Process Unit", "Control Program", "Computer Power", "Core Processing"], correct: 0 }
-                ];
+                quizQuestions = generateAllQuizQuestions();
                 quizQuestions.sort(() => Math.random() - 0.5);
                 quizIndex = 0;
                 quizActive = quizQuestions[quizIndex];
                 quizFinished = false;
                 quizResultMsg = 'SELECIONE A ALTERNATIVA CORRETA';
                 quizMsgColor = '#60A5FA';
+                quizQuestionStartTime = Date.now();
             }
             
             // Zher Roulette Setup
@@ -2245,6 +3110,17 @@
                     return;
                 }
 
+                // Check 10s countdown timer
+                const elapsed = (Date.now() - quizQuestionStartTime) / 1000;
+                const remaining = Math.max(0, 10 - elapsed);
+                if (remaining <= 0) {
+                    synth.hurt();
+                    quizResultMsg = 'TEMPO ESGOTADO! BLOQUEIO DE SEGURANÇA!';
+                    quizMsgColor = '#EF4444';
+                    endGame(true);
+                    return;
+                }
+
                 // Question Box
                 ctx.fillStyle = '#0F172A';
                 ctx.strokeStyle = '#6366F1';
@@ -2259,6 +3135,19 @@
                 ctx.font = 'bold 13px Orbitron';
                 ctx.textAlign = 'center';
                 ctx.fillText(quizActive.q, canvas.width / 2, 105);
+
+                // Draw countdown timer bar
+                ctx.fillStyle = '#1E293B';
+                ctx.fillRect(40, 160, 420, 6);
+                const pct = remaining / 10;
+                ctx.fillStyle = pct > 0.4 ? '#6366F1' : '#EF4444';
+                ctx.fillRect(40, 160, 420 * pct, 6);
+
+                // Draw remaining seconds text inside question box (bottom right)
+                ctx.fillStyle = remaining > 4 ? '#A5B4FC' : '#FCA5A5';
+                ctx.font = 'bold 10px Orbitron';
+                ctx.textAlign = 'right';
+                ctx.fillText(`TEMPO: ${remaining.toFixed(1)}s`, 440, 140);
 
                 // Option buttons coords: we draw 4 option buttons
                 const btnCoords = [
@@ -2668,14 +3557,28 @@
             const modal = document.getElementById('game-over-modal');
             const content = document.getElementById('game-over-content');
             
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            content.classList.remove('scale-100');
-            content.classList.add('scale-95');
-            
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                startGame();
-            }, 300);
+            const paidGames = ['hacker', 'flappy', 'clicker', 'runner', 'quiz', 'treasure'];
+            if (paidGames.includes(currentGame)) {
+                spendPointsForGame(100, () => {
+                    modal.classList.add('opacity-0', 'pointer-events-none');
+                    content.classList.remove('scale-100');
+                    content.classList.add('scale-95');
+                    
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+                        startGame();
+                    }, 300);
+                });
+            } else {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95');
+                
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    startGame();
+                }, 300);
+            }
         }
 
         // ==========================================
@@ -3237,28 +4140,28 @@
                 name = "Zher Decoder";
                 colorClass = "text-electricblue";
                 description = "Você controla o Decodificador na parte inferior. Capture as chaves digitais e moedas de ouro que caem, mas desvie dos firewalls e glitches vermelhos de rastreamento do sistema.";
-                cost = "Grátis / Livre";
+                cost = "100 Z-Points por partida";
                 controls = "Teclado: Setas Esquerda/Direita. Mouse/Toque: Clique e arraste para os lados.";
                 rewards = "Cada 100 pontos de Score = 100 Z-Points (Multi-Boost 2x)";
             } else if (gameName === 'flappy') {
                 name = "Zher Bird";
                 colorClass = "text-cyberrose";
                 description = "Controle o pássaro cibernético. Pressione o botão para voar, ganhar altitude e passar com cuidado pelas brechas nas colunas de firewall verde.";
-                cost = "Grátis / Livre";
+                cost = "100 Z-Points por partida";
                 controls = "Teclado: Espaço ou Seta Cima. Mouse/Toque: Clique em qualquer lugar no Canvas.";
                 rewards = "Cada 100 pontos de Score = 100 Z-Points (Multi-Boost 2x)";
             } else if (gameName === 'clicker') {
                 name = "Zher Clicker";
                 colorClass = "text-toxicgreen";
                 description = "Clique/toque o mais rápido que puder no banco de dados central para descriptografar os dados. Cuidado: desvie dos glitches vermelhos que surgem aleatoriamente!";
-                cost = "Grátis / Livre";
+                cost = "100 Z-Points por partida";
                 controls = "Mouse/Toque: Clique rápido no círculo central.";
                 rewards = "Cada 100 pontos de Score = 100 Z-Points (Multi-Boost 2x)";
             } else if (gameName === 'runner') {
                 name = "Zher Runner";
                 colorClass = "text-amber-500";
                 description = "O seu personagem (amarelo com carinha) corre automaticamente. Salte por cima dos espinhos terrestres vermelhos (simples/altos/duplos) e desvie dos losangos azuis flutuantes que sobem e descem.";
-                cost = "Grátis / Livre";
+                cost = "100 Z-Points por partida";
                 controls = "Teclado: Espaço ou Seta Cima. Mouse/Toque: Clique no Canvas.";
                 rewards = "Cada 100 pontos de Score = 100 Z-Points (Multi-Boost 2x)";
             } else if (gameName === 'casino') {
@@ -3272,7 +4175,7 @@
                 name = "Zher Quiz Gamer";
                 colorClass = "text-indigo-500";
                 description = "Responda a perguntas de múltipla escolha de A a D sobre jogos e programação. Cada resposta certa concede 35 pontos. Atenção: se errar qualquer pergunta, o jogo termina!";
-                cost = "Grátis / Livre";
+                cost = "100 Z-Points por partida";
                 controls = "Clique diretamente em uma das 4 opções de resposta apresentadas.";
                 rewards = "+35 Z-Points por resposta correta";
             } else if (gameName === 'roulette') {
@@ -3286,7 +4189,7 @@
                 name = "Zher Caça ao Tesouro";
                 colorClass = "text-emerald-500";
                 description = "Vasculhe a grade 5x5 clicando nos nós para localizar 5 encriptadores ocultos. Cada encriptador dá +50 pontos. Se você clicar em um glitch vermelho, o jogo acaba.";
-                cost = "Grátis / Livre";
+                cost = "100 Z-Points por partida";
                 controls = "Clique nas células da grade 5x5.";
                 rewards = "Cada 100 pontos de Score = 250 Z-Points (com Multi-Boost)";
             }
