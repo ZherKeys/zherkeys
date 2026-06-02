@@ -1349,74 +1349,139 @@
             }
         });
 
-        // --- GLOBAL SUPPORT LOGIC ---
-        let allSupports = [];
-        let currentSupportUserId = null;
+        // --- GLOBAL SUPPORT LOGIC (TICKETS SYSTEM) ---
+        let allTickets = [];
+        let activeTicketId = null;
+        let adminSupportPollInterval = null;
 
         async function loadGlobalSupport() {
             try {
-                const res = await fetch('/api/admin/support');
-                allSupports = await res.json();
+                const res = await fetch('/api/admin/support/tickets');
+                allTickets = await res.json();
                 
                 const container = document.getElementById('support-list');
-                if(allSupports.length === 0) {
-                    container.innerHTML = '<div class="text-center text-slate-500 py-10">Nenhum chamado de suporte.</div>';
+                if(allTickets.length === 0) {
+                    container.innerHTML = '<div class="text-center text-slate-500 py-10 font-orbitron text-xs">Nenhum ticket de suporte.</div>';
                     return;
                 }
 
                 let html = '';
-                allSupports.forEach(s => {
-                    const unreadStyle = s.chat.length > 0 && s.chat[s.chat.length-1].sender_type === 'user' ? 'border-blue-400 shadow-lg shadow-blue-400/20' : 'border-slate-800 hover:border-slate-600';
+                allTickets.forEach(t => {
+                    const isOpen = t.status === 'open';
+                    const activeStyle = activeTicketId === t.id ? 'border-blue-500 bg-slate-900/40 shadow-lg shadow-blue-500/10' : 'border-slate-800 hover:border-slate-700';
                     
                     html += `
-                        <div onclick="openGlobalChat(${s.user_id}, '${s.email}')" class="bg-slate-950 p-4 rounded-xl border ${unreadStyle} cursor-pointer transition-all flex justify-between items-center group mb-2">
-                            <div>
-                                <div class="font-orbitron font-bold text-white text-sm">${s.email}</div>
-                                <div class="text-[10px] text-slate-500 mt-1">${s.chat.length} mensagens</div>
+                        <div onclick="openAdminTicket(${t.id})" class="bg-slate-950 p-4 rounded-xl border ${activeStyle} cursor-pointer transition-all flex justify-between items-start group mb-2">
+                            <div class="space-y-1 w-full max-w-[200px]">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="text-[8px] font-orbitron font-bold uppercase tracking-wide bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20">${t.category}</span>
+                                    <span class="text-[8px] text-slate-500 font-mono">#${t.id}</span>
+                                </div>
+                                <div class="font-semibold text-slate-300 text-xs truncate uppercase">${t.email}</div>
+                                <div class="text-[10px] text-slate-400 truncate">${t.description}</div>
+                                <div class="text-[8px] text-slate-600">${new Date(t.updated_at).toLocaleString()}</div>
                             </div>
-                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600 group-hover:text-blue-400 transition-colors"></i>
+                            <div class="flex items-center gap-1.5 flex-shrink-0">
+                                <span class="text-[8px] font-orbitron font-bold uppercase px-1.5 py-0.5 rounded ${isOpen ? 'text-blue-400 border border-blue-500/20 bg-blue-500/5' : 'text-slate-500 border border-slate-900 bg-slate-950'}">
+                                    ${isOpen ? 'Aberto' : 'Resolvido'}
+                                </span>
+                            </div>
                         </div>
                     `;
                 });
                 container.innerHTML = html;
                 lucide.createIcons();
+
+                // Keep updating active chat if open
+                if (activeTicketId) {
+                    loadAdminTicketChat();
+                }
             } catch(e) {
-                console.error(e);
+                console.error("Erro ao carregar tickets suporte:", e);
             }
         }
 
-        function openGlobalChat(userId, email) {
-            currentSupportUserId = userId;
+        async function openAdminTicket(ticketId) {
+            activeTicketId = ticketId;
             document.getElementById('global-chat-placeholder').classList.add('hidden');
-            document.getElementById('global-chat-user').innerText = email;
             
-            const support = allSupports.find(s => String(s.user_id) === String(userId));
-            renderGlobalChat(support ? support.chat : []);
+            loadAdminTicketChat();
+            
+            // Periodically poll every 3 seconds for new messages
+            clearInterval(adminSupportPollInterval);
+            adminSupportPollInterval = setInterval(loadAdminTicketChat, 3000);
+            
+            // Reload list to update active highlight border
+            loadGlobalSupport();
         }
 
-        function renderGlobalChat(messages) {
-            const container = document.getElementById('global-chat-messages');
-            if(messages.length === 0) {
-                container.innerHTML = '<div class="text-center text-slate-600 text-xs py-4">Nenhuma mensagem.</div>';
-                return;
-            }
-            container.innerHTML = messages.map(m => {
-                const isAdmin = m.sender_type === 'admin';
-                return `
-                    <div class="flex ${isAdmin ? 'justify-end' : 'justify-start'}">
-                        <div class="max-w-[80%] rounded-xl p-3 ${isAdmin ? 'bg-blue-600/20 border border-blue-500/30 text-blue-100 rounded-tr-none' : 'bg-slate-800 border border-slate-700 text-slate-300 rounded-tl-none'}">
-                            <p class="text-sm font-inter">${m.message}</p>
-                            <span class="text-[9px] opacity-50 mt-1 block">${new Date(m.created_at).toLocaleString()}</span>
+        async function loadAdminTicketChat() {
+            if (!activeTicketId) return;
+            try {
+                const res = await fetch(`/api/admin/support/tickets/${activeTicketId}`);
+                if (!res.ok) return;
+                const { ticket, messages } = await res.json();
+                
+                document.getElementById('global-chat-user').innerText = `${ticket.email} (Ticket #${ticket.id} - ${ticket.category})`;
+                
+                const statusEl = document.getElementById('admin-ticket-status');
+                const closeBtn = document.getElementById('admin-close-ticket-btn');
+                const closedNotice = document.getElementById('admin-ticket-closed-notice');
+                const chatForm = document.getElementById('global-chat-form');
+
+                if (ticket.status === 'open') {
+                    statusEl.innerText = "Aberto";
+                    statusEl.className = "text-[9px] font-orbitron font-bold uppercase px-2 py-0.5 rounded border border-blue-500/20 bg-blue-500/10 text-blue-400";
+                    closeBtn.classList.remove('hidden');
+                    chatForm.classList.remove('hidden');
+                    closedNotice.classList.add('hidden');
+                } else {
+                    statusEl.innerText = "Resolvido";
+                    statusEl.className = "text-[9px] font-orbitron font-bold uppercase px-2 py-0.5 rounded border border-slate-800 bg-slate-950 text-slate-500";
+                    closeBtn.classList.add('hidden');
+                    chatForm.classList.add('hidden');
+                    closedNotice.classList.remove('hidden');
+                }
+
+                const container = document.getElementById('global-chat-messages');
+                container.innerHTML = messages.map(m => {
+                    const isAdmin = m.sender_type === 'admin';
+                    return `
+                        <div class="flex ${isAdmin ? 'justify-end' : 'justify-start'}">
+                            <div class="max-w-[80%] rounded-xl p-3 ${isAdmin ? 'bg-blue-600/20 border border-blue-500/30 text-blue-100 rounded-tr-none' : 'bg-slate-850 border border-slate-850 text-slate-300 rounded-tl-none'} shadow-sm">
+                                <p class="text-xs font-inter leading-relaxed select-text">${m.message}</p>
+                                <span class="text-[8px] opacity-40 mt-1 block font-mono text-right">${new Date(m.created_at).toLocaleString()}</span>
+                            </div>
                         </div>
-                    </div>
-                `;
-            }).join('');
-            container.scrollTop = container.scrollHeight;
+                    `;
+                }).join('');
+                container.scrollTop = container.scrollHeight;
+            } catch(e) {
+                console.error("Erro ao carregar mensagens admin ticket:", e);
+            }
+        }
+
+        async function closeAdminTicket() {
+            if (!activeTicketId) return;
+            if (!confirm('Deseja realmente marcar este ticket como CONCLUÍDO/FECHADO?')) return;
+            
+            try {
+                const res = await fetch(`/api/admin/support/tickets/${activeTicketId}/close`, {
+                    method: 'POST'
+                });
+                if (res.ok) {
+                    loadGlobalSupport();
+                } else {
+                    alert('Erro ao fechar ticket.');
+                }
+            } catch(e) {
+                alert('Erro na conexão com o suporte.');
+            }
         }
 
         document.getElementById('global-chat-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if(!currentSupportUserId) return;
+            if(!activeTicketId) return;
             
             const input = document.getElementById('global-chat-input');
             const message = input.value.trim();
@@ -1424,15 +1489,16 @@
             input.value = '';
 
             try {
-                const res = await fetch('/api/admin/support/' + currentSupportUserId, {
+                const res = await fetch(`/api/admin/support/tickets/${activeTicketId}/messages`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message })
                 });
                 if(res.ok) {
-                    await loadGlobalSupport();
-                    const support = allSupports.find(s => String(s.user_id) === String(currentSupportUserId));
-                    renderGlobalChat(support.chat);
+                    loadAdminTicketChat();
+                } else {
+                    const err = await res.json();
+                    alert(err.error || 'Erro ao enviar mensagem.');
                 }
             } catch(err) {
                 console.error(err);
