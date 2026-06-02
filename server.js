@@ -3449,7 +3449,21 @@ app.post('/api/admin/users/:id/credits', requireAdmin, async (req, res) => {
 // ==========================================
 
 const multer = require('multer');
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
+
+// Verifica disponibilidade do ffmpeg no sistema e expõe flag
+let FFMPEG_AVAILABLE = false;
+try {
+    const check = spawnSync('ffmpeg', ['-version']);
+    if (check.status === 0) {
+        FFMPEG_AVAILABLE = true;
+        console.log('[INIT] ffmpeg disponível — transcodificação habilitada.');
+    } else {
+        console.warn('[INIT] ffmpeg NÃO encontrado — uploads de MKV não serão transcodificados automaticamente. Execute scripts/install-ffmpeg.ps1 no Windows.');
+    }
+} catch (e) {
+    console.warn('[INIT] Erro ao verificar ffmpeg — transcodificação desativada.');
+}
 
 // Configuração do Multer para Uploads do Streaming
 const storageGeneric = multer.diskStorage({
