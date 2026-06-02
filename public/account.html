@@ -1057,7 +1057,7 @@
         const receiptModalContent = document.getElementById('receipt-content');
 
         window.showOrderDetails = (orderId) => {
-            const o = allUserOrders.find(order => order.id === orderId);
+            const o = allUserOrders.find(order => String(order.id) === String(orderId));
             if (!o) return;
             currentDetailedOrder = o;
             
@@ -1109,7 +1109,7 @@
         };
 
         window.showPendingPixDetails = (orderId) => {
-            const o = allUserOrders.find(order => order.id === orderId);
+            const o = allUserOrders.find(order => String(order.id) === String(orderId));
             if (!o || !o.pix_qr_code) return;
             
             const createdAt = new Date(o.created_at).getTime();

@@ -952,7 +952,7 @@
             document.getElementById('chat-placeholder').classList.add('hidden');
             document.getElementById('chat-order-id').innerText = "#PEDIDO-" + orderId;
             
-            const order = allOrders.find(o => o.id === orderId);
+            const order = allOrders.find(o => String(o.id) === String(orderId));
             renderChat(order.chat);
         };
 
@@ -1003,7 +1003,7 @@
                 if(res.ok) {
                     // reload orders silently to get new chat
                     await loadOrders();
-                    const order = allOrders.find(o => o.id === currentOrderId);
+                    const order = allOrders.find(o => String(o.id) === String(currentOrderId));
                     renderChat(order.chat);
                 }
             } catch(err) {
@@ -1052,7 +1052,7 @@
             document.getElementById('global-chat-placeholder').classList.add('hidden');
             document.getElementById('global-chat-user').innerText = email;
             
-            const support = allSupports.find(s => s.user_id === userId);
+            const support = allSupports.find(s => String(s.user_id) === String(userId));
             renderGlobalChat(support ? support.chat : []);
         }
 
@@ -1093,7 +1093,7 @@
                 });
                 if(res.ok) {
                     await loadGlobalSupport();
-                    const support = allSupports.find(s => s.user_id === currentSupportUserId);
+                    const support = allSupports.find(s => String(s.user_id) === String(currentSupportUserId));
                     renderGlobalChat(support.chat);
                 }
             } catch(err) {
