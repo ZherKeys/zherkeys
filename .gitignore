@@ -6,6 +6,6 @@ public/uploads/
 bin/
 *.log
 .DS_Store.vercel
-node_modules
 database.sqlite
-.env
+zherplay/
+*.mkv
