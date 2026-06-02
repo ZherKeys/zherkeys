@@ -10,6 +10,22 @@ const speakeasy = require('speakeasy');
 const fs = require('fs');
 const { execFileSync } = require('child_process');
 
+// TFJS Universal Sentence Encoder (Node) - optional, faster than Python if installed
+let useTfjs = false;
+let tfModel = null;
+async function initTfjs() {
+    try {
+        // require tfjs-node to enable native bindings
+        require('@tensorflow/tfjs-node');
+        const use = require('@tensorflow-models/universal-sentence-encoder');
+        tfModel = await use.load();
+        useTfjs = true;
+        console.log('TFJS Universal Sentence Encoder loaded (Node)');
+    } catch (e) {
+        console.log('TFJS not available or failed to load:', e && e.message ? e.message : e);
+    }
+}
+
 const app = express();
 app.disable('x-powered-by'); // Remove o cabeçalho X-Powered-By por segurança (evita vazamento de tecnologia)
 const port = process.env.PORT || 3000;
@@ -4743,12 +4759,76 @@ async function createEmbedding(text) {
     return vec;
 }
 
-function dot(a,b){ let s=0; for(let i=0;i<a.length;i++) s += a[i]*b[i]; return s; }
-function norm(a){ return Math.sqrt(dot(a,a)); }
-function cosineSim(a,b){ return dot(a,b)/(norm(a)*norm(b) + 1e-10); }
+function dot(a,b){
+    // support arrays or sparse objects
+    if (Array.isArray(a) && Array.isArray(b)){
+        let s=0; for(let i=0;i<a.length;i++) s += (a[i]||0)*(b[i]||0); return s;
+    }
+    // object sparse
+    if (a && b && typeof a === 'object' && typeof b === 'object'){
+        let s=0;
+        // iterate smaller object
+        const ka = Object.keys(a), kb = Object.keys(b);
+        const small = ka.length < kb.length ? a : b;
+        const other = small === a ? b : a;
+        for(const k of Object.keys(small)){
+            if (other[k]) s += (small[k]||0)*(other[k]||0);
+        }
+        return s;
+    }
+    return 0;
+}
+function norm(a){
+    if (Array.isArray(a)) return Math.sqrt(dot(a,a));
+    if (a && typeof a === 'object'){
+        let s=0; for(const k of Object.keys(a)) s += (a[k]||0)*(a[k]||0); return Math.sqrt(s);
+    }
+    return 0;
+}
+function cosineSim(a,b){
+    const na = norm(a), nb = norm(b);
+    if (na === 0 || nb === 0) return 0;
+    return dot(a,b)/(na*nb + 1e-10);
+}
+
+// Simple Bag-of-Words normalized TF embedding (returns sparse object)
+function createBoWEmbedding(text){
+    if (!text) return {};
+    const toks = String(text).toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+    const freq = Object.create(null);
+    for(const t of toks) freq[t] = (freq[t]||0) + 1;
+    // normalize by L2
+    let s = 0; for(const k of Object.keys(freq)) s += freq[k]*freq[k];
+    const normFactor = Math.sqrt(s) || 1;
+    const out = Object.create(null);
+    for(const k of Object.keys(freq)) out[k] = freq[k]/normFactor;
+    return out;
+}
 
 // Local embedding via Python script (fallback when OpenAI not available)
 async function createLocalEmbedding(text) {
+    // If TFJS model loaded, use it (no Python)
+    if (useTfjs && tfModel) {
+        try {
+            const embeddings = await tfModel.embed([text]);
+            const arrs = await embeddings.array();
+            embeddings.dispose && embeddings.dispose();
+            return arrs[0];
+        } catch (e) {
+            console.error('createLocalEmbedding tfjs error', e);
+            // fallthrough to python fallback
+        }
+    }
+
+    // Fallback: call Python script if available
+    // Prefer lightweight BoW embedding in Node (no native build required)
+    try {
+        const bow = createBoWEmbedding(text);
+        if (bow && Object.keys(bow).length>0) return bow;
+    } catch(e){
+        console.error('createLocalEmbedding bow error', e);
+    }
+
     try {
         const input = JSON.stringify({ text });
         const out = execFileSync('python', ['scripts/embed_local.py'], { input, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
@@ -4877,3 +4957,6 @@ app.listen(port, () => {
     console.log(`🚀 ZHER KEYS SECURE SERVER INICIADO!`);
     console.log(`🌐 Porta: ${port}`);
 });
+
+// Initialize TFJS model in background (optional)
+initTfjs().catch(()=>{});
