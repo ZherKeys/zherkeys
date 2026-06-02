@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 const speakeasy = require('speakeasy');
 const fs = require('fs');
+const { execFileSync } = require('child_process');
 
 const app = express();
 app.disable('x-powered-by'); // Remove o cabeçalho X-Powered-By por segurança (evita vazamento de tecnologia)
@@ -4709,6 +4710,23 @@ if (!fs.existsSync(ZHER_EMBEDDINGS_FILE)) fs.writeFileSync(ZHER_EMBEDDINGS_FILE,
 function loadEmbeddings() { return loadJsonFile(ZHER_EMBEDDINGS_FILE); }
 function saveEmbeddings(arr) { saveJsonFile(ZHER_EMBEDDINGS_FILE, arr); }
 
+// Endpoint POC: cria embedding local e salva no arquivo de embeddings
+app.post('/api/zhertalk/embed-local', async (req, res) => {
+    const { text, query } = req.body;
+    if (!text || typeof text !== 'string') return res.status(400).json({ error: 'text obrigatório' });
+    try {
+        const embedding = await createLocalEmbedding(text);
+        const item = { id: crypto.randomUUID(), query: query || text.slice(0,80), embedding, created_at: Date.now() };
+        const embeds = loadEmbeddings();
+        embeds.push(item);
+        saveEmbeddings(embeds);
+        res.json({ success: true, item });
+    } catch (e) {
+        console.error('embed-local error', e);
+        res.status(500).json({ error: 'Erro gerando embedding local' });
+    }
+});
+
 async function createEmbedding(text) {
     if (!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY não configurada');
     const model = process.env.OPENAI_EMBEDDINGS_MODEL || 'text-embedding-3-small';
@@ -4729,9 +4747,35 @@ function dot(a,b){ let s=0; for(let i=0;i<a.length;i++) s += a[i]*b[i]; return s
 function norm(a){ return Math.sqrt(dot(a,a)); }
 function cosineSim(a,b){ return dot(a,b)/(norm(a)*norm(b) + 1e-10); }
 
+// Local embedding via Python script (fallback when OpenAI not available)
+async function createLocalEmbedding(text) {
+    try {
+        const input = JSON.stringify({ text });
+        const out = execFileSync('python', ['scripts/embed_local.py'], { input, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
+        const j = JSON.parse(out);
+        if (j.embedding) return j.embedding;
+        if (j.embeddings && Array.isArray(j.embeddings)) return j.embeddings[0];
+        throw new Error('Invalid embedding response');
+    } catch (e) {
+        console.error('createLocalEmbedding error', e && e.message ? e.message : e);
+        throw e;
+    }
+}
+
 async function semanticSearch(query, topK=3) {
     try {
-        const emb = await createEmbedding(query);
+        let emb;
+        try {
+            emb = await createEmbedding(query);
+        } catch (e) {
+            // fallback to local embedding if OpenAI not available
+            try {
+                emb = await createLocalEmbedding(query);
+            } catch (e2) {
+                console.error('semanticSearch embedding fallback failed', e2);
+                throw e;
+            }
+        }
         const items = loadEmbeddings();
         const scored = items.map(it => ({ it, score: cosineSim(emb, it.embedding) || 0 }));
         scored.sort((a,b)=>b.score-a.score);
