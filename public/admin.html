@@ -19,6 +19,24 @@
                 }
             }
         }
+
+        // If opened with ?media=ID in URL, prefill episode form for that media
+        try {
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('media')) {
+                const mediaId = parseInt(params.get('media'));
+                if (!isNaN(mediaId)) {
+                    // Wait for DOM to be ready then prepare form
+                    window.addEventListener('DOMContentLoaded', () => {
+                        // Attempt to find media title from existing list; otherwise pass empty
+                        let title = '';
+                        const el = document.querySelector(`[data-media-id="${mediaId}"]`);
+                        if (el) title = el.datasetMediaTitle || '';
+                        prepareAddEpisode(mediaId, title || '');
+                    });
+                }
+            }
+        } catch(e) {}
     </script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #020617; }

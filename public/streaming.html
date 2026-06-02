@@ -245,11 +245,15 @@
                         <button onclick="playMediaSource()" class="bg-netflixred hover:bg-rose-500 text-white font-orbitron font-bold text-xs tracking-wider px-8 py-4 rounded-xl flex items-center gap-2 transition-all w-fit shadow-lg shadow-netflixred/20">
                             <i data-lucide="play" class="w-4 h-4 fill-current"></i> ASSISTIR FILME COMPLETO
                         </button>
+                        <button onclick="manageEpisodes(selectedMedia.id)" class="ml-4 bg-indigo-900 hover:bg-indigo-800 text-white font-orbitron font-bold text-xs tracking-wider px-4 py-2 rounded-lg transition-all">GERENCIAR EPISÓDIOS</button>
                     </div>
 
                     <!-- Se for SÉRIE/ANIME, mostrar grade de episódios -->
                     <div id="detail-episodes-container" class="hidden space-y-4">
                         <h4 class="font-orbitron font-bold text-xs tracking-widest text-slate-300 border-b border-slate-850 pb-2">LISTA DE EPISÓDIOS</h4>
+                        <div class="flex justify-end">
+                            <button onclick="manageEpisodes(selectedMedia.id)" class="bg-indigo-900 hover:bg-indigo-800 text-white font-orbitron font-bold text-xs tracking-widest px-3 py-1 rounded">GERENCIAR EPISÓDIOS</button>
+                        </div>
                         <div class="space-y-3 max-h-64 overflow-y-auto pr-2" id="detail-episodes-list">
                             <!-- Episódios dinâmica -->
                         </div>
@@ -621,6 +625,7 @@
                 card.innerHTML = `
                     <div class="aspect-[2/3] overflow-hidden relative">
                         <img src="${item.thumbnail}" alt="${item.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                        ${item.episodes && item.episodes.length ? `<div class="absolute top-2 left-2 bg-black/60 text-xs text-white px-2 py-0.5 rounded">${item.episodes.length} EP</div>` : ''}
                         <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                             <div class="w-full flex items-center justify-between">
                                 <span class="bg-netflixred text-white p-2 rounded-full shadow-lg shadow-rose-900/30">
@@ -761,6 +766,11 @@
             } catch (e) {
                 showToast('Erro ao carregar detalhes.', 'error');
             }
+        }
+
+        // Gerenciar episódios: abre painel admin com media pre-selecionada
+        function manageEpisodes(mediaId) {
+            window.open(`admin.html?media=${mediaId}`,'_blank');
         }
 
         function closeDetailsModal() {

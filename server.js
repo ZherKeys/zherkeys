@@ -3556,7 +3556,7 @@ const storageGeneric = multer.diskStorage({
 
 const uploadGeneric = multer({
     storage: storageGeneric,
-    limits: { fileSize: 1024 * 1024 * 1024 * 3 } // Limite de 3GB para filmes em alta qualidade
+    limits: { fileSize: 1024 * 1024 * 1024 * 10 } // Limite de 10GB para filmes em alta qualidade
 });
 
 // Middleware para verificar se o usuário possui assinatura ativa
