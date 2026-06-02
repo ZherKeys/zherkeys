@@ -129,6 +129,10 @@
                 <img src="logo.png" alt="Zher Keys Logo" class="w-10 h-10 object-contain rounded-lg shadow-cyber border border-slate-700/50 bg-slate-950/40 p-1 group-hover:scale-105 transition-transform duration-300">
                 <span class="font-orbitron font-black text-xl tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">ZHER <span class="text-electricblue">KEYS</span></span>
             </div>
+            <!-- Mobile menu toggle -->
+            <button id="mobile-menu-toggle" class="md:hidden ml-3 inline-flex items-center justify-center p-2 rounded-md text-slate-300 hover:text-white hover:bg-slate-800" aria-expanded="false" onclick="toggleMobileMenu()">
+                <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
             
             <div class="hidden md:flex items-center gap-8 font-orbitron text-xs tracking-widest text-slate-400">
                 <a href="#catalogo" data-i18n="nav_catalog" class="relative py-2 transition-colors hover:text-white group">
@@ -177,6 +181,9 @@
                 <a href="#" onclick="openSupportModal(event)" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-blue-500 hover:bg-slate-700 transition-all group" title="Suporte ao Cliente">
                     <i data-lucide="headset" class="w-5 h-5 text-slate-300 group-hover:text-white"></i>
                 </a>
+                <a id="zherchat-btn" href="/zhertalk.html" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-electricblue hover:bg-slate-700 transition-all group ml-2" title="Zher Chat">
+                    <i data-lucide="message-square" class="w-5 h-5 text-slate-300 group-hover:text-white"></i>
+                </a>
                 <!-- Notificações -->
                 <div class="relative inline-block text-left" id="notification-dropdown-container">
                     <button onclick="toggleNotificationDropdown(event)" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-emerald-400 hover:bg-slate-700 transition-all group" title="Notificações">
@@ -204,6 +211,24 @@
             </div>
         </div>
     </nav>
+
+                <!-- ZherChat button next to support -->
+                <!-- Inserted in navbar area so it appears near support icon -->
+                
+
+    <!-- Mobile menu (hidden on md+) -->
+    <div id="mobile-menu" class="md:hidden hidden bg-slate-950/95 border-t border-slate-800/60 fixed top-20 left-0 right-0 z-40 backdrop-blur-sm">
+        <div class="px-4 py-3 space-y-2">
+            <a href="#catalogo" class="block text-white py-2">CATÁLOGO</a>
+            <a href="#vantagens" class="block text-white py-2">RECURSOS</a>
+            <a href="#suporte" class="block text-white py-2">SUPORTE</a>
+            <a href="/zhertalk.html" class="block text-rose-400 py-2">💬 ZHER CHAT</a>
+            <a href="/minigames.html" class="block text-emerald-400 py-2">🕹️ JOGUE E GANHE</a>
+            <a href="/streaming.html" class="block text-rose-500 py-2">🎬 ZHER PLAY</a>
+            <a href="/reading.html" class="block text-purple-400 py-2">📚 ZHER READ</a>
+            <a href="/account.html" class="block text-slate-300 py-2">Minha Conta</a>
+        </div>
+    </div>
 
     <!-    <section class="relative min-h-screen pt-32 pb-20 flex items-center justify-center px-4 overflow-hidden">
         <div class="absolute inset-0 z-0 opacity-40 mix-blend-screen pointer-events-none bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px]"></div>
@@ -241,6 +266,25 @@
 
         </div>
     </section>
+
+    <script>
+        function toggleMobileMenu(){
+            const el = document.getElementById('mobile-menu');
+            if(!el) return;
+            if(el.classList.contains('hidden')) el.classList.remove('hidden'); else el.classList.add('hidden');
+        }
+        // Close mobile menu on navigation
+        document.addEventListener('click', function(e){
+            const menu = document.getElementById('mobile-menu');
+            const toggle = document.getElementById('mobile-menu-toggle');
+            if(!menu || !toggle) return;
+            if(!menu.classList.contains('hidden')){
+                if(e.target.closest('#mobile-menu')===null && e.target!==toggle && !e.target.closest('#mobile-menu-toggle')){
+                    menu.classList.add('hidden');
+                }
+            }
+        });
+    </script>
 
     <!-- TRUST BAR -->
     <section class="border-y border-slate-900 bg-slate-950/40 backdrop-blur-sm py-8 px-4 overflow-hidden">

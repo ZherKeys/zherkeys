@@ -4499,7 +4499,7 @@ app.get('/api/zhertalk/knowledge', async (req, res) => {
 
 // Chat endpoint: responde usando apenas o conhecimento local (NÃO consulta a API para gerar a resposta)
 app.post('/api/zhertalk/chat', async (req, res) => {
-    const { message } = req.body;
+    const { message, style } = req.body; // style: direct|explain|concise|technical
     if (!message || typeof message !== 'string') return res.status(400).json({ error: 'message obrigatório' });
 
     try {
@@ -4587,10 +4587,59 @@ app.post('/api/zhertalk/chat', async (req, res) => {
             return { k, score };
         }).filter(x => x.score > 0).sort((a,b)=>b.score-a.score);
 
+        const topItems = scored.slice(0,3).map(s => s.k);
+
+        // If OpenAI key present, use it to generate a Chat-style reply following requested style
+        if (process.env.OPENAI_API_KEY) {
+            try {
+                // build context from topItems
+                const knowledgeText = topItems.map(k => `Fonte: "${k.query}"\n${k.content}`).join('\n\n---\n\n');
+                // map style to instruction
+                const styleInstr = (style || 'direct') === 'explain' ? 'Explique passo a passo e detalhe o raciocínio.'
+                    : (style || 'direct') === 'concise' ? 'Responda de forma concisa e objetiva, com bullet points quando aplicável.'
+                    : (style || 'direct') === 'technical' ? 'Use linguagem técnica, termos precisos e exemplos práticos quando necessário.'
+                    : 'Responda diretamente, como um assistente técnico, adaptando o nível conforme pedido.';
+
+                const systemMsg = `Você é um assistente técnico objetivo, semelhante ao ChatGPT. Sempre responda de forma profissional e clara. ${styleInstr}`;
+                const userMsg = `Pergunta: ${message}\n\nConhecimento disponível:\n${knowledgeText || '(nenhum)'}\n\nSe o conhecimento não for suficiente, diga que não há informação e sugira usar "/study <tópico>".`;
+
+                const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
+                        messages: [
+                            { role: 'system', content: systemMsg },
+                            { role: 'user', content: userMsg }
+                        ],
+                        max_tokens: 800,
+                        temperature: 0.0
+                    })
+                });
+
+                if (!resp.ok) {
+                    const txt = await resp.text();
+                    console.error('OpenAI chat error:', txt);
+                    // fallback to local reply
+                } else {
+                    const data = await resp.json();
+                    const content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+                    return res.json({ reply: content });
+                }
+            } catch (e) {
+                console.error('Erro gerando resposta via OpenAI:', e);
+                // proceed to local fallback
+            }
+        }
+
+        // Local fallback (no OpenAI or failure): return direct/technical phrasing
         if (scored.length === 0) {
-            reply = `Desculpe, não encontrei referências no meu conhecimento. Se você for administrador, envie "/study <tópico>" para que eu pesquise e armazene esse assunto.`;
+            reply = `Não localizei referências no meu conhecimento. Administradores podem usar \"/study <tópico>\" para que eu pesquise e armazene o conteúdo.`;
         } else {
-            const top = scored.slice(0,3).map(s => `Fonte: "${s.k.query}"\n${s.k.content}`).join('\n\n---\n\n');
+            const top = topItems.map(k => `Fonte: "${k.query}"\n${k.content}`).join('\n\n---\n\n');
             reply = `Baseado no meu conhecimento armazenado:\n\n${top}`;
         }
 
