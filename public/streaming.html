@@ -574,11 +574,23 @@
                     document.getElementById('hero-title').innerText = featured.title;
                     document.getElementById('hero-desc').innerText = featured.description;
                     
-                    document.getElementById('hero-play-btn').onclick = () => { openDetailsModal(featured.id) };
-                    document.getElementById('hero-info-btn').onclick = () => { openDetailsModal(featured.id) };
+                    document.getElementById('hero-play-btn').onclick = () => { window.location.href = `streaming.html?media=${featured.id}` };
+                    document.getElementById('hero-info-btn').onclick = () => { window.location.href = `streaming.html?media=${featured.id}` };
                 }
                 
                 renderGrids();
+
+                // If URL contains a media param, open details for that media
+                try {
+                    const params = new URLSearchParams(window.location.search);
+                    if (params.has('media')) {
+                        const mediaId = parseInt(params.get('media'));
+                        if (!isNaN(mediaId)) {
+                            // wait a tick to ensure DOM is ready
+                            setTimeout(() => openDetailsModal(mediaId), 300);
+                        }
+                    }
+                } catch (e) {}
             } catch (e) {
                 showToast('Erro ao carregar catálogo de mídias.', 'error');
             }
@@ -604,7 +616,7 @@
                 
                 const card = document.createElement('div');
                 card.className = `group relative cursor-pointer overflow-hidden rounded-xl border border-slate-900 hover:border-netflixred/80 bg-slate-950 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-rose-900/10`;
-                card.onclick = () => openDetailsModal(item.id);
+                card.onclick = () => { window.location.href = `streaming.html?media=${item.id}` };
                 
                 card.innerHTML = `
                     <div class="aspect-[2/3] overflow-hidden relative">

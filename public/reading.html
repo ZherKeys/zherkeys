@@ -474,6 +474,17 @@
                 
                 document.getElementById('total-medias-count').innerText = catalog.length;
                 renderGrids();
+
+                // If URL contains a book param, open details for that book
+                try {
+                    const params = new URLSearchParams(window.location.search);
+                    if (params.has('book')) {
+                        const bookId = parseInt(params.get('book'));
+                        if (!isNaN(bookId)) {
+                            setTimeout(() => openDetailsModal(bookId), 300);
+                        }
+                    }
+                } catch (e) {}
             } catch (e) {
                 showToast('Erro ao carregar catálogo de leitura.', 'error');
             }
@@ -494,7 +505,7 @@
                 
                 const card = document.createElement('div');
                 card.className = `group relative cursor-pointer overflow-hidden rounded-xl border border-slate-900 hover:border-readpurple bg-slate-950 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-purple-900/10`;
-                card.onclick = () => openDetailsModal(item.id);
+                card.onclick = () => { window.location.href = `reading.html?book=${item.id}` };
                 
                 card.innerHTML = `
                     <div class="aspect-[2/3] overflow-hidden relative">
