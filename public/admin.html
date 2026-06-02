@@ -265,40 +265,53 @@
 
         <!-- ABA: SUPORTE GLOBAL -->
         <div id="section-suporte" class="hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Lista de Contatos -->
-                <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 h-[80vh] overflow-y-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Lista de Tickets (Esquerda) -->
+                <div class="lg:col-span-1 bg-slate-900/50 border border-slate-800 rounded-2xl p-6 h-[80vh] overflow-y-auto">
                     <h3 class="font-orbitron font-bold text-white tracking-widest mb-6 border-b border-slate-800 pb-4 flex items-center justify-between">
-                        <span class="flex items-center gap-2"><i data-lucide="users" class="w-5 h-5 text-blue-400"></i> CLIENTES NO SUPORTE</span>
+                        <span class="flex items-center gap-2"><i data-lucide="inbox" class="w-5 h-5 text-blue-400"></i> TICKETS DE SUPORTE</span>
                         <button onclick="loadGlobalSupport()" class="text-xs text-slate-400 hover:text-white"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
                     </h3>
                     
                     <div id="support-list" class="space-y-4">
-                        <div class="text-center text-slate-500 py-10">Carregando contatos...</div>
+                        <div class="text-center text-slate-500 py-10">Carregando tickets...</div>
                     </div>
                 </div>
-
-                <!-- Chat Global -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col h-[80vh] relative">
+ 
+                <!-- Chat do Ticket (Direita) -->
+                <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col h-[80vh] relative">
                     <div id="global-chat-placeholder" class="absolute inset-0 flex items-center justify-center flex-col text-slate-500 z-10 bg-slate-900 rounded-2xl">
                         <i data-lucide="message-circle" class="w-12 h-12 mb-4 opacity-50"></i>
-                        <p class="font-orbitron tracking-widest text-sm">SELECIONE UM CLIENTE PARA ABRIR O CHAT</p>
+                        <p class="font-orbitron tracking-widest text-sm">SELECIONE UM TICKET PARA INICIAR O ATENDIMENTO</p>
                     </div>
-
-                    <h3 class="font-orbitron font-bold text-white tracking-widest mb-4 border-b border-slate-800 pb-4 flex items-center justify-between">
-                        <span class="flex items-center gap-2"><i data-lucide="headset" class="w-5 h-5 text-blue-400"></i> ATENDIMENTO</span>
-                        <span id="global-chat-user" class="text-blue-400 text-xs"></span>
+ 
+                    <h3 class="font-orbitron font-bold text-white tracking-widest mb-4 border-b border-slate-800 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="headset" class="w-5 h-5 text-blue-400"></i>
+                            <span id="global-chat-user" class="text-xs text-slate-300"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="admin-ticket-status" class="text-[9px] font-orbitron font-bold uppercase px-2 py-0.5 rounded border border-blue-500/20 bg-blue-500/10 text-blue-400">Aberto</span>
+                            <button id="admin-close-ticket-btn" onclick="closeAdminTicket()" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-500 text-white text-[9px] font-orbitron font-bold rounded uppercase transition-colors">
+                                Concluir Ticket
+                            </button>
+                        </div>
                     </h3>
-
+ 
                     <div id="global-chat-messages" class="flex-grow overflow-y-auto space-y-4 pr-2 mb-4">
                     </div>
-
-                    <form id="global-chat-form" class="mt-auto border-t border-slate-800 pt-4 flex gap-2">
-                        <input type="text" id="global-chat-input" placeholder="Digite sua resposta..." class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-400 transition-all">
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-6 rounded-lg font-orbitron font-bold flex items-center justify-center">
-                            <i data-lucide="send" class="w-5 h-5"></i>
-                        </button>
-                    </form>
+ 
+                    <div id="admin-chat-input-container" class="border-t border-slate-800 pt-4">
+                        <form id="global-chat-form" class="flex gap-2">
+                            <input type="text" id="global-chat-input" placeholder="Digite sua resposta..." class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-400 transition-all text-xs">
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-6 rounded-lg font-orbitron font-bold flex items-center justify-center">
+                                <i data-lucide="send" class="w-5 h-5"></i>
+                            </button>
+                        </form>
+                        <div id="admin-ticket-closed-notice" class="hidden text-center text-xs font-orbitron text-slate-500 bg-slate-950/40 border border-slate-850 p-3 rounded-lg uppercase">
+                            🔒 Este ticket está resolvido / concluído.
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

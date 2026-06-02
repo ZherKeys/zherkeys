@@ -199,6 +199,24 @@ async function initDB() {
                 pages TEXT DEFAULT '[]',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+
+            CREATE TABLE IF NOT EXISTS support_tickets (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                category TEXT NOT NULL,
+                description TEXT NOT NULL,
+                status TEXT DEFAULT 'open',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS support_ticket_messages (
+                id SERIAL PRIMARY KEY,
+                ticket_id INTEGER REFERENCES support_tickets(id) ON DELETE CASCADE,
+                sender_type TEXT NOT NULL,
+                message TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
         `);
 
         // Popular gêneros antigos automaticamente
@@ -2119,68 +2137,190 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 
-// ========================
-// SUPORTE CHAT GLOBAL
-// ========================
+// ==========================================
+// SEÇÃO DE SUPORTE - SISTEMA DE TICKETS
+// ==========================================
 
-app.get('/api/support', requireAuth, async (req, res) => {
+// Obter todos os tickets do usuário logado
+app.get('/api/support/tickets', requireAuth, async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM support_chats WHERE user_id=$1 ORDER BY id ASC', [req.session.userId]);
+        const result = await pool.query('SELECT * FROM support_tickets WHERE user_id=$1 ORDER BY status = \'open\' DESC, updated_at DESC', [req.session.userId]);
         res.json(result.rows);
     } catch(e) {
-        res.status(500).json({ error: 'Erro ao buscar chat' });
+        console.error("Erro ao buscar tickets:", e);
+        res.status(500).json({ error: 'Erro ao buscar tickets.' });
     }
 });
 
-app.post('/api/support', requireAuth, async (req, res) => {
-    const { message } = req.body;
-    if(!message) return res.status(400).json({ error: 'Mensagem vazia' });
+// Obter detalhes de um ticket (e mensagens)
+app.get('/api/support/tickets/:id', requireAuth, async (req, res) => {
+    const ticketId = parseInt(req.params.id);
     try {
-        await pool.query('INSERT INTO support_chats (user_id, sender_type, message) VALUES ($1, $2, $3)', [req.session.userId, 'user', message]);
+        const ticketRes = await pool.query('SELECT * FROM support_tickets WHERE id=$1 AND user_id=$2', [ticketId, req.session.userId]);
+        if (ticketRes.rows.length === 0) {
+            return res.status(404).json({ error: 'Ticket não encontrado.' });
+        }
+        const messagesRes = await pool.query('SELECT * FROM support_ticket_messages WHERE ticket_id=$1 ORDER BY id ASC', [ticketId]);
+        res.json({ ticket: ticketRes.rows[0], messages: messagesRes.rows });
+    } catch(e) {
+        console.error("Erro ao buscar detalhes do ticket:", e);
+        res.status(500).json({ error: 'Erro ao buscar detalhes do ticket.' });
+    }
+});
+
+// Criar um novo ticket (User)
+app.post('/api/support/tickets', requireAuth, async (req, res) => {
+    const { category, description } = req.body;
+    if (!category || !description) {
+        return res.status(400).json({ error: 'Categoria e descrição do problema são obrigatórias.' });
+    }
+    try {
+        const result = await pool.query(
+            'INSERT INTO support_tickets (user_id, category, description, status) VALUES ($1, $2, $3, $4) RETURNING *',
+            [req.session.userId, category, description, 'open']
+        );
+        const ticket = result.rows[0];
+        
+        // Insere a descrição como a primeira mensagem
+        await pool.query(
+            'INSERT INTO support_ticket_messages (ticket_id, sender_type, message) VALUES ($1, $2, $3)',
+            [ticket.id, 'user', description]
+        );
+        
+        res.status(201).json(ticket);
+    } catch(e) {
+        console.error("Erro ao abrir ticket:", e);
+        res.status(500).json({ error: 'Erro ao abrir ticket.' });
+    }
+});
+
+// Enviar mensagem em um ticket (User)
+app.post('/api/support/tickets/:id/messages', requireAuth, async (req, res) => {
+    const ticketId = parseInt(req.params.id);
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: 'Mensagem vazia.' });
+    try {
+        const ticketRes = await pool.query('SELECT status FROM support_tickets WHERE id=$1 AND user_id=$2', [ticketId, req.session.userId]);
+        if (ticketRes.rows.length === 0) {
+            return res.status(404).json({ error: 'Ticket não encontrado.' });
+        }
+        if (ticketRes.rows[0].status === 'closed') {
+            return res.status(400).json({ error: 'Este ticket já foi concluído/resolvido.' });
+        }
+        
+        await pool.query('INSERT INTO support_ticket_messages (ticket_id, sender_type, message) VALUES ($1, $2, $3)', [ticketId, 'user', message]);
+        await pool.query('UPDATE support_tickets SET updated_at=CURRENT_TIMESTAMP WHERE id=$1', [ticketId]);
         res.status(201).json({ success: true });
     } catch(e) {
-        res.status(500).json({ error: 'Erro ao enviar mensagem' });
+        console.error("Erro ao enviar mensagem no ticket:", e);
+        res.status(500).json({ error: 'Erro ao enviar mensagem.' });
     }
 });
 
-app.get('/api/admin/support', requireAdmin, async (req, res) => {
+// Marcar ticket como Resolvido/Concluído (User)
+app.post('/api/support/tickets/:id/resolve', requireAuth, async (req, res) => {
+    const ticketId = parseInt(req.params.id);
     try {
-        const usersRes = await pool.query(`
-            SELECT DISTINCT u.id as user_id, u.email 
-            FROM support_chats s
-            JOIN users u ON u.id = s.user_id
-        `);
-        const result = [];
-        for (const u of usersRes.rows) {
-            const chatRes = await pool.query('SELECT * FROM support_chats WHERE user_id=$1 ORDER BY id ASC', [u.user_id]);
-            result.push({
-                user_id: u.user_id,
-                email: u.email,
-                chat: chatRes.rows
-            });
+        const ticketRes = await pool.query('SELECT id FROM support_tickets WHERE id=$1 AND user_id=$2', [ticketId, req.session.userId]);
+        if (ticketRes.rows.length === 0) {
+            return res.status(404).json({ error: 'Ticket não encontrado.' });
         }
-        res.json(result);
+        await pool.query("UPDATE support_tickets SET status='closed', updated_at=CURRENT_TIMESTAMP WHERE id=$1", [ticketId]);
+        res.json({ success: true, message: 'Ticket marcado como resolvido.' });
     } catch(e) {
-        res.status(500).json({ error: 'Erro ao buscar suportes' });
+        console.error("Erro ao resolver ticket:", e);
+        res.status(500).json({ error: 'Erro ao marcar ticket como resolvido.' });
     }
 });
 
-app.post('/api/admin/support/:userId', requireAdmin, async (req, res) => {
-    const { userId } = req.params;
-    const { message } = req.body;
-    if(!message) return res.status(400).json({ error: 'Mensagem vazia' });
+// ADMIN: Obter todos os tickets do sistema
+app.get('/api/admin/support/tickets', requireAdmin, async (req, res) => {
     try {
-        await pool.query('INSERT INTO support_chats (user_id, sender_type, message) VALUES ($1, $2, $3)', [userId, 'admin', message]);
+        const result = await pool.query(`
+            SELECT t.*, u.email 
+            FROM support_tickets t 
+            JOIN users u ON u.id = t.user_id 
+            ORDER BY t.status = 'open' DESC, t.updated_at DESC
+        `);
+        res.json(result.rows);
+    } catch(e) {
+        console.error("Erro ao buscar todos os tickets:", e);
+        res.status(500).json({ error: 'Erro ao buscar tickets.' });
+    }
+});
+
+// ADMIN: Obter detalhes e mensagens de um ticket específico
+app.get('/api/admin/support/tickets/:id', requireAdmin, async (req, res) => {
+    const ticketId = parseInt(req.params.id);
+    try {
+        const ticketRes = await pool.query(`
+            SELECT t.*, u.email 
+            FROM support_tickets t 
+            JOIN users u ON u.id = t.user_id 
+            WHERE t.id = $1
+        `, [ticketId]);
+        if (ticketRes.rows.length === 0) {
+            return res.status(404).json({ error: 'Ticket não encontrado.' });
+        }
+        const messagesRes = await pool.query('SELECT * FROM support_ticket_messages WHERE ticket_id=$1 ORDER BY id ASC', [ticketId]);
+        res.json({ ticket: ticketRes.rows[0], messages: messagesRes.rows });
+    } catch(e) {
+        console.error("Erro ao buscar detalhes do ticket:", e);
+        res.status(500).json({ error: 'Erro ao buscar ticket.' });
+    }
+});
+
+// ADMIN: Enviar resposta em um ticket
+app.post('/api/admin/support/tickets/:id/messages', requireAdmin, async (req, res) => {
+    const ticketId = parseInt(req.params.id);
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: 'Mensagem vazia.' });
+    try {
+        const ticketRes = await pool.query('SELECT user_id, status FROM support_tickets WHERE id=$1', [ticketId]);
+        if (ticketRes.rows.length === 0) {
+            return res.status(404).json({ error: 'Ticket não encontrado.' });
+        }
+        if (ticketRes.rows[0].status === 'closed') {
+            return res.status(400).json({ error: 'Este ticket já está fechado/concluído.' });
+        }
         
-        // Envia notificação para o usuário
+        const userId = ticketRes.rows[0].user_id;
+        await pool.query('INSERT INTO support_ticket_messages (ticket_id, sender_type, message) VALUES ($1, $2, $3)', [ticketId, 'admin', message]);
+        await pool.query('UPDATE support_tickets SET updated_at=CURRENT_TIMESTAMP WHERE id=$1', [ticketId]);
+        
+        // Envia notificação ao usuário
         await pool.query(
             'INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)',
-            [userId, 'Nova Resposta de Suporte', 'Você recebeu uma resposta da nossa equipe de suporte técnico.', 'chat']
+            [userId, 'Nova Resposta de Suporte', 'Seu ticket de suporte recebeu uma resposta da nossa equipe.', 'chat']
         );
         
         res.status(201).json({ success: true });
     } catch(e) {
-        res.status(500).json({ error: 'Erro ao enviar mensagem' });
+        console.error("Erro ao responder ticket:", e);
+        res.status(500).json({ error: 'Erro ao enviar mensagem.' });
+    }
+});
+
+// ADMIN: Fechar/Concluir um ticket
+app.post('/api/admin/support/tickets/:id/close', requireAdmin, async (req, res) => {
+    const ticketId = parseInt(req.params.id);
+    try {
+        const ticketRes = await pool.query('SELECT user_id FROM support_tickets WHERE id=$1', [ticketId]);
+        if (ticketRes.rows.length === 0) {
+            return res.status(404).json({ error: 'Ticket não encontrado.' });
+        }
+        await pool.query("UPDATE support_tickets SET status='closed', updated_at=CURRENT_TIMESTAMP WHERE id=$1", [ticketId]);
+        
+        // Notificação
+        await pool.query(
+            'INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)',
+            [ticketRes.rows[0].user_id, 'Ticket Concluído', 'Seu ticket de suporte foi marcado como concluído/resolvido pelo suporte.', 'chat']
+        );
+        
+        res.json({ success: true, message: 'Ticket fechado com sucesso.' });
+    } catch(e) {
+        console.error("Erro ao fechar ticket:", e);
+        res.status(500).json({ error: 'Erro ao fechar ticket.' });
     }
 });
 

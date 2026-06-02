@@ -698,22 +698,93 @@
             <button onclick="closeSupportModal()" class="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center bg-slate-950/60 hover:bg-rose-500 text-slate-300 hover:text-white rounded-full transition-colors backdrop-blur-sm">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
-            <div class="p-6 border-b border-slate-800 bg-slate-950">
-                <h3 class="font-orbitron font-black text-xl text-white flex items-center gap-2">
-                    <i data-lucide="headset" class="w-6 h-6 text-blue-500"></i> SUPORTE AO CLIENTE
-                </h3>
-                <p class="text-xs text-slate-400 mt-1">Converse diretamente com nossa equipe técnica.</p>
-            </div>
-            <div class="p-4 sm:p-6 flex flex-col h-[60vh]">
-                <div id="support-chat-messages" class="flex-grow overflow-y-auto space-y-4 pr-2 mb-4">
-                    <div class="text-center text-slate-500 py-10 text-sm">Carregando histórico...</div>
+            <div class="p-6 border-b border-slate-800 bg-slate-950 flex items-center justify-between">
+                <div>
+                    <h3 class="font-orbitron font-black text-xl text-white flex items-center gap-2">
+                        <i data-lucide="headset" class="w-6 h-6 text-blue-500"></i> SUPORTE AO CLIENTE
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">Abra tickets e fale diretamente com nosso suporte.</p>
                 </div>
-                <form id="support-chat-form" class="mt-auto border-t border-slate-800 pt-4 flex gap-2">
-                    <input type="text" id="support-chat-input" placeholder="Digite sua mensagem..." required class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-all">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-6 rounded-lg font-orbitron font-bold flex items-center justify-center transition-colors">
-                        <i data-lucide="send" class="w-5 h-5"></i>
+            </div>
+
+            <!-- VIEW 1: DASHBOARD DE TICKETS -->
+            <div id="support-view-dashboard" class="p-4 sm:p-6 flex flex-col h-[60vh] space-y-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-orbitron font-bold text-slate-400 uppercase tracking-widest">Seus Tickets</span>
+                    <button onclick="showCreateTicketView()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-[10px] font-orbitron font-bold tracking-wider uppercase transition-colors flex items-center gap-1">
+                        <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Novo Ticket
+                    </button>
+                </div>
+                <div id="support-tickets-list" class="flex-grow overflow-y-auto space-y-3 pr-2">
+                    <!-- Dinâmico via JS -->
+                    <div class="text-center text-slate-500 py-10 text-xs">Carregando seus tickets...</div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: CRIAR NOVO TICKET -->
+            <div id="support-view-create-ticket" class="p-4 sm:p-6 flex flex-col h-[60vh] hidden space-y-4">
+                <div class="flex items-center gap-2">
+                    <button onclick="showDashboardView()" class="text-xs font-orbitron text-slate-400 hover:text-white flex items-center gap-1">
+                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Voltar
+                    </button>
+                </div>
+                
+                <h4 class="font-orbitron font-bold text-white text-sm tracking-wider uppercase">Abrir Novo Ticket</h4>
+                
+                <form id="create-ticket-form" class="space-y-4 flex-grow flex flex-col" onsubmit="submitNewTicket(event)">
+                    <div>
+                        <label class="block text-[10px] font-orbitron tracking-widest text-slate-400 mb-1">Qual o problema?</label>
+                        <select id="ticket-category" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-3 text-xs text-white focus:outline-none focus:border-blue-500 transition-all cursor-pointer">
+                            <option value="Key / Produto não funciona">Chave / Produto não funciona</option>
+                            <option value="Problema com Pagamento">Problema com Pagamento / Pix</option>
+                            <option value="Reembolso">Solicitação de Reembolso</option>
+                            <option value="Dúvida Geral">Dúvida Geral</option>
+                            <option value="Outro">Outro Problema</option>
+                        </select>
+                    </div>
+
+                    <div class="flex-grow flex flex-col">
+                        <label class="block text-[10px] font-orbitron tracking-widest text-slate-400 mb-1">Descreva o que ocorreu</label>
+                        <textarea id="ticket-description" required rows="5" placeholder="Digite detalhadamente o seu problema para que possamos te ajudar..." class="w-full flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-xs text-white focus:outline-none focus:border-blue-500 transition-all resize-none"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-orbitron font-bold tracking-widest py-3 rounded-lg transition-colors text-xs uppercase">
+                        Enviar Ticket
                     </button>
                 </form>
+            </div>
+
+            <!-- VIEW 3: CHAT DE UM TICKET -->
+            <div id="support-view-chat" class="p-4 sm:p-6 flex flex-col h-[60vh] hidden">
+                <!-- Header do Chat -->
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+                    <button onclick="showDashboardView()" class="text-xs font-orbitron text-slate-400 hover:text-white flex items-center gap-1">
+                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Voltar
+                    </button>
+                    <div class="text-right">
+                        <span id="chat-ticket-category" class="text-[10px] font-orbitron text-blue-400 font-bold bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 uppercase">Categoria</span>
+                        <span id="chat-ticket-status" class="text-[10px] font-orbitron text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 uppercase ml-2">Aberto</span>
+                    </div>
+                </div>
+
+                <div id="support-chat-messages" class="flex-grow overflow-y-auto space-y-4 pr-2 mb-4">
+                    <!-- Dinâmico via JS -->
+                </div>
+
+                <div id="chat-ticket-resolution-container" class="mt-auto border-t border-slate-800 pt-4 space-y-3">
+                    <button id="resolve-ticket-btn" onclick="markActiveTicketAsResolved()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-orbitron font-bold text-[10px] tracking-widest py-2 rounded transition-colors uppercase">
+                        ✔️ Marcar Problema como Resolvido
+                    </button>
+                    <form id="support-chat-form" class="flex gap-2">
+                        <input type="text" id="support-chat-input" placeholder="Digite sua mensagem..." required class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-all text-xs">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-5 rounded-lg font-orbitron font-bold flex items-center justify-center transition-colors">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                        </button>
+                    </form>
+                    <div id="ticket-closed-notice" class="hidden text-center text-xs font-orbitron text-slate-500 bg-slate-950/40 border border-slate-850 p-3 rounded-lg uppercase">
+                        🔒 Este ticket foi resolvido / concluído.
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1413,10 +1484,11 @@
             document.body.style.overflow = '';
         };
 
-        // --- SUPPORT MODAL LOGIC ---
+        // --- SUPPORT MODAL LOGIC (TICKETS SYSTEM) ---
         const supportModal = document.getElementById('support-modal');
         const supportModalContent = document.getElementById('support-modal-content');
         let supportPollInterval = null;
+        let activeTicketId = null;
 
         window.openSupportModal = async (e) => {
             if(e) e.preventDefault();
@@ -1434,8 +1506,7 @@
             }, 10);
             document.body.style.overflow = 'hidden';
             
-            loadSupportChat();
-            supportPollInterval = setInterval(loadSupportChat, 3000);
+            showDashboardView();
         };
 
         window.closeSupportModal = () => {
@@ -1445,48 +1516,197 @@
             setTimeout(() => supportModal.classList.add('hidden'), 300);
             document.body.style.overflow = '';
             clearInterval(supportPollInterval);
+            activeTicketId = null;
         };
 
-        async function loadSupportChat() {
+        function showDashboardView() {
+            document.getElementById('support-view-dashboard').classList.remove('hidden');
+            document.getElementById('support-view-create-ticket').classList.add('hidden');
+            document.getElementById('support-view-chat').classList.add('hidden');
+            clearInterval(supportPollInterval);
+            activeTicketId = null;
+            loadUserTicketsList();
+        }
+
+        function showCreateTicketView() {
+            document.getElementById('support-view-dashboard').classList.add('hidden');
+            document.getElementById('support-view-create-ticket').classList.remove('hidden');
+            document.getElementById('support-view-chat').classList.add('hidden');
+            
+            document.getElementById('ticket-category').value = "Key / Produto não funciona";
+            document.getElementById('ticket-description').value = "";
+            clearInterval(supportPollInterval);
+            activeTicketId = null;
+        }
+
+        async function showChatView(ticketId) {
+            document.getElementById('support-view-dashboard').classList.add('hidden');
+            document.getElementById('support-view-create-ticket').classList.add('hidden');
+            document.getElementById('support-view-chat').classList.remove('hidden');
+            activeTicketId = ticketId;
+
+            // Load once immediately and then poll every 3 seconds
+            loadTicketChat();
+            clearInterval(supportPollInterval);
+            supportPollInterval = setInterval(loadTicketChat, 3000);
+        }
+
+        async function loadUserTicketsList() {
+            const listEl = document.getElementById('support-tickets-list');
             try {
-                const res = await fetch('/api/support');
-                if(!res.ok) return;
-                const messages = await res.json();
+                const res = await fetch('/api/support/tickets');
+                if (!res.ok) return;
+                const tickets = await res.json();
                 
-                const container = document.getElementById('support-chat-messages');
-                if(messages.length === 0) {
-                    container.innerHTML = '<div class="text-center text-slate-500 text-sm py-10">Envie uma mensagem para iniciar o chat.</div>';
+                if (tickets.length === 0) {
+                    listEl.innerHTML = `
+                        <div class="text-center text-slate-500 py-16 flex flex-col items-center justify-center gap-2">
+                            <i data-lucide="inbox" class="w-8 h-8 opacity-40"></i>
+                            <p class="text-xs font-orbitron">Você não possui nenhum ticket de suporte aberto.</p>
+                        </div>
+                    `;
+                    lucide.createIcons();
                     return;
                 }
+
+                listEl.innerHTML = tickets.map(t => {
+                    const isOpen = t.status === 'open';
+                    return `
+                        <div onclick="showChatView(${t.id})" class="p-4 bg-slate-950/60 border ${isOpen ? 'border-slate-800 hover:border-blue-500/50' : 'border-slate-900 opacity-70'} rounded-xl cursor-pointer hover:bg-slate-950 transition-all flex justify-between items-center group">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[9px] font-orbitron font-bold uppercase tracking-wider ${isOpen ? 'text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20' : 'text-slate-500 bg-slate-950 px-2 py-0.5 rounded border border-slate-850'}">${t.category}</span>
+                                    <span class="text-[9px] font-orbitron font-semibold text-slate-500">Ticket #${t.id}</span>
+                                </div>
+                                <p class="text-xs text-slate-300 font-semibold group-hover:text-white truncate max-w-[280px]">${t.description}</p>
+                                <span class="text-[8px] text-slate-500 block">${new Date(t.updated_at).toLocaleString()}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[9px] font-orbitron font-bold uppercase px-2 py-0.5 rounded ${isOpen ? 'text-emerald-400 border border-emerald-500/20 bg-emerald-500/5' : 'text-slate-500 border border-slate-800 bg-slate-950'}">
+                                    ${isOpen ? 'Aberto' : 'Resolvido'}
+                                </span>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600 group-hover:text-white transition-colors"></i>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                lucide.createIcons();
+            } catch(e) {
+                listEl.innerHTML = '<div class="text-center text-rose-500 py-10 text-xs">Erro ao carregar tickets.</div>';
+            }
+        }
+
+        async function submitNewTicket(e) {
+            e.preventDefault();
+            const category = document.getElementById('ticket-category').value;
+            const description = document.getElementById('ticket-description').value.trim();
+            
+            if(!description) return;
+            
+            try {
+                const res = await fetch('/api/support/tickets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ category, description })
+                });
+                
+                if (res.ok) {
+                    const ticket = await res.json();
+                    showChatView(ticket.id);
+                } else {
+                    const err = await res.json();
+                    alert(err.error || 'Erro ao abrir ticket.');
+                }
+            } catch(err) {
+                console.error(err);
+                alert('Erro na conexão com o servidor.');
+            }
+        }
+
+        async function loadTicketChat() {
+            if (!activeTicketId) return;
+            try {
+                const res = await fetch(`/api/support/tickets/${activeTicketId}`);
+                if (!res.ok) return;
+                const { ticket, messages } = await res.json();
+                
+                document.getElementById('chat-ticket-category').innerText = ticket.category;
+                
+                const statusEl = document.getElementById('chat-ticket-status');
+                const resolveBtn = document.getElementById('resolve-ticket-btn');
+                const chatForm = document.getElementById('support-chat-form');
+                const closedNotice = document.getElementById('ticket-closed-notice');
+
+                if (ticket.status === 'open') {
+                    statusEl.innerText = "Aberto";
+                    statusEl.className = "text-[10px] font-orbitron text-blue-400 font-bold bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 uppercase";
+                    resolveBtn.classList.remove('hidden');
+                    chatForm.classList.remove('hidden');
+                    closedNotice.classList.add('hidden');
+                } else {
+                    statusEl.innerText = "Resolvido";
+                    statusEl.className = "text-[10px] font-orbitron text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 uppercase";
+                    resolveBtn.classList.add('hidden');
+                    chatForm.classList.add('hidden');
+                    closedNotice.classList.remove('hidden');
+                }
+
+                const container = document.getElementById('support-chat-messages');
                 container.innerHTML = messages.map(m => {
                     const isUser = m.sender_type === 'user';
                     return `
                         <div class="flex ${isUser ? 'justify-end' : 'justify-start'}">
-                            <div class="max-w-[85%] rounded-xl p-3 ${isUser ? 'bg-blue-600/20 border border-blue-500/30 text-blue-100 rounded-tr-none' : 'bg-slate-800 border border-slate-700 text-slate-300 rounded-tl-none'}">
-                                <p class="text-sm font-inter">${m.message}</p>
-                                <span class="text-[9px] opacity-50 mt-1 block">${new Date(m.created_at).toLocaleString()}</span>
+                            <div class="max-w-[85%] rounded-xl p-3 ${isUser ? 'bg-blue-600/20 border border-blue-500/30 text-blue-100 rounded-tr-none' : 'bg-slate-850 border border-slate-850 text-slate-300 rounded-tl-none'} shadow-md">
+                                <p class="text-xs font-inter leading-relaxed select-text">${m.message}</p>
+                                <span class="text-[8px] opacity-40 mt-1 block font-mono text-right">${new Date(m.created_at).toLocaleString()}</span>
                             </div>
                         </div>
                     `;
                 }).join('');
                 container.scrollTop = container.scrollHeight;
-            } catch(e) { console.error(e); }
+            } catch(e) {
+                console.error("Erro no chat do ticket:", e);
+            }
+        }
+
+        async function markActiveTicketAsResolved() {
+            if (!activeTicketId) return;
+            if (!confirm('Deseja realmente marcar este ticket de suporte como RESOLVIDO?')) return;
+            
+            try {
+                const res = await fetch(`/api/support/tickets/${activeTicketId}/resolve`, {
+                    method: 'POST'
+                });
+                if (res.ok) {
+                    loadTicketChat();
+                } else {
+                    alert('Erro ao marcar ticket como resolvido.');
+                }
+            } catch(e) {
+                alert('Erro ao conectar com o suporte.');
+            }
         }
 
         document.getElementById('support-chat-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (!activeTicketId) return;
             const input = document.getElementById('support-chat-input');
             const message = input.value.trim();
             if(!message) return;
             input.value = '';
             
             try {
-                const res = await fetch('/api/support', {
+                const res = await fetch(`/api/support/tickets/${activeTicketId}/messages`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message })
                 });
-                if(res.ok) loadSupportChat();
+                if(res.ok) {
+                    loadTicketChat();
+                } else {
+                    const err = await res.json();
+                    alert(err.error || 'Erro ao enviar mensagem.');
+                }
             } catch(err) { console.error(err); }
         });
 
