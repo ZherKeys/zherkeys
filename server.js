@@ -126,6 +126,19 @@ async function initDB() {
                 message TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+            
+            CREATE TABLE IF NOT EXISTS sweepstake_participants (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER UNIQUE REFERENCES users(id),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            
+            CREATE TABLE IF NOT EXISTS sweepstake_history (
+                id SERIAL PRIMARY KEY,
+                winner_id INTEGER REFERENCES users(id),
+                drawn_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                prize_amount BIGINT DEFAULT 10000000
+            );
         `);
 
         // Popular gêneros antigos automaticamente
@@ -2689,6 +2702,163 @@ app.post('/api/minigames/spend-points', requireAuth, async (req, res) => {
         client.release();
     }
 });
+
+// ========================
+// SISTEMA DE SORTEIO SEMANAL (Z-COINS)
+// ========================
+
+// Verificar status de participação do usuário logado
+app.get('/api/sweepstake/status', requireAuth, async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const result = await pool.query(
+            "SELECT 1 FROM sweepstake_participants WHERE user_id = $1",
+            [userId]
+        );
+        res.json({ participating: result.rows.length > 0 });
+    } catch (err) {
+        console.error("[SWEEPSTAKE-STATUS] Erro ao buscar status:", err);
+        res.status(500).json({ error: 'Erro ao processar status de participação.' });
+    }
+});
+
+// Registrar participação do usuário logado
+app.post('/api/sweepstake/join', requireAuth, async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        
+        // Verifica se já está cadastrado
+        const checkRes = await pool.query(
+            "SELECT 1 FROM sweepstake_participants WHERE user_id = $1",
+            [userId]
+        );
+        if (checkRes.rows.length > 0) {
+            return res.status(400).json({ error: 'Você já está participando deste sorteio semanal.' });
+        }
+        
+        // Insere o participante no banco de dados
+        await pool.query(
+            "INSERT INTO sweepstake_participants (user_id) VALUES ($1)",
+            [userId]
+        );
+        
+        res.json({ success: true, message: 'Parabéns, você está participando do sorteio!' });
+    } catch (err) {
+        console.error("[SWEEPSTAKE-JOIN] Erro ao registrar participante:", err);
+        res.status(500).json({ error: 'Erro interno ao processar sua inscrição no sorteio.' });
+    }
+});
+
+// Lógica de Sorteio Automático
+async function runSweepstakeDraw() {
+    try {
+        const now = new Date();
+        
+        // Determina o último domingo às 20h
+        let lastSunday = new Date();
+        lastSunday.setDate(now.getDate() - now.getDay());
+        lastSunday.setHours(20, 0, 0, 0);
+        
+        // Se hoje for domingo e ainda não passou das 20h, o último sorteio foi no domingo da semana anterior
+        if (now.getDay() === 0 && now.getHours() < 20) {
+            lastSunday.setDate(lastSunday.getDate() - 7);
+        }
+        
+        // Verifica se já houve sorteio realizado depois do último domingo às 20h
+        const checkDraw = await pool.query(
+            "SELECT COUNT(*) FROM sweepstake_history WHERE drawn_at >= $1",
+            [lastSunday]
+        );
+        
+        if (parseInt(checkDraw.rows[0].count) > 0) {
+            // Sorteio desta semana já foi realizado
+            return;
+        }
+        
+        // Se passou do horário de domingo 20h e ainda não houve sorteio, realizamos agora!
+        let targetSunday = new Date();
+        targetSunday.setDate(now.getDate() - now.getDay());
+        targetSunday.setHours(20, 0, 0, 0);
+        
+        if (now >= targetSunday) {
+            console.log('[SWEEPSTAKE] Horário do sorteio atingido! Sorteando ganhador...');
+            
+            // Busca todos os participantes
+            const participantsRes = await pool.query("SELECT user_id FROM sweepstake_participants");
+            const participants = participantsRes.rows;
+            
+            if (participants.length === 0) {
+                console.log('[SWEEPSTAKE] Nenhum participante inscrito esta semana. Sorteio vazio registrado.');
+                await pool.query(
+                    "INSERT INTO sweepstake_history (winner_id, prize_amount) VALUES ($1, $2)",
+                    [null, 0]
+                );
+                return;
+            }
+            
+            // Sorteia um participante
+            const randomIndex = Math.floor(Math.random() * participants.length);
+            const winnerId = participants[randomIndex].user_id;
+            
+            const client = await pool.connect();
+            try {
+                await client.query('BEGIN');
+                
+                // Adiciona os 10 milhões de Z-Points (points) para o usuário vencedor
+                const userRes = await client.query("SELECT points, email FROM users WHERE id = $1 FOR UPDATE", [winnerId]);
+                if (userRes.rows.length > 0) {
+                    const currentPoints = parseInt(userRes.rows[0].points || 0);
+                    const newPoints = currentPoints + 10000000;
+                    const email = userRes.rows[0].email;
+                    
+                    await client.query("UPDATE users SET points = $1 WHERE id = $2", [newPoints, winnerId]);
+                    
+                    // Adiciona transação
+                    await client.query(
+                        "INSERT INTO wallet_transactions (user_id, amount, type, description) VALUES ($1, $2, $3, $4)",
+                        [winnerId, 0.00, 'minigame', 'Prêmio do Sorteio Semanal: +10.000.000 Z-Coins']
+                    );
+                    
+                    // Adiciona notificação para o vencedor
+                    await client.query(
+                        "INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)",
+                        [
+                            winnerId,
+                            "🏆 VOCÊ GANHOU O SORTEIO!",
+                            "Parabéns! Você foi o grande vencedor do sorteio semanal e acaba de receber 10.000.000 de Z-Coins na sua conta!",
+                            "system"
+                        ]
+                    );
+                    
+                    console.log(`[SWEEPSTAKE] Sorteio realizado com sucesso! Vencedor: ${email} (ID: ${winnerId})`);
+                }
+                
+                // Registra na história
+                await client.query(
+                    "INSERT INTO sweepstake_history (winner_id, prize_amount) VALUES ($1, $2)",
+                    [winnerId, 10000000]
+                );
+                
+                // Limpa todos os participantes para a próxima semana
+                await client.query("DELETE FROM sweepstake_participants");
+                
+                await client.query('COMMIT');
+            } catch (err) {
+                await client.query('ROLLBACK');
+                console.error("[SWEEPSTAKE] Erro durante transação de sorteio:", err);
+            } finally {
+                client.release();
+            }
+        }
+    } catch (err) {
+        console.error("[SWEEPSTAKE] Erro na verificação do sorteio:", err);
+    }
+}
+
+// Executa verificação a cada 60 segundos
+setInterval(runSweepstakeDraw, 60 * 1000);
+// E roda uma verificação no início do servidor
+setTimeout(runSweepstakeDraw, 5000);
 
 // Listar todos os usuários com seus saldos (Admin)
 app.get('/api/admin/users', requireAdmin, async (req, res) => {

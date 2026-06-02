@@ -298,9 +298,9 @@
                         </div>
 
                         <div class="flex flex-col sm:flex-row items-center gap-4">
-                            <a href="/minigames.html" class="magnetic-button w-full sm:w-auto text-center bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-xs tracking-widest font-bold px-8 py-4.5 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all duration-300 uppercase">
+                            <button onclick="openSweepstakeModal()" class="magnetic-button w-full sm:w-auto text-center bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-xs tracking-widest font-bold px-8 py-4.5 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all duration-300 uppercase">
                                 PARTICIPAR AGORA
-                            </a>
+                            </button>
                             <button onclick="document.getElementById('vantagens').scrollIntoView({behavior:'smooth'})" class="w-full sm:w-auto bg-slate-950/60 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-orbitron text-xs tracking-widest px-8 py-4.5 rounded-xl backdrop-blur-md transition-all duration-300 flex items-center justify-center gap-2">
                                 <i data-lucide="info" class="w-4 h-4 text-electricblue"></i> COMO FUNCIONA
                             </button>
@@ -655,6 +655,29 @@
                     <button onclick="comprarProduto()" class="w-full bg-gradient-to-r from-electricblue to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl shadow-cyber transition-all duration-300 uppercase flex items-center justify-center gap-2">
                         <i data-lucide="zap" class="w-5 h-5"></i> COMPRAR AGORA
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SWEEPSTAKE MODAL -->
+    <div id="sweepstake-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 sm:p-6 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onclick="closeSweepstakeModal()"></div>
+        <div class="relative w-full max-w-lg bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="sweepstake-modal-content">
+            <button onclick="closeSweepstakeModal()" class="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center bg-slate-950/60 hover:bg-rose-500 text-slate-300 hover:text-white rounded-full transition-colors backdrop-blur-sm">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="p-6 border-b border-slate-800 bg-slate-950 text-center">
+                <h3 class="font-orbitron font-black text-xl text-white flex items-center justify-center gap-2">
+                    🎟️ SORTEIO DE 10 MILHÕES
+                </h3>
+                <p class="text-xs text-slate-400 mt-1">Acumulado Semanal de Z-Coins</p>
+            </div>
+            
+            <div class="p-6 flex flex-col items-center text-center">
+                <!-- Status da Inscrição -->
+                <div id="sweepstake-status-container" class="w-full">
+                    <!-- Dinamicamente preenchido -->
                 </div>
             </div>
         </div>
@@ -1768,6 +1791,208 @@
             }
         }
         setInterval(updateSweepstakeTimer, 1000);
+
+        setInterval(updateSweepstakeTimer, 1000);
+
+        // --- SISTEMA DE SORTEIO SEMANAL CONTROLES ---
+        let sweepstakeAdsWatched = 0;
+        let sweepstakeAdCountdown = 0;
+        let sweepstakeAdInterval = null;
+
+        window.openSweepstakeModal = async () => {
+            const modal = document.getElementById('sweepstake-modal');
+            const content = document.getElementById('sweepstake-modal-content');
+            const container = document.getElementById('sweepstake-status-container');
+            
+            // Exibe o modal
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                modal.classList.add('flex');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+
+            // Verifica autenticação e status
+            container.innerHTML = `
+                <div class="py-8 flex flex-col items-center justify-center">
+                    <div class="w-8 h-8 border-4 border-slate-700 border-t-emerald-500 rounded-full animate-spin"></div>
+                    <p class="text-xs text-slate-500 font-orbitron tracking-widest mt-4">VERIFICANDO CADASTRO...</p>
+                </div>
+            `;
+
+            try {
+                const res = await fetch('/api/sweepstake/status');
+                if (res.status === 401) {
+                    // Usuário não logado
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center py-6">
+                            <div class="w-16 h-16 bg-rose-500/10 border border-rose-500/30 rounded-full flex items-center justify-center mb-4 text-rose-400">
+                                <i data-lucide="shield-alert" class="w-8 h-8"></i>
+                            </div>
+                            <h4 class="font-orbitron font-bold text-lg text-white mb-2 uppercase">ACESSO NEGADO</h4>
+                            <p class="font-inter text-slate-400 text-xs mb-6 max-w-sm">Você precisa estar logado na sua conta para participar do sorteio semanal de 10 milhões de Z-Coins.</p>
+                            <a href="/login.html" class="bg-gradient-to-r from-electricblue to-blue-600 text-white font-orbitron text-xs tracking-widest font-bold px-6 py-3.5 rounded-lg text-center uppercase shadow-cyber w-full">Fazer Login</a>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                    return;
+                }
+                
+                const data = await res.json();
+                if (data.participating) {
+                    // Já participando
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center py-6">
+                            <div class="w-16 h-16 bg-emerald-500/10 border border-emerald-500/30 rounded-full flex items-center justify-center mb-4 text-emerald-400">
+                                <i data-lucide="check-circle" class="w-8 h-8"></i>
+                            </div>
+                            <h4 class="font-orbitron font-bold text-lg text-white mb-2 uppercase">INSCRIÇÃO CONFIRMADA!</h4>
+                            <p class="font-inter text-slate-400 text-xs mb-6 max-w-sm">Você já está participando deste sorteio semanal. Aguarde o cronômetro zerar para saber o resultado!</p>
+                            <button onclick="closeSweepstakeModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-orbitron text-xs tracking-widest font-bold py-3.5 rounded-xl border border-slate-700 uppercase">Fechar</button>
+                        </div>
+                    `;
+                } else {
+                    // Iniciar fluxo de anúncios
+                    sweepstakeAdsWatched = 0;
+                    renderSweepstakeAdFlow();
+                }
+                lucide.createIcons();
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = `
+                    <p class="text-xs text-rose-400 font-inter">Erro ao carregar informações. Tente novamente mais tarde.</p>
+                `;
+            }
+        };
+
+        window.closeSweepstakeModal = () => {
+            const modal = document.getElementById('sweepstake-modal');
+            const content = document.getElementById('sweepstake-modal-content');
+            
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            
+            if (sweepstakeAdInterval) {
+                clearInterval(sweepstakeAdInterval);
+                sweepstakeAdInterval = null;
+            }
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        };
+
+        function renderSweepstakeAdFlow() {
+            const container = document.getElementById('sweepstake-status-container');
+            const progressPct = (sweepstakeAdsWatched / 5) * 100;
+            
+            container.innerHTML = `
+                <div class="flex flex-col items-center py-4 w-full">
+                    <div class="w-16 h-16 bg-amber-500/10 border border-amber-500/30 rounded-full flex items-center justify-center mb-4 text-amber-400">
+                        <i data-lucide="shield-alert" class="w-8 h-8"></i>
+                    </div>
+                    <h4 class="font-orbitron font-bold text-base text-white mb-2 uppercase">REQUISITO DE PARTICIPAÇÃO</h4>
+                    <p class="font-inter text-slate-400 text-xs mb-6 max-w-sm">Para validar sua inscrição no sorteio e manter o prêmio de 10 milhões acumulado, assista a 5 anúncios curtos dos patrocinadores.</p>
+                    
+                    <div class="w-full bg-slate-950 border border-slate-800 p-4 rounded-xl mb-6">
+                        <div class="flex justify-between text-xs font-orbitron tracking-widest mb-2">
+                            <span class="text-slate-500">ANÚNCIOS ASSISTIDOS</span>
+                            <span class="text-emerald-400 font-bold" id="sweepstake-ad-count">${sweepstakeAdsWatched} / 5</span>
+                        </div>
+                        <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-800">
+                            <div id="sweepstake-ad-progress" class="bg-emerald-500 h-full transition-all duration-300" style="width: ${progressPct}%;"></div>
+                        </div>
+                    </div>
+
+                    <button id="sweepstake-ad-btn" onclick="watchSweepstakeAd()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-xs tracking-widest font-bold py-4 rounded-xl shadow-lg transition-all duration-300 uppercase flex items-center justify-center gap-2">
+                        <i data-lucide="play" class="w-4 h-4"></i> ASSISTIR ANÚNCIO [${sweepstakeAdsWatched + 1}/5]
+                    </button>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        window.watchSweepstakeAd = () => {
+            const btn = document.getElementById('sweepstake-ad-btn');
+            if (!btn || sweepstakeAdInterval) return;
+
+            // Abre o anúncio em uma nova aba de forma robusta
+            window.open('https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f', '_blank');
+
+            // Inicia o cronômetro de 15 segundos
+            sweepstakeAdCountdown = 15;
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            btn.innerHTML = `ASSISTINDO ANÚNCIO... ${sweepstakeAdCountdown}s`;
+
+            sweepstakeAdInterval = setInterval(() => {
+                sweepstakeAdCountdown--;
+                if (sweepstakeAdCountdown <= 0) {
+                    clearInterval(sweepstakeAdInterval);
+                    sweepstakeAdInterval = null;
+                    
+                    sweepstakeAdsWatched++;
+                    if (sweepstakeAdsWatched >= 5) {
+                        registerInSweepstake();
+                    } else {
+                        renderSweepstakeAdFlow();
+                    }
+                } else {
+                    btn.innerHTML = `ASSISTINDO ANÚNCIO... ${sweepstakeAdCountdown}s`;
+                }
+            }, 1000);
+        };
+
+        async function registerInSweepstake() {
+            const container = document.getElementById('sweepstake-status-container');
+            container.innerHTML = `
+                <div class="py-8 flex flex-col items-center justify-center">
+                    <div class="w-8 h-8 border-4 border-slate-700 border-t-emerald-500 rounded-full animate-spin"></div>
+                    <p class="text-xs text-slate-500 font-orbitron tracking-widest mt-4">REGISTRANDO SUA PARTICIPAÇÃO...</p>
+                </div>
+            `;
+
+            try {
+                const res = await fetch('/api/sweepstake/join', { method: 'POST' });
+                const data = await res.json();
+                
+                if (res.ok && data.success) {
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center py-6">
+                            <div class="w-16 h-16 bg-emerald-500/10 border border-emerald-500/30 rounded-full flex items-center justify-center mb-4 text-emerald-400 animate-bounce">
+                                <i data-lucide="party-popper" class="w-8 h-8"></i>
+                            </div>
+                            <h4 class="font-orbitron font-bold text-lg text-white mb-2 uppercase">PARABÉNS! VOCÊ ESTÁ PARTICIPANDO!</h4>
+                            <p class="font-inter text-slate-400 text-xs mb-6 max-w-sm">Sua inscrição foi confirmada com sucesso! Você está concorrendo aos 10.000.000 de Z-Coins deste domingo!</p>
+                            <button onclick="closeSweepstakeModal()" class="w-full bg-gradient-to-r from-electricblue to-purple-600 text-white font-orbitron text-xs tracking-widest font-bold py-3.5 rounded-xl shadow-cyber uppercase">Bora Jogar!</button>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center py-6">
+                            <div class="w-16 h-16 bg-rose-500/10 border border-rose-500/30 rounded-full flex items-center justify-center mb-4 text-rose-400">
+                                <i data-lucide="shield-alert" class="w-8 h-8"></i>
+                            </div>
+                            <h4 class="font-orbitron font-bold text-lg text-rose-400 mb-2 uppercase">ERRO NO REGISTRO</h4>
+                            <p class="font-inter text-slate-400 text-xs mb-6 max-w-sm">${data.error || 'Não foi possível completar sua inscrição no sorteio.'}</p>
+                            <button onclick="renderSweepstakeAdFlow()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-orbitron text-xs tracking-widest font-bold py-3.5 rounded-xl border border-slate-700 uppercase">Tentar Novamente</button>
+                        </div>
+                    `;
+                }
+                lucide.createIcons();
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = `
+                    <div class="flex flex-col items-center py-6">
+                        <p class="text-xs text-rose-400 font-inter mb-4">Erro de conexão com o servidor.</p>
+                        <button onclick="renderSweepstakeAdFlow()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-orbitron text-xs tracking-widest font-bold py-3.5 rounded-xl border border-slate-700 uppercase">Tentar Novamente</button>
+                    </div>
+                `;
+            }
+        }
 
         // Inicializa o badge de carrinho assim que a página carrega
         document.addEventListener('DOMContentLoaded', () => {
