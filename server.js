@@ -2766,6 +2766,10 @@ app.post('/api/sweepstake/join', requireAuth, async (req, res) => {
                     Olá, jogador!<br><br>
                     Esta mensagem confirma que você assistiu com sucesso aos 5 anúncios obrigatórios e agora está <strong>oficialmente concorrendo ao grande prêmio de 10.000.000 de Z-Coins</strong> deste domingo!
                 </p>
+
+                <div style="margin: 25px 0;">
+                    <img src="${process.env.APP_URL || 'https://zherkeys.com'}/sorteio_zcoins.png" alt="Sorteio 10 Milhões Z-Coins" style="width: 100%; max-width: 440px; border-radius: 12px; border: 1px solid #1e293b; display: block; margin: 0 auto; box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);" />
+                </div>
                 
                 <div style="background-color: #0f172a; border: 1px solid #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 25px; text-align: left;">
                     <h4 style="color: white; margin-top: 0; margin-bottom: 10px; font-size: 14px; font-weight: bold; letter-spacing: 1px;">Detalhes do Sorteio:</h4>
