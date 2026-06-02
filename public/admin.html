@@ -1696,42 +1696,61 @@
             }
         }
 
-        // Universal File Uploader
-        async function uploadMediaFile(inputEl, targetInputId) {
+        // Universal File Uploader with progress (uses XHR)
+        function uploadMediaFile(inputEl, targetInputId) {
             if (inputEl.files.length === 0) return;
             const file = inputEl.files[0];
             const formData = new FormData();
             formData.append('file', file);
-            
+
             const labelEl = inputEl.parentElement;
             const originalHtml = labelEl.innerHTML;
-            labelEl.innerText = 'Enviando...';
-            
-            try {
-                const res = await fetch('/api/admin/streaming/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                // Mostra mensagem de transcodificação enquanto o servidor processa
-                labelEl.innerText = 'Transcodificando...';
-                const data = await res.json();
 
-                if (!res.ok) {
-                    alert(data.error || 'Erro ao fazer upload.');
-                    labelEl.innerHTML = originalHtml;
-                    return;
+            // Create progress UI
+            labelEl.innerText = 'Enviando... 0%';
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api/admin/streaming/upload', true);
+
+            xhr.upload.onprogress = function (e) {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    labelEl.innerText = `Enviando... ${percent}%`;
                 }
+            };
 
-                // Use HLS URL if disponível, senão o MP4/arquivo direto
-                const finalUrl = data.hls || data.url;
-                document.getElementById(targetInputId).value = finalUrl;
-                labelEl.innerHTML = originalHtml;
-                alert('Upload concluído com sucesso!');
-            } catch(e) {
-                console.error(e);
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        if (data.error) {
+                            alert(data.error || 'Erro ao fazer upload.');
+                            labelEl.innerHTML = originalHtml;
+                            return;
+                        }
+                        const finalUrl = data.hls || data.url;
+                        document.getElementById(targetInputId).value = finalUrl;
+                        labelEl.innerHTML = originalHtml;
+                        alert('Upload concluído com sucesso!');
+                    } catch (e) {
+                        console.error('Resposta inválida do servidor', e);
+                        labelEl.innerHTML = originalHtml;
+                        alert('Erro na resposta do servidor.');
+                    }
+                } else {
+                    console.error('Upload falhou', xhr.status, xhr.responseText);
+                    labelEl.innerHTML = originalHtml;
+                    alert('Erro ao fazer upload.');
+                }
+            };
+
+            xhr.onerror = function (e) {
+                console.error('Erro de conexão no upload', e);
                 labelEl.innerHTML = originalHtml;
                 alert('Erro na conexão do upload.');
-            }
+            };
+
+            xhr.send(formData);
         }
 
         // Save Media (Insert / Update)
@@ -2035,77 +2054,119 @@
             }
         }
 
-        async function uploadReadingFile(inputEl, targetInputId) {
+        // Upload de arquivo de leitura com progresso
+        function uploadReadingFile(inputEl, targetInputId) {
             if (inputEl.files.length === 0) return;
             const file = inputEl.files[0];
             const formData = new FormData();
             formData.append('file', file);
-            
+
             const labelEl = inputEl.parentElement;
             const originalHtml = labelEl.innerHTML;
-            labelEl.innerText = 'Enviando...';
+            labelEl.innerText = 'Enviando... 0%';
 
-            try {
-                labelEl.innerText = 'Transcodificando...';
-                const res = await fetch('/api/admin/streaming/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await res.json();
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api/admin/streaming/upload', true);
 
-                if (!res.ok) {
-                    alert(data.error || 'Erro ao fazer upload.');
-                    labelEl.innerHTML = originalHtml;
-                    return;
+            xhr.upload.onprogress = function (e) {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    labelEl.innerText = `Enviando... ${percent}%`;
                 }
+            };
 
-                const finalUrl = data.hls || data.url;
-                document.getElementById(targetInputId).value = finalUrl;
-                labelEl.innerHTML = originalHtml;
-                alert('Upload concluído com sucesso!');
-            } catch(e) {
-                console.error(e);
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        if (data.error) {
+                            alert(data.error || 'Erro ao fazer upload.');
+                            labelEl.innerHTML = originalHtml;
+                            return;
+                        }
+                        const finalUrl = data.hls || data.url;
+                        document.getElementById(targetInputId).value = finalUrl;
+                        labelEl.innerHTML = originalHtml;
+                        alert('Upload concluído com sucesso!');
+                    } catch (e) {
+                        console.error('Resposta inválida do servidor', e);
+                        labelEl.innerHTML = originalHtml;
+                        alert('Erro na resposta do servidor.');
+                    }
+                } else {
+                    console.error('Upload falhou', xhr.status, xhr.responseText);
+                    labelEl.innerHTML = originalHtml;
+                    alert('Erro ao fazer upload.');
+                }
+            };
+
+            xhr.onerror = function (e) {
+                console.error('Erro de conexão no upload', e);
                 labelEl.innerHTML = originalHtml;
                 alert('Erro na conexão do upload.');
-            }
+            };
+
+            xhr.send(formData);
         }
 
-        async function uploadMangaPagesMultiple(inputEl) {
+        // Upload múltiplo de páginas do mangá com progresso
+        function uploadMangaPagesMultiple(inputEl) {
             if (inputEl.files.length === 0) return;
-            
+
             const files = inputEl.files;
             const formData = new FormData();
             for (let i = 0; i < files.length; i++) {
                 formData.append('files', files[i]);
             }
-            
+
             const progressDiv = document.getElementById('manga-upload-progress');
             const countSpan = document.getElementById('manga-upload-count');
-            
+
             progressDiv.classList.remove('hidden');
             countSpan.innerText = files.length;
-            
-            try {
-                const res = await fetch('/api/admin/reading/upload-pages', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await res.json();
-                
-                if (!res.ok) {
-                    alert(data.error || 'Erro ao fazer upload das páginas.');
-                    progressDiv.classList.add('hidden');
-                    return;
+            progressDiv.innerText = `Enviando páginas: 0%`;
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api/admin/reading/upload-pages', true);
+
+            xhr.upload.onprogress = function (e) {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    progressDiv.innerText = `Enviando páginas: ${percent}%`;
                 }
-                
-                document.getElementById('read-ch-pages-json').value = JSON.stringify(data.urls, null, 2);
-                progressDiv.classList.add('hidden');
-                alert(`Sucesso! ${data.urls.length} páginas carregadas com sucesso!`);
-            } catch(e) {
-                console.error(e);
+            };
+
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        if (data.error) {
+                            alert(data.error || 'Erro ao fazer upload das páginas.');
+                            progressDiv.classList.add('hidden');
+                            return;
+                        }
+                        document.getElementById('read-ch-pages-json').value = JSON.stringify(data.urls, null, 2);
+                        progressDiv.classList.add('hidden');
+                        alert(`Sucesso! ${data.urls.length} páginas carregadas com sucesso!`);
+                    } catch (e) {
+                        console.error('Resposta inválida do servidor', e);
+                        progressDiv.classList.add('hidden');
+                        alert('Erro na resposta do servidor.');
+                    }
+                } else {
+                    console.error('Upload de páginas falhou', xhr.status, xhr.responseText);
+                    progressDiv.classList.add('hidden');
+                    alert('Erro ao fazer upload das páginas.');
+                }
+            };
+
+            xhr.onerror = function (e) {
+                console.error('Erro de conexão no upload das páginas', e);
                 progressDiv.classList.add('hidden');
                 alert('Erro na conexão de upload das páginas.');
-            }
+            };
+
+            xhr.send(formData);
         }
 
         function toggleReadingMediaType(val) {
