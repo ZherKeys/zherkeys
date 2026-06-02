@@ -43,6 +43,16 @@ app.use(session({
     saveUninitialized: false
 }));
 
+// Chatbot local (protótipo)
+try {
+    const chatRouter = require('./chatbot/routes/chat');
+    app.use('/chat', chatRouter); // mount at /chat for prototype
+    app.use('/api/zhertalk/chat', chatRouter); // backward-compatible API path
+    console.log('Chatbot routes mounted: /chat and /api/zhertalk/chat');
+} catch(e) {
+    console.log('Chatbot router not available:', e && e.message ? e.message : e);
+}
+
 // Setup Database (PostgreSQL)
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -1915,6 +1925,16 @@ app.get('/google-shopping.xml', async (req, res) => {
         console.error("Erro ao gerar Google Shopping Feed:", e);
         res.status(500).send('Erro ao gerar Google Shopping Feed.');
     }
+});
+
+// Serve `zhertalk.html` somente para administradores
+app.get('/zhertalk.html', requireAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'zhertalk.html'));
+});
+
+// Também proteger rota curta '/zhertalk'
+app.get('/zhertalk', requireAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'zhertalk.html'));
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -4515,11 +4535,14 @@ app.get('/api/zhertalk/knowledge', async (req, res) => {
 });
 
 // Chat endpoint: responde usando apenas o conhecimento local (NÃO consulta a API para gerar a resposta)
-app.post('/api/zhertalk/chat', async (req, res) => {
+app.post('/api/zhertalk/chat', requireAdmin, async (req, res) => {
     const { message, style } = req.body; // style: direct|explain|concise|technical
     if (!message || typeof message !== 'string') return res.status(400).json({ error: 'message obrigatório' });
 
     try {
+        // log incoming message
+        appendZherLog({ action: 'chat_message', message: message, style: style || null, ip: req.ip, sessionUser: req.session && req.session.userId ? req.session.userId : null });
+
         // Detecta se o solicitante é admin (sessão ativa)
         let isAdmin = false;
         if (req.session && req.session.userId) {
@@ -4534,6 +4557,33 @@ app.post('/api/zhertalk/chat', async (req, res) => {
 
         // Se for admin e enviar comando de estudo via chat (prefixos: /study, /estudar, estudar:)
         const trimmed = message.trim();
+        // Local learning command (no external API) - anyone can teach in this mode
+        const learnMatch = trimmed.match(/^(?:\/learn|\/aprender|aprender:|learn:)\s+([\s\S]+)$/i);
+        if (learnMatch) {
+            const payload = learnMatch[1].trim();
+            // payload can be "title|content" or "title\ncontent" or just content
+            let title = payload, content = payload;
+            if (payload.indexOf('|') !== -1) {
+                const parts = payload.split('|'); title = parts[0].trim(); content = parts.slice(1).join('|').trim();
+            } else if (payload.indexOf('\n') !== -1) {
+                const idx = payload.indexOf('\n'); title = payload.slice(0, idx).trim(); content = payload.slice(idx+1).trim();
+            } else {
+                // take first 6 words as title
+                title = payload.split(/\s+/).slice(0,6).join(' ');
+            }
+
+            const item = { id: crypto.randomUUID(), query: title, content: content, created_at: Date.now(), learned_via: 'chat_learn' };
+            const kb = loadZherKnowledge(); kb.unshift(item); if (kb.length > 500) kb.length = 500; saveZherKnowledge(kb);
+
+            // create BoW embedding and save
+            try {
+                const embedding = createBoWEmbedding(item.content);
+                const embeds = loadEmbeddings(); embeds.push({ id: item.id, query: item.query, embedding, created_at: item.created_at }); saveEmbeddings(embeds);
+            } catch(e){ console.error('Erro ao salvar embedding local (learn):', e); }
+
+            appendZherLog({ action: 'learn', id: item.id, query: item.query, via: 'chat', by: req.session && req.session.userId ? req.session.userId : 'anonymous' });
+            return res.json({ reply: `✅ Aprendi: "${item.query}"` , item});
+        }
         const studyMatch = trimmed.match(/^(?:\/study|\/estudar|estudar:|estudar\s+)([\s\S]+)$/i);
         if (isAdmin && studyMatch) {
             const queryText = studyMatch[1].trim();
@@ -4585,8 +4635,16 @@ app.post('/api/zhertalk/chat', async (req, res) => {
         try {
             const sem = await semanticSearch(message, 3);
             if (sem && sem.length > 0) {
-                reply = 'Baseado no meu conhecimento armazenado (busca semântica):\n\n' + sem.map(s=>`Fonte: "${s.query}"\n`).join('\n') + '\nUse /study se quiser que eu aprofunde esse tópico.';
-                return res.json({ reply });
+                // Build varied responses using templates
+                const templates = [
+                    (items) => `Encontrei isto no meu conhecimento sobre o assunto:\n\n${items.map(i=>`- ${i.query}: ${i.content.split('\n')[0].slice(0,200)}`).join('\n')}\n\nSe quiser detalhes, peça para eu expandir.`,
+                    (items) => `Posso ajudar com base nestas fontes locais:\n${items.map(i=>`• ${i.query}`).join('\n')}\nQuer que eu explique um dos tópicos em mais detalhes?`,
+                    (items) => `Resposta baseada no que eu sei:\n${items.map(i=>i.content).slice(0,2).join('\n\n---\n\n')}`,
+                    (items) => `Resumo rápido dos resultados encontrados:\n${items.map(i=>`* ${i.query} — ${i.content.split('\n')[0].slice(0,150)}` ).join('\n')}`
+                ];
+                const pick = templates[Math.floor(Math.random()*templates.length)];
+                reply = pick(sem);
+                return res.json({ reply, sources: sem.map(s=>s.query) });
             }
         } catch(e) { console.error('Erro na busca semântica:', e); }
 
@@ -4665,6 +4723,44 @@ app.post('/api/zhertalk/chat', async (req, res) => {
         console.error('Erro em /api/zhertalk/chat:', err);
         res.status(500).json({ error: 'Erro interno' });
     }
+});
+
+
+// Endpoint para adicionar aprendizado programaticamente (sem APIs externas)
+app.post('/api/zhertalk/learn', requireAdmin, async (req, res) => {
+    const { title, content } = req.body;
+    if (!content || typeof content !== 'string') return res.status(400).json({ error: 'content obrigatório' });
+    const t = title && typeof title === 'string' ? title : content.split(/\s+/).slice(0,6).join(' ');
+    try {
+        const item = { id: crypto.randomUUID(), query: t, content: content, created_at: Date.now(), learned_via: 'api' };
+        const kb = loadZherKnowledge(); kb.unshift(item); if (kb.length > 500) kb.length = 500; saveZherKnowledge(kb);
+        try { const embedding = createBoWEmbedding(item.content); const embeds = loadEmbeddings(); embeds.push({ id: item.id, query: item.query, embedding, created_at: item.created_at }); saveEmbeddings(embeds); } catch(e){ console.error('Erro embedding learn api', e); }
+        appendZherLog({ action: 'learn_api', id: item.id, query: item.query, by: req.session && req.session.userId ? req.session.userId : 'anonymous' });
+        res.json({ success: true, item });
+    } catch (e) { console.error('Erro em /api/zhertalk/learn', e); res.status(500).json({ error: 'Erro interno' }); }
+});
+
+// Bootstrap embeddings for all knowledge entries (creates BoW embeddings for items missing them)
+app.post('/api/zhertalk/bootstrap-embeddings', requireAdmin, async (req, res) => {
+    try {
+        const kb = loadZherKnowledge();
+        const embeds = loadEmbeddings();
+        const map = Object.create(null);
+        for(const e of embeds) map[e.id] = e;
+        let added = 0;
+        for(const item of kb){
+            if (!map[item.id]){
+                try{
+                    const emb = createBoWEmbedding(item.content);
+                    embeds.push({ id: item.id, query: item.query, embedding: emb, created_at: item.created_at || Date.now() });
+                    added++;
+                }catch(e){ console.error('Erro criando embedding bootstrap', e); }
+            }
+        }
+        saveEmbeddings(embeds);
+        appendZherLog({ action: 'bootstrap_embeddings', added });
+        res.json({ success: true, added });
+    } catch (e){ console.error('Erro em bootstrap-embeddings', e); res.status(500).json({ error: 'Erro interno' }); }
 });
 
 // ------------------------
@@ -4844,22 +4940,24 @@ async function createLocalEmbedding(text) {
 
 async function semanticSearch(query, topK=3) {
     try {
+        // Prefer local embedding (BoW/TFJS) to avoid external API calls
         let emb;
         try {
-            emb = await createEmbedding(query);
+            emb = await createLocalEmbedding(query);
         } catch (e) {
-            // fallback to local embedding if OpenAI not available
             try {
-                emb = await createLocalEmbedding(query);
+                emb = await createEmbedding(query);
             } catch (e2) {
                 console.error('semanticSearch embedding fallback failed', e2);
-                throw e;
+                throw e2;
             }
         }
         const items = loadEmbeddings();
         const scored = items.map(it => ({ it, score: cosineSim(emb, it.embedding) || 0 }));
         scored.sort((a,b)=>b.score-a.score);
-        return scored.slice(0, topK).filter(s=>s.score>0.60).map(s=>s.it); // threshold
+        // If sparse BoW, lower threshold to allow varied matching
+        const thresh = 0.45;
+        return scored.slice(0, topK).filter(s=>s.score>thresh).map(s=>s.it);
     } catch (e) {
         console.error('semanticSearch error', e); return [];
     }

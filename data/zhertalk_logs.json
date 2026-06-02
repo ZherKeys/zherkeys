@@ -1,1 +1,42 @@
-[]
+[
+	{
+		"ts": 1717320010000,
+		"action": "chat_message",
+		"message": "Olá, sou um assistente local pronto para aprender. Como posso ajudar hoje?",
+		"style": "direct",
+		"ip": "127.0.0.1",
+		"sessionUser": null
+	},
+	{
+		"ts": 1717320020000,
+		"action": "chat_message",
+		"message": "/learn Política de Troca|A política de troca permite devolução em 30 dias com comprovante fiscal. O reembolso é processado em até 7 dias úteis e o cliente é responsável pelo envio do produto quando aplicável.",
+		"style": null,
+		"ip": "127.0.0.1",
+		"sessionUser": "anonymous"
+	},
+	{
+		"ts": 1717320030000,
+		"action": "learn",
+		"id": "k-0008",
+		"query": "Política de Troca",
+		"via": "chat",
+		"by": "anonymous"
+	},
+	{
+		"ts": 1717320040000,
+		"action": "learn_api",
+		"id": "k-0009",
+		"query": "FAQ de Entrega",
+		"by": "admin"
+	}
+	,
+	{
+		"ts": 1717320200000,
+		"action": "learn",
+		"id": "k-roi",
+		"query": "roi",
+		"via": "auto",
+		"by": "system"
+	}
+]
