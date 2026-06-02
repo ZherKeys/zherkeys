@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/logo.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHER PLAY | Filmes, Séries & Animes Premium</title>
+    <!-- Tailwind CSS -->
+    <script src="/tailwind.js"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        obsidian: '#020617',
+                        cyberrose: '#F43F5E',
+                        electricblue: '#3B82F6',
+                        netflixred: '#E11D48',
+                        surface: 'rgba(15, 23, 42, 0.8)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        
+        .mesh-bg {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(225, 29, 72, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.15) 0px, transparent 50%);
+        }
+
+        /* Netflix-style horizontal row scrolling scrollbar customisation */
+        .row-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+        .row-scroll::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+        }
+        .row-scroll::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        .row-scroll::-webkit-scrollbar-thumb:hover {
+            background: #E11D48;
+        }
+
+        /* Hide standard controls of video element */
+        video::cue {
+            background: rgba(0, 0, 0, 0.75);
+            color: #ffffff;
+            font-size: 18px;
+            text-shadow: 1px 1px 2px #000000;
+        }
+    </style>
+</head>
+<body class="mesh-bg min-h-screen flex flex-col font-inter">
+
+    <!-- NAVBAR -->
+    <nav id="main-nav" class="fixed top-0 left-0 w-full z-40 bg-slate-950/70 backdrop-blur-xl border-b border-slate-900/60 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <a href="/" class="flex items-center gap-3 group">
+                    <img src="logo.png" alt="Zher Keys Logo" class="w-10 h-10 object-contain rounded-lg border border-slate-700/50 bg-slate-950/40 p-1 group-hover:scale-105 transition-transform duration-300">
+                    <span class="font-orbitron font-black text-xl tracking-wider text-white">ZHER <span class="text-netflixred">PLAY</span></span>
+                </a>
+                
+                <div id="nav-categories" class="hidden md:flex items-center gap-6 text-sm text-slate-400 font-medium">
+                    <button onclick="filterCatalog('all')" class="hover:text-white transition-colors text-white font-bold" id="cat-all">Início</button>
+                    <button onclick="filterCatalog('movie')" class="hover:text-white transition-colors" id="cat-movie">Filmes</button>
+                    <button onclick="filterCatalog('series')" class="hover:text-white transition-colors" id="cat-series">Séries</button>
+                    <button onclick="filterCatalog('anime')" class="hover:text-white transition-colors" id="cat-anime">Animes</button>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <a href="/" class="text-xs font-orbitron tracking-widest text-slate-400 hover:text-white border border-slate-800 hover:border-slate-700 bg-slate-950/50 px-4 py-2 rounded-lg transition-all">
+                    🛒 VOLTAR À LOJA
+                </a>
+                
+                <div id="user-balance-nav" class="hidden md:flex flex-col text-right">
+                    <span class="text-[9px] font-orbitron tracking-widest text-slate-500">SEU SALDO</span>
+                    <span class="text-xs font-bold text-emerald-400" id="nav-balance-val">R$ 0,00</span>
+                </div>
+
+                <div class="w-9 h-9 rounded-full bg-netflixred/10 border border-netflixred/30 flex items-center justify-center text-netflixred" title="Assinante Premium">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen" class="flex-grow flex flex-col items-center justify-center py-40">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-netflixred"></div>
+        <p class="mt-4 text-xs font-orbitron tracking-widest text-slate-500">VALIDANDO ASSINATURA SECURE...</p>
+    </div>
+
+    <!-- PORTAL DE ASSINATURA (UNSUBSCRIBED LANDING) -->
+    <div id="subscription-portal" class="hidden flex-grow flex flex-col items-center justify-center px-6 py-24 mesh-bg">
+        <div class="max-w-xl w-full text-center space-y-8 bg-slate-950/80 border border-slate-900 rounded-3xl p-8 sm:p-12 shadow-2xl backdrop-blur-xl">
+            <div class="w-20 h-20 bg-netflixred/10 rounded-full flex items-center justify-center mx-auto text-netflixred shadow-lg shadow-netflixred/20">
+                <i data-lucide="play-circle" class="w-10 h-10"></i>
+            </div>
+            
+            <div class="space-y-3">
+                <span class="text-xs font-orbitron font-bold tracking-widest text-netflixred bg-netflixred/10 px-3 py-1 rounded-full border border-netflixred/20">ASSINATURA ZHER PLAY</span>
+                <h2 class="text-3xl font-orbitron font-black text-white leading-tight tracking-wider">MUITOS FILMES, SÉRIES E ANIMES COMPLETOS.</h2>
+                <p class="text-slate-400 text-sm font-medium">Assista em qualquer tela, em alta qualidade, com áudio selecionável, legendas automáticas traduzidas e totalmente sem anúncios.</p>
+            </div>
+            
+            <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <span class="text-xs text-slate-400 font-orbitron tracking-wider">VALOR MENSAL</span>
+                    <span class="text-xl font-orbitron font-black text-rose-500">R$ 9,99 <span class="text-xs text-slate-500 font-normal">/ mês</span></span>
+                </div>
+                <div class="flex justify-between items-center text-xs text-slate-400">
+                    <span class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Sem Fidelidade</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Player Dual-Áudio</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Tradutor Inteligente</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button onclick="subscribeWithBalance()" class="w-full bg-netflixred hover:bg-rose-500 text-white font-orbitron font-bold text-xs tracking-wider py-4 rounded-xl shadow-lg shadow-netflixred/20 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="wallet" class="w-4 h-4"></i> PAGAR COM SALDO (R$ 9,99)
+                </button>
+                <button onclick="openPixSubscriptionModal()" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-white font-orbitron font-bold text-xs tracking-wider py-4 rounded-xl transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="qr-code" class="w-4 h-4 text-rose-500"></i> PAGAR COM PIX (R$ 9,99)
+                </button>
+            </div>
+            
+            <p class="text-[10px] text-slate-500">Saldo insuficiente? Adicione saldo na sua <a href="/account.html" class="text-rose-500 hover:underline">Carteira</a> da conta.</p>
+        </div>
+    </div>
+
+    <!-- DASHBOARD DE STREAMING (SUBSCRIBED ACCESS) -->
+    <main id="streaming-dashboard" class="hidden flex-grow pt-24 pb-16 px-4 sm:px-6 lg:px-8 space-y-12">
+        <!-- Featured Hero Banner -->
+        <div id="hero-banner" class="relative rounded-3xl h-[60vh] sm:h-[70vh] overflow-hidden border border-slate-900 shadow-2xl flex items-end">
+            <!-- Background Image -->
+            <div class="absolute inset-0 bg-cover bg-center" id="hero-bg" style="background-image: url('/human_fall_flat.jpg')"></div>
+            <!-- Shadow Overlay -->
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/20 to-transparent"></div>
+            
+            <!-- Hero Content -->
+            <div class="relative z-10 max-w-2xl px-6 sm:px-12 pb-12 space-y-4">
+                <span class="text-[10px] font-orbitron font-bold tracking-widest text-netflixred bg-netflixred/10 border border-netflixred/20 px-3 py-1 rounded">EM DESTAQUE</span>
+                <h1 class="text-3xl sm:text-5xl font-orbitron font-black text-white leading-tight uppercase" id="hero-title">CARREGANDO...</h1>
+                <p class="text-slate-300 text-sm leading-relaxed" id="hero-desc">Carregando...</p>
+                <div class="flex items-center gap-4 pt-2">
+                    <button id="hero-play-btn" class="bg-white hover:bg-slate-200 text-slate-950 px-8 py-3.5 rounded-xl font-bold text-sm tracking-wider transition-all flex items-center gap-2">
+                        <i data-lucide="play" class="w-4 h-4 fill-current"></i> ASSISTIR AGORA
+                    </button>
+                    <button id="hero-info-btn" class="bg-slate-900/80 hover:bg-slate-800 text-white border border-slate-800 px-6 py-3.5 rounded-xl font-bold text-sm tracking-wider transition-all flex items-center gap-2">
+                        <i data-lucide="info" class="w-4 h-4"></i> VER DETALHES
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEARCH BAR AND CATEGORIES FILTER -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-950/40 border border-slate-900/60 p-4 rounded-2xl backdrop-blur">
+            <div class="relative w-full sm:max-w-md">
+                <i data-lucide="search" class="absolute left-4 top-3.5 w-4 h-4 text-slate-500"></i>
+                <input type="text" id="search-input" oninput="searchCatalog(this.value)" placeholder="Buscar filme, série ou anime..." class="w-full bg-slate-900/50 border border-slate-800 focus:border-netflixred rounded-xl py-3 pl-12 pr-4 text-xs focus:outline-none transition-all">
+            </div>
+            
+            <div class="text-xs text-slate-500 font-orbitron tracking-widest flex items-center gap-2">
+                <span>TOTAL DE MÍDIAS:</span>
+                <span class="text-white font-bold" id="total-medias-count">0</span>
+            </div>
+        </div>
+
+        <!-- FILMES ROW -->
+        <div id="section-movies-row" class="space-y-4">
+            <h3 class="text-lg font-orbitron font-bold tracking-widest text-white border-l-4 border-netflixred pl-3 uppercase">Filmes Premiuns</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6" id="movies-grid">
+                <!-- Dinâmico -->
+            </div>
+        </div>
+
+        <!-- SÉRIES ROW -->
+        <div id="section-series-row" class="space-y-4">
+            <h3 class="text-lg font-orbitron font-bold tracking-widest text-white border-l-4 border-netflixred pl-3 uppercase">Séries de Sucesso</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6" id="series-grid">
+                <!-- Dinâmico -->
+            </div>
+        </div>
+
+        <!-- ANIMES ROW -->
+        <div id="section-animes-row" class="space-y-4">
+            <h3 class="text-lg font-orbitron font-bold tracking-widest text-white border-l-4 border-netflixred pl-3 uppercase">Melhores Animes</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6" id="animes-grid">
+                <!-- Dinâmico -->
+            </div>
+        </div>
+    </main>
+
+    <!-- DETAILS MODAL -->
+    <div id="details-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-slate-950 border border-slate-850 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
+            <button onclick="closeDetailsModal()" class="absolute right-6 top-6 z-10 w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-650 transition-all">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 p-6 sm:p-8">
+                <!-- Poster -->
+                <div class="md:col-span-1">
+                    <img id="detail-poster" src="" alt="Poster" class="w-full rounded-2xl shadow-2xl border border-slate-900">
+                </div>
+                
+                <!-- Metadata & Info -->
+                <div class="md:col-span-2 space-y-6">
+                    <div>
+                        <span id="detail-type-badge" class="text-[9px] font-orbitron font-bold tracking-widest bg-netflixred/10 border border-netflixred/20 px-2 py-0.5 rounded text-netflixred uppercase">FILME</span>
+                        <h2 id="detail-title" class="text-2xl sm:text-3xl font-orbitron font-black text-white tracking-wide mt-2 uppercase">Título</h2>
+                        <p id="detail-category" class="text-xs font-orbitron tracking-widest text-rose-500 mt-1">Ação, Aventura</p>
+                    </div>
+
+                    <p id="detail-desc" class="text-slate-400 text-sm leading-relaxed">Lorem ipsum...</p>
+
+                    <!-- Se for FILME, mostrar botão grande de Play -->
+                    <div id="detail-play-movie-container" class="hidden">
+                        <button onclick="playMediaSource()" class="bg-netflixred hover:bg-rose-500 text-white font-orbitron font-bold text-xs tracking-wider px-8 py-4 rounded-xl flex items-center gap-2 transition-all w-fit shadow-lg shadow-netflixred/20">
+                            <i data-lucide="play" class="w-4 h-4 fill-current"></i> ASSISTIR FILME COMPLETO
+                        </button>
+                    </div>
+
+                    <!-- Se for SÉRIE/ANIME, mostrar grade de episódios -->
+                    <div id="detail-episodes-container" class="hidden space-y-4">
+                        <h4 class="font-orbitron font-bold text-xs tracking-widest text-slate-300 border-b border-slate-850 pb-2">LISTA DE EPISÓDIOS</h4>
+                        <div class="space-y-3 max-h-64 overflow-y-auto pr-2" id="detail-episodes-list">
+                            <!-- Episódios dinâmica -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FULLSCREEN CUSTOM VIDEO PLAYER -->
+    <div id="custom-video-player" class="fixed inset-0 z-50 bg-black hidden flex items-center justify-center group/player">
+        <video id="player-media-el" class="w-full h-full object-contain" playsinline>
+            <track id="player-track" kind="subtitles" label="Legendas" default>
+        </video>
+        
+        <!-- Synchronized Audio Element (for separate audio file dual audio) -->
+        <audio id="player-audio-el" class="hidden" playsinline></audio>
+
+        <!-- Player Controls (Hidden automatically unless mouse movement detected) -->
+        <div id="player-controls" class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/50 flex flex-col justify-between p-6 opacity-0 group-hover/player:opacity-100 transition-opacity duration-300 z-10">
+            <!-- Top Controls -->
+            <div class="flex items-center justify-between">
+                <button onclick="exitVideoPlayer()" class="flex items-center gap-2 text-slate-400 hover:text-white font-orbitron text-xs tracking-widest bg-slate-900/60 px-4 py-2.5 rounded-lg border border-slate-800 transition-all">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> SAIR DO PLAYER
+                </button>
+                <div class="text-center">
+                    <h3 id="player-media-title" class="font-orbitron font-bold text-sm tracking-wide text-white">Carregando Mídia...</h3>
+                    <p id="player-episode-title" class="text-[10px] text-slate-400 mt-0.5"></p>
+                </div>
+                <div class="w-20"></div>
+            </div>
+
+            <!-- Central Big Play/Pause Button Indicator (when paused) -->
+            <div class="flex-grow flex items-center justify-center">
+                <button onclick="togglePlayPause()" id="center-play-btn" class="w-16 h-16 rounded-full bg-black/60 hover:bg-netflixred/80 border border-slate-800 text-white flex items-center justify-center transition-all hover:scale-105 shadow-xl">
+                    <i data-lucide="play" class="w-6 h-6 fill-current" id="center-play-icon"></i>
+                </button>
+            </div>
+
+            <!-- Bottom Controls -->
+            <div class="space-y-4">
+                <!-- Progress Bar -->
+                <div class="flex items-center gap-4">
+                    <span class="text-xs font-mono text-slate-400" id="player-time-current">00:00</span>
+                    <input type="range" id="player-timeline" min="0" max="100" value="0" step="0.1" oninput="seekVideo(this.value)" class="flex-grow h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-netflixred">
+                    <span class="text-xs font-mono text-slate-400" id="player-time-duration">00:00</span>
+                </div>
+
+                <!-- Controls Buttons -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-6">
+                        <!-- Play / Pause -->
+                        <button onclick="togglePlayPause()" class="text-slate-400 hover:text-white transition-colors" title="Play/Pause (Espaço)">
+                            <i data-lucide="play" class="w-5 h-5 fill-current" id="ctrl-play-icon"></i>
+                        </button>
+                        
+                        <!-- Volume Control -->
+                        <div class="flex items-center gap-2 group/volume">
+                            <button onclick="toggleMute()" class="text-slate-400 hover:text-white transition-colors" id="ctrl-mute-btn">
+                                <i data-lucide="volume-2" class="w-5 h-5" id="ctrl-volume-icon"></i>
+                            </button>
+                            <input type="range" id="ctrl-volume-slider" min="0" max="1" step="0.05" value="1" oninput="changeVolume(this.value)" class="w-0 group-hover/volume:w-16 h-1 bg-slate-850 appearance-none rounded-lg cursor-pointer accent-netflixred transition-all duration-300">
+                        </div>
+                    </div>
+
+                    <!-- Dual Audio, Subtitles, Quality & Settings -->
+                    <div class="flex items-center gap-4 text-xs font-orbitron tracking-widest relative">
+                        <!-- Speed Control -->
+                        <div class="relative inline-block text-left">
+                            <button onclick="toggleDropdown('player-speed-menu')" class="flex items-center gap-1 text-slate-400 hover:text-white py-1">
+                                <i data-lucide="gauge" class="w-4 h-4"></i> VELOCIDADE
+                            </button>
+                            <div id="player-speed-menu" class="absolute bottom-10 right-0 w-32 bg-slate-950 border border-slate-900 rounded-lg shadow-xl p-1 hidden flex-col">
+                                <button onclick="changeSpeed(0.5)" class="w-full text-left px-3 py-2 rounded hover:bg-slate-900 text-[10px]">0.5x</button>
+                                <button onclick="changeSpeed(1.0)" class="w-full text-left px-3 py-2 rounded hover:bg-slate-900 text-[10px] text-rose-500 font-bold">1.0x (Padrão)</button>
+                                <button onclick="changeSpeed(1.25)" class="w-full text-left px-3 py-2 rounded hover:bg-slate-900 text-[10px]">1.25x</button>
+                                <button onclick="changeSpeed(1.5)" class="w-full text-left px-3 py-2 rounded hover:bg-slate-900 text-[10px]">1.5x</button>
+                                <button onclick="changeSpeed(2.0)" class="w-full text-left px-3 py-2 rounded hover:bg-slate-900 text-[10px]">2.0x</button>
+                            </div>
+                        </div>
+
+                        <!-- Audio Select (Dual Audio) -->
+                        <div class="relative inline-block text-left">
+                            <button onclick="toggleDropdown('player-audio-menu')" class="flex items-center gap-1 text-slate-400 hover:text-white py-1">
+                                <i data-lucide="music" class="w-4 h-4"></i> ÁUDIO
+                            </button>
+                            <div id="player-audio-menu" class="absolute bottom-10 right-0 w-44 bg-slate-950 border border-slate-900 rounded-lg shadow-xl p-1 hidden flex-col divide-y divide-slate-900" style="max-height: 200px; overflow-y: auto;">
+                                <!-- Dinâmico -->
+                            </div>
+                        </div>
+
+                        <!-- Subtitle Select (Subtitles & Auto Translation) -->
+                        <div class="relative inline-block text-left">
+                            <button onclick="toggleDropdown('player-subtitle-menu')" class="flex items-center gap-1 text-slate-400 hover:text-white py-1">
+                                <i data-lucide="subtitles" class="w-4 h-4"></i> LEGENDAS
+                            </button>
+                            <div id="player-subtitle-menu" class="absolute bottom-10 right-0 w-56 bg-slate-950 border border-slate-900 rounded-lg shadow-xl p-1 hidden flex-col divide-y divide-slate-900" style="max-height: 250px; overflow-y: auto;">
+                                <!-- Dinâmico -->
+                            </div>
+                        </div>
+
+                        <!-- Fullscreen -->
+                        <button onclick="toggleFullscreen()" class="text-slate-400 hover:text-white transition-colors" title="Tela Cheia">
+                            <i data-lucide="maximize" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE ASSINATURA PIX (MERCADOPAGO) -->
+    <div id="pix-subscription-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-slate-950 border border-slate-850 rounded-3xl p-8 max-w-md w-full text-center space-y-6">
+            <h3 class="font-orbitron font-bold text-white tracking-widest text-lg">PAGAMENTO DA ASSINATURA</h3>
+            
+            <div class="bg-rose-500/10 text-rose-400 text-xs font-bold font-orbitron tracking-wide py-2 rounded-full border border-rose-500/20">
+                ⌛ EXPIRA EM 10 MINUTOS
+            </div>
+
+            <p class="text-xs text-slate-400">Escaneie o QR Code abaixo com seu aplicativo bancário ou copie o código Copia e Cola:</p>
+
+            <div class="bg-white p-3 rounded-2xl inline-block shadow-2xl shadow-rose-500/10 border border-slate-800">
+                <img id="pix-qr-img" src="" alt="QR Code PIX" class="w-48 h-48 block">
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-[10px] font-orbitron text-slate-500 tracking-wider">CÓDIGO COPIA E COLA</label>
+                <div class="flex gap-2">
+                    <input type="text" id="pix-code-input" readonly class="flex-grow bg-slate-900 border border-slate-800 text-[10px] rounded-lg px-3 py-2.5 font-mono text-rose-400 focus:outline-none focus:border-rose-500">
+                    <button onclick="copyPixCode()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 rounded-lg font-orbitron font-bold text-[10px] tracking-wider transition-colors">COPIAR</button>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-900 flex justify-between gap-4">
+                <button onclick="closePixSubscriptionModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-400 font-orbitron text-[10px] tracking-widest py-3 rounded-xl transition-all">CANCELAR</button>
+                <button onclick="checkSubscriptionStatusAndUnlock()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-orbitron font-bold text-[10px] tracking-widest py-3 rounded-xl transition-all">JÁ PAGUEI</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION BARS -->
+    <div id="toast" class="fixed bottom-6 right-6 z-[100] bg-slate-950 border border-slate-800 px-6 py-4 rounded-2xl shadow-2xl hidden max-w-sm">
+        <p id="toast-msg" class="text-xs font-medium text-slate-300"></p>
+    </div>
+
+    <!-- CORE SCRIPT -->
+    <script>
+        let catalog = [];
+        let activeFilter = 'all';
+        let currentUserId = null;
+        let selectedMedia = null;
+        let isSubscribed = false;
+        let pixPollingInterval = null;
+
+        // Player states
+        const video = document.getElementById('player-media-el');
+        const audio = document.getElementById('player-audio-el');
+        let activeExternalAudio = false;
+
+        // On document load
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            checkAuthAndSubscription();
+        });
+
+        // Toast Helper
+        function showToast(msg, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            toastMsg.innerText = msg;
+            
+            // Apply borders
+            toast.className = `fixed bottom-6 right-6 z-[100] bg-slate-950 border px-6 py-4 rounded-2xl shadow-2xl max-w-sm transition-all duration-300`;
+            if (type === 'success') {
+                toast.classList.add('border-emerald-500', 'text-emerald-400');
+            } else if (type === 'error') {
+                toast.classList.add('border-rose-500', 'text-rose-400');
+            } else {
+                toast.classList.add('border-slate-800', 'text-slate-200');
+            }
+            
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 4000);
+        }
+
+        // Authenticate & Check Subscription
+        async function checkAuthAndSubscription() {
+            try {
+                // Fetch profile to make sure logged in
+                const meRes = await fetch('/api/me');
+                if (meRes.status === 401) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                const meData = await meRes.json();
+                currentUserId = meData.id;
+
+                // Check subscription status
+                const subRes = await fetch('/api/streaming/status');
+                const subData = await subRes.json();
+                
+                isSubscribed = subData.subscribed;
+                
+                // Update nav bar info
+                document.getElementById('nav-balance-val').innerText = `R$ ${parseFloat(subData.balance).toFixed(2).replace('.', ',')}`;
+                
+                document.getElementById('loading-screen').classList.add('hidden');
+                
+                if (isSubscribed) {
+                    document.getElementById('subscription-portal').classList.add('hidden');
+                    document.getElementById('streaming-dashboard').classList.remove('hidden');
+                    document.getElementById('user-balance-nav').classList.remove('hidden');
+                    loadCatalog();
+                } else {
+                    document.getElementById('streaming-dashboard').classList.add('hidden');
+                    document.getElementById('subscription-portal').classList.remove('hidden');
+                }
+            } catch (e) {
+                console.error(e);
+                showToast('Erro de autenticação com o servidor.', 'error');
+            }
+        }
+
+        // Pay with balance
+        async function subscribeWithBalance() {
+            if (!confirm('Deseja assinar o Zher Play por R$ 9,99 por 30 dias usando seu saldo?')) return;
+            
+            try {
+                const res = await fetch('/api/streaming/subscribe/balance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await res.json();
+                if (!res.ok) {
+                    showToast(data.error || 'Erro ao assinar.', 'error');
+                    return;
+                }
+                
+                showToast(data.message, 'success');
+                // Reload dashboard
+                setTimeout(() => {
+                    checkAuthAndSubscription();
+                }, 1500);
+            } catch (e) {
+                showToast('Erro interno ao se comunicar com o banco.', 'error');
+            }
+        }
+
+        // Open PIX checkout modal
+        async function openPixSubscriptionModal() {
+            try {
+                showToast('Gerando PIX... Por favor aguarde.', 'info');
+                const res = await fetch('/api/streaming/subscribe/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ method: 'pix' })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    showToast(data.error || 'Erro ao gerar PIX.', 'error');
+                    return;
+                }
+
+                // Show modal
+                document.getElementById('pix-qr-img').src = `data:image/png;base64,${data.qr_code_base64}`;
+                document.getElementById('pix-code-input').value = data.qr_code;
+                document.getElementById('pix-subscription-modal').classList.remove('hidden');
+
+                // Poll status every 5 seconds
+                if (pixPollingInterval) clearInterval(pixPollingInterval);
+                pixPollingInterval = setInterval(async () => {
+                    const statusRes = await fetch('/api/streaming/status');
+                    const statusData = await statusRes.json();
+                    if (statusData.subscribed) {
+                        clearInterval(pixPollingInterval);
+                        document.getElementById('pix-subscription-modal').classList.add('hidden');
+                        showToast('Assinatura ativada com sucesso! Pagamento Aprovado.', 'success');
+                        checkAuthAndSubscription();
+                    }
+                }, 5000);
+            } catch (e) {
+                showToast('Erro ao criar Pix.', 'error');
+            }
+        }
+
+        function closePixSubscriptionModal() {
+            document.getElementById('pix-subscription-modal').classList.add('hidden');
+            if (pixPollingInterval) clearInterval(pixPollingInterval);
+        }
+
+        function copyPixCode() {
+            const input = document.getElementById('pix-code-input');
+            input.select();
+            input.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(input.value);
+            showToast('Código Pix copiado!', 'success');
+        }
+
+        function checkSubscriptionStatusAndUnlock() {
+            checkAuthAndSubscription();
+            closePixSubscriptionModal();
+        }
+
+        // Load Catalog
+        async function loadCatalog() {
+            try {
+                const res = await fetch('/api/streaming/catalog');
+                if (!res.ok) return;
+                catalog = await res.json();
+                
+                document.getElementById('total-medias-count').innerText = catalog.length;
+                
+                // Set featured banner media (first item in catalog)
+                if (catalog.length > 0) {
+                    const featured = catalog[0];
+                    document.getElementById('hero-bg').style.backgroundImage = `url('${featured.thumbnail}')`;
+                    document.getElementById('hero-title').innerText = featured.title;
+                    document.getElementById('hero-desc').innerText = featured.description;
+                    
+                    document.getElementById('hero-play-btn').onclick = () => { openDetailsModal(featured.id) };
+                    document.getElementById('hero-info-btn').onclick = () => { openDetailsModal(featured.id) };
+                }
+                
+                renderGrids();
+            } catch (e) {
+                showToast('Erro ao carregar catálogo de mídias.', 'error');
+            }
+        }
+
+        // Render Cards inside categories grids
+        function renderGrids() {
+            const mGrid = document.getElementById('movies-grid');
+            const sGrid = document.getElementById('series-grid');
+            const aGrid = document.getElementById('animes-grid');
+            
+            mGrid.innerHTML = '';
+            sGrid.innerHTML = '';
+            aGrid.innerHTML = '';
+
+            let moviesCount = 0;
+            let seriesCount = 0;
+            let animesCount = 0;
+
+            catalog.forEach(item => {
+                // If filtering by search/navbar
+                if (activeFilter !== 'all' && item.type !== activeFilter) return;
+                
+                const card = document.createElement('div');
+                card.className = `group relative cursor-pointer overflow-hidden rounded-xl border border-slate-900 hover:border-netflixred/80 bg-slate-950 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-rose-900/10`;
+                card.onclick = () => openDetailsModal(item.id);
+                
+                card.innerHTML = `
+                    <div class="aspect-[2/3] overflow-hidden relative">
+                        <img src="${item.thumbnail}" alt="${item.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                            <div class="w-full flex items-center justify-between">
+                                <span class="bg-netflixred text-white p-2 rounded-full shadow-lg shadow-rose-900/30">
+                                    <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+                                </span>
+                                <span class="text-[9px] font-orbitron text-rose-500 font-bold bg-slate-900 border border-slate-800 px-2 py-0.5 rounded">${item.category}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3">
+                        <h4 class="font-orbitron font-bold text-xs text-white truncate uppercase">${item.title}</h4>
+                        <p class="text-[10px] text-slate-500 font-orbitron mt-0.5 uppercase">${item.type === 'movie' ? 'Filme' : item.type === 'series' ? 'Série' : 'Anime'}</p>
+                    </div>
+                `;
+
+                if (item.type === 'movie') {
+                    mGrid.appendChild(card);
+                    moviesCount++;
+                } else if (item.type === 'series') {
+                    sGrid.appendChild(card);
+                    seriesCount++;
+                } else if (item.type === 'anime') {
+                    aGrid.appendChild(card);
+                    animesCount++;
+                }
+            });
+
+            // Toggle empty rows
+            toggleSectionRow('section-movies-row', moviesCount);
+            toggleSectionRow('section-series-row', seriesCount);
+            toggleSectionRow('section-animes-row', animesCount);
+
+            lucide.createIcons();
+        }
+
+        function toggleSectionRow(rowId, count) {
+            const el = document.getElementById(rowId);
+            if (count === 0) {
+                el.classList.add('hidden');
+            } else {
+                el.classList.remove('hidden');
+            }
+        }
+
+        // Filters categories on navigation click
+        function filterCatalog(type) {
+            activeFilter = type;
+            // Update active state in nav buttons
+            const btns = ['all', 'movie', 'series', 'anime'];
+            btns.forEach(b => {
+                const el = document.getElementById(`cat-${b}`);
+                if (b === type) {
+                    el.classList.add('text-white', 'font-bold');
+                } else {
+                    el.classList.remove('text-white', 'font-bold');
+                }
+            });
+            renderGrids();
+        }
+
+        // Local Search Functionality
+        function searchCatalog(query) {
+            const lower = query.toLowerCase().trim();
+            if (!lower) {
+                loadCatalog();
+                return;
+            }
+            
+            // Apply visual filter
+            catalog.forEach(item => {
+                const text = (item.title + ' ' + item.description + ' ' + item.category).toLowerCase();
+                const matched = text.includes(lower);
+                // We will rely on renderGrids by temporarily mapping catalog
+            });
+
+            const filtered = catalog.filter(item => {
+                return (item.title + ' ' + item.description + ' ' + item.category).toLowerCase().includes(lower);
+            });
+            
+            // Temp catalog render
+            const temp = catalog;
+            catalog = filtered;
+            renderGrids();
+            catalog = temp;
+        }
+
+        // Details Modal
+        async function openDetailsModal(id) {
+            try {
+                const res = await fetch(`/api/streaming/media/${id}`);
+                selectedMedia = await res.json();
+                
+                document.getElementById('detail-poster').src = selectedMedia.thumbnail;
+                document.getElementById('detail-title').innerText = selectedMedia.title;
+                document.getElementById('detail-category').innerText = selectedMedia.category;
+                document.getElementById('detail-desc').innerText = selectedMedia.description;
+                
+                const typeEl = document.getElementById('detail-type-badge');
+                typeEl.innerText = selectedMedia.type === 'movie' ? 'Filme' : selectedMedia.type === 'series' ? 'Série' : 'Anime';
+                
+                if (selectedMedia.type === 'movie') {
+                    document.getElementById('detail-play-movie-container').classList.remove('hidden');
+                    document.getElementById('detail-episodes-container').classList.add('hidden');
+                } else {
+                    document.getElementById('detail-play-movie-container').classList.add('hidden');
+                    document.getElementById('detail-episodes-container').classList.remove('hidden');
+                    
+                    // Render episodes
+                    const epList = document.getElementById('detail-episodes-list');
+                    epList.innerHTML = '';
+                    
+                    if (selectedMedia.episodes && selectedMedia.episodes.length > 0) {
+                        selectedMedia.episodes.forEach(ep => {
+                            const item = document.createElement('div');
+                            item.className = `flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl border border-slate-900 bg-slate-950 hover:border-slate-800 transition-colors`;
+                            
+                            const dur = ep.duration ? `${Math.round(ep.duration / 60)} min` : '';
+                            
+                            item.innerHTML = `
+                                <div>
+                                    <span class="text-[9px] font-orbitron text-rose-500 font-bold bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">T${ep.season} | EP ${ep.episode_number}</span>
+                                    <h5 class="text-sm font-bold text-white mt-1.5">${ep.title}</h5>
+                                    <p class="text-xs text-slate-500 mt-1">${ep.description || 'Sem sinopse disponível.'}</p>
+                                </div>
+                                <button onclick="playEpisodeSource(${ep.id})" class="bg-rose-600 hover:bg-rose-500 text-white font-orbitron font-bold text-[10px] tracking-widest px-4 py-2.5 rounded-lg flex items-center gap-1.5 transition-colors self-end sm:self-auto">
+                                    <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i> ASSISTIR
+                                </button>
+                            `;
+                            epList.appendChild(item);
+                        });
+                    } else {
+                        epList.innerHTML = '<div class="text-center text-xs text-slate-600 py-6">Nenhum episódio cadastrado para esta temporada.</div>';
+                    }
+                }
+                
+                document.getElementById('details-modal').classList.remove('hidden');
+                lucide.createIcons();
+            } catch (e) {
+                showToast('Erro ao carregar detalhes.', 'error');
+            }
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('details-modal').classList.add('hidden');
+        }
+
+        // ==========================
+        // PLAYER IMPLEMENTATION
+        // ==========================
+
+        let activeEpisode = null;
+
+        function playMediaSource() {
+            closeDetailsModal();
+            
+            // Set Player Video Source
+            video.src = selectedMedia.video_url;
+            document.getElementById('player-media-title').innerText = selectedMedia.title;
+            document.getElementById('player-episode-title').innerText = 'Filme Completo';
+            activeEpisode = null;
+            
+            setupPlayerTracksAndAudio(selectedMedia);
+            startCustomPlayer();
+        }
+
+        function playEpisodeSource(epId) {
+            closeDetailsModal();
+            const ep = selectedMedia.episodes.find(e => e.id === epId);
+            if (!ep) return;
+            
+            activeEpisode = ep;
+            video.src = ep.video_url;
+            document.getElementById('player-media-title').innerText = selectedMedia.title;
+            document.getElementById('player-episode-title').innerText = `T${ep.season}:EP${ep.episode_number} - ${ep.title}`;
+            
+            setupPlayerTracksAndAudio(ep);
+            startCustomPlayer();
+        }
+
+        function setupPlayerTracksAndAudio(mediaSource) {
+            const tracksContainer = document.getElementById('player-subtitle-menu');
+            const audioContainer = document.getElementById('player-audio-menu');
+            
+            tracksContainer.innerHTML = '';
+            audioContainer.innerHTML = '';
+            
+            // Parse strings to arrays
+            let subs = [];
+            let auds = [];
+            try {
+                subs = typeof mediaSource.subtitles === 'string' ? JSON.parse(mediaSource.subtitles) : (mediaSource.subtitles || []);
+            } catch(e) { subs = []; }
+            try {
+                auds = typeof mediaSource.audio_tracks === 'string' ? JSON.parse(mediaSource.audio_tracks) : (mediaSource.audio_tracks || []);
+            } catch(e) { auds = []; }
+
+            // 1. Configure Subtitles
+            // Default "Off" option
+            const btnOff = document.createElement('button');
+            btnOff.className = 'w-full text-left px-3 py-2 rounded hover:bg-slate-900 text-[10px] text-rose-500 font-bold';
+            btnOff.innerText = 'Desativadas';
+            btnOff.onclick = () => selectSubtitle(null);
+            tracksContainer.appendChild(btnOff);
+            
+            subs.forEach((sub, sIdx) => {
+                // Add standard subtitle track
+                const btnSub = document.createElement('button');
+                btnSub.className = 'w-full text-left px-3 py-2 rounded hover:bg-slate-900 text-[10px] text-white';
+                btnSub.innerText = `${sub.language}`;
+                btnSub.onclick = () => selectSubtitle(sub.url, sub.language, false);
+                tracksContainer.appendChild(btnSub);
+
+                // Add Google Automatic Translation subtitle options
+                const languagesToTranslate = [
+                    { name: 'Português (Trad. Automática)', code: 'pt' },
+                    { name: 'Inglês (Trad. Automática)', code: 'en' },
+                    { name: 'Espanhol (Trad. Automática)', code: 'es' },
+                    { name: 'Japonês (Trad. Automática)', code: 'ja' }
+                ];
+
+                languagesToTranslate.forEach(lang => {
+                    const btnTrans = document.createElement('button');
+                    btnTrans.className = 'w-full text-left px-3 py-2 rounded hover:bg-slate-900 text-[10px] text-slate-400 italic';
+                    btnTrans.innerText = `└ ${lang.name}`;
+                    btnTrans.onclick = () => selectSubtitle(sub.url, lang.name, true, lang.code);
+                    tracksContainer.appendChild(btnTrans);
+                });
+            });
+
+            // 2. Configure Audio Tracks
+            // Default track (the file audio)
+            const btnDefaultAudio = document.createElement('button');
+            btnDefaultAudio.className = 'w-full text-left px-3 py-2 rounded hover:bg-slate-900 text-[10px] text-rose-500 font-bold';
+            btnDefaultAudio.innerText = 'Áudio Padrão';
+            btnDefaultAudio.onclick = () => selectAudioTrack(null);
+            audioContainer.appendChild(btnDefaultAudio);
+
+            auds.forEach(aud => {
+                const btnAud = document.createElement('button');
+                btnAud.className = 'w-full text-left px-3 py-2 rounded hover:bg-slate-900 text-[10px] text-white';
+                btnAud.innerText = `${aud.language}`;
+                btnAud.onclick = () => selectAudioTrack(aud);
+                audioContainer.appendChild(btnAud);
+            });
+            
+            // Clean subtitle track on start
+            const track = document.getElementById('player-track');
+            track.src = '';
+            track.mode = 'disabled';
+        }
+
+        // Subtitle selection handler
+        function selectSubtitle(url, label = '', isAutoTranslate = false, targetLang = 'pt') {
+            const track = document.getElementById('player-track');
+            
+            // Close dropdowns
+            hideAllDropdowns();
+            
+            if (!url) {
+                track.src = '';
+                track.mode = 'disabled';
+                showToast('Legendas desativadas.', 'info');
+                return;
+            }
+
+            let trackUrl = url;
+            if (isAutoTranslate) {
+                showToast(`Traduzindo legendas para ${label}...`, 'info');
+                trackUrl = `/api/streaming/translate-subtitle?url=${encodeURIComponent(url)}&target=${targetLang}`;
+            } else {
+                showToast(`Legenda: ${label}`, 'info');
+            }
+
+            // Reload track
+            track.src = trackUrl;
+            track.label = label;
+            track.mode = 'showing';
+            
+            // Force show cues
+            const textTracks = video.textTracks;
+            if (textTracks && textTracks[0]) {
+                textTracks[0].mode = 'showing';
+            }
+        }
+
+        // Audio selection handler (supports either swapping video file or syncing secondary audio file)
+        function selectAudioTrack(audioConfig) {
+            hideAllDropdowns();
+            const currTime = video.currentTime;
+            const isPlaying = !video.paused;
+
+            if (!audioConfig) {
+                // Return to default video audio
+                activeExternalAudio = false;
+                audio.pause();
+                audio.src = '';
+                video.muted = false;
+                
+                // If we had swapped video source file
+                if (activeEpisode ? (video.src !== activeEpisode.video_url) : (video.src !== selectedMedia.video_url)) {
+                    video.src = activeEpisode ? activeEpisode.video_url : selectedMedia.video_url;
+                    video.currentTime = currTime;
+                    if (isPlaying) video.play();
+                }
+                
+                showToast('Retornando ao áudio padrão.', 'success');
+                return;
+            }
+
+            showToast(`Áudio alterado para: ${audioConfig.language}`, 'success');
+
+            // Scenario A: Swapping video file source
+            if (audioConfig.video_url) {
+                activeExternalAudio = false;
+                audio.pause();
+                video.muted = false;
+                
+                video.src = audioConfig.video_url;
+                video.currentTime = currTime;
+                if (isPlaying) video.play();
+            } 
+            // Scenario B: Secondary audio file track sync (Standard HTML5)
+            else if (audioConfig.audio_url) {
+                activeExternalAudio = true;
+                video.muted = true;
+                
+                audio.src = audioConfig.audio_url;
+                audio.currentTime = currTime;
+                
+                if (isPlaying) {
+                    audio.play();
+                    video.play();
+                } else {
+                    audio.pause();
+                    video.pause();
+                }
+            }
+        }
+
+        // Start playing
+        function startCustomPlayer() {
+            document.getElementById('custom-video-player').classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Lock background scroll
+            
+            // Reset player GUI
+            video.currentTime = 0;
+            video.play();
+            
+            // Add event listeners
+            video.addEventListener('timeupdate', updateProgress);
+            video.addEventListener('loadedmetadata', setDuration);
+            
+            // Synchronize audio element playing/seeking
+            video.addEventListener('play', () => {
+                if (activeExternalAudio) audio.play();
+                updateControlIcons();
+            });
+            video.addEventListener('pause', () => {
+                if (activeExternalAudio) audio.pause();
+                updateControlIcons();
+            });
+            video.addEventListener('seeking', () => {
+                if (activeExternalAudio) audio.currentTime = video.currentTime;
+            });
+            
+            // Fullscreen check for key listeners
+            window.addEventListener('keydown', handleKeyPress);
+        }
+
+        function handleKeyPress(e) {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                togglePlayPause();
+            } else if (e.code === 'ArrowLeft') {
+                video.currentTime = Math.max(0, video.currentTime - 10);
+            } else if (e.code === 'ArrowRight') {
+                video.currentTime = Math.min(video.duration, video.currentTime + 10);
+            } else if (e.code === 'Escape') {
+                exitVideoPlayer();
+            }
+        }
+
+        function exitVideoPlayer() {
+            video.pause();
+            audio.pause();
+            video.src = '';
+            audio.src = '';
+            activeExternalAudio = false;
+            
+            // Remove listener
+            window.removeEventListener('keydown', handleKeyPress);
+            
+            document.getElementById('custom-video-player').classList.add('hidden');
+            document.body.style.overflow = 'auto'; // Unlock background scroll
+        }
+
+        function togglePlayPause() {
+            if (video.paused) {
+                video.play();
+                if (activeExternalAudio) audio.play();
+            } else {
+                video.pause();
+                if (activeExternalAudio) audio.pause();
+            }
+            updateControlIcons();
+        }
+
+        function updateControlIcons() {
+            const centerIcon = document.getElementById('center-play-icon');
+            const ctrlIcon = document.getElementById('ctrl-play-icon');
+            const centerBtn = document.getElementById('center-play-btn');
+            
+            if (video.paused) {
+                centerIcon.className = 'w-6 h-6 fill-current';
+                centerIcon.setAttribute('data-lucide', 'play');
+                ctrlIcon.className = 'w-5 h-5 fill-current';
+                ctrlIcon.setAttribute('data-lucide', 'play');
+                centerBtn.classList.remove('opacity-0');
+            } else {
+                centerIcon.className = 'w-6 h-6';
+                centerIcon.setAttribute('data-lucide', 'pause');
+                ctrlIcon.className = 'w-5 h-5';
+                ctrlIcon.setAttribute('data-lucide', 'pause');
+                centerBtn.classList.add('opacity-0');
+            }
+            lucide.createIcons();
+        }
+
+        function updateProgress() {
+            const progress = (video.currentTime / video.duration) * 100;
+            document.getElementById('player-timeline').value = isNaN(progress) ? 0 : progress;
+            document.getElementById('player-time-current').innerText = formatTime(video.currentTime);
+        }
+
+        function setDuration() {
+            document.getElementById('player-time-duration').innerText = formatTime(video.duration);
+        }
+
+        function seekVideo(val) {
+            const seekTo = (val / 100) * video.duration;
+            video.currentTime = seekTo;
+            if (activeExternalAudio) {
+                audio.currentTime = seekTo;
+            }
+        }
+
+        function changeVolume(val) {
+            video.volume = val;
+            audio.volume = val;
+            
+            const volIcon = document.getElementById('ctrl-volume-icon');
+            if (val == 0) {
+                volIcon.setAttribute('data-lucide', 'volume-x');
+            } else if (val < 0.5) {
+                volIcon.setAttribute('data-lucide', 'volume-1');
+            } else {
+                volIcon.setAttribute('data-lucide', 'volume-2');
+            }
+            lucide.createIcons();
+        }
+
+        let isMuted = false;
+        let lastVolume = 1;
+        function toggleMute() {
+            const slider = document.getElementById('ctrl-volume-slider');
+            if (!isMuted) {
+                lastVolume = video.volume;
+                changeVolume(0);
+                slider.value = 0;
+                isMuted = true;
+            } else {
+                changeVolume(lastVolume);
+                slider.value = lastVolume;
+                isMuted = false;
+            }
+        }
+
+        function changeSpeed(speed) {
+            video.playbackRate = speed;
+            audio.playbackRate = speed;
+            showToast(`Velocidade: ${speed}x`, 'info');
+            hideAllDropdowns();
+        }
+
+        function toggleFullscreen() {
+            const player = document.getElementById('custom-video-player');
+            if (!document.fullscreenElement) {
+                player.requestFullscreen().catch(err => {
+                    showToast('Erro ao entrar em tela cheia.', 'error');
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function formatTime(secs) {
+            if (isNaN(secs)) return '00:00';
+            const m = Math.floor(secs / 60);
+            const s = Math.floor(secs % 60);
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        // Dropdown menus helpers
+        function toggleDropdown(id) {
+            const menu = document.getElementById(id);
+            const wasHidden = menu.classList.contains('hidden');
+            hideAllDropdowns();
+            if (wasHidden) {
+                menu.classList.remove('hidden');
+            }
+        }
+
+        function hideAllDropdowns() {
+            const ids = ['player-speed-menu', 'player-audio-menu', 'player-subtitle-menu'];
+            ids.forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+        }
+    </script>
+</body>
+</html>

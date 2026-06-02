@@ -147,6 +147,58 @@ async function initDB() {
                 drawn_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 prize_amount BIGINT DEFAULT 10000000
             );
+            
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_expires_at TIMESTAMP DEFAULT NULL;
+            ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_subscription BOOLEAN DEFAULT false;
+
+            CREATE TABLE IF NOT EXISTS streaming_media (
+                id SERIAL PRIMARY KEY,
+                title TEXT NOT NULL,
+                description TEXT NOT NULL,
+                type TEXT NOT NULL,
+                category TEXT NOT NULL,
+                thumbnail TEXT NOT NULL,
+                video_url TEXT DEFAULT '',
+                audio_tracks TEXT DEFAULT '[]',
+                subtitles TEXT DEFAULT '[]',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS streaming_episodes (
+                id SERIAL PRIMARY KEY,
+                media_id INTEGER REFERENCES streaming_media(id) ON DELETE CASCADE,
+                season INTEGER DEFAULT 1,
+                episode_number INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                description TEXT,
+                video_url TEXT NOT NULL,
+                audio_tracks TEXT DEFAULT '[]',
+                subtitles TEXT DEFAULT '[]',
+                duration INTEGER DEFAULT 0
+            );
+
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS reading_subscription_expires_at TIMESTAMP DEFAULT NULL;
+            ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_reading_subscription BOOLEAN DEFAULT false;
+
+            CREATE TABLE IF NOT EXISTS reading_media (
+                id SERIAL PRIMARY KEY,
+                title TEXT NOT NULL,
+                description TEXT NOT NULL,
+                type TEXT NOT NULL,
+                category TEXT NOT NULL,
+                thumbnail TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS reading_chapters (
+                id SERIAL PRIMARY KEY,
+                media_id INTEGER REFERENCES reading_media(id) ON DELETE CASCADE,
+                chapter_number INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                pdf_url TEXT DEFAULT '',
+                pages TEXT DEFAULT '[]',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
         `);
 
         // Popular gêneros antigos automaticamente
@@ -1198,6 +1250,110 @@ async function approveOrderSecure(orderId, paymentId) {
                         <p style="color: #64748b; font-size: 11px; margin-top: 30px;">Esta é uma transação criptografada e segura da loja Zher Keys. Não responda a este e-mail.</p>
                     </div>`
                 ).catch(err => console.error("Erro ao enviar e-mail de depósito:", err));
+            }
+        } else if (order.is_subscription) {
+            // 3.1 Se for ASSINATURA DE STREAMING, ativa a assinatura do usuário
+            const userId = order.user_id;
+            const userRes = await client.query('SELECT subscription_expires_at, email FROM users WHERE id = $1 FOR UPDATE', [userId]);
+            if (userRes.rows.length > 0) {
+                const currentExpires = userRes.rows[0].subscription_expires_at;
+                let newExpires;
+                const now = new Date();
+                
+                if (!currentExpires || new Date(currentExpires) < now) {
+                    newExpires = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+                } else {
+                    newExpires = new Date(new Date(currentExpires).getTime() + 30 * 24 * 60 * 60 * 1000);
+                }
+                
+                await client.query('UPDATE users SET subscription_expires_at = $1 WHERE id = $2', [newExpires, userId]);
+                
+                // Registra a transação de assinatura (com valor R$ 9.99 na descrição, mas zero de desconto na carteira já que foi pago direto)
+                await client.query(
+                    'INSERT INTO wallet_transactions (user_id, amount, type, description) VALUES ($1, $2, $3, $4)',
+                    [userId, 0, 'subscription', `Assinatura Zher Play (Pedido #${orderId})`]
+                );
+                
+                // Registra a notificação da assinatura ativa
+                await client.query(
+                    'INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)',
+                    [userId, 'Assinatura Ativa!', 'Sua assinatura mensal Zher Play foi ativada com sucesso! Aproveite os filmes e séries.', 'success']
+                );
+                
+                console.log(`[APPROVE-SECURE] Assinatura do Pedido ${orderId} ativada para usuário ${userId}. Expira em: ${newExpires}`);
+                
+                // Envia e-mail de confirmação
+                const email = userRes.rows[0].email;
+                sendEmailViaBrevo(
+                    email,
+                    `🎬 Sua Assinatura Zher Play está Ativa! Aproveite!`,
+                    `Olá! Seu pagamento para o plano mensal Zher Play (Pedido #${orderId}) foi aprovado e sua assinatura está ativa até ${newExpires.toLocaleDateString('pt-BR')}.`,
+                    `<div style="background-color: #020617; color: #f8fafc; padding: 40px 20px; font-family: sans-serif; text-align: center; border: 1px solid #1e293b; border-radius: 16px; max-w: 600px; margin: 0 auto;">
+                        <h2 style="color: #E11D48; font-size: 24px; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px;">ZHER PLAY ATIVO!</h2>
+                        <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6; margin-bottom: 25px;">
+                            Olá! O seu pagamento foi processado com sucesso. A sua assinatura do plano Zher Play está <strong>ATIVA</strong> por 30 dias!
+                        </p>
+                        <div style="background-color: #0f172a; border: 1px solid #1e293b; padding: 20px; border-radius: 12px; display: inline-block; margin-bottom: 25px;">
+                            <span style="color: #94a3b8; font-size: 12px; display: block; margin-bottom: 5px;">VÁLIDO ATÉ</span>
+                            <span style="color: #E11D48; font-size: 20px; font-weight: bold;">${newExpires.toLocaleDateString('pt-BR')} às ${newExpires.toLocaleTimeString('pt-BR')}</span>
+                        </div>
+                        <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin-top: 10px;">
+                            Agora você já tem acesso ilimitado a todos os filmes, séries e animes sem anúncios e com áudio duplo + tradução automática!
+                        </p>
+                    </div>`
+                ).catch(err => console.error("Erro ao enviar e-mail de ativação de assinatura:", err));
+            }
+        } else if (order.is_reading_subscription) {
+            // 3.2 Se for ASSINATURA DE LEITURA (EBOOKS/MANGAS), ativa a assinatura do usuário
+            const userId = order.user_id;
+            const userRes = await client.query('SELECT reading_subscription_expires_at, email FROM users WHERE id = $1 FOR UPDATE', [userId]);
+            if (userRes.rows.length > 0) {
+                const currentExpires = userRes.rows[0].reading_subscription_expires_at;
+                let newExpires;
+                const now = new Date();
+                
+                if (!currentExpires || new Date(currentExpires) < now) {
+                    newExpires = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+                } else {
+                    newExpires = new Date(new Date(currentExpires).getTime() + 30 * 24 * 60 * 60 * 1000);
+                }
+                
+                await client.query('UPDATE users SET reading_subscription_expires_at = $1 WHERE id = $2', [newExpires, userId]);
+                
+                // Registra a transação de assinatura (com valor R$ 4.99 na descrição, mas zero de desconto na carteira já que foi pago direto)
+                await client.query(
+                    'INSERT INTO wallet_transactions (user_id, amount, type, description) VALUES ($1, $2, $3, $4)',
+                    [userId, 0, 'subscription', `Assinatura Zher Read (Pedido #${orderId})`]
+                );
+                
+                // Registra a notificação da assinatura ativa
+                await client.query(
+                    'INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)',
+                    [userId, 'Assinatura Ativa!', 'Sua assinatura mensal Zher Read foi ativada com sucesso! Aproveite os livros e mangás.', 'success']
+                );
+                
+                console.log(`[APPROVE-SECURE] Assinatura de Leitura do Pedido ${orderId} ativada para usuário ${userId}. Expira em: ${newExpires}`);
+                
+                // Envia e-mail de confirmação
+                const email = userRes.rows[0].email;
+                sendEmailViaBrevo(
+                    email,
+                    `📚 Sua Assinatura Zher Read está Ativa! Aproveite!`,
+                    `Olá! Seu pagamento para o plano mensal Zher Read (Pedido #${orderId}) foi aprovado e sua assinatura está ativa até ${newExpires.toLocaleDateString('pt-BR')}.`,
+                    `<div style="background-color: #020617; color: #f8fafc; padding: 40px 20px; font-family: sans-serif; text-align: center; border: 1px solid #1e293b; border-radius: 16px; max-w: 600px; margin: 0 auto;">
+                        <h2 style="color: #A855F7; font-size: 24px; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px;">ZHER READ ATIVO!</h2>
+                        <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6; margin-bottom: 25px;">
+                            Olá! O seu pagamento foi processado com sucesso. A sua assinatura do plano Zher Read está <strong>ATIVA</strong> por 30 dias!
+                        </p>
+                        <div style="background-color: #0f172a; border: 1px solid #1e293b; padding: 20px; border-radius: 12px; display: inline-block; margin-bottom: 25px;">
+                            <span style="color: #94a3b8; font-size: 12px; display: block; margin-bottom: 5px;">VÁLIDO ATÉ</span>
+                            <span style="color: #A855F7; font-size: 20px; font-weight: bold;">${newExpires.toLocaleDateString('pt-BR')} às ${newExpires.toLocaleTimeString('pt-BR')}</span>
+                        </div>
+                        <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin-top: 10px;">
+                            Agora você já tem acesso ilimitado a todos os livros, ebooks e mangás em alta definição e sem anúncios!
+                        </p>
+                    </div>`
+                ).catch(err => console.error("Erro ao enviar e-mail de ativação de assinatura de leitura:", err));
             }
         } else {
             // 4. Se for COMPRA DE PRODUTO, atualiza estoque e delista no Gameflip
@@ -3146,6 +3302,807 @@ app.post('/api/admin/users/:id/credits', requireAdmin, async (req, res) => {
     } finally {
         client.release();
     }
+});
+
+// ==========================================
+// SEÇÃO DE STREAMING E ASSINATURA (ZHER PLAY)
+// ==========================================
+
+const multer = require('multer');
+
+// Configuração do Multer para Uploads do Streaming
+const storageGeneric = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const dir = path.join(__dirname, 'public', 'uploads', 'temp');
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        cb(null, dir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const uploadGeneric = multer({
+    storage: storageGeneric,
+    limits: { fileSize: 1024 * 1024 * 1024 * 3 } // Limite de 3GB para filmes em alta qualidade
+});
+
+// Middleware para verificar se o usuário possui assinatura ativa
+const requireSubscription = async (req, res, next) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Não autorizado.' });
+    try {
+        const result = await pool.query('SELECT email, subscription_expires_at FROM users WHERE id = $1', [req.session.userId]);
+        if (result.rows.length > 0) {
+            const user = result.rows[0];
+            // Admin tem acesso total livre
+            if (user.email === 'zherkeys@gmail.com') {
+                return next();
+            }
+            const expires = user.subscription_expires_at;
+            if (expires && new Date(expires) > new Date()) {
+                return next();
+            }
+        }
+        res.status(403).json({ error: 'Assinatura inativa ou expirada. Assine por R$ 9,99/mês para ter acesso.' });
+    } catch (e) {
+        res.status(500).json({ error: 'Erro ao verificar assinatura.' });
+    }
+};
+
+// Obter status de assinatura do usuário logado
+app.get('/api/streaming/status', requireAuth, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT subscription_expires_at, balance FROM users WHERE id = $1', [req.session.userId]);
+        if (result.rows.length > 0) {
+            const expires = result.rows[0].subscription_expires_at;
+            const isSubscribed = expires && new Date(expires) > new Date();
+            res.json({
+                subscribed: isSubscribed,
+                expires_at: expires,
+                balance: result.rows[0].balance
+            });
+        } else {
+            res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+    } catch (e) {
+        res.status(500).json({ error: 'Erro ao buscar status.' });
+    }
+});
+
+// Assinar Zher Play usando saldo da carteira (R$ 9,99)
+app.post('/api/streaming/subscribe/balance', requireAuth, async (req, res) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        const userRes = await client.query('SELECT balance, subscription_expires_at FROM users WHERE id = $1 FOR UPDATE', [req.session.userId]);
+        if (userRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+        
+        const balance = parseFloat(userRes.rows[0].balance || 0);
+        if (balance < 9.99) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'Saldo insuficiente. Recarregue sua carteira para assinar!' });
+        }
+        
+        const currentExpires = userRes.rows[0].subscription_expires_at;
+        let newExpires;
+        const now = new Date();
+        
+        if (!currentExpires || new Date(currentExpires) < now) {
+            newExpires = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        } else {
+            newExpires = new Date(new Date(currentExpires).getTime() + 30 * 24 * 60 * 60 * 1000);
+        }
+        
+        const newBalance = balance - 9.99;
+        
+        await client.query('UPDATE users SET balance = $1, subscription_expires_at = $2 WHERE id = $3', [newBalance, newExpires, req.session.userId]);
+        
+        // Registra transação no extrato
+        await client.query(
+            'INSERT INTO wallet_transactions (user_id, amount, type, description) VALUES ($1, $2, $3, $4)',
+            [req.session.userId, -9.99, 'subscription', 'Assinatura Mensal Zher Play']
+        );
+        
+        // Cria notificação
+        await client.query(
+            'INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)',
+            [req.session.userId, 'Assinatura Ativa!', `Assinatura Zher Play ativada! Válida até ${newExpires.toLocaleDateString('pt-BR')}.`, 'success']
+        );
+        
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'Assinatura ativada com sucesso!', balance: newBalance, expires_at: newExpires });
+    } catch (e) {
+        await client.query('ROLLBACK');
+        console.error("Erro ao assinar com saldo:", e);
+        res.status(500).json({ error: 'Erro ao processar assinatura.' });
+    } finally {
+        client.release();
+    }
+});
+
+// Assinar Zher Play via MercadoPago (PIX ou Cartão)
+app.post('/api/streaming/subscribe/checkout', requireAuth, async (req, res) => {
+    const { method, cpf } = req.body;
+    const price = 9.99;
+    
+    try {
+        // Cria um pedido pendente para a assinatura
+        const orderRes = await pool.query(
+            'INSERT INTO orders (user_id, status, total_amount, is_deposit, is_subscription) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+            [req.session.userId, 'pending', price, false, true]
+        );
+        const orderId = orderRes.rows[0].id;
+        
+        const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [req.session.userId]);
+        const email = userRes.rows[0]?.email || 'guest@example.com';
+        
+        if (method === 'pix') {
+            const paymentClient = new Payment(mpClient);
+            const createdPayment = await paymentClient.create({
+                body: {
+                    transaction_amount: price,
+                    description: `Assinatura Mensal Zher Play - Pedido #${orderId}`,
+                    payment_method_id: 'pix',
+                    payer: {
+                        email: email,
+                        first_name: 'Cliente',
+                        last_name: 'ZherPlay',
+                        identification: {
+                            type: 'CPF',
+                            number: cpf ? cpf.replace(/\D/g, '') : generateCPF()
+                        }
+                    },
+                    external_reference: orderId.toString(),
+                    notification_url: `${APP_URL}/webhook`
+                },
+                requestOptions: {
+                    idempotencyKey: crypto.randomUUID()
+                }
+            });
+            
+            const qrCodeBase64 = createdPayment.point_of_interaction.transaction_data.qr_code_base64;
+            const qrCode = createdPayment.point_of_interaction.transaction_data.qr_code;
+            
+            await pool.query(
+                'UPDATE orders SET mp_payment_id = $1, pix_qr_code = $2, pix_qr_code_base64 = $3 WHERE id = $4',
+                [createdPayment.id.toString(), qrCode, qrCodeBase64, orderId]
+            );
+            
+            // Registra notificação pendente
+            await pool.query(
+                'INSERT INTO notifications (user_id, title, message, type, order_id) VALUES ($1, $2, $3, $4, $5)',
+                [req.session.userId, 'Assinatura Pendente', `Sua assinatura Zher Play está aguardando pagamento.`, 'warning', orderId]
+            );
+            
+            return res.json({ qr_code_base64: qrCodeBase64, qr_code: qrCode, orderId });
+        }
+        
+        if (method === 'card') {
+            const preference = new Preference(mpClient);
+            const createdPref = await preference.create({
+                body: {
+                    items: [{
+                        id: `sub-${orderId}`,
+                        title: `Assinatura Mensal Zher Play`,
+                        unit_price: price,
+                        quantity: 1,
+                        currency_id: 'BRL'
+                    }],
+                    external_reference: orderId.toString(),
+                    back_urls: {
+                        success: `${APP_URL}/streaming.html?status=success`,
+                        failure: `${APP_URL}/streaming.html?status=failure`,
+                        pending: `${APP_URL}/streaming.html?status=pending`
+                    },
+                    auto_return: 'approved',
+                    notification_url: `${APP_URL}/webhook`
+                }
+            });
+            
+            await pool.query('UPDATE orders SET mp_preference_id = $1 WHERE id = $2', [createdPref.id, orderId]);
+            return res.json({ init_point: createdPref.init_point, orderId });
+        }
+        
+        res.status(400).json({ error: 'Método inválido.' });
+    } catch (e) {
+        console.error("Erro ao gerar checkout de assinatura:", e);
+        res.status(500).json({ error: 'Erro ao gerar pagamento da assinatura.' });
+    }
+});
+
+// Catálogo de Mídias (Apenas assinantes têm acesso)
+app.get('/api/streaming/catalog', requireAuth, requireSubscription, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM streaming_media ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (e) {
+        res.status(500).json({ error: 'Erro ao buscar catálogo.' });
+    }
+});
+
+// Detalhes da Mídia e seus Episódios (se houver)
+app.get('/api/streaming/media/:id', requireAuth, requireSubscription, async (req, res) => {
+    const mediaId = parseInt(req.params.id);
+    try {
+        const mediaRes = await pool.query('SELECT * FROM streaming_media WHERE id = $1', [mediaId]);
+        if (mediaRes.rows.length === 0) {
+            return res.status(404).json({ error: 'Conteúdo não encontrado.' });
+        }
+        
+        const media = mediaRes.rows[0];
+        if (media.type === 'series' || media.type === 'anime') {
+            const episodesRes = await pool.query('SELECT * FROM streaming_episodes WHERE media_id = $1 ORDER BY season ASC, episode_number ASC', [mediaId]);
+            media.episodes = episodesRes.rows;
+        }
+        
+        res.json(media);
+    } catch (e) {
+        res.status(500).json({ error: 'Erro ao buscar conteúdo.' });
+    }
+});
+
+// Conversão automática e facilitada de legendas SRT para VTT
+function convertSrtToVtt(srtText) {
+    let vtt = srtText;
+    if (!srtText.trim().startsWith('WEBVTT')) {
+        vtt = 'WEBVTT\n\n' + srtText;
+    }
+    return vtt.replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2');
+}
+
+// Auxiliar para chamar API gratuita do Google Translate
+async function translateText(text, targetLang) {
+    if (!text.trim()) return '';
+    try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
+        const res = await fetch(url);
+        if (!res.ok) return text;
+        const data = await res.json();
+        if (data && data[0]) {
+            let translated = '';
+            for (let chunk of data[0]) {
+                if (chunk[0]) {
+                    translated += chunk[0];
+                }
+            }
+            return translated;
+        }
+        return text;
+    } catch (e) {
+        console.error("Erro na tradução automática:", e);
+        return text;
+    }
+}
+
+// Tradutor em Lotes de Legenda WebVTT
+async function translateVtt(vttText, targetLang) {
+    const blocks = vttText.split(/\r?\n\r?\n/);
+    const textsToTranslate = [];
+    const textBlockMap = [];
+    
+    for (let i = 0; i < blocks.length; i++) {
+        const lines = blocks[i].split(/\r?\n/);
+        let timingIndex = -1;
+        for (let j = 0; j < lines.length; j++) {
+            if (lines[j].includes('-->')) {
+                timingIndex = j;
+                break;
+            }
+        }
+        
+        if (timingIndex !== -1) {
+            for (let j = timingIndex + 1; j < lines.length; j++) {
+                const txt = lines[j].trim();
+                if (txt) {
+                    textsToTranslate.push(txt);
+                    textBlockMap.push({ blockIndex: i, lineIndex: j });
+                }
+            }
+        }
+    }
+    
+    const batchSize = 40;
+    const translatedTexts = [];
+    
+    for (let i = 0; i < textsToTranslate.length; i += batchSize) {
+        const batch = textsToTranslate.slice(i, i + batchSize);
+        const promises = batch.map(t => translateText(t, targetLang));
+        const results = await Promise.all(promises);
+        translatedTexts.push(...results);
+    }
+    
+    const newBlocks = blocks.map(b => b.split(/\r?\n/));
+    for (let i = 0; i < textBlockMap.length; i++) {
+        const { blockIndex, lineIndex } = textBlockMap[i];
+        newBlocks[blockIndex][lineIndex] = translatedTexts[i];
+    }
+    
+    return newBlocks.map(lines => lines.join('\n')).join('\n\n');
+}
+
+const subtitleCache = new Map();
+
+// Endpoint Proxy de Tradução de Legendas
+app.get('/api/streaming/translate-subtitle', async (req, res) => {
+    const { url, target } = req.query;
+    const targetLang = target || 'pt';
+    
+    if (!url) return res.status(400).send('URL da legenda ausente.');
+    
+    const cacheKey = `${url}_${targetLang}`;
+    if (subtitleCache.has(cacheKey)) {
+        res.setHeader('Content-Type', 'text/vtt; charset=utf-8');
+        return res.send(subtitleCache.get(cacheKey));
+    }
+    
+    try {
+        let vttText = '';
+        if (url.startsWith('/uploads/')) {
+            const localPath = path.join(__dirname, 'public', url);
+            if (fs.existsSync(localPath)) {
+                vttText = fs.readFileSync(localPath, 'utf-8');
+            } else {
+                return res.status(404).send('Legenda local não encontrada.');
+            }
+        } else {
+            const response = await fetch(url);
+            if (!response.ok) return res.status(400).send('Não foi possível baixar legenda remota.');
+            vttText = await response.text();
+        }
+        
+        if (url.endsWith('.srt') || !vttText.trim().startsWith('WEBVTT')) {
+            vttText = convertSrtToVtt(vttText);
+        }
+        
+        const translatedVtt = await translateVtt(vttText, targetLang);
+        subtitleCache.set(cacheKey, translatedVtt);
+        
+        res.setHeader('Content-Type', 'text/vtt; charset=utf-8');
+        res.send(translatedVtt);
+    } catch (e) {
+        console.error("Erro geral na legenda:", e);
+        res.status(500).send('Erro na tradução.');
+    }
+});
+
+// ==========================================
+// PAINEL ADMINISTRATIVO DO STREAMING (UPLOADS)
+// ==========================================
+
+// Endpoint Genérico de Upload de Arquivos (Admin)
+app.post('/api/admin/streaming/upload', requireAdmin, uploadGeneric.single('file'), (req, res) => {
+    if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
+    
+    const ext = path.extname(req.file.originalname).toLowerCase();
+    const mime = req.file.mimetype;
+    let subfolder = 'subtitles';
+    
+    if (ext === '.vtt' || ext === '.srt') {
+        subfolder = 'subtitles';
+    } else if (ext === '.pdf') {
+        subfolder = 'books';
+    } else if (mime.startsWith('image/')) {
+        subfolder = 'thumbnails';
+    } else if (mime.startsWith('video/')) {
+        subfolder = 'videos';
+    } else if (mime.startsWith('audio/')) {
+        subfolder = 'audio';
+    }
+    
+    const destDir = path.join(__dirname, 'public', 'uploads', subfolder);
+    if (!fs.existsSync(destDir)) {
+        fs.mkdirSync(destDir, { recursive: true });
+    }
+    
+    const newPath = path.join(destDir, req.file.filename);
+    try {
+        fs.renameSync(req.file.path, newPath);
+        res.json({ url: `/uploads/${subfolder}/${req.file.filename}` });
+    } catch (err) {
+        console.error("Erro ao mover arquivo de upload:", err);
+        res.status(500).json({ error: 'Erro ao salvar o arquivo no servidor.' });
+    }
+});
+
+// Adicionar Mídia (Filme/Série/Anime)
+app.post('/api/admin/streaming/media', requireAdmin, async (req, res) => {
+    const { title, description, type, category, thumbnail, video_url, audio_tracks, subtitles } = req.body;
+    try {
+        const result = await pool.query(
+            'INSERT INTO streaming_media (title, description, type, category, thumbnail, video_url, audio_tracks, subtitles) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
+            [title, description, type, category, thumbnail, video_url || '', audio_tracks || '[]', subtitles || '[]']
+        );
+        res.status(201).json({ success: true, id: result.rows[0].id });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Erro ao adicionar mídia.' });
+    }
+});
+
+// Editar Mídia
+app.put('/api/admin/streaming/media/:id', requireAdmin, async (req, res) => {
+    const { title, description, type, category, thumbnail, video_url, audio_tracks, subtitles } = req.body;
+    const mediaId = parseInt(req.params.id);
+    try {
+        await pool.query(
+            'UPDATE streaming_media SET title = $1, description = $2, type = $3, category = $4, thumbnail = $5, video_url = $6, audio_tracks = $7, subtitles = $8 WHERE id = $9',
+            [title, description, type, category, thumbnail, video_url || '', audio_tracks || '[]', subtitles || '[]', mediaId]
+        );
+        res.json({ success: true, message: 'Mídia atualizada com sucesso!' });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Erro ao atualizar mídia.' });
+    }
+});
+
+// Excluir Mídia
+app.delete('/api/admin/streaming/media/:id', requireAdmin, async (req, res) => {
+    const mediaId = parseInt(req.params.id);
+    try {
+        await pool.query('DELETE FROM streaming_media WHERE id = $1', [mediaId]);
+        res.json({ success: true, message: 'Mídia excluída.' });
+    } catch (e) {
+        res.status(500).json({ error: 'Erro ao excluir.' });
+    }
+});
+
+// Adicionar Episódio
+app.post('/api/admin/streaming/episode', requireAdmin, async (req, res) => {
+    const { media_id, season, episode_number, title, description, video_url, audio_tracks, subtitles, duration } = req.body;
+    try {
+        const result = await pool.query(
+            'INSERT INTO streaming_episodes (media_id, season, episode_number, title, description, video_url, audio_tracks, subtitles, duration) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
+            [parseInt(media_id), parseInt(season || 1), parseInt(episode_number), title, description || '', video_url, audio_tracks || '[]', subtitles || '[]', parseInt(duration || 0)]
+        );
+        res.status(201).json({ success: true, id: result.rows[0].id });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Erro ao adicionar episódio.' });
+    }
+});
+
+// Excluir Episódio
+app.delete('/api/admin/streaming/episode/:id', requireAdmin, async (req, res) => {
+    const episodeId = parseInt(req.params.id);
+    try {
+        await pool.query('DELETE FROM streaming_episodes WHERE id = $1', [episodeId]);
+        res.json({ success: true, message: 'Episódio excluído.' });
+    } catch (e) {
+        res.status(500).json({ error: 'Erro ao excluir.' });
+    }
+});
+
+// ==========================================
+// SEÇÃO DE LEITURA (ZHER READ - EBOOKS & MANGAS)
+// ==========================================
+
+// Middleware para verificar se o usuário possui assinatura ativa de leitura
+const requireReadingSubscription = async (req, res, next) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Não autorizado.' });
+    try {
+        const result = await pool.query('SELECT email, reading_subscription_expires_at FROM users WHERE id = $1', [req.session.userId]);
+        if (result.rows.length > 0) {
+            const user = result.rows[0];
+            // Admin tem acesso livre
+            if (user.email === 'zherkeys@gmail.com') {
+                return next();
+            }
+            const expires = user.reading_subscription_expires_at;
+            if (expires && new Date(expires) > new Date()) {
+                return next();
+            }
+        }
+        res.status(403).json({ error: 'Assinatura inativa ou expirada. Assine por R$ 4,99/mês para ler.' });
+    } catch (e) {
+        res.status(500).json({ error: 'Erro ao verificar assinatura de leitura.' });
+    }
+};
+
+// Obter status de assinatura de leitura do usuário logado
+app.get('/api/reading/status', requireAuth, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT reading_subscription_expires_at, balance FROM users WHERE id = $1', [req.session.userId]);
+        if (result.rows.length > 0) {
+            const expires = result.rows[0].reading_subscription_expires_at;
+            const isSubscribed = expires && new Date(expires) > new Date();
+            res.json({
+                subscribed: isSubscribed,
+                expires_at: expires,
+                balance: result.rows[0].balance
+            });
+        } else {
+            res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+    } catch (e) {
+        res.status(500).json({ error: 'Erro ao buscar status de leitura.' });
+    }
+});
+
+// Assinar Zher Read usando saldo da carteira (R$ 4,99)
+app.post('/api/reading/subscribe/balance', requireAuth, async (req, res) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        const userRes = await client.query('SELECT balance, reading_subscription_expires_at FROM users WHERE id = $1 FOR UPDATE', [req.session.userId]);
+        if (userRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+        
+        const balance = parseFloat(userRes.rows[0].balance || 0);
+        if (balance < 4.99) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'Saldo insuficiente. Recarregue sua carteira para assinar!' });
+        }
+        
+        const currentExpires = userRes.rows[0].reading_subscription_expires_at;
+        let newExpires;
+        const now = new Date();
+        
+        if (!currentExpires || new Date(currentExpires) < now) {
+            newExpires = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        } else {
+            newExpires = new Date(new Date(currentExpires).getTime() + 30 * 24 * 60 * 60 * 1000);
+        }
+        
+        const newBalance = balance - 4.99;
+        
+        await client.query('UPDATE users SET balance = $1, reading_subscription_expires_at = $2 WHERE id = $3', [newBalance, newExpires, req.session.userId]);
+        
+        // Registra transação
+        await client.query(
+            'INSERT INTO wallet_transactions (user_id, amount, type, description) VALUES ($1, $2, $3, $4)',
+            [req.session.userId, -4.99, 'subscription', 'Assinatura Mensal Zher Read']
+        );
+        
+        // Notificação
+        await client.query(
+            'INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)',
+            [req.session.userId, 'Assinatura Read Ativa!', `Assinatura Zher Read ativa! Válida até ${newExpires.toLocaleDateString('pt-BR')}.`, 'success']
+        );
+        
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'Assinatura de leitura ativada!', balance: newBalance, expires_at: newExpires });
+    } catch (e) {
+        await client.query('ROLLBACK');
+        console.error("Erro ao assinar Zher Read:", e);
+        res.status(500).json({ error: 'Erro ao processar assinatura.' });
+    } finally {
+        client.release();
+    }
+});
+
+// Assinar Zher Read via MercadoPago
+app.post('/api/reading/subscribe/checkout', requireAuth, async (req, res) => {
+    const { method, cpf } = req.body;
+    const price = 4.99;
+    
+    try {
+        const orderRes = await pool.query(
+            'INSERT INTO orders (user_id, status, total_amount, is_deposit, is_reading_subscription) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+            [req.session.userId, 'pending', price, false, true]
+        );
+        const orderId = orderRes.rows[0].id;
+        
+        const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [req.session.userId]);
+        const email = userRes.rows[0]?.email || 'guest@example.com';
+        
+        if (method === 'pix') {
+            const paymentClient = new Payment(mpClient);
+            const createdPayment = await paymentClient.create({
+                body: {
+                    transaction_amount: price,
+                    description: `Assinatura Mensal Zher Read - Pedido #${orderId}`,
+                    payment_method_id: 'pix',
+                    payer: {
+                        email: email,
+                        first_name: 'Cliente',
+                        last_name: 'ZherRead',
+                        identification: {
+                            type: 'CPF',
+                            number: cpf ? cpf.replace(/\D/g, '') : generateCPF()
+                        }
+                    },
+                    external_reference: orderId.toString(),
+                    notification_url: `${APP_URL}/webhook`
+                },
+                requestOptions: {
+                    idempotencyKey: crypto.randomUUID()
+                }
+            });
+            
+            const qrCodeBase64 = createdPayment.point_of_interaction.transaction_data.qr_code_base64;
+            const qrCode = createdPayment.point_of_interaction.transaction_data.qr_code;
+            
+            await pool.query(
+                'UPDATE orders SET mp_payment_id = $1, pix_qr_code = $2, pix_qr_code_base64 = $3 WHERE id = $4',
+                [createdPayment.id.toString(), qrCode, qrCodeBase64, orderId]
+            );
+            
+            await pool.query(
+                'INSERT INTO notifications (user_id, title, message, type, order_id) VALUES ($1, $2, $3, $4, $5)',
+                [req.session.userId, 'Assinatura Read Pendente', `Sua assinatura Zher Read está aguardando pagamento.`, 'warning', orderId]
+            );
+            
+            return res.json({ qr_code_base64: qrCodeBase64, qr_code: qrCode, orderId });
+        }
+        
+        if (method === 'card') {
+            const preference = new Preference(mpClient);
+            const createdPref = await preference.create({
+                body: {
+                    items: [{
+                        id: `read-sub-${orderId}`,
+                        title: `Assinatura Mensal Zher Read`,
+                        unit_price: price,
+                        quantity: 1,
+                        currency_id: 'BRL'
+                    }],
+                    external_reference: orderId.toString(),
+                    back_urls: {
+                        success: `${APP_URL}/reading.html?status=success`,
+                        failure: `${APP_URL}/reading.html?status=failure`,
+                        pending: `${APP_URL}/reading.html?status=pending`
+                    },
+                    auto_return: 'approved',
+                    notification_url: `${APP_URL}/webhook`
+                }
+            });
+            
+            await pool.query('UPDATE orders SET mp_preference_id = $1 WHERE id = $2', [createdPref.id, orderId]);
+            return res.json({ init_point: createdPref.init_point, orderId });
+        }
+        
+        res.status(400).json({ error: 'Método inválido.' });
+    } catch (e) {
+        console.error("Erro ao gerar checkout de Zher Read:", e);
+        res.status(500).json({ error: 'Erro ao gerar pagamento.' });
+    }
+});
+
+// Catálogo de Livros, Ebooks e Mangás (Apenas assinantes Zher Read)
+app.get('/api/reading/catalog', requireAuth, requireReadingSubscription, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM reading_media ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (e) {
+        res.status(500).json({ error: 'Erro ao buscar catálogo de leitura.' });
+    }
+});
+
+// Detalhes da Mídia de Leitura e Capítulos
+app.get('/api/reading/media/:id', requireAuth, requireReadingSubscription, async (req, res) => {
+    const mediaId = parseInt(req.params.id);
+    try {
+        const mediaRes = await pool.query('SELECT * FROM reading_media WHERE id = $1', [mediaId]);
+        if (mediaRes.rows.length === 0) {
+            return res.status(404).json({ error: 'Livro/Mangá não encontrado.' });
+        }
+        
+        const media = mediaRes.rows[0];
+        const chaptersRes = await pool.query('SELECT id, chapter_number, title, pdf_url, pages FROM reading_chapters WHERE media_id = $1 ORDER BY chapter_number ASC', [mediaId]);
+        media.chapters = chaptersRes.rows;
+        
+        res.json(media);
+    } catch (e) {
+        res.status(500).json({ error: 'Erro ao buscar conteúdo de leitura.' });
+    }
+});
+
+// Obter páginas de um Capítulo específico
+app.get('/api/reading/chapter/:id', requireAuth, requireReadingSubscription, async (req, res) => {
+    const chapterId = parseInt(req.params.id);
+    try {
+        const result = await pool.query(
+            'SELECT c.*, m.title as media_title, m.type as media_type FROM reading_chapters c JOIN reading_media m ON c.media_id = m.id WHERE c.id = $1',
+            [chapterId]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Capítulo não encontrado.' });
+        }
+        res.json(result.rows[0]);
+    } catch (e) {
+        res.status(500).json({ error: 'Erro ao buscar capítulo.' });
+    }
+});
+
+// ==========================================
+// PAINEL ADMINISTRATIVO DO ZHER READ (UPLOADS)
+// ==========================================
+
+// Adicionar Livro/Mangá
+app.post('/api/admin/reading/media', requireAdmin, async (req, res) => {
+    const { title, description, type, category, thumbnail } = req.body;
+    try {
+        const result = await pool.query(
+            'INSERT INTO reading_media (title, description, type, category, thumbnail) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+            [title, description, type, category, thumbnail]
+        );
+        res.status(201).json({ success: true, id: result.rows[0].id });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Erro ao adicionar mídia de leitura.' });
+    }
+});
+
+// Editar Livro/Mangá
+app.put('/api/admin/reading/media/:id', requireAdmin, async (req, res) => {
+    const { title, description, type, category, thumbnail } = req.body;
+    const mediaId = parseInt(req.params.id);
+    try {
+        await pool.query(
+            'UPDATE reading_media SET title = $1, description = $2, type = $3, category = $4, thumbnail = $5 WHERE id = $6',
+            [title, description, type, category, thumbnail, mediaId]
+        );
+        res.json({ success: true, message: 'Leitura atualizada!' });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Erro ao atualizar.' });
+    }
+});
+
+// Excluir Livro/Mangá
+app.delete('/api/admin/reading/media/:id', requireAdmin, async (req, res) => {
+    const mediaId = parseInt(req.params.id);
+    try {
+        await pool.query('DELETE FROM reading_media WHERE id = $1', [mediaId]);
+        res.json({ success: true, message: 'Leitura excluída com sucesso.' });
+    } catch (e) {
+        res.status(500).json({ error: 'Erro ao excluir.' });
+    }
+});
+
+// Adicionar Capítulo (Upload de PDF ou lote de imagens de Mangá)
+app.post('/api/admin/reading/chapter', requireAdmin, async (req, res) => {
+    const { media_id, chapter_number, title, pdf_url, pages } = req.body;
+    try {
+        const result = await pool.query(
+            'INSERT INTO reading_chapters (media_id, chapter_number, title, pdf_url, pages) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+            [parseInt(media_id), parseInt(chapter_number), title, pdf_url || '', pages || '[]']
+        );
+        res.status(201).json({ success: true, id: result.rows[0].id });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Erro ao adicionar capítulo.' });
+    }
+});
+
+// Excluir Capítulo
+app.delete('/api/admin/reading/chapter/:id', requireAdmin, async (req, res) => {
+    const chapterId = parseInt(req.params.id);
+    try {
+        await pool.query('DELETE FROM reading_chapters WHERE id = $1', [chapterId]);
+        res.json({ success: true, message: 'Capítulo excluído.' });
+    } catch (e) {
+        res.status(500).json({ error: 'Erro ao excluir capítulo.' });
+    }
+});
+
+// Multi uploader para Mangá Pages
+app.post('/api/admin/reading/upload-pages', requireAdmin, uploadGeneric.array('files', 150), (req, res) => {
+    if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
+    
+    const urls = [];
+    const destDir = path.join(__dirname, 'public', 'uploads', 'mangas');
+    if (!fs.existsSync(destDir)) {
+        fs.mkdirSync(destDir, { recursive: true });
+    }
+    
+    req.files.forEach(file => {
+        const newPath = path.join(destDir, file.filename);
+        fs.renameSync(file.path, newPath);
+        urls.push(`/uploads/mangas/${file.filename}`);
+    });
+    
+    res.json({ urls });
 });
 
 // Start Server

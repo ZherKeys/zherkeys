@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/logo.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHER READ | Ebooks, Livros & Mangás Premium</title>
+    <!-- Tailwind CSS -->
+    <script src="/tailwind.js"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        obsidian: '#020617',
+                        cyberrose: '#F43F5E',
+                        electricblue: '#3B82F6',
+                        readpurple: '#A855F7',
+                        surface: 'rgba(15, 23, 42, 0.8)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        
+        .mesh-bg {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.15) 0px, transparent 50%);
+        }
+
+        .row-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+        .row-scroll::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+        }
+        .row-scroll::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        .row-scroll::-webkit-scrollbar-thumb:hover {
+            background: #A855F7;
+        }
+    </style>
+</head>
+<body class="mesh-bg min-h-screen flex flex-col font-inter">
+
+    <!-- NAVBAR -->
+    <nav id="main-nav" class="fixed top-0 left-0 w-full z-40 bg-slate-950/70 backdrop-blur-xl border-b border-slate-900/60 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <a href="/" class="flex items-center gap-3 group">
+                    <img src="logo.png" alt="Zher Keys Logo" class="w-10 h-10 object-contain rounded-lg border border-slate-700/50 bg-slate-950/40 p-1 group-hover:scale-105 transition-transform duration-300">
+                    <span class="font-orbitron font-black text-xl tracking-wider text-white">ZHER <span class="text-readpurple">READ</span></span>
+                </a>
+                
+                <div id="nav-categories" class="hidden md:flex items-center gap-6 text-sm text-slate-400 font-medium">
+                    <button onclick="filterCatalog('all')" class="hover:text-white transition-colors text-white font-bold" id="cat-all">Início</button>
+                    <button onclick="filterCatalog('book')" class="hover:text-white transition-colors" id="cat-book">Livros & Ebooks</button>
+                    <button onclick="filterCatalog('manga')" class="hover:text-white transition-colors" id="cat-manga">Mangás</button>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <a href="/" class="text-xs font-orbitron tracking-widest text-slate-400 hover:text-white border border-slate-800 hover:border-slate-700 bg-slate-950/50 px-4 py-2 rounded-lg transition-all">
+                    🛒 VOLTAR À LOJA
+                </a>
+                
+                <div id="user-balance-nav" class="hidden md:flex flex-col text-right">
+                    <span class="text-[9px] font-orbitron tracking-widest text-slate-500">SEU SALDO</span>
+                    <span class="text-xs font-bold text-emerald-400" id="nav-balance-val">R$ 0,00</span>
+                </div>
+
+                <div class="w-9 h-9 rounded-full bg-readpurple/10 border border-readpurple/30 flex items-center justify-center text-readpurple" title="Leitor VIP">
+                    <i data-lucide="book-open" class="w-4 h-4"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen" class="flex-grow flex flex-col items-center justify-center py-40">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-readpurple"></div>
+        <p class="mt-4 text-xs font-orbitron tracking-widest text-slate-500">VALIDANDO ASSINATURA READ SECURE...</p>
+    </div>
+
+    <!-- PORTAL DE ASSINATURA (UNSUBSCRIBED LANDING) -->
+    <div id="subscription-portal" class="hidden flex-grow flex flex-col items-center justify-center px-6 py-24 mesh-bg">
+        <div class="max-w-xl w-full text-center space-y-8 bg-slate-950/80 border border-slate-900 rounded-3xl p-8 sm:p-12 shadow-2xl backdrop-blur-xl">
+            <div class="w-20 h-20 bg-readpurple/10 rounded-full flex items-center justify-center mx-auto text-readpurple shadow-lg shadow-readpurple/20">
+                <i data-lucide="book-open" class="w-10 h-10"></i>
+            </div>
+            
+            <div class="space-y-3">
+                <span class="text-xs font-orbitron font-bold tracking-widest text-readpurple bg-readpurple/10 px-3 py-1 rounded-full border border-readpurple/20">ASSINATURA DE LEITURA</span>
+                <h2 class="text-3xl font-orbitron font-black text-white leading-tight tracking-wider">LIVROS, EBOOKS & MANGÁS ILIMITADOS.</h2>
+                <p class="text-slate-400 text-sm font-medium">Leia online no seu computador, celular ou tablet. Capítulos completos em alta resolução, com leitor customizado e sem nenhuma propaganda.</p>
+            </div>
+            
+            <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <span class="text-xs text-slate-400 font-orbitron tracking-wider">VALOR MENSAL</span>
+                    <span class="text-xl font-orbitron font-black text-purple-400">R$ 4,99 <span class="text-xs text-slate-500 font-normal">/ mês</span></span>
+                </div>
+                <div class="flex justify-between items-center text-xs text-slate-400">
+                    <span class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Cancele quando quiser</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Leitor Vertical Manga</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> PDFs Integrados</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button onclick="subscribeWithBalance()" class="w-full bg-readpurple hover:bg-purple-500 text-white font-orbitron font-bold text-xs tracking-wider py-4 rounded-xl shadow-lg shadow-readpurple/20 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="wallet" class="w-4 h-4"></i> PAGAR COM SALDO (R$ 4,99)
+                </button>
+                <button onclick="openPixSubscriptionModal()" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-white font-orbitron font-bold text-xs tracking-wider py-4 rounded-xl transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="qr-code" class="w-4 h-4 text-readpurple"></i> PAGAR COM PIX (R$ 4,99)
+                </button>
+            </div>
+            
+            <p class="text-[10px] text-slate-500">Saldo insuficiente? Adicione saldo na sua <a href="/account.html" class="text-readpurple hover:underline">Carteira</a> da conta.</p>
+        </div>
+    </div>
+
+    <!-- DASHBOARD DE LEITURA (SUBSCRIBED ACCESS) -->
+    <main id="reading-dashboard" class="hidden flex-grow pt-24 pb-16 px-4 sm:px-6 lg:px-8 space-y-12">
+        <!-- Hero Banner -->
+        <div id="hero-banner" class="relative rounded-3xl h-[45vh] overflow-hidden border border-slate-900 shadow-2xl flex items-end">
+            <!-- Background Image -->
+            <div class="absolute inset-0 bg-cover bg-center" id="hero-bg" style="background-image: url('/sorteio_zcoins.png')"></div>
+            <!-- Shadow Overlay -->
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/20 to-transparent"></div>
+            
+            <!-- Hero Content -->
+            <div class="relative z-10 max-w-2xl px-6 sm:px-12 pb-8 space-y-4">
+                <span class="text-[10px] font-orbitron font-bold tracking-widest text-readpurple bg-readpurple/10 border border-readpurple/20 px-3 py-1 rounded">DESTAQUE DA SEMANA</span>
+                <h1 class="text-2xl sm:text-4xl font-orbitron font-black text-white leading-tight uppercase" id="hero-title">BIBLIOTECA VIRTUAL ZHER READ</h1>
+                <p class="text-slate-300 text-sm leading-relaxed" id="hero-desc">Explore nossa seleção premium de livros acadêmicos, romances marcantes, mangás japoneses clássicos e lançamentos periódicos.</p>
+            </div>
+        </div>
+
+        <!-- SEARCH BAR AND CATEGORIES FILTER -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-950/40 border border-slate-900/60 p-4 rounded-2xl backdrop-blur">
+            <div class="relative w-full sm:max-w-md">
+                <i data-lucide="search" class="absolute left-4 top-3.5 w-4 h-4 text-slate-500"></i>
+                <input type="text" id="search-input" oninput="searchCatalog(this.value)" placeholder="Buscar livro ou mangá..." class="w-full bg-slate-900/50 border border-slate-800 focus:border-readpurple rounded-xl py-3 pl-12 pr-4 text-xs focus:outline-none transition-all">
+            </div>
+            
+            <div class="text-xs text-slate-500 font-orbitron tracking-widest flex items-center gap-2">
+                <span>TOTAL DE OBRAS:</span>
+                <span class="text-white font-bold" id="total-medias-count">0</span>
+            </div>
+        </div>
+
+        <!-- LIVROS ROW -->
+        <div id="section-books-row" class="space-y-4">
+            <h3 class="text-lg font-orbitron font-bold tracking-widest text-white border-l-4 border-readpurple pl-3 uppercase">Livros & Ebooks</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6" id="books-grid">
+                <!-- Dinâmico -->
+            </div>
+        </div>
+
+        <!-- MANGÁS ROW -->
+        <div id="section-mangas-row" class="space-y-4">
+            <h3 class="text-lg font-orbitron font-bold tracking-widest text-white border-l-4 border-readpurple pl-3 uppercase">Mangás Premium</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6" id="mangas-grid">
+                <!-- Dinâmico -->
+            </div>
+        </div>
+    </main>
+
+    <!-- DETAILS MODAL -->
+    <div id="details-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-slate-950 border border-slate-850 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
+            <button onclick="closeDetailsModal()" class="absolute right-6 top-6 z-10 w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-650 transition-all">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 p-6 sm:p-8">
+                <!-- Cover -->
+                <div class="md:col-span-1">
+                    <img id="detail-cover" src="" alt="Capa" class="w-full rounded-2xl shadow-2xl border border-slate-900">
+                </div>
+                
+                <!-- Metadata & Info -->
+                <div class="md:col-span-2 space-y-6">
+                    <div>
+                        <span id="detail-type-badge" class="text-[9px] font-orbitron font-bold tracking-widest bg-readpurple/10 border border-readpurple/20 px-2 py-0.5 rounded text-readpurple uppercase">EBOOK</span>
+                        <h2 id="detail-title" class="text-2xl sm:text-3xl font-orbitron font-black text-white tracking-wide mt-2 uppercase">Título</h2>
+                        <p id="detail-category" class="text-xs font-orbitron tracking-widest text-purple-400 mt-1">Ação, Aventura</p>
+                    </div>
+
+                    <p id="detail-desc" class="text-slate-400 text-sm leading-relaxed">Lorem ipsum...</p>
+
+                    <!-- Lista de Capítulos -->
+                    <div class="space-y-4 pt-2">
+                        <h4 class="font-orbitron font-bold text-xs tracking-widest text-slate-300 border-b border-slate-850 pb-2">CAPÍTULOS / ARQUIVOS</h4>
+                        <div class="space-y-3 max-h-64 overflow-y-auto pr-2" id="detail-chapters-list">
+                            <!-- Dinâmico -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FULLSCREEN CHAPTER LEITOR (PDF AND MANGA PAGES) -->
+    <div id="reading-leitor-overlay" class="fixed inset-0 z-50 bg-black/95 hidden flex flex-col">
+        <!-- Reader Header -->
+        <div class="bg-slate-950 border-b border-slate-900 px-6 py-4 flex items-center justify-between z-20">
+            <button onclick="exitReaderOverlay()" class="flex items-center gap-2 text-slate-400 hover:text-white font-orbitron text-xs tracking-widest bg-slate-900/60 px-4 py-2 rounded border border-slate-800 transition-all">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> FECHAR LEITOR
+            </button>
+            <div class="text-center">
+                <h3 id="reader-media-title" class="font-orbitron font-bold text-sm tracking-wide text-white uppercase">Carregando Obra...</h3>
+                <p id="reader-chapter-title" class="text-[10px] text-slate-400 mt-0.5"></p>
+            </div>
+            
+            <!-- Controls specific for Manga (Scroll Mode & Layout) -->
+            <div id="reader-manga-settings" class="hidden flex items-center gap-3">
+                <select id="manga-layout-select" onchange="changeMangaLayout(this.value)" class="bg-slate-900 border border-slate-800 text-[10px] font-orbitron tracking-widest text-slate-300 rounded px-2 py-1.5 focus:outline-none">
+                    <option value="single">Página Única (Slide)</option>
+                    <option value="scroll">Rolagem Vertical (Webtoon)</option>
+                </select>
+            </div>
+            <div id="reader-pdf-placeholder-width" class="w-20 md:block hidden"></div>
+        </div>
+
+        <!-- Reader Main Content Container -->
+        <div class="flex-grow flex items-center justify-center p-4 relative overflow-y-auto" id="reader-workspace">
+            <!-- 1. PDF Container Frame -->
+            <div id="reader-pdf-container" class="w-full h-full max-w-5xl hidden">
+                <iframe id="pdf-viewer-frame" src="" class="w-full h-full rounded-2xl border border-slate-900 bg-slate-950"></iframe>
+            </div>
+
+            <!-- 2. Manga Layout: Sliding Page mode -->
+            <div id="reader-manga-slide" class="relative max-h-full max-w-2xl flex flex-col items-center justify-center hidden space-y-4">
+                <!-- Page Navigation Floatings -->
+                <button onclick="mangaPrevPage()" class="absolute left-[-50px] md:left-[-80px] top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-slate-900/60 border border-slate-800 hover:bg-readpurple/85 text-white flex items-center justify-center transition-all">
+                    <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                </button>
+                
+                <img id="manga-slide-img" src="" alt="Manga Page" class="max-h-[75vh] object-contain rounded border border-slate-900 select-none cursor-pointer" onclick="mangaNextPage()">
+                
+                <button onclick="mangaNextPage()" class="absolute right-[-50px] md:right-[-80px] top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-slate-900/60 border border-slate-800 hover:bg-readpurple/85 text-white flex items-center justify-center transition-all">
+                    <i data-lucide="chevron-right" class="w-6 h-6"></i>
+                </button>
+
+                <!-- Page Progress indicator -->
+                <div class="text-xs font-orbitron text-slate-500 tracking-wider">
+                    PÁGINA <span id="manga-page-current" class="text-white font-bold">1</span> / <span id="manga-page-total" class="text-slate-400">10</span>
+                </div>
+            </div>
+
+            <!-- 3. Manga Layout: Vertical scroll mode -->
+            <div id="reader-manga-scroll" class="w-full max-w-xl mx-auto hidden flex flex-col items-center space-y-2 py-4">
+                <!-- Injected page list scroll -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE ASSINATURA PIX (MERCADOPAGO) -->
+    <div id="pix-subscription-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-slate-950 border border-slate-850 rounded-3xl p-8 max-w-md w-full text-center space-y-6">
+            <h3 class="font-orbitron font-bold text-white tracking-widest text-lg">PAGAMENTO DA LEITURA</h3>
+            
+            <div class="bg-readpurple/10 text-readpurple text-xs font-bold font-orbitron tracking-wide py-2 rounded-full border border-readpurple/20">
+                ⌛ EXPIRA EM 10 MINUTOS
+            </div>
+
+            <p class="text-xs text-slate-400">Escaneie o QR Code abaixo com seu aplicativo bancário ou copie o código Copia e Cola:</p>
+
+            <div class="bg-white p-3 rounded-2xl inline-block shadow-2xl shadow-readpurple/10 border border-slate-800">
+                <img id="pix-qr-img" src="" alt="QR Code PIX" class="w-48 h-48 block">
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-[10px] font-orbitron text-slate-500 tracking-wider">CÓDIGO COPIA E COLA</label>
+                <div class="flex gap-2">
+                    <input type="text" id="pix-code-input" readonly class="flex-grow bg-slate-900 border border-slate-800 text-[10px] rounded-lg px-3 py-2.5 font-mono text-readpurple focus:outline-none focus:border-readpurple">
+                    <button onclick="copyPixCode()" class="bg-readpurple hover:bg-purple-500 text-white px-4 rounded-lg font-orbitron font-bold text-[10px] tracking-wider transition-colors">COPIAR</button>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-900 flex justify-between gap-4">
+                <button onclick="closePixSubscriptionModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-400 font-orbitron text-[10px] tracking-widest py-3 rounded-xl transition-all">CANCELAR</button>
+                <button onclick="checkSubscriptionStatusAndUnlock()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-orbitron font-bold text-[10px] tracking-widest py-3 rounded-xl transition-all">JÁ PAGUEI</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION BARS -->
+    <div id="toast" class="fixed bottom-6 right-6 z-[100] bg-slate-950 border border-slate-850 px-6 py-4 rounded-2xl shadow-2xl hidden max-w-sm">
+        <p id="toast-msg" class="text-xs font-medium text-slate-300"></p>
+    </div>
+
+    <!-- CORE SCRIPT -->
+    <script>
+        let catalog = [];
+        let activeFilter = 'all';
+        let currentUserId = null;
+        let selectedMedia = null;
+        let isSubscribed = false;
+        let pixPollingInterval = null;
+
+        // Leitor Manga States
+        let mangaPages = [];
+        let mangaCurrentPageIndex = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            checkAuthAndSubscription();
+        });
+
+        // Toast Helper
+        function showToast(msg, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            toastMsg.innerText = msg;
+            
+            toast.className = `fixed bottom-6 right-6 z-[100] bg-slate-950 border px-6 py-4 rounded-2xl shadow-2xl max-w-sm transition-all duration-300`;
+            if (type === 'success') {
+                toast.classList.add('border-emerald-500', 'text-emerald-400');
+            } else if (type === 'error') {
+                toast.classList.add('border-rose-500', 'text-rose-400');
+            } else {
+                toast.classList.add('border-slate-800', 'text-slate-200');
+            }
+            
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 4000);
+        }
+
+        // Authenticate & Check Subscription
+        async function checkAuthAndSubscription() {
+            try {
+                const meRes = await fetch('/api/me');
+                if (meRes.status === 401) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                const meData = await meRes.json();
+                currentUserId = meData.id;
+
+                // Check subscription status
+                const subRes = await fetch('/api/reading/status');
+                const subData = await subRes.json();
+                
+                isSubscribed = subData.subscribed;
+                document.getElementById('nav-balance-val').innerText = `R$ ${parseFloat(subData.balance).toFixed(2).replace('.', ',')}`;
+                
+                document.getElementById('loading-screen').classList.add('hidden');
+                
+                if (isSubscribed) {
+                    document.getElementById('subscription-portal').classList.add('hidden');
+                    document.getElementById('reading-dashboard').classList.remove('hidden');
+                    document.getElementById('user-balance-nav').classList.remove('hidden');
+                    loadCatalog();
+                } else {
+                    document.getElementById('reading-dashboard').classList.add('hidden');
+                    document.getElementById('subscription-portal').classList.remove('hidden');
+                }
+            } catch (e) {
+                console.error(e);
+                showToast('Erro de autenticação.', 'error');
+            }
+        }
+
+        // Pay with balance
+        async function subscribeWithBalance() {
+            if (!confirm('Deseja assinar o Zher Read por R$ 4,99 por 30 dias usando seu saldo?')) return;
+            
+            try {
+                const res = await fetch('/api/reading/subscribe/balance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await res.json();
+                if (!res.ok) {
+                    showToast(data.error || 'Erro ao assinar.', 'error');
+                    return;
+                }
+                
+                showToast(data.message, 'success');
+                setTimeout(() => {
+                    checkAuthAndSubscription();
+                }, 1500);
+            } catch (e) {
+                showToast('Erro interno na conexão.', 'error');
+            }
+        }
+
+        // Open PIX checkout modal
+        async function openPixSubscriptionModal() {
+            try {
+                showToast('Gerando PIX... Por favor aguarde.', 'info');
+                const res = await fetch('/api/reading/subscribe/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ method: 'pix' })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    showToast(data.error || 'Erro ao gerar PIX.', 'error');
+                    return;
+                }
+
+                document.getElementById('pix-qr-img').src = `data:image/png;base64,${data.qr_code_base64}`;
+                document.getElementById('pix-code-input').value = data.qr_code;
+                document.getElementById('pix-subscription-modal').classList.remove('hidden');
+
+                if (pixPollingInterval) clearInterval(pixPollingInterval);
+                pixPollingInterval = setInterval(async () => {
+                    const statusRes = await fetch('/api/reading/status');
+                    const statusData = await statusRes.json();
+                    if (statusData.subscribed) {
+                        clearInterval(pixPollingInterval);
+                        document.getElementById('pix-subscription-modal').classList.add('hidden');
+                        showToast('Assinatura Zher Read ativa! Pagamento Aprovado.', 'success');
+                        checkAuthAndSubscription();
+                    }
+                }, 5000);
+            } catch (e) {
+                showToast('Erro ao criar Pix.', 'error');
+            }
+        }
+
+        function closePixSubscriptionModal() {
+            document.getElementById('pix-subscription-modal').classList.add('hidden');
+            if (pixPollingInterval) clearInterval(pixPollingInterval);
+        }
+
+        function copyPixCode() {
+            const input = document.getElementById('pix-code-input');
+            input.select();
+            navigator.clipboard.writeText(input.value);
+            showToast('Código Pix copiado!', 'success');
+        }
+
+        function checkSubscriptionStatusAndUnlock() {
+            checkAuthAndSubscription();
+            closePixSubscriptionModal();
+        }
+
+        // Load Catalog
+        async function loadCatalog() {
+            try {
+                const res = await fetch('/api/reading/catalog');
+                if (!res.ok) return;
+                catalog = await res.json();
+                
+                document.getElementById('total-medias-count').innerText = catalog.length;
+                renderGrids();
+            } catch (e) {
+                showToast('Erro ao carregar catálogo de leitura.', 'error');
+            }
+        }
+
+        function renderGrids() {
+            const bGrid = document.getElementById('books-grid');
+            const mGrid = document.getElementById('mangas-grid');
+            
+            bGrid.innerHTML = '';
+            mGrid.innerHTML = '';
+
+            let booksCount = 0;
+            let mangasCount = 0;
+
+            catalog.forEach(item => {
+                if (activeFilter !== 'all' && item.type !== activeFilter) return;
+                
+                const card = document.createElement('div');
+                card.className = `group relative cursor-pointer overflow-hidden rounded-xl border border-slate-900 hover:border-readpurple bg-slate-950 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-purple-900/10`;
+                card.onclick = () => openDetailsModal(item.id);
+                
+                card.innerHTML = `
+                    <div class="aspect-[2/3] overflow-hidden relative">
+                        <img src="${item.thumbnail}" alt="${item.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                            <div class="w-full flex items-center justify-between">
+                                <span class="bg-readpurple text-white p-2 rounded-full shadow-lg shadow-purple-900/30">
+                                    <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                                </span>
+                                <span class="text-[9px] font-orbitron text-purple-400 font-bold bg-slate-900 border border-slate-800 px-2 py-0.5 rounded">${item.category}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3">
+                        <h4 class="font-orbitron font-bold text-xs text-white truncate uppercase">${item.title}</h4>
+                        <p class="text-[10px] text-slate-500 font-orbitron mt-0.5 uppercase">${item.type === 'book' || item.type === 'ebook' ? 'Ebook' : 'Mangá'}</p>
+                    </div>
+                `;
+
+                if (item.type === 'book' || item.type === 'ebook') {
+                    bGrid.appendChild(card);
+                    booksCount++;
+                } else if (item.type === 'manga') {
+                    mGrid.appendChild(card);
+                    mangasCount++;
+                }
+            });
+
+            toggleSectionRow('section-books-row', booksCount);
+            toggleSectionRow('section-mangas-row', mangasCount);
+
+            lucide.createIcons();
+        }
+
+        function toggleSectionRow(rowId, count) {
+            const el = document.getElementById(rowId);
+            if (count === 0) el.classList.add('hidden');
+            else el.classList.remove('hidden');
+        }
+
+        function filterCatalog(type) {
+            activeFilter = type;
+            const btns = ['all', 'book', 'manga'];
+            btns.forEach(b => {
+                const el = document.getElementById(`cat-${b}`);
+                if (b === type) el.classList.add('text-white', 'font-bold');
+                else el.classList.remove('text-white', 'font-bold');
+            });
+            renderGrids();
+        }
+
+        function searchCatalog(query) {
+            const lower = query.toLowerCase().trim();
+            if (!lower) {
+                loadCatalog();
+                return;
+            }
+
+            const filtered = catalog.filter(item => {
+                return (item.title + ' ' + item.description + ' ' + item.category).toLowerCase().includes(lower);
+            });
+            
+            const temp = catalog;
+            catalog = filtered;
+            renderGrids();
+            catalog = temp;
+        }
+
+        // Details Modal
+        async function openDetailsModal(id) {
+            try {
+                const res = await fetch(`/api/reading/media/${id}`);
+                selectedMedia = await res.json();
+                
+                document.getElementById('detail-cover').src = selectedMedia.thumbnail;
+                document.getElementById('detail-title').innerText = selectedMedia.title;
+                document.getElementById('detail-category').innerText = selectedMedia.category;
+                document.getElementById('detail-desc').innerText = selectedMedia.description;
+                
+                const typeEl = document.getElementById('detail-type-badge');
+                typeEl.innerText = selectedMedia.type === 'manga' ? 'Mangá' : 'Livro / Ebook';
+                
+                const list = document.getElementById('detail-chapters-list');
+                list.innerHTML = '';
+                
+                if (selectedMedia.chapters && selectedMedia.chapters.length > 0) {
+                    selectedMedia.chapters.forEach(ch => {
+                        const item = document.createElement('div');
+                        item.className = `flex items-center justify-between p-4 rounded-xl border border-slate-900 bg-slate-950 hover:border-slate-800 transition-all`;
+                        
+                        item.innerHTML = `
+                            <div>
+                                <span class="text-[9px] font-orbitron text-purple-400 font-bold bg-readpurple/10 px-2 py-0.5 rounded border border-readpurple/20">CAPÍTULO ${ch.chapter_number}</span>
+                                <h5 class="text-sm font-bold text-white mt-1.5">${ch.title}</h5>
+                            </div>
+                            <button onclick="openChapterReader(${ch.id})" class="bg-readpurple hover:bg-purple-500 text-white font-orbitron font-bold text-[10px] tracking-widest px-4 py-2.5 rounded-lg flex items-center gap-1.5 transition-colors">
+                                <i data-lucide="book-open" class="w-3.5 h-3.5"></i> LER AGORA
+                            </button>
+                        `;
+                        list.appendChild(item);
+                    });
+                } else {
+                    list.innerHTML = '<div class="text-center text-xs text-slate-600 py-6">Nenhum capítulo cadastrado ainda.</div>';
+                }
+                
+                document.getElementById('details-modal').classList.remove('hidden');
+                lucide.createIcons();
+            } catch (e) {
+                showToast('Erro ao carregar detalhes.', 'error');
+            }
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('details-modal').classList.add('hidden');
+        }
+
+        // ======================================
+        // LEITOR CORE SYSTEM
+        // ======================================
+
+        async function openChapterReader(chId) {
+            closeDetailsModal();
+            try {
+                const res = await fetch(`/api/reading/chapter/${chId}`);
+                const ch = await res.json();
+                
+                document.getElementById('reader-media-title').innerText = ch.media_title;
+                document.getElementById('reader-chapter-title').innerText = `Capítulo ${ch.chapter_number} - ${ch.title}`;
+                
+                // Reset layouts
+                document.getElementById('reader-pdf-container').classList.add('hidden');
+                document.getElementById('reader-manga-slide').classList.add('hidden');
+                document.getElementById('reader-manga-scroll').classList.add('hidden');
+                document.getElementById('reader-manga-settings').classList.add('hidden');
+
+                if (ch.media_type === 'manga') {
+                    // Manga Handler
+                    document.getElementById('reader-manga-settings').classList.remove('hidden');
+                    mangaPages = typeof ch.pages === 'string' ? JSON.parse(ch.pages) : (ch.pages || []);
+                    mangaCurrentPageIndex = 0;
+                    
+                    const select = document.getElementById('manga-layout-select');
+                    changeMangaLayout(select.value);
+                } else {
+                    // PDF Ebook Handler
+                    document.getElementById('pdf-viewer-frame').src = ch.pdf_url;
+                    document.getElementById('reader-pdf-container').classList.remove('hidden');
+                }
+                
+                document.getElementById('reading-leitor-overlay').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                window.addEventListener('keydown', handleReaderKeys);
+            } catch(e) {
+                showToast('Erro ao carregar o leitor.', 'error');
+            }
+        }
+
+        function changeMangaLayout(layout) {
+            const slideEl = document.getElementById('reader-manga-slide');
+            const scrollEl = document.getElementById('reader-manga-scroll');
+            
+            if (layout === 'single') {
+                scrollEl.classList.add('hidden');
+                slideEl.classList.remove('hidden');
+                mangaLoadSlidePage();
+            } else {
+                slideEl.classList.add('hidden');
+                scrollEl.classList.remove('hidden');
+                
+                // Load all pages vertically
+                scrollEl.innerHTML = '';
+                mangaPages.forEach(p => {
+                    const img = document.createElement('img');
+                    img.src = p;
+                    img.className = 'w-full object-contain rounded border border-slate-900 mb-4 select-none';
+                    scrollEl.appendChild(img);
+                });
+            }
+        }
+
+        function mangaLoadSlidePage() {
+            if (mangaPages.length === 0) return;
+            const img = document.getElementById('manga-slide-img');
+            img.src = mangaPages[mangaCurrentPageIndex];
+            
+            document.getElementById('manga-page-current').innerText = mangaCurrentPageIndex + 1;
+            document.getElementById('manga-page-total').innerText = mangaPages.length;
+            
+            // Scroll reader workspace to top
+            document.getElementById('reader-workspace').scrollTop = 0;
+        }
+
+        function mangaNextPage() {
+            if (mangaCurrentPageIndex < mangaPages.length - 1) {
+                mangaCurrentPageIndex++;
+                mangaLoadSlidePage();
+            } else {
+                showToast('Você chegou ao fim do capítulo!', 'success');
+            }
+        }
+
+        function mangaPrevPage() {
+            if (mangaCurrentPageIndex > 0) {
+                mangaCurrentPageIndex--;
+                mangaLoadSlidePage();
+            }
+        }
+
+        function handleReaderKeys(e) {
+            const isSingle = document.getElementById('manga-layout-select').value === 'single';
+            const isManga = !document.getElementById('reader-manga-slide').classList.contains('hidden') || !document.getElementById('reader-manga-scroll').classList.contains('hidden');
+            
+            if (isManga && isSingle) {
+                if (e.code === 'ArrowRight' || e.code === 'Space') {
+                    e.preventDefault();
+                    mangaNextPage();
+                } else if (e.code === 'ArrowLeft') {
+                    e.preventDefault();
+                    mangaPrevPage();
+                }
+            }
+            if (e.code === 'Escape') {
+                exitReaderOverlay();
+            }
+        }
+
+        function exitReaderOverlay() {
+            document.getElementById('pdf-viewer-frame').src = '';
+            window.removeEventListener('keydown', handleReaderKeys);
+            
+            document.getElementById('reading-leitor-overlay').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+    </script>
+</body>
+</html>

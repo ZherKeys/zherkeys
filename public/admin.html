@@ -45,11 +45,13 @@
                 </div>
             </a>
             
-            <div class="flex gap-4 font-orbitron text-xs tracking-widest">
-                <button onclick="switchTab('produtos')" id="tab-btn-produtos" class="text-white border-b-2 border-toxicgreen pb-1 transition-all">PRODUTOS</button>
-                <button onclick="switchTab('vendas')" id="tab-btn-vendas" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all">VENDAS</button>
-                <button onclick="switchTab('suporte')" id="tab-btn-suporte" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all">SUPORTE GLOBAL</button>
-                <button onclick="switchTab('carteiras')" id="tab-btn-carteiras" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all">CARTEIRAS</button>
+            <div class="flex gap-4 font-orbitron text-xs tracking-widest overflow-x-auto max-w-xl py-2">
+                <button onclick="switchTab('produtos')" id="tab-btn-produtos" class="text-white border-b-2 border-toxicgreen pb-1 transition-all shrink-0">PRODUTOS</button>
+                <button onclick="switchTab('vendas')" id="tab-btn-vendas" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all shrink-0">VENDAS</button>
+                <button onclick="switchTab('suporte')" id="tab-btn-suporte" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all shrink-0">SUPORTE GLOBAL</button>
+                <button onclick="switchTab('carteiras')" id="tab-btn-carteiras" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all shrink-0">CARTEIRAS</button>
+                <button onclick="switchTab('streaming')" id="tab-btn-streaming" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all shrink-0">ZHER PLAY (STREAMING)</button>
+                <button onclick="switchTab('reading')" id="tab-btn-reading" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all shrink-0">ZHER READ (EBOOKS/MANGA)</button>
             </div>
             
             <div class="flex items-center gap-4">
@@ -301,6 +303,317 @@
             </div>
         </div>
 
+        <!-- ABA: ZHER PLAY (STREAMING) -->
+        <div id="section-streaming" class="hidden space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Painel de Gerenciamento (Esquerda) -->
+                <div class="lg:col-span-1 space-y-6">
+                    
+                    <!-- Form 1: Cadastrar Filme / Série / Anime -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                        <h3 class="font-orbitron font-bold text-white tracking-widest mb-6 border-b border-slate-800 pb-4 flex items-center gap-2">
+                            <i data-lucide="plus-circle" class="w-5 h-5 text-rose-500"></i> ADICIONAR MÍDIA
+                        </h3>
+                        
+                        <form id="media-form" class="space-y-4" onsubmit="saveMedia(event)">
+                            <input type="hidden" id="media-id">
+                            
+                            <div>
+                                <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">TÍTULO</label>
+                                <input type="text" id="media-title" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-rose-500 transition-all">
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">TIPO</label>
+                                    <select id="media-type" onchange="toggleMediaType(this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-3 text-white focus:outline-none focus:border-rose-500 transition-all cursor-pointer">
+                                        <option value="movie">Filme</option>
+                                        <option value="series">Série</option>
+                                        <option value="anime">Anime</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">CATEGORIA (Gênero)</label>
+                                    <input type="text" id="media-category" placeholder="Ação, Drama, etc." required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-rose-500 transition-all">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">DESCRIÇÃO (Sinopse)</label>
+                                <textarea id="media-desc" rows="3" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-rose-500 transition-all"></textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">IMAGEM DO POSTER (Upload ou Link)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="media-thumbnail" required class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-rose-500 transition-all">
+                                    <label class="bg-slate-850 hover:bg-slate-800 border border-slate-800 text-white px-4 py-3 rounded-lg cursor-pointer flex items-center justify-center transition-colors">
+                                        <i data-lucide="upload" class="w-4 h-4"></i>
+                                        <input type="file" accept="image/*" class="hidden" onchange="uploadMediaFile(this, 'media-thumbnail')">
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Video URL (Only for Movie) -->
+                            <div id="media-video-container">
+                                <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">ARQUIVO DE VÍDEO MP4 (Upload ou Link)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="media-video" class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-rose-500 transition-all">
+                                    <label class="bg-slate-850 hover:bg-slate-800 border border-slate-800 text-white px-4 py-3 rounded-lg cursor-pointer flex items-center justify-center transition-colors">
+                                        <i data-lucide="upload" class="w-4 h-4"></i>
+                                        <input type="file" accept="video/mp4,video/*" class="hidden" onchange="uploadMediaFile(this, 'media-video')">
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Listas de Áudio e Legenda Dinâmicas -->
+                            <div class="space-y-4 pt-2 border-t border-slate-850">
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <label class="block text-xs font-orbitron tracking-widest text-slate-300 text-[10px]">DUBLEMENTOS / ÁUDIOS</label>
+                                        <button type="button" onclick="addAudioRow()" class="text-[9px] font-orbitron text-rose-500 hover:underline">+ Adicionar Áudio</button>
+                                    </div>
+                                    <div id="media-audios-list" class="space-y-2"></div>
+                                </div>
+
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <label class="block text-xs font-orbitron tracking-widest text-slate-300 text-[10px]">LEGENDAS VTT / SRT</label>
+                                        <button type="button" onclick="addSubtitleRow()" class="text-[9px] font-orbitron text-rose-500 hover:underline">+ Adicionar Legenda</button>
+                                    </div>
+                                    <div id="media-subtitles-list" class="space-y-2"></div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" id="media-save-btn" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-orbitron font-bold tracking-widest py-3 rounded-lg transition-colors mt-4 text-xs">
+                                SALVAR MÍDIA
+                            </button>
+                            <button type="button" id="media-cancel-btn" onclick="resetMediaForm()" class="hidden w-full bg-slate-800 hover:bg-slate-700 text-white font-orbitron font-bold tracking-widest py-3 rounded-lg transition-colors mt-2 text-xs">
+                                CANCELAR EDIÇÃO
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Form 2: Cadastrar Episódio (Série/Anime) -->
+                    <div id="episode-form-container" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hidden">
+                        <h3 class="font-orbitron font-bold text-white tracking-widest mb-6 border-b border-slate-800 pb-4 flex items-center gap-2">
+                            <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-400"></i> NOVO EPISÓDIO
+                        </h3>
+                        
+                        <form id="episode-form" class="space-y-4" onsubmit="saveEpisode(event)">
+                            <div>
+                                <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">MÍDIA PAI</label>
+                                <input type="text" id="ep-media-title" readonly class="w-full bg-slate-950/50 border border-slate-850 rounded-lg px-4 py-3 text-slate-400 focus:outline-none">
+                                <input type="hidden" id="ep-media-id">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">TEMPORADA</label>
+                                    <input type="number" id="ep-season" min="1" value="1" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">NÚMERO EPISÓDIO</label>
+                                    <input type="number" id="ep-number" min="1" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">TÍTULO EPISÓDIO</label>
+                                <input type="text" id="ep-title" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">ARQUIVO DE VÍDEO EPISÓDIO (Upload ou Link)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="ep-video" required class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+                                    <label class="bg-slate-850 hover:bg-slate-800 border border-slate-800 text-white px-4 py-3 rounded-lg cursor-pointer flex items-center justify-center transition-colors">
+                                        <i data-lucide="upload" class="w-4 h-4"></i>
+                                        <input type="file" accept="video/*" class="hidden" onchange="uploadMediaFile(this, 'ep-video')">
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Listas de Áudio e Legenda Dinâmicas para Episódio -->
+                            <div class="space-y-4 pt-2 border-t border-slate-850">
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <label class="block text-xs font-orbitron tracking-widest text-slate-300 text-[10px]">ÁUDIOS DUPLEX</label>
+                                        <button type="button" onclick="addEpAudioRow()" class="text-[9px] font-orbitron text-indigo-400 hover:underline">+ Adicionar Áudio</button>
+                                    </div>
+                                    <div id="ep-audios-list" class="space-y-2"></div>
+                                </div>
+
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <label class="block text-xs font-orbitron tracking-widest text-slate-300 text-[10px]">LEGENDAS VTT / SRT</label>
+                                        <button type="button" onclick="addEpSubtitleRow()" class="text-[9px] font-orbitron text-indigo-400 hover:underline">+ Adicionar Legenda</button>
+                                    </div>
+                                    <div id="ep-subtitles-list" class="space-y-2"></div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-orbitron font-bold tracking-widest py-3 rounded-lg transition-colors mt-4 text-xs">
+                                SALVAR EPISÓDIO
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+
+                <!-- Painel de Catálogo (Direita) -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 min-h-[70vh]">
+                        <h3 class="font-orbitron font-bold text-white tracking-widest mb-6 border-b border-slate-800 pb-4 flex items-center justify-between">
+                            <span class="flex items-center gap-2"><i data-lucide="video" class="w-5 h-5 text-rose-500"></i> COFRE DE MÍDIAS (ZHER PLAY)</span>
+                            <button onclick="loadStreamingCatalog()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1"><i data-lucide="refresh-cw" class="w-4 h-4"></i> RECARREGAR</button>
+                        </h3>
+
+                        <div id="admin-streaming-list" class="space-y-4">
+                            <!-- Injetado via JS -->
+                            <div class="text-center text-slate-500 py-10 font-orbitron text-xs">Carregando catálogo...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA: ZHER READ (EBOOKS/MANGA) -->
+        <div id="section-reading" class="hidden space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Painel de Gerenciamento (Esquerda) -->
+                <div class="lg:col-span-1 space-y-6">
+                    
+                    <!-- Form 1: Cadastrar Livro / Ebook / Mangá -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                        <h3 class="font-orbitron font-bold text-white tracking-widest mb-6 border-b border-slate-800 pb-4 flex items-center gap-2">
+                            <i data-lucide="book-open" class="w-5 h-5 text-amber-500"></i> ADICIONAR LEITURA
+                        </h3>
+                        
+                        <form id="reading-media-form" class="space-y-4" onsubmit="saveReadingMedia(event)">
+                            <input type="hidden" id="reading-media-id">
+                            
+                            <div>
+                                <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">TÍTULO</label>
+                                <input type="text" id="reading-media-title" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-all">
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">TIPO</label>
+                                    <select id="reading-media-type" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-3 text-white focus:outline-none focus:border-amber-500 transition-all cursor-pointer" onchange="toggleReadingMediaType(this.value)">
+                                        <option value="book">Ebook / Livro (PDF)</option>
+                                        <option value="manga">Mangá (Páginas de Imagens)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">CATEGORIA (Gênero)</label>
+                                    <input type="text" id="reading-media-category" placeholder="Aventura, Romance, etc." required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-all">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">DESCRIÇÃO (Sinopse)</label>
+                                <textarea id="reading-media-desc" rows="3" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-all"></textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">IMAGEM DE CAPA (Upload ou Link)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="reading-media-thumbnail" required class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-all">
+                                    <label class="bg-slate-850 hover:bg-slate-800 border border-slate-800 text-white px-4 py-3 rounded-lg cursor-pointer flex items-center justify-center transition-colors">
+                                        <i data-lucide="upload" class="w-4 h-4"></i>
+                                        <input type="file" accept="image/*" class="hidden" onchange="uploadReadingFile(this, 'reading-media-thumbnail')">
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" id="reading-media-save-btn" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-orbitron font-bold tracking-widest py-3 rounded-lg transition-colors mt-4 text-xs uppercase">
+                                Salvar Leitura
+                            </button>
+                            <button type="button" id="reading-media-cancel-btn" onclick="resetReadingMediaForm()" class="hidden w-full bg-slate-800 hover:bg-slate-700 text-white font-orbitron font-bold tracking-widest py-3 rounded-lg transition-colors mt-2 text-xs uppercase">
+                                Cancelar Edição
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Form 2: Cadastrar Capítulo / Volume -->
+                    <div id="reading-chapter-form-container" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hidden">
+                        <h3 class="font-orbitron font-bold text-white tracking-widest mb-6 border-b border-slate-800 pb-4 flex items-center gap-2">
+                            <i data-lucide="plus-circle" class="w-5 h-5 text-amber-400"></i> NOVO CAPÍTULO / VOLUME
+                        </h3>
+                        
+                        <form id="reading-chapter-form" class="space-y-4" onsubmit="saveReadingChapter(event)">
+                            <div>
+                                <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">MÍDIA PAI</label>
+                                <input type="text" id="read-ch-media-title" readonly class="w-full bg-slate-950/50 border border-slate-850 rounded-lg px-4 py-3 text-slate-400 focus:outline-none">
+                                <input type="hidden" id="read-ch-media-id">
+                                <input type="hidden" id="read-ch-media-type">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">NÚMERO DO CAPÍTULO / VOL</label>
+                                    <input type="number" id="read-ch-number" min="1" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">TÍTULO (Ex: Volume 1)</label>
+                                    <input type="text" id="read-ch-title" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500">
+                                </div>
+                            </div>
+
+                            <!-- PDF (Only for Book type) -->
+                            <div id="read-ch-pdf-container">
+                                <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">ARQUIVO PDF DO LIVRO (Upload ou Link)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="read-ch-pdf" class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500">
+                                    <label class="bg-slate-850 hover:bg-slate-800 border border-slate-800 text-white px-4 py-3 rounded-lg cursor-pointer flex items-center justify-center transition-colors">
+                                        <i data-lucide="upload" class="w-4 h-4"></i>
+                                        <input type="file" accept="application/pdf" class="hidden" onchange="uploadReadingFile(this, 'read-ch-pdf')">
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Pages Multi-uploader (Only for Manga type) -->
+                            <div id="read-ch-pages-container" class="hidden">
+                                <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">PÁGINAS DO MANGÁ (Multi-Upload)</label>
+                                <div class="space-y-3">
+                                    <label class="w-full h-24 bg-slate-950 border-2 border-dashed border-slate-800 hover:border-amber-500 rounded-lg cursor-pointer flex flex-col items-center justify-center transition-all group">
+                                        <i data-lucide="upload-cloud" class="w-8 h-8 text-slate-500 group-hover:text-amber-500 transition-colors"></i>
+                                        <span class="text-[10px] font-orbitron text-slate-500 group-hover:text-amber-400 mt-1 uppercase text-center px-4">Clique para selecionar várias páginas</span>
+                                        <input type="file" accept="image/*" multiple class="hidden" onchange="uploadMangaPagesMultiple(this)">
+                                    </label>
+                                    <div id="manga-upload-progress" class="hidden text-[10px] font-orbitron text-amber-400">
+                                        Enviando páginas: <span id="manga-upload-count">0</span>...
+                                    </div>
+                                    <textarea id="read-ch-pages-json" readonly rows="2" class="w-full bg-slate-950 border border-slate-850 rounded px-2.5 py-1.5 text-[9px] text-slate-500 focus:outline-none" placeholder="JSON de páginas gerado automaticamente"></textarea>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-orbitron font-bold tracking-widest py-3 rounded-lg transition-colors mt-4 text-xs uppercase">
+                                SALVAR CAPÍTULO
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+
+                <!-- Painel de Catálogo (Direita) -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 min-h-[70vh]">
+                        <h3 class="font-orbitron font-bold text-white tracking-widest mb-6 border-b border-slate-800 pb-4 flex items-center justify-between">
+                            <span class="flex items-center gap-2"><i data-lucide="book-open" class="w-5 h-5 text-amber-500"></i> COFRE DE LEITURAS (ZHER READ)</span>
+                            <button onclick="loadReadingCatalog()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1"><i data-lucide="refresh-cw" class="w-4 h-4"></i> RECARREGAR</button>
+                        </h3>
+
+                        <div id="admin-reading-list" class="space-y-4">
+                            <div class="text-center text-slate-500 py-10 font-orbitron text-xs">Carregando catálogo...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <script>
@@ -313,10 +626,14 @@
             document.getElementById('section-vendas').classList.add('hidden');
             document.getElementById('section-suporte').classList.add('hidden');
             document.getElementById('section-carteiras').classList.add('hidden');
+            document.getElementById('section-streaming').classList.add('hidden');
+            document.getElementById('section-reading').classList.add('hidden');
             document.getElementById('tab-btn-produtos').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
             document.getElementById('tab-btn-vendas').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
             document.getElementById('tab-btn-suporte').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
             document.getElementById('tab-btn-carteiras').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
+            document.getElementById('tab-btn-streaming').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
+            document.getElementById('tab-btn-reading').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
 
             if(tab === 'produtos') {
                 document.getElementById('section-produtos').classList.remove('hidden');
@@ -334,6 +651,14 @@
                 document.getElementById('section-carteiras').classList.remove('hidden');
                 document.getElementById('tab-btn-carteiras').className = "text-white border-b-2 border-emerald-400 pb-1 transition-all";
                 loadAdminUsers();
+            } else if(tab === 'streaming') {
+                document.getElementById('section-streaming').classList.remove('hidden');
+                document.getElementById('tab-btn-streaming').className = "text-white border-b-2 border-rose-500 pb-1 transition-all";
+                loadStreamingCatalog();
+            } else if(tab === 'reading') {
+                document.getElementById('section-reading').classList.remove('hidden');
+                document.getElementById('tab-btn-reading').className = "text-white border-b-2 border-amber-500 pb-1 transition-all";
+                loadReadingCatalog();
             }
         }
 
@@ -1145,6 +1470,741 @@
             const btnUploadBulk = document.getElementById('btn-upload-bulk');
             if (btnUploadBulk) {
                 btnUploadBulk.addEventListener('click', uploadBulkProducts);
+            }
+        }
+
+        // ===================================
+        // STREAMING GERENCIAMENTO ADMINISTRATIVO
+        // ===================================
+
+        let streamingCatalog = [];
+
+        async function loadStreamingCatalog() {
+            try {
+                // Let's call details endpoint directly
+                const response = await fetch('/api/streaming/catalog');
+                
+                // If the response indicates unsubscribed (403), show details but handle gracefully
+                if (response.status === 403) {
+                    const list = document.getElementById('admin-streaming-list');
+                    list.innerHTML = '<div class="text-center text-rose-400 py-10 font-orbitron text-xs">Aviso: Sua conta de administrador precisa de uma assinatura Zher Play ativa no banco para testar/visualizar o catálogo.</div>';
+                    return;
+                }
+                
+                streamingCatalog = await response.json();
+                const list = document.getElementById('admin-streaming-list');
+                list.innerHTML = '';
+                
+                if (!Array.isArray(streamingCatalog) || streamingCatalog.length === 0) {
+                    list.innerHTML = '<div class="text-center text-slate-500 py-10 font-orbitron text-xs">Nenhuma mídia cadastrada no Zher Play.</div>';
+                    return;
+                }
+                
+                streamingCatalog.forEach(media => {
+                    const row = document.createElement('div');
+                    row.className = 'bg-slate-900 border border-slate-800/80 rounded-xl p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between hover:border-rose-500/30 transition-all';
+                    
+                    let epsHtml = '';
+                    if (media.type !== 'movie') {
+                        epsHtml = `
+                            <button onclick="prepareAddEpisode(${media.id}, '${media.title.replace(/'/g, "\\'")}')" class="px-2.5 py-1.5 bg-indigo-900/40 hover:bg-indigo-900 text-indigo-400 rounded text-[10px] font-bold tracking-widest font-orbitron border border-indigo-900/60 transition-all uppercase">
+                                + Novo Ep
+                            </button>
+                        `;
+                    }
+
+                    row.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <img src="${media.thumbnail}" alt="" class="w-12 h-16 object-cover rounded-lg border border-slate-800">
+                            <div>
+                                <span class="text-[8px] font-orbitron text-rose-400 font-bold bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20 uppercase">${media.type === 'movie' ? 'Filme' : media.type === 'series' ? 'Série' : 'Anime'}</span>
+                                <h4 class="font-bold text-white text-xs mt-1 uppercase">${media.title}</h4>
+                                <p class="text-[9px] text-slate-500 font-orbitron mt-0.5">${media.category}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 self-end sm:self-auto">
+                            ${epsHtml}
+                            <button onclick="editMedia(${media.id})" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-[10px] font-bold tracking-widest font-orbitron border border-slate-700 transition-all uppercase">Editar</button>
+                            <button onclick="deleteMedia(${media.id})" class="px-2.5 py-1.5 bg-rose-950/40 hover:bg-rose-900 text-rose-400 rounded text-[10px] font-bold tracking-widest font-orbitron border border-rose-950 transition-all uppercase">Deletar</button>
+                        </div>
+                    `;
+                    
+                    list.appendChild(row);
+                });
+                
+                lucide.createIcons();
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        // Add/Remove rows for Audios
+        function addAudioRow(language = '', audioUrl = '', videoUrl = '') {
+            const container = document.getElementById('media-audios-list');
+            const rowId = 'aud-row-' + Date.now() + Math.round(Math.random() * 100);
+            
+            const div = document.createElement('div');
+            div.id = rowId;
+            div.className = 'flex gap-2 items-center';
+            div.innerHTML = `
+                <input type="text" placeholder="Idioma" value="${language}" class="w-1/3 bg-slate-950 border border-slate-850 rounded px-2.5 py-1.5 text-[10px] text-white focus:outline-none">
+                <input type="text" placeholder="Audio (.mp3)" value="${audioUrl}" class="w-1/3 bg-slate-950 border border-slate-850 rounded px-2.5 py-1.5 text-[10px] text-white focus:outline-none">
+                <input type="text" placeholder="Video (.mp4)" value="${videoUrl}" class="w-1/3 bg-slate-950 border border-slate-850 rounded px-2.5 py-1.5 text-[10px] text-white focus:outline-none">
+                <button type="button" onclick="document.getElementById('${rowId}').remove()" class="text-rose-500 text-[10px] font-bold">X</button>
+            `;
+            container.appendChild(div);
+        }
+
+        // Add/Remove rows for Subtitles
+        function addSubtitleRow(language = '', url = '') {
+            const container = document.getElementById('media-subtitles-list');
+            const rowId = 'sub-row-' + Date.now() + Math.round(Math.random() * 100);
+            
+            const div = document.createElement('div');
+            div.id = rowId;
+            div.className = 'flex gap-2 items-center';
+            div.innerHTML = `
+                <input type="text" placeholder="Idioma" value="${language}" class="w-1/3 bg-slate-950 border border-slate-850 rounded px-2.5 py-1.5 text-[10px] text-white focus:outline-none">
+                <input type="text" placeholder="Legenda URL" value="${url}" class="w-2/3 bg-slate-950 border border-slate-850 rounded px-2.5 py-1.5 text-[10px] text-white focus:outline-none">
+                <button type="button" onclick="document.getElementById('${rowId}').remove()" class="text-rose-500 text-[10px] font-bold">X</button>
+            `;
+            container.appendChild(div);
+        }
+
+        // Episode Audios
+        function addEpAudioRow(language = '', audioUrl = '', videoUrl = '') {
+            const container = document.getElementById('ep-audios-list');
+            const rowId = 'ep-aud-row-' + Date.now() + Math.round(Math.random() * 100);
+            
+            const div = document.createElement('div');
+            div.id = rowId;
+            div.className = 'flex gap-2 items-center';
+            div.innerHTML = `
+                <input type="text" placeholder="Idioma" value="${language}" class="w-1/3 bg-slate-950 border border-slate-850 rounded px-2.5 py-1.5 text-[10px] text-white focus:outline-none">
+                <input type="text" placeholder="Audio (.mp3)" value="${audioUrl}" class="w-1/3 bg-slate-950 border border-slate-850 rounded px-2.5 py-1.5 text-[10px] text-white focus:outline-none">
+                <input type="text" placeholder="Video (.mp4)" value="${videoUrl}" class="w-1/3 bg-slate-950 border border-slate-850 rounded px-2.5 py-1.5 text-[10px] text-white focus:outline-none">
+                <button type="button" onclick="document.getElementById('${rowId}').remove()" class="text-rose-500 text-[10px] font-bold">X</button>
+            `;
+            container.appendChild(div);
+        }
+
+        // Episode Subtitles
+        function addEpSubtitleRow(language = '', url = '') {
+            const container = document.getElementById('ep-subtitles-list');
+            const rowId = 'ep-sub-row-' + Date.now() + Math.round(Math.random() * 100);
+            
+            const div = document.createElement('div');
+            div.id = rowId;
+            div.className = 'flex gap-2 items-center';
+            div.innerHTML = `
+                <input type="text" placeholder="Idioma" value="${language}" class="w-1/3 bg-slate-950 border border-slate-850 rounded px-2.5 py-1.5 text-[10px] text-white focus:outline-none">
+                <input type="text" placeholder="Legenda URL" value="${url}" class="w-2/3 bg-slate-950 border border-slate-850 rounded px-2.5 py-1.5 text-[10px] text-white focus:outline-none">
+                <button type="button" onclick="document.getElementById('${rowId}').remove()" class="text-rose-500 text-[10px] font-bold">X</button>
+            `;
+            container.appendChild(div);
+        }
+
+        // Toggle Video Input based on Media Type
+        function toggleMediaType(val) {
+            const videoContainer = document.getElementById('media-video-container');
+            const videoInput = document.getElementById('media-video');
+            if (val === 'movie') {
+                videoContainer.classList.remove('hidden');
+                videoInput.required = true;
+            } else {
+                videoContainer.classList.add('hidden');
+                videoInput.required = false;
+            }
+        }
+
+        // Universal File Uploader
+        async function uploadMediaFile(inputEl, targetInputId) {
+            if (inputEl.files.length === 0) return;
+            const file = inputEl.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const labelEl = inputEl.parentElement;
+            const originalHtml = labelEl.innerHTML;
+            labelEl.innerText = '⌛';
+            
+            try {
+                const res = await fetch('/api/admin/streaming/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    alert(data.error || 'Erro ao fazer upload.');
+                    labelEl.innerHTML = originalHtml;
+                    return;
+                }
+                
+                document.getElementById(targetInputId).value = data.url;
+                labelEl.innerHTML = originalHtml;
+                alert('Upload concluído com sucesso!');
+            } catch(e) {
+                console.error(e);
+                labelEl.innerHTML = originalHtml;
+                alert('Erro na conexão do upload.');
+            }
+        }
+
+        // Save Media (Insert / Update)
+        async function saveMedia(e) {
+            e.preventDefault();
+            
+            const audiosList = [];
+            document.querySelectorAll('#media-audios-list > div').forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const lang = inputs[0].value.trim();
+                const audioUrl = inputs[1].value.trim();
+                const videoUrl = inputs[2].value.trim();
+                if (lang) {
+                    const track = { language: lang };
+                    if (audioUrl) track.audio_url = audioUrl;
+                    if (videoUrl) track.video_url = videoUrl;
+                    audiosList.push(track);
+                }
+            });
+
+            const subtitlesList = [];
+            document.querySelectorAll('#media-subtitles-list > div').forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const lang = inputs[0].value.trim();
+                const url = inputs[1].value.trim();
+                if (lang && url) {
+                    subtitlesList.push({ language: lang, url: url });
+                }
+            });
+
+            const mediaId = document.getElementById('media-id').value;
+            const payload = {
+                title: document.getElementById('media-title').value,
+                description: document.getElementById('media-desc').value,
+                type: document.getElementById('media-type').value,
+                category: document.getElementById('media-category').value,
+                thumbnail: document.getElementById('media-thumbnail').value,
+                video_url: document.getElementById('media-video').value,
+                audio_tracks: JSON.stringify(audiosList),
+                subtitles: JSON.stringify(subtitlesList)
+            };
+
+            const url = mediaId ? `/api/admin/streaming/media/${mediaId}` : '/api/admin/streaming/media';
+            const method = mediaId ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                if (!res.ok) {
+                    alert(data.error || 'Erro ao salvar mídia.');
+                    return;
+                }
+                
+                alert('Mídia salva com sucesso!');
+                resetMediaForm();
+                loadStreamingCatalog();
+            } catch(e) {
+                alert('Erro na conexão com o banco.');
+            }
+        }
+
+        // Edit Media Details
+        function editMedia(id) {
+            const media = streamingCatalog.find(m => m.id === id);
+            if (!media) return;
+
+            document.getElementById('media-id').value = media.id;
+            document.getElementById('media-title').value = media.title;
+            document.getElementById('media-desc').value = media.description;
+            document.getElementById('media-type').value = media.type;
+            document.getElementById('media-category').value = media.category;
+            document.getElementById('media-thumbnail').value = media.thumbnail;
+            document.getElementById('media-video').value = media.video_url || '';
+
+            toggleMediaType(media.type);
+
+            // Populate Audio Rows
+            const audiosList = document.getElementById('media-audios-list');
+            audiosList.innerHTML = '';
+            let auds = [];
+            try { auds = typeof media.audio_tracks === 'string' ? JSON.parse(media.audio_tracks) : (media.audio_tracks || []); } catch(e) {}
+            auds.forEach(a => addAudioRow(a.language, a.audio_url || '', a.video_url || ''));
+
+            // Populate Subtitle Rows
+            const subtitlesList = document.getElementById('media-subtitles-list');
+            subtitlesList.innerHTML = '';
+            let subs = [];
+            try { subs = typeof media.subtitles === 'string' ? JSON.parse(media.subtitles) : (media.subtitles || []); } catch(e) {}
+            subs.forEach(s => addSubtitleRow(s.language, s.url));
+
+            // Visual setup
+            document.getElementById('media-save-btn').innerText = 'ATUALIZAR MÍDIA';
+            document.getElementById('media-cancel-btn').classList.remove('hidden');
+        }
+
+        function resetMediaForm() {
+            document.getElementById('media-id').value = '';
+            document.getElementById('media-title').value = '';
+            document.getElementById('media-desc').value = '';
+            document.getElementById('media-type').value = 'movie';
+            document.getElementById('media-category').value = '';
+            document.getElementById('media-thumbnail').value = '';
+            document.getElementById('media-video').value = '';
+            
+            toggleMediaType('movie');
+
+            document.getElementById('media-audios-list').innerHTML = '';
+            document.getElementById('media-subtitles-list').innerHTML = '';
+
+            document.getElementById('media-save-btn').innerText = 'SALVAR MÍDIA';
+            document.getElementById('media-cancel-btn').classList.add('hidden');
+        }
+
+        // Delete Media
+        async function deleteMedia(id) {
+            if (!confirm('Deseja realmente excluir esta mídia e todos os episódios associados?')) return;
+            try {
+                const res = await fetch(`/api/admin/streaming/media/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message);
+                    loadStreamingCatalog();
+                } else {
+                    alert(data.error);
+                }
+            } catch(e) {
+                alert('Erro ao excluir mídia.');
+            }
+        }
+
+        // Prepare Episode form mapping parent ID
+        function prepareAddEpisode(mediaId, mediaTitle) {
+            document.getElementById('ep-media-id').value = mediaId;
+            document.getElementById('ep-media-title').value = mediaTitle;
+            
+            document.getElementById('ep-season').value = 1;
+            document.getElementById('ep-number').value = '';
+            document.getElementById('ep-title').value = '';
+            document.getElementById('ep-video').value = '';
+            document.getElementById('ep-audios-list').innerHTML = '';
+            document.getElementById('ep-subtitles-list').innerHTML = '';
+            
+            document.getElementById('episode-form-container').classList.remove('hidden');
+            
+            // Scroll to episode form
+            document.getElementById('episode-form-container').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Save Episode
+        async function saveEpisode(e) {
+            e.preventDefault();
+
+            const audiosList = [];
+            document.querySelectorAll('#ep-audios-list > div').forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const lang = inputs[0].value.trim();
+                const audioUrl = inputs[1].value.trim();
+                const videoUrl = inputs[2].value.trim();
+                if (lang) {
+                    const track = { language: lang };
+                    if (audioUrl) track.audio_url = audioUrl;
+                    if (videoUrl) track.video_url = videoUrl;
+                    audiosList.push(track);
+                }
+            });
+
+            const subtitlesList = [];
+            document.querySelectorAll('#ep-subtitles-list > div').forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const lang = inputs[0].value.trim();
+                const url = inputs[1].value.trim();
+                if (lang && url) {
+                    subtitlesList.push({ language: lang, url: url });
+                }
+            });
+
+            const payload = {
+                media_id: document.getElementById('ep-media-id').value,
+                season: document.getElementById('ep-season').value,
+                episode_number: document.getElementById('ep-number').value,
+                title: document.getElementById('ep-title').value,
+                video_url: document.getElementById('ep-video').value,
+                audio_tracks: JSON.stringify(audiosList),
+                subtitles: JSON.stringify(subtitlesList)
+            };
+
+            try {
+                const res = await fetch('/api/admin/streaming/episode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                if (!res.ok) {
+                    alert(data.error || 'Erro ao salvar episódio.');
+                    return;
+                }
+                
+                alert('Episódio adicionado com sucesso!');
+                document.getElementById('episode-form-container').classList.add('hidden');
+            } catch(e) {
+                alert('Erro ao salvar episódio.');
+            }
+        }
+
+        // ===================================
+        // ZHER READ GERENCIAMENTO ADMINISTRATIVO
+        // ===================================
+
+        let readingCatalog = [];
+
+        async function loadReadingCatalog() {
+            try {
+                const response = await fetch('/api/reading/catalog');
+                if (response.status === 403) {
+                    const list = document.getElementById('admin-reading-list');
+                    list.innerHTML = '<div class="text-center text-amber-400 py-10 font-orbitron text-xs">Aviso: Sua conta de administrador precisa de uma assinatura Zher Read ativa no banco para testar/visualizar o catálogo.</div>';
+                    return;
+                }
+                
+                const catalog = await response.json();
+                const list = document.getElementById('admin-reading-list');
+                list.innerHTML = '';
+                
+                if (!Array.isArray(catalog) || catalog.length === 0) {
+                    list.innerHTML = '<div class="text-center text-slate-500 py-10 font-orbitron text-xs">Nenhum livro ou mangá cadastrado no Zher Read.</div>';
+                    return;
+                }
+                
+                readingCatalog = catalog;
+
+                for (const media of catalog) {
+                    const detailsRes = await fetch(`/api/reading/media/${media.id}`);
+                    const details = await detailsRes.json();
+                    const chapters = details.chapters || [];
+                    
+                    const row = document.createElement('div');
+                    row.className = 'bg-slate-900 border border-slate-800/80 rounded-xl p-5 flex flex-col gap-4 hover:border-amber-500/30 transition-all';
+                    
+                    let chaptersHtml = '';
+                    if (chapters.length > 0) {
+                        chaptersHtml = `
+                            <div class="mt-3 border-t border-slate-800/85 pt-3">
+                                <span class="text-[9px] font-orbitron text-slate-400 tracking-wider uppercase block mb-2">Capítulos / Volumes cadastrados:</span>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    ${chapters.map(ch => {
+                                        let pageCount = 0;
+                                        try { pageCount = JSON.parse(ch.pages || '[]').length; } catch(err) {}
+                                        return `
+                                            <div class="bg-slate-950 px-3 py-2 rounded-lg border border-slate-850 flex items-center justify-between">
+                                                <span class="text-[10px] text-slate-300 font-inter">
+                                                    <b class="text-amber-500 font-orbitron">Vol/Cap ${ch.chapter_number}:</b> ${ch.title}
+                                                    ${ch.pdf_url ? '<span class="text-emerald-400 ml-1 font-orbitron text-[9px] bg-emerald-500/10 px-1 py-0.5 rounded border border-emerald-500/20">PDF</span>' : `<span class="text-indigo-400 ml-1 font-orbitron text-[9px] bg-indigo-500/10 px-1 py-0.5 rounded border border-indigo-500/20">${pageCount} pgs</span>`}
+                                                </span>
+                                                <button onclick="deleteReadingChapter(${ch.id})" class="text-[9px] font-orbitron text-rose-500 hover:text-rose-400 font-bold ml-2 uppercase">Excluir</button>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        chaptersHtml = `
+                            <div class="mt-2 text-[10px] text-slate-600 font-orbitron italic">Nenhum capítulo ou volume adicionado ainda.</div>
+                        `;
+                    }
+
+                    row.innerHTML = `
+                        <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <img src="${media.thumbnail}" alt="" class="w-12 h-16 object-cover rounded-lg border border-slate-800 shadow-md">
+                                <div>
+                                    <span class="text-[8px] font-orbitron text-amber-400 font-bold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 uppercase">${media.type === 'book' ? 'Ebook / Livro' : 'Mangá'}</span>
+                                    <h4 class="font-bold text-white text-xs mt-1 uppercase">${media.title}</h4>
+                                    <p class="text-[9px] text-slate-500 font-orbitron mt-0.5">${media.category}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 self-end sm:self-auto">
+                                <button onclick="prepareAddReadingChapter(${media.id}, '${media.title.replace(/'/g, "\\'")}', '${media.type}')" class="px-2.5 py-1.5 bg-amber-900/40 hover:bg-amber-900 text-amber-400 rounded text-[10px] font-bold tracking-widest font-orbitron border border-amber-900/60 transition-all uppercase">
+                                    + Novo Cap
+                                </button>
+                                <button onclick="editReadingMedia(${media.id})" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-[10px] font-bold tracking-widest font-orbitron border border-slate-700 transition-all uppercase">Editar</button>
+                                <button onclick="deleteReadingMedia(${media.id})" class="px-2.5 py-1.5 bg-rose-950/40 hover:bg-rose-900 text-rose-400 rounded text-[10px] font-bold tracking-widest font-orbitron border border-rose-950 transition-all uppercase">Deletar</button>
+                            </div>
+                        </div>
+                        ${chaptersHtml}
+                    `;
+                    
+                    list.appendChild(row);
+                }
+                
+                lucide.createIcons();
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        async function uploadReadingFile(inputEl, targetInputId) {
+            if (inputEl.files.length === 0) return;
+            const file = inputEl.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const labelEl = inputEl.parentElement;
+            const originalHtml = labelEl.innerHTML;
+            labelEl.innerText = '⌛';
+            
+            try {
+                const res = await fetch('/api/admin/streaming/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    alert(data.error || 'Erro ao fazer upload.');
+                    labelEl.innerHTML = originalHtml;
+                    return;
+                }
+                
+                document.getElementById(targetInputId).value = data.url;
+                labelEl.innerHTML = originalHtml;
+                alert('Upload concluído com sucesso!');
+            } catch(e) {
+                console.error(e);
+                labelEl.innerHTML = originalHtml;
+                alert('Erro na conexão do upload.');
+            }
+        }
+
+        async function uploadMangaPagesMultiple(inputEl) {
+            if (inputEl.files.length === 0) return;
+            
+            const files = inputEl.files;
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+            
+            const progressDiv = document.getElementById('manga-upload-progress');
+            const countSpan = document.getElementById('manga-upload-count');
+            
+            progressDiv.classList.remove('hidden');
+            countSpan.innerText = files.length;
+            
+            try {
+                const res = await fetch('/api/admin/reading/upload-pages', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    alert(data.error || 'Erro ao fazer upload das páginas.');
+                    progressDiv.classList.add('hidden');
+                    return;
+                }
+                
+                document.getElementById('read-ch-pages-json').value = JSON.stringify(data.urls, null, 2);
+                progressDiv.classList.add('hidden');
+                alert(`Sucesso! ${data.urls.length} páginas carregadas com sucesso!`);
+            } catch(e) {
+                console.error(e);
+                progressDiv.classList.add('hidden');
+                alert('Erro na conexão de upload das páginas.');
+            }
+        }
+
+        function toggleReadingMediaType(val) {
+            const pdfContainer = document.getElementById('read-ch-pdf-container');
+            const pagesContainer = document.getElementById('read-ch-pages-container');
+            const pdfInput = document.getElementById('read-ch-pdf');
+            
+            if (val === 'book') {
+                pdfContainer.classList.remove('hidden');
+                pdfInput.required = true;
+                pagesContainer.classList.add('hidden');
+            } else {
+                pdfContainer.classList.add('hidden');
+                pdfInput.required = false;
+                pagesContainer.classList.remove('hidden');
+            }
+        }
+
+        function prepareAddReadingChapter(mediaId, mediaTitle, mediaType) {
+            document.getElementById('read-ch-media-id').value = mediaId;
+            document.getElementById('read-ch-media-title').value = mediaTitle;
+            document.getElementById('read-ch-media-type').value = mediaType;
+            
+            document.getElementById('read-ch-number').value = '';
+            document.getElementById('read-ch-title').value = '';
+            document.getElementById('read-ch-pdf').value = '';
+            document.getElementById('read-ch-pages-json').value = '';
+            
+            toggleReadingMediaType(mediaType);
+            
+            document.getElementById('reading-chapter-form-container').classList.remove('hidden');
+            document.getElementById('reading-chapter-form-container').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function saveReadingChapter(e) {
+            e.preventDefault();
+            
+            const mediaType = document.getElementById('read-ch-media-type').value;
+            const mediaId = document.getElementById('read-ch-media-id').value;
+            const chapterNumber = document.getElementById('read-ch-number').value;
+            const title = document.getElementById('read-ch-title').value;
+            
+            const pdfUrl = document.getElementById('read-ch-pdf').value.trim();
+            const pagesJson = document.getElementById('read-ch-pages-json').value.trim();
+            
+            let pages = '[]';
+            if (mediaType === 'manga') {
+                if (!pagesJson) {
+                    alert('Por favor, faça upload das páginas do mangá.');
+                    return;
+                }
+                pages = pagesJson;
+            } else {
+                if (!pdfUrl) {
+                    alert('Por favor, faça upload do arquivo PDF do livro.');
+                    return;
+                }
+            }
+            
+            const payload = {
+                media_id: parseInt(mediaId),
+                chapter_number: parseInt(chapterNumber),
+                title: title,
+                pdf_url: pdfUrl,
+                pages: pages
+            };
+            
+            try {
+                const res = await fetch('/api/admin/reading/chapter', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                if (!res.ok) {
+                    alert(data.error || 'Erro ao salvar capítulo.');
+                    return;
+                }
+                
+                alert('Capítulo adicionado com sucesso!');
+                document.getElementById('reading-chapter-form-container').classList.add('hidden');
+                loadReadingCatalog();
+            } catch(err) {
+                console.error(err);
+                alert('Erro ao salvar capítulo.');
+            }
+        }
+
+        async function deleteReadingChapter(id) {
+            if (!confirm('Deseja realmente excluir este capítulo?')) return;
+            try {
+                const res = await fetch(`/api/admin/reading/chapter/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message || 'Capítulo excluído com sucesso.');
+                    loadReadingCatalog();
+                } else {
+                    alert(data.error || 'Erro ao excluir capítulo.');
+                }
+            } catch(e) {
+                console.error(e);
+                alert('Erro ao excluir capítulo.');
+            }
+        }
+
+        async function saveReadingMedia(e) {
+            e.preventDefault();
+            
+            const mediaId = document.getElementById('reading-media-id').value;
+            const payload = {
+                title: document.getElementById('reading-media-title').value,
+                description: document.getElementById('reading-media-desc').value,
+                type: document.getElementById('reading-media-type').value,
+                category: document.getElementById('reading-media-category').value,
+                thumbnail: document.getElementById('reading-media-thumbnail').value
+            };
+            
+            const url = mediaId ? `/api/admin/reading/media/${mediaId}` : '/api/admin/reading/media';
+            const method = mediaId ? 'PUT' : 'POST';
+            
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                if (!res.ok) {
+                    alert(data.error || 'Erro ao salvar mídia de leitura.');
+                    return;
+                }
+                
+                alert('Mídia de leitura salva com sucesso!');
+                resetReadingMediaForm();
+                loadReadingCatalog();
+            } catch(err) {
+                console.error(err);
+                alert('Erro ao conectar com o banco de dados.');
+            }
+        }
+
+        function editReadingMedia(id) {
+            const media = readingCatalog.find(m => m.id === id);
+            if (!media) return;
+            
+            document.getElementById('reading-media-id').value = media.id;
+            document.getElementById('reading-media-title').value = media.title;
+            document.getElementById('reading-media-desc').value = media.description;
+            document.getElementById('reading-media-type').value = media.type;
+            document.getElementById('reading-media-category').value = media.category;
+            document.getElementById('reading-media-thumbnail').value = media.thumbnail;
+            
+            document.getElementById('reading-media-save-btn').innerText = 'ATUALIZAR LEITURA';
+            document.getElementById('reading-media-cancel-btn').classList.remove('hidden');
+        }
+
+        function resetReadingMediaForm() {
+            document.getElementById('reading-media-id').value = '';
+            document.getElementById('reading-media-title').value = '';
+            document.getElementById('reading-media-desc').value = '';
+            document.getElementById('reading-media-type').value = 'book';
+            document.getElementById('reading-media-category').value = '';
+            document.getElementById('reading-media-thumbnail').value = '';
+            
+            document.getElementById('reading-media-save-btn').innerText = 'SALVAR LEITURA';
+            document.getElementById('reading-media-cancel-btn').classList.add('hidden');
+        }
+
+        async function deleteReadingMedia(id) {
+            if (!confirm('Deseja realmente excluir esta mídia de leitura e todos os seus capítulos?')) return;
+            try {
+                const res = await fetch(`/api/admin/reading/media/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message || 'Mídia excluída.');
+                    loadReadingCatalog();
+                } else {
+                    alert(data.error);
+                }
+            } catch(e) {
+                console.error(e);
+                alert('Erro ao excluir mídia de leitura.');
             }
         }
     </script>
