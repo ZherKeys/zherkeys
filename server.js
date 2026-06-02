@@ -2727,6 +2727,13 @@ app.post('/api/sweepstake/join', requireAuth, async (req, res) => {
     try {
         const userId = req.session.userId;
         
+        // Busca o email do usuário
+        const userQuery = await pool.query('SELECT email FROM users WHERE id = $1', [userId]);
+        if (userQuery.rows.length === 0) {
+            return res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+        const email = userQuery.rows[0].email;
+        
         // Verifica se já está cadastrado
         const checkRes = await pool.query(
             "SELECT 1 FROM sweepstake_participants WHERE user_id = $1",
@@ -2742,6 +2749,44 @@ app.post('/api/sweepstake/join', requireAuth, async (req, res) => {
             [userId]
         );
         
+        // Envia email de confirmação assíncrono para não travar a resposta da requisição
+        sendEmailViaBrevo(
+            email,
+            "🎟️ Inscrição Confirmada - Sorteio Semanal Zher Keys!",
+            `Olá! Esta mensagem confirma que você completou os requisitos e está concorrendo ao sorteio semanal de 10.000.000 Z-Coins! O sorteio acontece de forma automática todo domingo às 20:00h (horário do servidor). Boa sorte!`,
+            `<div style="background-color: #020617; color: #f8fafc; padding: 40px 20px; font-family: sans-serif; text-align: center; border: 1px solid #1e293b; border-radius: 16px; max-w: 600px; margin: 0 auto;">
+                <h2 style="color: #3B82F6; font-size: 24px; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px;">SORTEIO ZHER KEYS</h2>
+                <p style="color: #94a3b8; font-size: 14px; margin-top: 0; margin-bottom: 25px;">Confirmação de Inscrição Oficial</p>
+                
+                <div style="background-color: rgba(16, 185, 129, 0.1); border: 1px solid #10B981; color: #10B981; display: inline-block; padding: 8px 16px; border-radius: 9999px; font-size: 12px; font-weight: bold; letter-spacing: 1px; margin-bottom: 25px;">
+                    🎟️ PARTICIPAÇÃO CONFIRMADA
+                </div>
+                
+                <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6; margin-bottom: 25px; text-align: left;">
+                    Olá, jogador!<br><br>
+                    Esta mensagem confirma que você assistiu com sucesso aos 5 anúncios obrigatórios e agora está <strong>oficialmente concorrendo ao grande prêmio de 10.000.000 de Z-Coins</strong> deste domingo!
+                </p>
+                
+                <div style="background-color: #0f172a; border: 1px solid #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 25px; text-align: left;">
+                    <h4 style="color: white; margin-top: 0; margin-bottom: 10px; font-size: 14px; font-weight: bold; letter-spacing: 1px;">Detalhes do Sorteio:</h4>
+                    <ul style="color: #94a3b8; font-size: 13px; padding-left: 20px; margin: 0; line-height: 1.8;">
+                        <li><strong>Prêmio:</strong> 10.000.000 Z-Coins</li>
+                        <li><strong>Data do Sorteio:</strong> Todo Domingo</li>
+                        <li><strong>Horário:</strong> 20:00h (Horário do Servidor)</li>
+                        <li><strong>Status:</strong> Ativo & Gravado</li>
+                    </ul>
+                </div>
+                
+                <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin-bottom: 30px; text-align: left;">
+                    Lembre-se: O sorteio é realizado de forma automática pelo nosso sistema. Se você for o grande vencedor, os Z-Coins serão adicionados diretamente na sua carteira de Z-Points e uma notificação aparecerá em seu painel da Zher Keys. Boa sorte!
+                </p>
+                
+                <a href="${process.env.APP_URL || 'https://zherkeys.com'}" style="background-color: #3B82F6; color: white; display: inline-block; padding: 14px 28px; border-radius: 8px; font-size: 13px; font-weight: bold; text-decoration: none; letter-spacing: 1.5px;">
+                    ACESSAR PORTAL ZHER KEYS
+                </a>
+            </div>`
+        ).catch(e => console.error("[SWEEPSTAKE-EMAIL] Erro ao enviar e-mail de confirmação:", e));
+
         res.json({ success: true, message: 'Parabéns, você está participando do sorteio!' });
     } catch (err) {
         console.error("[SWEEPSTAKE-JOIN] Erro ao registrar participante:", err);
