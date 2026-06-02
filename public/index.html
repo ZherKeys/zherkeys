@@ -301,7 +301,7 @@
                             <button onclick="openSweepstakeModal()" class="magnetic-button w-full sm:w-auto text-center bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-xs tracking-widest font-bold px-8 py-4.5 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all duration-300 uppercase">
                                 PARTICIPAR AGORA
                             </button>
-                            <button onclick="document.getElementById('vantagens').scrollIntoView({behavior:'smooth'})" class="w-full sm:w-auto bg-slate-950/60 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-orbitron text-xs tracking-widest px-8 py-4.5 rounded-xl backdrop-blur-md transition-all duration-300 flex items-center justify-center gap-2">
+                            <button onclick="openSweepstakeInstructions()" class="w-full sm:w-auto bg-slate-950/60 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-orbitron text-xs tracking-widest px-8 py-4.5 rounded-xl backdrop-blur-md transition-all duration-300 flex items-center justify-center gap-2">
                                 <i data-lucide="info" class="w-4 h-4 text-electricblue"></i> COMO FUNCIONA
                             </button>
                         </div>
@@ -1798,6 +1798,45 @@
         let sweepstakeAdsWatched = 0;
         let sweepstakeAdCountdown = 0;
         let sweepstakeAdInterval = null;
+
+        window.openSweepstakeInstructions = () => {
+            const modal = document.getElementById('sweepstake-modal');
+            const content = document.getElementById('sweepstake-modal-content');
+            const container = document.getElementById('sweepstake-status-container');
+            
+            // Exibe o modal
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                modal.classList.add('flex');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+
+            // Preenche as instruções detalhadas do sorteio
+            container.innerHTML = `
+                <div class="flex flex-col items-center text-left py-4 w-full">
+                    <div class="w-16 h-16 bg-blue-500/10 border border-blue-500/30 rounded-full flex items-center justify-center mb-4 text-blue-400">
+                        <i data-lucide="info" class="w-8 h-8"></i>
+                    </div>
+                    <h4 class="font-orbitron font-bold text-lg text-white mb-4 uppercase text-center w-full">REGULAMENTO DO SORTEIO</h4>
+                    
+                    <div class="space-y-4 font-inter text-xs text-slate-300 max-w-md w-full">
+                        <p><strong>1. Valor do Prêmio:</strong> Toda semana, sorteamos um prêmio acumulado de 10.000.000 de Z-Coins para um único ganhador.</p>
+                        <p><strong>2. Como Participar:</strong> Você precisa estar logado na sua conta e completar a tarefa obrigatória de assistir a 5 anúncios curtos dos nossos patrocinadores clicando no botão "Participar Agora".</p>
+                        <p><strong>3. Sorteio Automático:</strong> Os sorteios ocorrem de forma 100% automatizada pelo servidor todos os domingos às 20h00.</p>
+                        <p><strong>4. Entrega do Prêmio:</strong> O vencedor é selecionado aleatoriamente e o valor de 10 milhões é creditado imediatamente em sua conta, com notificação no painel do site.</p>
+                        <p><strong>5. Próxima Edição:</strong> Após o sorteio, a lista de participantes é reiniciada. Para concorrer no sorteio da semana seguinte, você deve se inscrever novamente completando a tarefa de anúncios.</p>
+                    </div>
+                    
+                    <div class="flex gap-4 w-full mt-6">
+                        <button onclick="openSweepstakeModal()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-xs tracking-widest font-bold py-3.5 rounded-xl shadow-lg transition-all duration-300 uppercase">PARTICIPAR AGORA</button>
+                        <button onclick="closeSweepstakeModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-orbitron text-xs tracking-widest font-bold py-3.5 rounded-xl border border-slate-700 uppercase">FECHAR</button>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        };
 
         window.openSweepstakeModal = async () => {
             const modal = document.getElementById('sweepstake-modal');
