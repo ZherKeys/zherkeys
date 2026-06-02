@@ -74,6 +74,7 @@ async function initDB() {
             
             ALTER TABLE users ADD COLUMN IF NOT EXISTS balance NUMERIC(10, 2) DEFAULT 0.00;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS points INTEGER DEFAULT 0;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS game_nickname TEXT UNIQUE;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS facebook_id TEXT;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS steam_id TEXT;
@@ -124,6 +125,13 @@ async function initDB() {
                 user_id INTEGER REFERENCES users(id),
                 sender_type TEXT,
                 message TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS points_earnings (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id),
+                amount INTEGER NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             
@@ -2075,12 +2083,13 @@ app.post('/api/notifications/read', requireAuth, async (req, res) => {
 
 app.get('/api/me', requireAuth, async (req, res) => {
     try {
-        const result = await pool.query('SELECT email, balance, points FROM users WHERE id = $1', [req.session.userId]);
+        const result = await pool.query('SELECT email, balance, points, game_nickname FROM users WHERE id = $1', [req.session.userId]);
         if (result.rows.length > 0) {
             res.json({ 
                 email: result.rows[0].email, 
                 balance: parseFloat(result.rows[0].balance || 0),
                 points: parseInt(result.rows[0].points || 0),
+                game_nickname: result.rows[0].game_nickname,
                 isAdmin: result.rows[0].email === 'zherkeys@gmail.com' 
             });
         } else {
@@ -2520,6 +2529,7 @@ app.post('/api/minigames/claim', requireAuth, async (req, res) => {
         const balance = parseFloat(userRes.rows[0].balance || 0);
         
         await client.query('UPDATE users SET points = $1 WHERE id = $2', [newPoints, userId]);
+        await client.query("INSERT INTO points_earnings (user_id, amount) VALUES ($1, $2)", [userId, rewardPoints]);
         await client.query('COMMIT');
         
         res.json({
@@ -2559,6 +2569,7 @@ app.post('/api/minigames/watch-ad-points', requireAuth, async (req, res) => {
         const balance = parseFloat(userRes.rows[0].balance || 0);
         
         await client.query('UPDATE users SET points = $1 WHERE id = $2', [newPoints, userId]);
+        await client.query("INSERT INTO points_earnings (user_id, amount) VALUES ($1, $2)", [userId, rewardPoints]);
         await client.query('COMMIT');
         
         res.json({
@@ -2700,6 +2711,124 @@ app.post('/api/minigames/spend-points', requireAuth, async (req, res) => {
         res.status(500).json({ error: 'Erro interno ao processar a dedução de pontos.' });
     } finally {
         client.release();
+    }
+});
+
+// ========================
+// CONFIGURAÇÃO DE GAMER TAG E PLACAR DE LIDERANÇA
+// ========================
+
+// Atualizar nickname do usuário logado
+app.post('/api/user/nickname', requireAuth, async (req, res) => {
+    const { nickname } = req.body;
+    
+    if (!nickname) {
+        return res.status(400).json({ error: 'Por favor, insira um nome de jogo.' });
+    }
+    
+    const cleanNickname = nickname.trim();
+    if (cleanNickname.length < 3 || cleanNickname.length > 15) {
+        return res.status(400).json({ error: 'O nome de jogo deve ter entre 3 e 15 caracteres.' });
+    }
+    
+    const nickRegex = /^[a-zA-Z0-9_-]+$/;
+    if (!nickRegex.test(cleanNickname)) {
+        return res.status(400).json({ error: 'O nome de jogo deve conter apenas letras, números, hífen e sublinhado.' });
+    }
+    
+    const userId = req.session.userId;
+    const client = await pool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        // Verifica se já existe o nickname para outro usuário
+        const checkRes = await client.query(
+            "SELECT 1 FROM users WHERE LOWER(game_nickname) = LOWER($1) AND id != $2",
+            [cleanNickname, userId]
+        );
+        if (checkRes.rows.length > 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'Este nome de jogo já está em uso por outro jogador.' });
+        }
+        
+        // Atualiza o nickname do usuário
+        await client.query(
+            "UPDATE users SET game_nickname = $1 WHERE id = $2",
+            [cleanNickname, userId]
+        );
+        
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'Nome de jogo atualizado com sucesso!', nickname: cleanNickname });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error("[NICKNAME-UPDATE] Erro ao atualizar nome de jogo:", err);
+        res.status(500).json({ error: 'Erro interno ao atualizar nome de jogo.' });
+    } finally {
+        client.release();
+    }
+});
+
+// Buscar placar de liderança (Leaderboard)
+app.get('/api/leaderboard', async (req, res) => {
+    const { period } = req.query; // 'weekly', 'monthly', 'annual'
+    
+    let intervalStr = '7 days';
+    if (period === 'monthly') {
+        intervalStr = '30 days';
+    } else if (period === 'annual') {
+        intervalStr = '365 days';
+    }
+    
+    try {
+        const query = `
+            SELECT 
+                u.id, 
+                COALESCE(u.game_nickname, split_part(u.email, '@', 1)) as name, 
+                SUM(pe.amount) as total
+            FROM points_earnings pe
+            JOIN users u ON pe.user_id = u.id
+            WHERE pe.created_at >= NOW() - CAST($1 AS INTERVAL)
+            GROUP BY u.id, u.game_nickname, u.email
+            ORDER BY total DESC
+            LIMIT 10
+        `;
+        const result = await pool.query(query, [intervalStr]);
+        
+        // Se o usuário estiver logado, busca a posição dele
+        let myRank = null;
+        let myTotal = 0;
+        if (req.session.userId) {
+            const myRankQuery = `
+                WITH ranked_users AS (
+                    SELECT 
+                        user_id, 
+                        SUM(amount) as total,
+                        ROW_NUMBER() OVER (ORDER BY SUM(amount) DESC) as rank
+                    FROM points_earnings
+                    WHERE created_at >= NOW() - CAST($1 AS INTERVAL)
+                    GROUP BY user_id
+                )
+                SELECT rank, total FROM ranked_users WHERE user_id = $2
+            `;
+            const myRankRes = await pool.query(myRankQuery, [intervalStr, req.session.userId]);
+            if (myRankRes.rows.length > 0) {
+                myRank = parseInt(myRankRes.rows[0].rank);
+                myTotal = parseInt(myRankRes.rows[0].total);
+            }
+        }
+        
+        res.json({
+            leaderboard: result.rows.map(r => ({
+                name: r.name,
+                total: parseInt(r.total)
+            })),
+            myRank,
+            myTotal
+        });
+    } catch (err) {
+        console.error("[LEADERBOARD] Erro ao carregar placar:", err);
+        res.status(500).json({ error: 'Erro ao carregar o placar de jogos.' });
     }
 });
 
@@ -2861,6 +2990,7 @@ async function runSweepstakeDraw() {
                     const email = userRes.rows[0].email;
                     
                     await client.query("UPDATE users SET points = $1 WHERE id = $2", [newPoints, winnerId]);
+                    await client.query("INSERT INTO points_earnings (user_id, amount) VALUES ($1, $2)", [winnerId, 10000000]);
                     
                     // Adiciona transação
                     await client.query(
@@ -2892,6 +3022,59 @@ async function runSweepstakeDraw() {
                 await client.query("DELETE FROM sweepstake_participants");
                 
                 await client.query('COMMIT');
+
+                // Envia e-mail de notificação para todos os usuários cadastrados participarem do novo sorteio
+                (async () => {
+                    try {
+                        const allUsersRes = await pool.query("SELECT email FROM users");
+                        const allUsers = allUsersRes.rows;
+                        console.log(`[SWEEPSTAKE] Notificando ${allUsers.length} usuários sobre o início do novo sorteio semanal...`);
+                        
+                        for (let userRow of allUsers) {
+                            sendEmailViaBrevo(
+                                userRow.email,
+                                "🎟️ Novo Sorteio Semanal Ativo - Ganhe 10 Milhões de Z-Coins!",
+                                `Olá! Um novo sorteio de 10.000.000 Z-Coins acabou de começar na Zher Keys! Acesse a nossa página inicial, complete a tarefa rápida de anúncios e garanta a sua inscrição para concorrer neste domingo às 20h! Boa sorte!`,
+                                `<div style="background-color: #020617; color: #f8fafc; padding: 40px 20px; font-family: sans-serif; text-align: center; border: 1px solid #1e293b; border-radius: 16px; max-w: 600px; margin: 0 auto;">
+                                    <h2 style="color: #F43F5E; font-size: 24px; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px;">NOVO SORTEIO ZHER KEYS</h2>
+                                    <p style="color: #94a3b8; font-size: 14px; margin-top: 0; margin-bottom: 25px;">Oportunidade Semanal Recorrente</p>
+                                    
+                                    <div style="background-color: rgba(244, 63, 94, 0.1); border: 1px solid #F43F5E; color: #F43F5E; display: inline-block; padding: 8px 16px; border-radius: 9999px; font-size: 12px; font-weight: bold; letter-spacing: 1px; margin-bottom: 25px;">
+                                        🎟️ INSCRIÇÕES ABERTAS
+                                    </div>
+                                    
+                                    <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6; margin-bottom: 25px; text-align: left;">
+                                        Olá, jogador!<br><br>
+                                        Um novo sorteio de <strong>10.000.000 de Z-Coins</strong> acaba de ser iniciado! A lista de participantes da semana anterior foi redefinida, o que significa que <strong>todas as inscrições estão zeradas</strong> e você já pode garantir a sua vaga.
+                                    </p>
+
+                                    <div style="margin: 25px 0;">
+                                        <img src="${process.env.APP_URL || 'https://zherkeys.com'}/sorteio_zcoins.png" alt="Sorteio 10 Milhões Z-Coins" style="width: 100%; max-width: 440px; border-radius: 12px; border: 1px solid #1e293b; display: block; margin: 0 auto; box-shadow: 0 0 20px rgba(244, 63, 94, 0.2);" />
+                                    </div>
+                                    
+                                    <div style="background-color: #0f172a; border: 1px solid #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 25px; text-align: left;">
+                                        <h4 style="color: white; margin-top: 0; margin-bottom: 10px; font-size: 14px; font-weight: bold; letter-spacing: 1px;">Regras de Entrada:</h4>
+                                        <ul style="color: #94a3b8; font-size: 13px; padding-left: 20px; margin: 0; line-height: 1.8;">
+                                            <li><strong>Prêmio Semanal:</strong> 10.000.000 Z-Coins</li>
+                                            <li><strong>Como participar:</strong> Entre no site e assista a 5 anúncios curtos.</li>
+                                            <li><strong>Data Limite:</strong> Domingo às 20:00h (Horário do Servidor)</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin-bottom: 30px; text-align: left;">
+                                        Não perca tempo! Quanto antes você garantir sua inscrição, mais tempo terá para aproveitar os minijogos e rodar a roleta com suas chaves diárias. Quem sabe você será o próximo sortudo da Zher Keys?
+                                    </p>
+                                    
+                                    <a href="${process.env.APP_URL || 'https://zherkeys.com'}" style="background-color: #F43F5E; color: white; display: inline-block; padding: 14px 28px; border-radius: 8px; font-size: 13px; font-weight: bold; text-decoration: none; letter-spacing: 1.5px;">
+                                        GARANTIR MINHA VAGA NO SORTEIO
+                                    </a>
+                                </div>`
+                            ).catch(e => console.error("[SWEEPSTAKE-BULK-EMAIL] Erro ao notificar usuário:", e));
+                        }
+                    } catch (bulkErr) {
+                        console.error("[SWEEPSTAKE-BULK-EMAIL] Erro ao buscar lista de usuários:", bulkErr);
+                    }
+                })();
             } catch (err) {
                 await client.query('ROLLBACK');
                 console.error("[SWEEPSTAKE] Erro durante transação de sorteio:", err);

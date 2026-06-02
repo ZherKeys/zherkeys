@@ -249,6 +249,23 @@
                         <i data-lucide="mail-warning" class="w-4 h-4"></i> <span data-i18n="send_reset_link">ENVIAR LINK DE REDEFINIÇÃO</span>
                     </button>
                 </div>
+
+                <!-- Perfil Gamer / Nickname -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 mt-6">
+                    <h3 class="text-white font-bold mb-2">Perfil Gamer</h3>
+                    <p class="text-slate-400 text-sm mb-6">Defina seu nome de jogo exclusivo para ser exibido nos placares (Rankings) de minijogos.</p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 items-end max-w-lg">
+                        <div class="flex-grow w-full">
+                            <label for="gamer-tag-input" class="block text-slate-500 font-orbitron text-[10px] tracking-widest mb-2">TAG DE JOGO / NICKNAME</label>
+                            <input type="text" id="gamer-tag-input" placeholder="Ex: CyberHacker" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyberrose transition-colors text-sm font-inter">
+                        </div>
+                        <button onclick="updateGamerTag()" class="w-full sm:w-auto bg-gradient-to-r from-cyberrose to-purple-600 hover:from-rose-500 hover:to-purple-500 text-white font-orbitron text-xs tracking-widest font-bold px-6 py-3.5 rounded-lg shadow-roseGlow transition-all duration-300 uppercase">
+                            SALVAR NOME
+                        </button>
+                    </div>
+                    <p id="gamer-tag-status" class="hidden text-xs mt-3 font-semibold"></p>
+                </div>
             </div>
         </div>
 
@@ -756,6 +773,10 @@
                 if(data.email) {
                     document.getElementById('user-email').innerText = data.email;
                     updateCreditsDisplay();
+                    if (data.game_nickname) {
+                        const inputEl = document.getElementById('gamer-tag-input');
+                        if (inputEl) inputEl.value = data.game_nickname;
+                    }
                 }
                 if(data.isAdmin) document.getElementById('nav-admin-btn').classList.remove('hidden');
                 
@@ -1924,9 +1945,44 @@
             return `há ${diffDays} dias`;
         }
 
-        // Atualizar contagem periodicamente a cada 30 segundos
-        setInterval(updateNotificationsBadge, 30000);
-        setTimeout(updateNotificationsBadge, 1000);
+        window.updateGamerTag = async () => {
+            const input = document.getElementById('gamer-tag-input');
+            const status = document.getElementById('gamer-tag-status');
+            
+            if (!input || !status) return;
+            
+            const nickname = input.value.trim();
+            if (!nickname) {
+                status.innerText = "Por favor, digite seu nome de jogo.";
+                status.className = "text-rose-400 text-xs mt-3 font-semibold block";
+                return;
+            }
+
+            status.innerText = "Salvando...";
+            status.className = "text-slate-400 text-xs mt-3 font-semibold block animate-pulse";
+
+            try {
+                const res = await fetch('/api/user/nickname', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nickname })
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    status.innerText = "Nome de jogo salvo com sucesso!";
+                    status.className = "text-emerald-400 text-xs mt-3 font-semibold block";
+                    if (cachedUserData) cachedUserData.game_nickname = nickname;
+                } else {
+                    status.innerText = data.error || "Erro ao salvar nome de jogo.";
+                    status.className = "text-rose-400 text-xs mt-3 font-semibold block";
+                }
+            } catch (err) {
+                console.error(err);
+                status.innerText = "Erro de conexão ao salvar nome.";
+                status.className = "text-rose-400 text-xs mt-3 font-semibold block";
+            }
+        };
 
         // INIT
         const urlParams = new URLSearchParams(window.location.search);

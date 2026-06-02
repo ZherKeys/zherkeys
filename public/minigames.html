@@ -402,26 +402,22 @@
         <div class="lg:col-span-1 flex flex-col gap-6">
             <!-- Estatísticas e Ranking Local -->
             <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-5">
-                <h3 class="font-orbitron font-bold text-white text-xs tracking-widest uppercase mb-4 flex items-center gap-2 text-cyberrose">
+                <h3 class="font-orbitron font-bold text-white text-xs tracking-widest uppercase mb-3 flex items-center gap-2 text-cyberrose">
                     <i data-lucide="zap" class="w-4 h-4"></i> CYBER RANKING
                 </h3>
-                <div class="space-y-3 font-orbitron text-xs">
-                    <div class="flex justify-between items-center border-b border-slate-800/60 pb-2">
-                        <span class="text-slate-200 flex items-center gap-2">🥇 <span class="text-white">NeoDecoder</span></span>
-                        <span class="text-cyberrose">R$ 14,80</span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-slate-800/60 pb-2">
-                        <span class="text-slate-300 flex items-center gap-2">🥈 <span class="text-slate-200">CyberGamer</span></span>
-                        <span class="text-cyberrose">R$ 12,45</span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-slate-800/60 pb-2">
-                        <span class="text-slate-400 flex items-center gap-2">🥉 <span class="text-slate-300">KeyHunter</span></span>
-                        <span class="text-cyberrose">R$ 9,15</span>
-                    </div>
-                    <div class="flex justify-between items-center pt-1 text-[10px] text-slate-500 font-inter">
-                        <span>Você está na 12ª posição</span>
-                        <a href="#" class="text-electricblue hover:underline">Ver tudo</a>
-                    </div>
+                
+                <!-- Abas do Placar -->
+                <div class="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 mb-4 font-orbitron text-[9px] tracking-wider text-center">
+                    <button onclick="changeLeaderboardPeriod('weekly')" id="lbl-btn-weekly" class="py-1.5 rounded font-bold transition-all text-white bg-slate-800 border border-slate-700/50">SEMANAL</button>
+                    <button onclick="changeLeaderboardPeriod('monthly')" id="lbl-btn-monthly" class="py-1.5 rounded font-bold transition-all text-slate-400 hover:text-white">MENSAL</button>
+                    <button onclick="changeLeaderboardPeriod('annual')" id="lbl-btn-annual" class="py-1.5 rounded font-bold transition-all text-slate-400 hover:text-white">ANUAL</button>
+                </div>
+
+                <div id="leaderboard-list" class="space-y-3 font-orbitron text-xs">
+                    <div class="text-center text-slate-500 py-4 font-inter text-[11px]">Carregando placar...</div>
+                </div>
+                
+                <div id="leaderboard-player-rank" class="border-t border-slate-800/80 pt-3 mt-3 text-[10px] text-slate-500 font-inter text-center hidden">
                 </div>
             </div>
 
@@ -3893,6 +3889,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             fetchMe();
             loadDailyTotal();
+            loadLeaderboard('weekly');
             drawStartScreen();
             lucide.createIcons();
         });
@@ -4248,6 +4245,85 @@
                 modal.classList.add('hidden');
             }, 300);
         }
+
+        // --- SISTEMA DE PLACAR DE LIDERANÇA ---
+        let currentLeaderboardPeriod = 'weekly';
+        
+        async function loadLeaderboard(period = 'weekly') {
+            currentLeaderboardPeriod = period;
+            
+            const periods = ['weekly', 'monthly', 'annual'];
+            periods.forEach(p => {
+                const btn = document.getElementById(`lbl-btn-${p}`);
+                if (btn) {
+                    if (p === period) {
+                        btn.className = "py-1.5 rounded font-bold transition-all text-white bg-slate-800 border border-slate-700/50";
+                    } else {
+                        btn.className = "py-1.5 rounded font-bold transition-all text-slate-400 hover:text-white";
+                    }
+                }
+            });
+
+            const listContainer = document.getElementById('leaderboard-list');
+            const playerRankContainer = document.getElementById('leaderboard-player-rank');
+            
+            if (!listContainer) return;
+
+            try {
+                const res = await fetch(`/api/leaderboard?period=${period}`);
+                const data = await res.json();
+                
+                if (res.ok && data.leaderboard) {
+                    if (data.leaderboard.length === 0) {
+                        listContainer.innerHTML = `<div class="text-center text-slate-500 py-4 font-inter text-[11px]">Nenhum registro ainda.</div>`;
+                    } else {
+                        let html = '';
+                        data.leaderboard.forEach((item, index) => {
+                            let medal = '';
+                            let nameColor = 'text-slate-300';
+                            if (index === 0) {
+                                medal = '🥇 ';
+                                nameColor = 'text-white font-bold';
+                            } else if (index === 1) {
+                                medal = '🥈 ';
+                                nameColor = 'text-slate-200';
+                            } else if (index === 2) {
+                                medal = '🥉 ';
+                                nameColor = 'text-slate-200';
+                            } else {
+                                medal = `<span class="text-slate-500 w-5 inline-block">${index + 1}.</span>`;
+                            }
+                            
+                            html += `
+                                <div class="flex justify-between items-center border-b border-slate-800/60 pb-2">
+                                    <span class="${nameColor} flex items-center gap-1">${medal} <span>${item.name}</span></span>
+                                    <span class="text-cyberrose font-bold">${item.total.toLocaleString()} pts</span>
+                                </div>
+                            `;
+                        });
+                        listContainer.innerHTML = html;
+                    }
+                    
+                    if (playerRankContainer) {
+                        if (data.myRank !== null) {
+                            playerRankContainer.innerText = `Você está na ${data.myRank}ª posição (${data.myTotal.toLocaleString()} pts)`;
+                            playerRankContainer.classList.remove('hidden');
+                        } else {
+                            playerRankContainer.classList.add('hidden');
+                        }
+                    }
+                } else {
+                    listContainer.innerHTML = `<div class="text-center text-rose-400 py-4 font-inter text-[11px]">Erro ao carregar ranking.</div>`;
+                }
+            } catch (err) {
+                console.error(err);
+                listContainer.innerHTML = `<div class="text-center text-rose-400 py-4 font-inter text-[11px]">Erro de conexão.</div>`;
+            }
+        }
+        
+        window.changeLeaderboardPeriod = (period) => {
+            loadLeaderboard(period);
+        };
     </script>
     <!-- CORREÇÃO: Desativado scripts invasivos de pop-under que sequestram cliques e quebram a execução do Canvas -->
     <!-- <script src="https://pl29603465.effectivecpmnetwork.com/35/aa/1a/35aa1a870f394a7f5dead17288cc7940.js"></script> -->
