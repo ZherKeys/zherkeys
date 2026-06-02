@@ -3453,16 +3453,90 @@ const { spawn, spawnSync } = require('child_process');
 
 // Verifica disponibilidade do ffmpeg no sistema e expõe flag
 let FFMPEG_AVAILABLE = false;
+let FFMPEG_PATH = 'ffmpeg';
 try {
+    // Check system ffmpeg
     const check = spawnSync('ffmpeg', ['-version']);
     if (check.status === 0) {
         FFMPEG_AVAILABLE = true;
-        console.log('[INIT] ffmpeg disponível — transcodificação habilitada.');
+        FFMPEG_PATH = 'ffmpeg';
+        console.log('[INIT] ffmpeg disponível no PATH — transcodificação habilitada.');
     } else {
-        console.warn('[INIT] ffmpeg NÃO encontrado — uploads de MKV não serão transcodificados automaticamente. Execute scripts/install-ffmpeg.ps1 no Windows.');
+        // Check local bin folder (./bin/ffmpeg)
+        const localWin = path.join(__dirname, 'bin', 'ffmpeg', process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg');
+        if (fs.existsSync(localWin)) {
+            const c2 = spawnSync(localWin, ['-version']);
+            if (c2.status === 0) {
+                FFMPEG_AVAILABLE = true;
+                FFMPEG_PATH = localWin;
+                console.log('[INIT] ffmpeg disponível em', localWin);
+            }
+        }
+
+        if (!FFMPEG_AVAILABLE) {
+            console.warn('[INIT] ffmpeg NÃO encontrado — uploads de MKV não serão transcodificados automaticamente. Execução automática de instalação será tentada.');
+            // tenta instalar automaticamente
+            try {
+                const installed = tryAutoInstallFfmpeg();
+                if (installed) {
+                    FFMPEG_AVAILABLE = true;
+                    console.log('[INIT] ffmpeg instalado automaticamente.');
+                } else {
+                    console.warn('[INIT] Falha ao instalar ffmpeg automaticamente. Execute scripts/install-ffmpeg.ps1 manualmente.');
+                }
+            } catch (e) {
+                console.warn('[INIT] Erro ao tentar instalar ffmpeg automaticamente:', e.message || e);
+            }
+        }
     }
 } catch (e) {
     console.warn('[INIT] Erro ao verificar ffmpeg — transcodificação desativada.');
+}
+
+// Tenta instalação automática simples do ffmpeg dependendo do SO
+function tryAutoInstallFfmpeg() {
+    try {
+        if (process.platform === 'win32') {
+            // Executa PowerShell para baixar e extrair build essencial do Gyan
+            const psScript = `
+$tmp = "$env:TEMP\\ffmpeg_dl";
+New-Item -ItemType Directory -Force -Path $tmp | Out-Null;
+$url = 'https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip';
+$zip = Join-Path $tmp 'ffmpeg.zip';
+Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing;
+Expand-Archive -Path $zip -DestinationPath $tmp -Force;
+$dir = Get-ChildItem $tmp | Where-Object { $_.PsIsContainer -and $_.Name -like 'ffmpeg*' } | Select-Object -First 1;
+if ($dir) {
+    $src = Join-Path $dir.FullName 'bin\\ffmpeg.exe';
+    $destDir = Join-Path (Get-Location) 'bin\\ffmpeg';
+    New-Item -ItemType Directory -Force -Path $destDir | Out-Null;
+    Copy-Item -Path $src -Destination (Join-Path $destDir 'ffmpeg.exe') -Force;
+    Write-Output 'ok';
+}
+`;
+            const r = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', psScript], { windowsHide: true, timeout: 120000 });
+            if (r.status === 0) {
+                const local = path.join(__dirname, 'bin', 'ffmpeg', 'ffmpeg.exe');
+                if (fs.existsSync(local)) {
+                    FFMPEG_PATH = local;
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            // Tentativa simples para Linux (precisa de permissões root)
+            const apt = spawnSync('apt-get', ['update'], { stdio: 'ignore' });
+            const inst = spawnSync('apt-get', ['install', '-y', 'ffmpeg'], { stdio: 'ignore' });
+            const check = spawnSync('ffmpeg', ['-version']);
+            if (check.status === 0) return true;
+            // Try yum
+            const yum = spawnSync('yum', ['install', '-y', 'ffmpeg'], { stdio: 'ignore' });
+            const check2 = spawnSync('ffmpeg', ['-version']);
+            return check2.status === 0;
+        }
+    } catch (e) {
+        return false;
+    }
 }
 
 // Configuração do Multer para Uploads do Streaming
@@ -3867,8 +3941,13 @@ app.post('/api/admin/streaming/upload', requireAdmin, uploadGeneric.single('file
             const convertedPath = path.join(destDir, convertedName);
 
             try {
+                if (!FFMPEG_AVAILABLE) {
+                    console.warn('ffmpeg não disponível no servidor — pulando transcodificação.');
+                    return res.json({ url: `/uploads/${subfolder}/${req.file.filename}`, converted: false, warning: 'ffmpeg não disponível' });
+                }
+
                 await new Promise((resolve, reject) => {
-                    const ff = spawn('ffmpeg', [
+                    const ff = spawn(FFMPEG_PATH, [
                         '-y', '-i', newPath,
                         '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
                         '-c:a', 'aac', '-b:a', '192k',
@@ -3886,7 +3965,38 @@ app.post('/api/admin/streaming/upload', requireAdmin, uploadGeneric.single('file
                 // Remove original uploaded file to save space (optional)
                 try { fs.unlinkSync(newPath); } catch (e) { /* ignore */ }
 
-                return res.json({ url: `/uploads/${subfolder}/${convertedName}`, converted: true });
+                // Gerar HLS (m3u8 + .ts) para streaming adaptativo
+                let hlsUrl = null;
+                try {
+                    const hlsDir = path.join(destDir, 'hls', path.parse(convertedName).name);
+                    if (!fs.existsSync(hlsDir)) fs.mkdirSync(hlsDir, { recursive: true });
+                    const hlsPath = path.join(hlsDir, 'index.m3u8');
+
+                    await new Promise((resolve, reject) => {
+                        const args = [
+                            '-y', '-i', convertedPath,
+                            '-codec', 'copy',
+                            '-start_number', '0',
+                            '-hls_time', '6',
+                            '-hls_list_size', '0',
+                            '-f', 'hls',
+                            path.join(hlsDir, 'index.m3u8')
+                        ];
+                        const hf = spawn(FFMPEG_PATH, args);
+                        hf.on('error', (e) => reject(e));
+                        hf.stderr.on('data', () => {});
+                        hf.on('close', (code) => {
+                            if (code === 0) resolve();
+                            else reject(new Error('ffmpeg HLS exit code ' + code));
+                        });
+                    });
+
+                    hlsUrl = `/uploads/${subfolder}/hls/${path.parse(convertedName).name}/index.m3u8`;
+                } catch (e) {
+                    console.error('Falha ao gerar HLS:', e);
+                }
+
+                return res.json({ url: `/uploads/${subfolder}/${convertedName}`, converted: true, hls: hlsUrl });
             } catch (e) {
                 console.error('Erro na transcodificação do vídeo:', e);
                 // On failure, return original uploaded file URL

@@ -13,6 +13,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    <!-- HLS.js for .m3u8 playback on non-Safari browsers -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.0/dist/hls.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -406,6 +408,7 @@
         // Player states
         const video = document.getElementById('player-media-el');
         const audio = document.getElementById('player-audio-el');
+        let hlsPlayer = null;
         let activeExternalAudio = false;
 
         // On document load
@@ -760,13 +763,11 @@
 
         function playMediaSource() {
             closeDetailsModal();
-            
-            // Set Player Video Source
-            video.src = selectedMedia.video_url;
+            activeEpisode = null;
+            const url = selectedMedia.video_url;
+            setVideoSource(url);
             document.getElementById('player-media-title').innerText = selectedMedia.title;
             document.getElementById('player-episode-title').innerText = 'Filme Completo';
-            activeEpisode = null;
-            
             setupPlayerTracksAndAudio(selectedMedia);
             startCustomPlayer();
         }
@@ -775,14 +776,38 @@
             closeDetailsModal();
             const ep = selectedMedia.episodes.find(e => e.id === epId);
             if (!ep) return;
-            
             activeEpisode = ep;
-            video.src = ep.video_url;
+            setVideoSource(ep.video_url);
             document.getElementById('player-media-title').innerText = selectedMedia.title;
             document.getElementById('player-episode-title').innerText = `T${ep.season}:EP${ep.episode_number} - ${ep.title}`;
-            
             setupPlayerTracksAndAudio(ep);
             startCustomPlayer();
+        }
+
+        function setVideoSource(url) {
+            // Destroy existing hls instance
+            if (hlsPlayer) {
+                try { hlsPlayer.destroy(); } catch (e) {}
+                hlsPlayer = null;
+            }
+
+            // If URL is HLS (.m3u8) and hls.js is supported, attach it
+            if (url && url.endsWith('.m3u8')) {
+                if (Hls && Hls.isSupported()) {
+                    hlsPlayer = new Hls();
+                    hlsPlayer.loadSource(url);
+                    hlsPlayer.attachMedia(video);
+                    hlsPlayer.on(Hls.Events.MANIFEST_PARSED, function() {
+                        // Ready to play
+                    });
+                } else {
+                    // Safari supports HLS natively
+                    video.src = url;
+                }
+            } else {
+                // MP4 or other direct source
+                video.src = url || '';
+            }
         }
 
         function setupPlayerTracksAndAudio(mediaSource) {

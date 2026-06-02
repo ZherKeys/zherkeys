@@ -1705,22 +1705,26 @@
             
             const labelEl = inputEl.parentElement;
             const originalHtml = labelEl.innerHTML;
-            labelEl.innerText = '⌛';
+            labelEl.innerText = 'Enviando...';
             
             try {
                 const res = await fetch('/api/admin/streaming/upload', {
                     method: 'POST',
                     body: formData
                 });
+                // Mostra mensagem de transcodificação enquanto o servidor processa
+                labelEl.innerText = 'Transcodificando...';
                 const data = await res.json();
-                
+
                 if (!res.ok) {
                     alert(data.error || 'Erro ao fazer upload.');
                     labelEl.innerHTML = originalHtml;
                     return;
                 }
-                
-                document.getElementById(targetInputId).value = data.url;
+
+                // Use HLS URL if disponível, senão o MP4/arquivo direto
+                const finalUrl = data.hls || data.url;
+                document.getElementById(targetInputId).value = finalUrl;
                 labelEl.innerHTML = originalHtml;
                 alert('Upload concluído com sucesso!');
             } catch(e) {
@@ -2039,22 +2043,24 @@
             
             const labelEl = inputEl.parentElement;
             const originalHtml = labelEl.innerHTML;
-            labelEl.innerText = '⌛';
-            
+            labelEl.innerText = 'Enviando...';
+
             try {
+                labelEl.innerText = 'Transcodificando...';
                 const res = await fetch('/api/admin/streaming/upload', {
                     method: 'POST',
                     body: formData
                 });
                 const data = await res.json();
-                
+
                 if (!res.ok) {
                     alert(data.error || 'Erro ao fazer upload.');
                     labelEl.innerHTML = originalHtml;
                     return;
                 }
-                
-                document.getElementById(targetInputId).value = data.url;
+
+                const finalUrl = data.hls || data.url;
+                document.getElementById(targetInputId).value = finalUrl;
                 labelEl.innerHTML = originalHtml;
                 alert('Upload concluído com sucesso!');
             } catch(e) {
