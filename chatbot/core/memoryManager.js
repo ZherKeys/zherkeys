@@ -47,10 +47,29 @@ function saveSessions(s){ writeJson(SESS_FILE, s); }
 
 function addKnowledge(item){ const k = loadKnowledge(); k.unshift(item); saveKnowledge(k); }
 
+const phrases = require('./phrases');
+
 function findKnowledgeByKeyword(q, limit=5){
   const k = loadKnowledge();
-  const ql = String(q).toLowerCase();
-  const scored = k.map(it => ({ it, score: ((String(it.query||'')+String(it.content||'')).toLowerCase().split(ql).length - 1) }));
+  if (!q) return [];
+  const qTokens = phrases.expandTokens(String(q).toLowerCase());
+  const scored = [];
+  for (const it of k){
+    const text = ((it.query||'') + ' ' + (it.content||'')).toLowerCase();
+    const itemTokens = phrases.expandTokens(text);
+    // score by intersection size
+    let score = 0;
+    for (const qt of qTokens){ if (itemTokens.includes(qt)) score++; }
+    // also check fuzzy matches
+    if (score === 0){
+      for (const qt of qTokens){
+        for (const itok of itemTokens){
+          if (phrases.fuzzyMatch(qt, itok)) { score += 0.5; }
+        }
+      }
+    }
+    scored.push({ it, score });
+  }
   scored.sort((a,b)=>b.score-a.score);
   return scored.filter(s=>s.score>0).slice(0,limit).map(s=>s.it);
 }

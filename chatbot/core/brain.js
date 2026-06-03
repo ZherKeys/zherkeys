@@ -54,12 +54,52 @@ function generateReply(userId, message, style){
 
   // support /learn command
   const trimmed = (message||'').trim();
+  // If user previously asked to add examples and now replies 'sim' or provides examples
+  const lowTrim = trimmed.toLowerCase();
+  if ((lowTrim === 'sim' || lowTrim === 'yes') && user && user.pendingLearn){
+    // ask user to send examples
+    return { reply: 'Beleza — envie exemplos separados por "|" agora, ou diga "não" para cancelar.' };
+  }
+  // if user sends examples separated by '|' and has pendingLearn, attach
+  if (user && user.pendingLearn && trimmed.includes('|')){
+    try {
+      const examples = trimmed.split('|').map(s=>s.trim()).filter(Boolean);
+      const k = memory.loadKnowledge ? memory.loadKnowledge() : [];
+      const idx = k.findIndex(it => it.id === user.pendingLearn);
+      if (idx !== -1){
+        const item = k[idx];
+        item.content = (item.content||'') + '\n\nExemplos:\n' + examples.map((e,i)=>`${i+1}. ${e}`).join('\n');
+        memory.saveKnowledge && memory.saveKnowledge(k);
+        // clear pending
+        user.pendingLearn = null;
+        if (memory.saveDB) memory.saveDB(db);
+        return { reply: `Adicionei ${examples.length} exemplo(s) ao que aprendi sobre ${item.query}.` };
+      }
+    } catch(e){ /* ignore */ }
+  }
+  // support /learn command
   if (/^\/learn\s+/i.test(trimmed)){
     const payload = trimmed.replace(/^\/learn\s+/i,'').trim();
-    const title = payload.split('|')[0].slice(0,80);
-    const item = { id: `kb-${Date.now()}`, query: title, content: payload, created_at: Date.now() };
+    // support formats: key|content  OR key=content  OR key content
+    let key = payload;
+    let content = payload;
+    if (payload.includes('|')){
+      const parts = payload.split('|'); key = parts[0].trim(); content = parts.slice(1).join('|').trim();
+    } else if (payload.includes('=')){
+      const parts = payload.split('='); key = parts[0].trim(); content = parts.slice(1).join('=').trim();
+    } else if (payload.split(' ').length >= 2){
+      const parts = payload.split(' '); key = parts[0].trim(); content = parts.slice(1).join(' ').trim();
+    }
+    if (!key) key = `item-${Date.now()}`;
+    if (!content) content = key;
+    const item = { id: `kb-${Date.now()}`, query: String(key).slice(0,200), content: String(content).slice(0,4000), created_at: Date.now() };
     if (memory.addKnowledge) memory.addKnowledge(item);
-    return { reply: `Aprendi: ${item.query}`, saved: true, item };
+    // mark pendingLearn on user so we can ask for examples
+    try{
+      user.pendingLearn = item.id;
+      if (memory.saveDB) memory.saveDB(db);
+    }catch(e){}
+    return { reply: `Aprendi: ${item.query}. Quer que eu adicione exemplos agora? Responda "sim" para enviar exemplos separados por "|".`, saved: true, item };
   }
 
   // build context
