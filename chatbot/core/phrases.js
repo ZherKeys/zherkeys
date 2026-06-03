@@ -1,93 +1,162 @@
 // Gerador leve de frases conversacionais e utilitários de conexão de palavras
-// Gera dinamicamente variações (saudações) para evitar um arquivo gigantesco.
 
-function generateGreetings(count = 1000){
+const GREETING_RE = /^(oi|olá|ola|oie|hey|hello|hi|e\s*aí|eai|opa|fala|salve|bom\s+dia|boa\s+tarde|boa\s+noite)([\s,!?.]+|$)/i;
+const SMALLTALK_RE = /^(tudo\s+bem|como\s+vai|como\s+vc\s+está|beleza|e\s+aí\??)[\s!?.,]*$/i;
+const AFFIRM_RE = /^(sim|s|yes|claro|ok|pode|pode\s+ser|isso|manda|bora)[\s!?.,]*$/i;
+const NEGATIVE_RE = /^(não|nao|no|cancelar|cancela|n)[\s!?.,]*$/i;
+const SEARCH_RE = /\b(pesquise|pesquisa|pesquisar|busque|buscar|procure|procurar|search|look\s+up)\b/i;
+
+function normalizeText(text) {
+  return String(text || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '');
+}
+
+function isGreeting(message) {
+  const s = normalizeText(message);
+  return GREETING_RE.test(s) || SMALLTALK_RE.test(s);
+}
+
+function isAffirmative(message) {
+  return AFFIRM_RE.test(normalizeText(message));
+}
+
+function isNegative(message) {
+  return NEGATIVE_RE.test(normalizeText(message));
+}
+
+function wantsSearch(message) {
+  return SEARCH_RE.test(String(message || ''));
+}
+
+function tokenize(text) {
+  const norm = normalizeText(text).replace(/[^a-z0-9áàâãéêíóôõúç\s]/gi, ' ');
+  const parts = norm.split(/\s+/).filter(Boolean);
+  return parts;
+}
+
+function generateGreetings(count = 1000) {
   const templates = [
     'Oi', 'Olá', 'E aí', 'Oi, tudo bem?', 'Olá, como vai?', 'Oi! Como você está?', 'Boa tarde', 'Bom dia', 'Boa noite'
   ];
   const tails = [
     '', ' tudo bem por aí?', ' como você tem passado?', ' o que manda de novo?', ' em que posso ajudar hoje?', ' prazer em te ver por aqui!'
   ];
-  const moods = ['🙂','😄','😉','👍','✨',''];
+  const moods = ['🙂', '😄', '😉', '👍', '✨', ''];
   const results = [];
   let i = 0;
-  while (results.length < count){
+  while (results.length < count) {
     const t = templates[i % templates.length];
-    const tail = tails[(i + Math.floor(i/3)) % tails.length];
+    const tail = tails[(i + Math.floor(i / 3)) % tails.length];
     const mood = moods[(i + 2) % moods.length];
     const variant = `${t}${tail} ${mood}`.trim();
     if (!results.includes(variant)) results.push(variant);
     i++;
-    // pequenas variações adicionais
-    if (results.length < count && i % 7 === 0){
+    if (results.length < count && i % 7 === 0) {
       results.push(`${t} — como vai? ${mood}`);
     }
   }
   return results.slice(0, count);
 }
 
-// Constrói conexões simples entre palavras usando sinônimos e stemming muito leve
 const synonyms = {
-  'oi': ['olá','e aí','oii','olaa','opa'],
-  'obrigado': ['valeu','brigadão','agradecido','obrg'],
-  'ajuda': ['socorro','assistência','apoio','suporte'],
-  'comprar': ['adquirir','compras','obter','comprando'],
-  'pão': ['pao','pã','pãzinho','pães'],
-  'receita': ['receitas','caderno de receitas','modo de preparo'],
-  'computador': ['pc','notebook','laptop','máquina']
+  oi: ['olá', 'e aí', 'oii', 'olaa', 'opa'],
+  obrigado: ['valeu', 'brigadão', 'agradecido', 'obrg'],
+  ajuda: ['socorro', 'assistência', 'apoio', 'suporte'],
+  escola: ['colégio', 'ensino', 'estudo', 'aula'],
+  sol: ['solzinho', 'astro'],
 };
 
-function expandTokens(text){
+const STOP_TOKENS = new Set([
+  'oi', 'ola', 'olá', 'hi', 'hello', 'hey', 'sim', 'nao', 'não', 'ok', 'e', 'a', 'o', 'de', 'em', 'no', 'na', 'um', 'uma', 'the', 'is', 'me', 'te', 'se', 'voce', 'você', 'pra', 'para', 'que', 'com', 'por', 'sobre', 'mais', 'muito', 'bem'
+]);
+
+function expandTokens(text) {
   if (!text) return [];
-  const t = String(text).toLowerCase().replace(/[^a-zA-ZÀ-ú0-9\s]/g,' ');
-  const parts = t.split(/\s+/).filter(Boolean);
+  const parts = tokenize(text);
   const expanded = new Set();
-  for (const p of parts){
+  for (const p of parts) {
+    if (STOP_TOKENS.has(p) || p.length < 2) continue;
     expanded.add(p);
     if (synonyms[p]) for (const s of synonyms[p]) expanded.add(s);
-    // add short stems
-    if (p.length > 4) expanded.add(p.slice(0,4));
-    // add fuzzy variants: double-letter, missing accent
-    expanded.add(p.replace(/[áàâã]/g,'a').replace(/[éê]/g,'e').replace(/[í]/g,'i').replace(/[óôõ]/g,'o').replace(/[ú]/g,'u'));
+    if (p.length > 4) expanded.add(p.slice(0, 4));
+    expanded.add(p.replace(/[áàâã]/g, 'a').replace(/[éê]/g, 'e').replace(/[í]/g, 'i').replace(/[óôõ]/g, 'o').replace(/[ú]/g, 'u'));
   }
   return Array.from(expanded);
 }
 
-// Levenshtein distance for fuzzy matching
 function levenshtein(a, b) {
-  if (!a || !b) return (a||'').length + (b||'').length;
-  const m = a.length, n = b.length;
-  const dp = Array.from({length: m+1}, () => new Array(n+1).fill(0));
-  for (let i=0;i<=m;i++) dp[i][0]=i;
-  for (let j=0;j<=n;j++) dp[0][j]=j;
-  for (let i=1;i<=m;i++){
-    for (let j=1;j<=n;j++){
-      const cost = a[i-1] === b[j-1] ? 0 : 1;
-      dp[i][j] = Math.min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+cost);
+  if (!a || !b) return (a || '').length + (b || '').length;
+  const m = a.length;
+  const n = b.length;
+  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
     }
   }
   return dp[m][n];
 }
 
-function fuzzyMatch(a, b){
+function fuzzyMatch(a, b) {
   if (!a || !b) return false;
-  a = String(a).toLowerCase(); b = String(b).toLowerCase();
+  a = String(a).toLowerCase();
+  b = String(b).toLowerCase();
   if (a === b) return true;
-  const dist = levenshtein(a,b);
+  if (a.length < 4 || b.length < 4) return false;
+  const dist = levenshtein(a, b);
   const norm = dist / Math.max(a.length, b.length);
-  return norm <= 0.25; // tolerate up to 25% difference
+  return norm <= 0.2;
 }
 
-// Parafraseia um item de conhecimento para ser devolvido de forma conversacional
-function paraphraseKnowledge(item){
+function paraphraseKnowledge(item) {
   if (!item) return '';
-  const q = item.query || '';
-  const c = item.content || '';
-  // evita mostrar metadados; cria frases naturais
-  const start = `Sobre ${q.replace(/\.|\n/g,' ').trim()}: `;
-  const snippet = c.split('\n').map(s=>s.trim()).filter(Boolean).join(' ').slice(0,600);
+  const q = (item.query || '').replace(/\.|\n/g, ' ').trim();
+  const c = (item.content || '').trim();
+  if (!c) return `Tenho uma entrada sobre "${q}", mas ainda sem detalhes. Quer me ensinar com /learn ${q}=...?`;
+  const snippet = c.split('\n').map((s) => s.trim()).filter(Boolean).join(' ').slice(0, 800);
   const ending = snippet.endsWith('.') ? '' : '.';
-  return `${start}${snippet}${ending} Se quiser mais detalhes, posso aprofundar.`;
+  return `Sobre "${q}": ${snippet}${ending}`;
 }
 
-module.exports = { generateGreetings, expandTokens, paraphraseKnowledge, levenshtein, fuzzyMatch };
+function pickGreeting(lang) {
+  const pt = [
+    'Oi! Sou o ZherTalk — ensino com /learn, monto exercícios de código (/problema) e ajudo a resolver/debugar (cole código entre ```).',
+    'Olá! Posso explicar programação, gerar desafios (ex.: "monte um problema de loop em python") ou revisar seu código.',
+    'E aí! Use /learn para memória permanente ou peça um exercício: /problema arrays facil javascript'
+  ];
+  const en = [
+    'Hi! I am ZherTalk — ask me anything or teach me with /learn word=explanation.',
+    'Hello! How can I help you today?'
+  ];
+  const pool = lang === 'en' ? en : pt;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function detectLang(message) {
+  if (/\b(the|is|you|please|hello|thanks|what|how|why)\b/i.test(message)) return 'en';
+  if (/\b(quem|obrigad|olá|tudo|por|favor|como|escola)\b/i.test(message)) return 'pt';
+  return 'pt';
+}
+
+module.exports = {
+  generateGreetings,
+  expandTokens,
+  tokenize,
+  paraphraseKnowledge,
+  levenshtein,
+  fuzzyMatch,
+  isGreeting,
+  isAffirmative,
+  isNegative,
+  wantsSearch,
+  normalizeText,
+  pickGreeting,
+  detectLang,
+  STOP_TOKENS
+};

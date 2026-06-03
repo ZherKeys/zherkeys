@@ -1,3 +1,37 @@
 {
-  "users": {}
+  "users": {
+    "x": {
+      "memory": {
+        "long_term": [],
+        "short_term": [
+          {
+            "text": "monte problema loop python",
+            "time": 1780452130446
+          },
+          {
+            "text": "gabarito",
+            "time": 1780452130452
+          }
+        ],
+        "summaries": []
+      },
+      "profile": {
+        "name": null,
+        "interests": [],
+        "style": "casual"
+      },
+      "state": {
+        "pendingLearnId": null,
+        "learnStage": null,
+        "lastTopic": "max-array",
+        "lastBotPrompt": "programming",
+        "programming": {
+          "activeProblemId": "max-array",
+          "language": "python",
+          "difficulty": "facil"
+        },
+        "language": "python"
+      }
+    }
+  }
 }

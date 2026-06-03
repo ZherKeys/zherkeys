@@ -2,182 +2,198 @@ const memory = require('./memoryManager');
 const contextManager = require('./contextManager');
 const phrases = require('./phrases');
 const vocab = require('./vocab');
+const programming = require('./programming');
 
-function userLogicGenerate(message, context) {
-  const lower = String(message||'').toLowerCase();
-
-  // idioma solicitado explicitamente
-  const wantsEnglish = /fale em ingl(es|ês)|speak english|in english|please speak english/i.test(message);
-  const wantsPortuguese = /fale em portug(u|ês)|speak portuguese|in portuguese|por favor em portugues/i.test(message);
-
-  // heurística simples de detecção (fallback): procura frases-chave
-  const isWhoAreYouEn = /who are you|who am i/i.test(message);
-  const isWhoAreYouPt = /quem sou eu/i.test(message);
-
-  // decide idioma
-  let lang = 'pt';
-  if (wantsEnglish || isWhoAreYouEn) lang = 'en';
-  else if (wantsPortuguese || isWhoAreYouPt) lang = 'pt';
-  else {
-    // fallback: se mensagem contém palavras tipicamente inglesas, usa inglês
-    const enHits = (message.match(/\b(the|is|you|please|hello|thanks)\b/gi)||[]).length;
-    const ptHits = (message.match(/\b(quem|por|favor|obrigad|olá|tudo)\b/gi)||[]).length;
-    if (enHits > ptHits) lang = 'en';
-  }
-
-  // continuidade
-  if (lower.includes('continuar') || lower.includes('e depois') || /continue|and then/i.test(message)) {
-    if (lang === 'en') return 'Alright, continuing what we were discussing... ' + context;
-    return 'Beleza, continuando o que a gente tava falando... ' + context;
-  }
-
-  // memória / quem sou eu
-  if (lower.includes('quem sou eu') || /who am i/i.test(message)) {
-    if (lang === 'en') return 'From what I remember about you: ' + context;
-    return 'Pelo que lembro de você: ' + context;
-  }
-
-  // padrão normal (resposta com base no idioma detectado)
-  if (lang === 'en') {
-    return `\nUnderstood.\n\nAbout what you said: "${message}"\n\nCurrent context:\n${context}\n\nWould you like me to dive deeper into this or do you want to apply it in practice?\n`;
-  }
-  return `\nEntendi.\n\nSobre isso que você falou: "${message}"\n\nContexto atual:\n${context}\n\nQuer que eu aprofunde isso ou você quer aplicar na prática?\n`;
+function clearLearnState(user) {
+  const state = memory.ensureState(user);
+  state.pendingLearnId = null;
+  state.learnStage = null;
 }
 
-function generateReply(userId, message, style){
-  const db = memory.loadDB ? memory.loadDB() : memory.loadUsers();
-  const user = memory.getUser ? memory.getUser(db, userId || 'anon') : (db.users && db.users[userId]) || {};
-
-  // record in short term memory
-  if (memory.remember) memory.remember(db, userId || 'anon', message);
-  if (memory.saveDB) memory.saveDB && memory.saveDB(db);
-
-  // support /learn command
-  const trimmed = (message||'').trim();
-  // If user previously asked to add examples and now replies 'sim' or provides examples
-  const lowTrim = trimmed.toLowerCase();
-  if ((lowTrim === 'sim' || lowTrim === 'yes') && user && user.pendingLearn){
-    // ask user to send examples
-    return { reply: 'Beleza — envie exemplos separados por "|" agora, ou diga "não" para cancelar.' };
+function parseLearnPayload(payload) {
+  let key = payload;
+  let content = payload;
+  if (payload.includes('|')) {
+    const parts = payload.split('|');
+    key = parts[0].trim();
+    content = parts.slice(1).join('|').trim();
+  } else if (payload.includes('=')) {
+    const parts = payload.split('=');
+    key = parts[0].trim();
+    content = parts.slice(1).join('=').trim();
+  } else if (payload.split(/\s+/).length >= 2) {
+    const parts = payload.split(/\s+/);
+    key = parts[0].trim();
+    content = parts.slice(1).join(' ').trim();
   }
-  // if user sends examples separated by '|' and has pendingLearn, attach
-  if (user && user.pendingLearn && trimmed.includes('|')){
-    try {
-      const examples = trimmed.split('|').map(s=>s.trim()).filter(Boolean);
-      const k = memory.loadKnowledge ? memory.loadKnowledge() : [];
-      const idx = k.findIndex(it => it.id === user.pendingLearn);
-      if (idx !== -1){
-        const item = k[idx];
-        item.content = (item.content||'') + '\n\nExemplos:\n' + examples.map((e,i)=>`${i+1}. ${e}`).join('\n');
-        memory.saveKnowledge && memory.saveKnowledge(k);
-        // clear pending
-        user.pendingLearn = null;
-        if (memory.saveDB) memory.saveDB(db);
-        return { reply: `Adicionei ${examples.length} exemplo(s) ao que aprendi sobre ${item.query}.` };
-      }
-    } catch(e){ /* ignore */ }
+  if (!key) key = `item-${Date.now()}`;
+  if (!content) content = key;
+  return { key, content };
+}
+
+function searchKnowledge(query, limit = 5) {
+  return memory.findKnowledgeByKeyword ? memory.findKnowledgeByKeyword(query, limit) : [];
+}
+
+function replyFromHits(hits, lang) {
+  const paras = hits.map((h) => phrases.paraphraseKnowledge(h));
+  return { reply: paras.join('\n\n'), sources: hits.map((h) => h.query) };
+}
+
+function notFoundReply(lang, topic) {
+  const hint = topic
+    ? `Ainda não sei sobre "${topic}". Use /learn ${topic}=explicação aqui ou diga mais com suas palavras.`
+    : 'Ainda não tenho isso na memória. Use /learn palavra=explicação para me ensinar.';
+  if (lang === 'en') {
+    return topic
+      ? `I don't know about "${topic}" yet. Use /learn ${topic}=explanation to teach me.`
+      : "I don't have that in memory yet. Use /learn word=explanation to teach me.";
   }
-  // support /learn command
-  if (/^\/learn\s+/i.test(trimmed)){
-    const payload = trimmed.replace(/^\/learn\s+/i,'').trim();
-    // support formats: key|content  OR key=content  OR key content
-    let key = payload;
-    let content = payload;
-    if (payload.includes('|')){
-      const parts = payload.split('|'); key = parts[0].trim(); content = parts.slice(1).join('|').trim();
-    } else if (payload.includes('=')){
-      const parts = payload.split('='); key = parts[0].trim(); content = parts.slice(1).join('=').trim();
-    } else if (payload.split(' ').length >= 2){
-      const parts = payload.split(' '); key = parts[0].trim(); content = parts.slice(1).join(' ').trim();
+  return hint;
+}
+
+function handleLearnCommand(db, user, trimmed) {
+  const payload = trimmed.replace(/^\/learn\s+/i, '').trim();
+  const { key, content } = parseLearnPayload(payload);
+  const item = {
+    id: `kb-${Date.now()}`,
+    query: String(key).slice(0, 200),
+    content: String(content).slice(0, 4000),
+    created_at: Date.now()
+  };
+  const saved = memory.addKnowledge(item);
+  const state = memory.ensureState(user);
+  state.pendingLearnId = saved.id || item.id;
+  state.learnStage = 'awaiting_examples_confirm';
+  state.lastTopic = saved.query || item.query;
+  memory.saveDB(db);
+  return {
+    reply: `Aprendi sobre "${saved.query}": ${saved.content}\n\nIsso foi salvo no disco (data/zhertalk_knowledge.json) e continua depois de reiniciar o servidor.\n\nQuer adicionar exemplos? Responda "sim" (e na próxima mensagem envie textos separados por "|") ou "não" para encerrar.`,
+    saved: true,
+    item: saved
+  };
+}
+
+function generateReply(userId, message, style, externalDb) {
+  const db = externalDb || (memory.loadDB ? memory.loadDB() : memory.loadUsers());
+  const uid = userId || 'anon';
+  const user = memory.getUser(db, uid);
+  const state = memory.ensureState(user);
+  const trimmed = String(message || '').trim();
+  const lang = phrases.detectLang(trimmed);
+
+  memory.remember(db, uid, trimmed);
+
+  if (state.pendingLearnId && phrases.isNegative(trimmed)) {
+    clearLearnState(user);
+    memory.saveDB(db);
+    return { reply: 'Ok, cancelei a adição de exemplos. O que aprendi antes continua salvo.' };
+  }
+
+  if (state.learnStage === 'awaiting_examples' && trimmed.includes('|')) {
+    const examples = trimmed.split('|').map((s) => s.trim()).filter(Boolean);
+    const item = memory.appendExamplesToKnowledge(state.pendingLearnId, examples);
+    clearLearnState(user);
+    memory.saveDB(db);
+    if (!item) return { reply: 'Não achei o item que estava aprendendo — tente /learn de novo.' };
+    return { reply: `Pronto! Adicionei ${examples.length} exemplo(s) em "${item.query}". Tudo salvo em disco — não some ao reiniciar.` };
+  }
+
+  if (state.pendingLearnId && state.learnStage === 'awaiting_examples_confirm' && phrases.isAffirmative(trimmed)) {
+    state.learnStage = 'awaiting_examples';
+    memory.saveDB(db);
+    return { reply: 'Mande os exemplos na próxima mensagem, separados por "|" (ex.: verão é quente|uso protetor|praia).' };
+  }
+
+  if (state.pendingLearnId && state.learnStage === 'awaiting_examples_confirm' && phrases.isNegative(trimmed)) {
+    clearLearnState(user);
+    memory.saveDB(db);
+    return { reply: 'Beleza — ficou só com o que já aprendi, sem exemplos extras.' };
+  }
+
+  if (/^\/learn\s+/i.test(trimmed)) {
+    return handleLearnCommand(db, user, trimmed);
+  }
+
+  if (programming.isProgrammingMessage(trimmed, state)) {
+    const progOut = programming.handleProgrammingMessage(trimmed, state, style);
+    if (progOut && progOut.reply) {
+      state.lastBotPrompt = 'programming';
+      if (progOut.problemId) state.lastTopic = progOut.problemId;
+      memory.saveDB(db);
+      return { reply: progOut.reply, sources: progOut.problemId ? ['programming:' + progOut.problemId] : ['programming'] };
     }
-    if (!key) key = `item-${Date.now()}`;
-    if (!content) content = key;
-    const item = { id: `kb-${Date.now()}`, query: String(key).slice(0,200), content: String(content).slice(0,4000), created_at: Date.now() };
-    if (memory.addKnowledge) memory.addKnowledge(item);
-    // mark pendingLearn on user so we can ask for examples
-    try{
-      user.pendingLearn = item.id;
-      if (memory.saveDB) memory.saveDB(db);
-    }catch(e){}
-    return { reply: `Aprendi: ${item.query}. Quer que eu adicione exemplos agora? Responda "sim" para enviar exemplos separados por "|".`, saved: true, item };
   }
 
-  // build context
-  const context = contextManager && contextManager.buildContext ? contextManager.buildContext(user) : '';
-
-  // try local knowledge lookup first
-  const hits = memory.findKnowledgeByKeyword ? memory.findKnowledgeByKeyword(message, 5) : [];
-  if (hits && hits.length){
-    // paraphrase hits into natural-sounding sentences (não exibir tabelas/metadados)
-    const paras = hits.map(h => phrases.paraphraseKnowledge(h));
-    const combined = paras.join('\n\n');
-    return { reply: combined, sources: hits.map(h=>h.query) };
+  if (phrases.wantsSearch(trimmed)) {
+    const topic = contextManager.getLastUserTopic(user) || state.lastTopic || trimmed;
+    const hits = searchKnowledge(topic, 5);
+    if (hits.length) return replyFromHits(hits, lang);
+    return { reply: notFoundReply(lang, topic) };
   }
-  // Detect direct definition/question requests first
-  const qText = String(message||'').trim();
-  const isQuestion = /\?$/i.test(qText) || /^o que é\b|^o que são\b|^o que quer dizer\b|^what is\b|^what are\b|^define\b|^defina\b/i.test(qText);
-  if (isQuestion){
-    // try KB again more broadly
-    if (hits && hits.length){
-      const paras = hits.map(h => phrases.paraphraseKnowledge(h));
-      return { reply: paras.join('\n\n') };
+
+  if (phrases.isGreeting(trimmed)) {
+    clearLearnState(user);
+    memory.saveDB(db);
+    return { reply: phrases.pickGreeting(lang) };
+  }
+
+  const context = contextManager.buildContext(user);
+  const topicGuess = contextManager.getLastUserTopic(user);
+  if (topicGuess && topicGuess !== trimmed) state.lastTopic = topicGuess;
+
+  if (!programming.extractCode(trimmed)) {
+    const hits = searchKnowledge(trimmed, 5);
+    if (hits.length) {
+      memory.saveDB(db);
+      return replyFromHits(hits, lang);
     }
-    // not found -> varied replies offering to learn or apologize conversationally
-    const notFoundPt = [
-      'Ainda não tenho conhecimento suficiente sobre isso — quer me ensinar?',
-      'Boa pergunta — não tenho isso no meu banco local, quer que eu aprenda agora?',
-      'Hum, não encontrei referência local. Posso tentar buscar ou você pode me explicar?'
-    ];
-    const notFoundEn = [
-      "I don't have enough info about that yet — would you like to teach me?",
-      "Good question — I don't have that in my local knowledge, shall I learn it now?",
-      "Hmm, couldn't find a local reference. I can try to look it up or you can explain it to me."
-    ];
-    const useEnQ = (/\b(the|is|you|please|hello|thanks)\b/i.test(message));
-    const pick = useEnQ ? notFoundEn[Math.floor(Math.random()*notFoundEn.length)] : notFoundPt[Math.floor(Math.random()*notFoundPt.length)];
-    return { reply: pick };
   }
 
-  // vocabulary detection: match user words to conversational follow-ups
-  try {
-    const vMatches = vocab.findVocabMatches(message);
-    if (vMatches && vMatches.length){
-      // pick first match and build follow-up based on detected language
-      const word = vMatches[0];
-      // simple language detection
-      const lang = (/\b(the|is|you|please|hello|thanks)\b/i.test(message)) ? 'en' : 'pt';
-      const follow = vocab.pickFollowUp(word, lang);
+  const isQuestion = /\?$/i.test(trimmed)
+    || /^(o que é|o que são|o que quer dizer|como funciona|me conte mais sobre|fale sobre|what is|what are|define|defina)\b/i.test(phrases.normalizeText(trimmed));
+
+  if (isQuestion) {
+    const topic = contextManager.extractTopicFromText
+      ? contextManager.extractTopicFromText(trimmed)
+      : trimmed.replace(/^(me conte mais sobre|fale sobre|o que é|what is)\s+/i, '').replace(/\?+$/, '').trim();
+    state.lastTopic = topic;
+    const topicHits = searchKnowledge(topic || trimmed, 5);
+    if (topicHits.length) return replyFromHits(topicHits, lang);
+    state.lastBotPrompt = 'question_not_found';
+    memory.saveDB(db);
+    return { reply: notFoundReply(lang, topic || trimmed) };
+  }
+
+  if (phrases.isAffirmative(trimmed) && state.lastBotPrompt === 'question_not_found' && state.lastTopic) {
+    return { reply: `Me ensine com: /learn ${state.lastTopic}=sua explicação aqui` };
+  }
+
+  if (/\b(continuar|e depois|aprofunde|aprofundar)\b/i.test(trimmed) || (phrases.isAffirmative(trimmed) && state.lastBotPrompt === 'offer_deepen')) {
+    const topic = state.lastTopic || topicGuess;
+    const topicHits = topic ? searchKnowledge(topic, 3) : [];
+    if (topicHits.length) return replyFromHits(topicHits, lang);
+    return {
+      reply: topic
+        ? `Sobre "${topic}": ainda tenho pouco material. Quer me ensinar com /learn ${topic}=...?`
+        : 'Sobre o que estávamos falando — pode repetir a pergunta com mais detalhe?'
+    };
+  }
+
+  if (vocab.shouldUseVocabFollowUp(trimmed)) {
+    const vMatches = vocab.findVocabMatches(trimmed);
+    if (vMatches.length) {
+      const follow = vocab.pickFollowUp(vMatches[0], lang);
+      state.lastBotPrompt = 'vocab_follow';
+      state.lastTopic = vMatches[0];
+      memory.saveDB(db);
       return { reply: follow };
     }
-  } catch(e){ /* ignore */ }
-
-  // If reached here: no KB hits and no vocab match -> respond with varied human-like replies
-  const unknownPt = [
-    'Ainda não tenho muito conhecimento sobre isso — quer me explicar?',
-    'Boa pergunta; não tenho essa informação agora, mas posso aprender se você quiser ensinar.',
-    'Interessante! Não encontrei referência local. Quer que eu pesquise ou você me conte mais?'
-  ];
-  const unknownEn = [
-    "I don't have much info about that yet — would you like to tell me?",
-    "Good question; I don't have that info right now, but I can learn if you teach me.",
-    "Interesting! I couldn't find local references. Should I look it up or would you like to explain?"
-  ];
-  // language heuristic
-  const useEn = (/\b(the|is|you|please|hello|thanks)\b/i.test(message));
-  const pickUnknown = useEn ? unknownEn[Math.floor(Math.random()*unknownEn.length)] : unknownPt[Math.floor(Math.random()*unknownPt.length)];
-  return { reply: pickUnknown };
-
-  // use user-provided logic
-  // detect simple greetings and answer with one of the generated variants
-  const greetings = phrases.generateGreetings(1000);
-  const simple = String(message||'').trim().toLowerCase();
-  if (simple === 'oi' || simple === 'ola' || simple === 'olá' || simple === 'oie' || simple === 'hello' || simple === 'hi'){
-    const pick = greetings[Math.floor(Math.random()*greetings.length)];
-    return { reply: pick };
   }
 
-  const reply = userLogicGenerate(message, context);
-  return { reply };
+  state.lastBotPrompt = 'unknown';
+  memory.saveDB(db);
+  return { reply: notFoundReply(lang, trimmed.length <= 40 ? trimmed : '') };
 }
 
 module.exports = { generateReply };

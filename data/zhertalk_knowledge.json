@@ -1,75 +1,92 @@
 [
-	{
-		"id": "k-0001",
-		"query": "Como limpar o cache do site após atualização",
-		"content": "Quando você atualiza arquivos estáticos (CSS, JS ou imagens) no site, navegadores e CDNs podem continuar servindo versões em cache por algum tempo. Para garantir que os usuários recebam a versão mais recente, siga estes passos práticos e claros:\n\n1) Versionamento de arquivos: adicione um sufixo de versão ou hash no nome do arquivo (ex: app.v1.2.3.js ou styles.20260602.css).\n2) Cache-Control: para arquivos que mudam com frequência, use `Cache-Control: no-cache` ou um tempo curto; para arquivos imutáveis use `Cache-Control: public, max-age=31536000, immutable` e atualize o nome do arquivo quando fizer mudanças.\n3) Invalidar CDN: se usar CDN, execute a invalidação (purge) para os caminhos atualizados. \n4) Forçar recarregamento local (usuário ou suporte): instruir o usuário a pressionar Ctrl+F5 ou limpar cache do navegador quando necessário.\n\nDicas extras: testar em modo incógnito para evitar cache persistente; automatizar nomeação com pipeline de build (hash baseado em conteúdo); documentar o procedimento de deploy para a equipe. Estas medidas cobrem tanto o fluxo de deploy quanto a experiência do usuário final.",
-		"created_at": 1717320000000
-	},
-	{
-		"id": "k-0002",
-		"query": "Como funciona o processo de compra no site (checkout)",
-		"content": "O processo de compra no nosso site segue etapas padrão para garantir conversão e segurança: \n\n1) Escolha do produto: usuário seleciona produto e adiciona ao carrinho; o carrinho mantém itens em sessão até finalizar.\n2) Fluxo de checkout: página de checkout pede endereço, método de envio e pagamento. Organize os campos em seções claras e minimize passos para reduzir abandono.\n3) Validação: valide endereço, disponibilidade e cálculo de frete antes de solicitar pagamento.\n4) Pagamento: integrar com gateway (cartões, PIX, boleto); sempre registrar transação com status (pendente, aprovado, recusado).\n5) Confirmação: após pagamento aprovado, enviar email+notificação com detalhes do pedido e número de rastreio quando disponível.\n\nBoas práticas: mostrar resumo do pedido antes do pagamento; evitar redirecionamentos excessivos; manter logs de auditoria para cobranças; nunca gravar dados sensíveis de cartão sem conformidade PCI."
-	},
-	{
-		"id": "k-0003",
-		"query": "Política de privacidade - resumo",
-		"content": "Resumo objetivo da política de privacidade do site: coletamos apenas os dados necessários para prestar os serviços (nome, email, endereço de entrega, histórico de pedidos). Dados de pagamento são processados por provedores terceirizados e não armazenamos números completos de cartão. Utilizamos cookies para autenticação, preferências e métricas; o usuário pode controlar consentimentos via configurações e excluir a conta para apagar dados pessoais. Mantemos logs de acesso para segurança e prevenção de fraudes, e compartilhamos dados com parceiros apenas quando necessário para entrega ou cumprimento legal. Atualizações: informamos mudanças importantes por email e publicamos a data de revisão no rodapé.",
-		"created_at": 1717320001000
-	},
-	{
-		"id": "k-0004",
-		"query": "Resolver problemas de reprodução de vídeo/áudio (streaming)",
-		"content": "Passo a passo para diagnóstico e resolução de problemas de reprodução: \n\n1) Verificar formato do arquivo: preferir MP4 (H.264/AAC) e fornecer HLS para compatibilidade.\n2) Testar em múltiplos navegadores: Chrome, Firefox, Edge e em dispositivos móveis para isolar problema.\n3) Verificar cabeçalhos do servidor: `Content-Type` correto e suporte a `Range` para streaming parcial.\n4) Analisar logs do servidor para erros 4xx/5xx e mensagens do player no console do navegador.\n5) Rede: checar CORS e latência; problemas de CDN ou origem podem causar buffering.\n\nRecomendações: transcodificar uploads para MP4+HLS automaticamente, monitorar taxas de erro e implementar reintentos no player quando apropriado.",
-		"created_at": 1717320002000
-	},
-	{
-		"id": "k-0005",
-		"query": "Como revogar e rodar nova API key com segurança",
-		"content": "Se você acredita que uma API key foi exposta, siga estes passos imediatos: \n\n1) Revogar imediatamente a chave no painel do provedor (OpenAI, etc.).\n2) Gerar nova chave com permissões mínimas necessárias.\n3) Rodar testes de integração em ambiente de staging antes de atualizar produção.\n4) Atualizar variáveis de ambiente no host (Render, Heroku) e reiniciar o serviço.\n5) Rotacionar chaves periodicamente e não armazenar chaves em repositório.\n\nAlém disso, documente quem teve acesso e por qual motivo, e faça auditoria de logs para detectar uso indevido.",
-		"created_at": 1717320003000
-	},
-	{
-		"id": "k-0006",
-		"query": "Boas práticas de segurança para servidores Node.js",
-		"content": "Checklist de segurança: \n\n- Rodar Node com usuário não-root e limitar privilégios.\n- Manter dependências atualizadas e usar `npm audit` periodicamente.\n- Configurar HTTPS com certificados válidos e usar HSTS.\n- Validar e sanitizar toda entrada do usuário; evitar SQL injection com queries parametrizadas.\n- Proteger segredos com variáveis de ambiente e serviços de secrets; nunca commitar `.env`.\n- Monitorar logs e configurar alertas para erros/intrusões.\n\nPráticas operacionais: backups regulares, testes de recuperação, e revisão de permissões de banco.",
-		"created_at": 1717320004000
-	},
-	{
-		"id": "k-0007",
-		"query": "Como ensinar o bot localmente via chat",
-		"content": "Instruções para ensinar o bot conversando: \n\n1) Use o comando `/learn Título|Conteúdo` ou `/learn Título\nConteúdo`. Por exemplo: `/learn Política de Troca|A política de troca permite devolução em 30 dias, com comprovante.`\n2) O bot armazenará o conteúdo completo exatamente como enviado, sem resumir ou cortar linhas.\n3) Para melhores resultados, envie exemplos práticos, perguntas frequentes e instruções passo a passo — quanto mais explícito e detalhado, melhor será a recuperação por palavra-chave.\n4) Administradores podem usar `/study` para importar resumos via API externa; porém o modo `/learn` funciona totalmente offline e grava tudo no JSON local.\n\nObservação: o aprendizado local é cumulativo — o bot mantém histórico e pode ser consultado por perguntas que contenham palavras-chave do conteúdo aprendido.",
-		"created_at": 1717320005000
-	}
-	,
-	{
-		"id": "k-0100",
-		"query": "Programação - Introdução a JavaScript",
-		"content": "JavaScript é uma linguagem de programação para web que roda tanto no navegador quanto no servidor (Node.js). Conceitos fundamentais: variáveis (let, const), tipos primitivos (string, number, boolean), estruturas de controle (if, for, while), funções (declarações, arrow functions), e objetos. Exemplo básico:\n\nconst saudacao = (nome) => `Olá, ${nome}`;\nconsole.log(saudacao('Zher'))\n\nBoas práticas iniciais: usar `const` por padrão, modularizar código em arquivos, tratar erros com try/catch, e escrever testes simples.",
-		"created_at": 1717320100000
-	},
-	{
-		"id": "k-0101",
-		"query": "Programação - Estruturas de dados básicas",
-		"content": "Estruturas de dados essenciais: arrays, objetos (hashmaps), conjuntos (Set) e mapas (Map). Arrays armazenam listas ordenadas; objetos armazenam pares chave/valor. Exemplo de uso:\n\nconst arr = [1,2,3];\nconst obj = { nome: 'Zher', idade: 30 };\narr.forEach(x => console.log(x));\n\nAo ensinar programação: dê exemplos curtos, exercícios práticos, e demonstre debugging no console.",
-		"created_at": 1717320101000
-	},
-	{
-		"id": "k-0102",
-		"query": "Programação - Conceitos assíncronos (Promises/async-await)",
-		"content": "No JavaScript moderno, chamadas assíncronas são tratadas com Promises e `async/await`. Uma Promise representa uma operação que será concluída no futuro. Exemplo:\n\nasync function buscar(){\n  try{\n    const resp = await fetch('/api/dados');\n    const j = await resp.json();\n    return j;\n  }catch(e){ console.error(e); }\n}\n\nExplique erros, encadeamento de Promises e o loop de eventos para alunos. Use exemplos com fetch e timers (setTimeout).",
-		"created_at": 1717320102000
-	},
-	{
-		"id": "k-0103",
-		"query": "Programação - Boas práticas e debugging",
-		"content": "Boas práticas: escrever código legível, usar nomes significativos, empregar linting (ESLint), e manter funções curtas com responsabilidade única. Para debugging: use `console.log`, breakpoints no DevTools, e replicar o bug com casos de teste pequenos. Ensine o fluxo: reproduzir, isolar, corrigir e testar.",
-		"created_at": 1717320103000
-	}
-	,
-	{
-		"id": "k-roi",
-		"query": "roi",
-		"content": "Resposta curta para o gatilho 'roi': Olá! Você disse 'roi' — posso te ajudar com algo específico? Posso aprender frases e padrões se você me ensinar com /learn.",
-		"created_at": 1717320200000
-	}
+  {
+    "id": "kb-1780451335239",
+    "query": "sol",
+    "content": "verao quente\n\nExemplos:\n1. ex1\n2. ex2",
+    "created_at": 1780451335240,
+    "updated_at": 1780452130433
+  },
+  {
+    "id": "k-0001",
+    "query": "Como limpar o cache do site após atualização",
+    "content": "Quando você atualiza arquivos estáticos (CSS, JS ou imagens) no site, navegadores e CDNs podem continuar servindo versões em cache por algum tempo. Para garantir que os usuários recebam a versão mais recente, siga estes passos práticos e claros:\n\n1) Versionamento de arquivos: adicione um sufixo de versão ou hash no nome do arquivo (ex: app.v1.2.3.js ou styles.20260602.css).\n2) Cache-Control: para arquivos que mudam com frequência, use `Cache-Control: no-cache` ou um tempo curto; para arquivos imutáveis use `Cache-Control: public, max-age=31536000, immutable` e atualize o nome do arquivo quando fizer mudanças.\n3) Invalidar CDN: se usar CDN, execute a invalidação (purge) para os caminhos atualizados. \n4) Forçar recarregamento local (usuário ou suporte): instruir o usuário a pressionar Ctrl+F5 ou limpar cache do navegador quando necessário.\n\nDicas extras: testar em modo incógnito para evitar cache persistente; automatizar nomeação com pipeline de build (hash baseado em conteúdo); documentar o procedimento de deploy para a equipe. Estas medidas cobrem tanto o fluxo de deploy quanto a experiência do usuário final.",
+    "created_at": 1717320000000,
+    "updated_at": 1780452130433
+  },
+  {
+    "id": "k-0002",
+    "query": "Como funciona o processo de compra no site (checkout)",
+    "content": "O processo de compra no nosso site segue etapas padrão para garantir conversão e segurança: \n\n1) Escolha do produto: usuário seleciona produto e adiciona ao carrinho; o carrinho mantém itens em sessão até finalizar.\n2) Fluxo de checkout: página de checkout pede endereço, método de envio e pagamento. Organize os campos em seções claras e minimize passos para reduzir abandono.\n3) Validação: valide endereço, disponibilidade e cálculo de frete antes de solicitar pagamento.\n4) Pagamento: integrar com gateway (cartões, PIX, boleto); sempre registrar transação com status (pendente, aprovado, recusado).\n5) Confirmação: após pagamento aprovado, enviar email+notificação com detalhes do pedido e número de rastreio quando disponível.\n\nBoas práticas: mostrar resumo do pedido antes do pagamento; evitar redirecionamentos excessivos; manter logs de auditoria para cobranças; nunca gravar dados sensíveis de cartão sem conformidade PCI.",
+    "updated_at": 1780452130433
+  },
+  {
+    "id": "k-0003",
+    "query": "Política de privacidade - resumo",
+    "content": "Resumo objetivo da política de privacidade do site: coletamos apenas os dados necessários para prestar os serviços (nome, email, endereço de entrega, histórico de pedidos). Dados de pagamento são processados por provedores terceirizados e não armazenamos números completos de cartão. Utilizamos cookies para autenticação, preferências e métricas; o usuário pode controlar consentimentos via configurações e excluir a conta para apagar dados pessoais. Mantemos logs de acesso para segurança e prevenção de fraudes, e compartilhamos dados com parceiros apenas quando necessário para entrega ou cumprimento legal. Atualizações: informamos mudanças importantes por email e publicamos a data de revisão no rodapé.",
+    "created_at": 1717320001000,
+    "updated_at": 1780452130433
+  },
+  {
+    "id": "k-0004",
+    "query": "Resolver problemas de reprodução de vídeo/áudio (streaming)",
+    "content": "Passo a passo para diagnóstico e resolução de problemas de reprodução: \n\n1) Verificar formato do arquivo: preferir MP4 (H.264/AAC) e fornecer HLS para compatibilidade.\n2) Testar em múltiplos navegadores: Chrome, Firefox, Edge e em dispositivos móveis para isolar problema.\n3) Verificar cabeçalhos do servidor: `Content-Type` correto e suporte a `Range` para streaming parcial.\n4) Analisar logs do servidor para erros 4xx/5xx e mensagens do player no console do navegador.\n5) Rede: checar CORS e latência; problemas de CDN ou origem podem causar buffering.\n\nRecomendações: transcodificar uploads para MP4+HLS automaticamente, monitorar taxas de erro e implementar reintentos no player quando apropriado.",
+    "created_at": 1717320002000,
+    "updated_at": 1780452130433
+  },
+  {
+    "id": "k-0005",
+    "query": "Como revogar e rodar nova API key com segurança",
+    "content": "Se você acredita que uma API key foi exposta, siga estes passos imediatos: \n\n1) Revogar imediatamente a chave no painel do provedor (OpenAI, etc.).\n2) Gerar nova chave com permissões mínimas necessárias.\n3) Rodar testes de integração em ambiente de staging antes de atualizar produção.\n4) Atualizar variáveis de ambiente no host (Render, Heroku) e reiniciar o serviço.\n5) Rotacionar chaves periodicamente e não armazenar chaves em repositório.\n\nAlém disso, documente quem teve acesso e por qual motivo, e faça auditoria de logs para detectar uso indevido.",
+    "created_at": 1717320003000,
+    "updated_at": 1780452130433
+  },
+  {
+    "id": "k-0006",
+    "query": "Boas práticas de segurança para servidores Node.js",
+    "content": "Checklist de segurança: \n\n- Rodar Node com usuário não-root e limitar privilégios.\n- Manter dependências atualizadas e usar `npm audit` periodicamente.\n- Configurar HTTPS com certificados válidos e usar HSTS.\n- Validar e sanitizar toda entrada do usuário; evitar SQL injection com queries parametrizadas.\n- Proteger segredos com variáveis de ambiente e serviços de secrets; nunca commitar `.env`.\n- Monitorar logs e configurar alertas para erros/intrusões.\n\nPráticas operacionais: backups regulares, testes de recuperação, e revisão de permissões de banco.",
+    "created_at": 1717320004000,
+    "updated_at": 1780452130433
+  },
+  {
+    "id": "k-0007",
+    "query": "Como ensinar o bot localmente via chat",
+    "content": "Instruções para ensinar o bot conversando: \n\n1) Use o comando `/learn Título|Conteúdo` ou `/learn Título\nConteúdo`. Por exemplo: `/learn Política de Troca|A política de troca permite devolução em 30 dias, com comprovante.`\n2) O bot armazenará o conteúdo completo exatamente como enviado, sem resumir ou cortar linhas.\n3) Para melhores resultados, envie exemplos práticos, perguntas frequentes e instruções passo a passo — quanto mais explícito e detalhado, melhor será a recuperação por palavra-chave.\n4) Administradores podem usar `/study` para importar resumos via API externa; porém o modo `/learn` funciona totalmente offline e grava tudo no JSON local.\n\nObservação: o aprendizado local é cumulativo — o bot mantém histórico e pode ser consultado por perguntas que contenham palavras-chave do conteúdo aprendido.",
+    "created_at": 1717320005000,
+    "updated_at": 1780452130433
+  },
+  {
+    "id": "k-0100",
+    "query": "Programação - Introdução a JavaScript",
+    "content": "JavaScript é uma linguagem de programação para web que roda tanto no navegador quanto no servidor (Node.js). Conceitos fundamentais: variáveis (let, const), tipos primitivos (string, number, boolean), estruturas de controle (if, for, while), funções (declarações, arrow functions), e objetos. Exemplo básico:\n\nconst saudacao = (nome) => `Olá, ${nome}`;\nconsole.log(saudacao('Zher'))\n\nBoas práticas iniciais: usar `const` por padrão, modularizar código em arquivos, tratar erros com try/catch, e escrever testes simples.",
+    "created_at": 1717320100000,
+    "updated_at": 1780452130433
+  },
+  {
+    "id": "k-0101",
+    "query": "Programação - Estruturas de dados básicas",
+    "content": "Estruturas de dados essenciais: arrays, objetos (hashmaps), conjuntos (Set) e mapas (Map). Arrays armazenam listas ordenadas; objetos armazenam pares chave/valor. Exemplo de uso:\n\nconst arr = [1,2,3];\nconst obj = { nome: 'Zher', idade: 30 };\narr.forEach(x => console.log(x));\n\nAo ensinar programação: dê exemplos curtos, exercícios práticos, e demonstre debugging no console.",
+    "created_at": 1717320101000,
+    "updated_at": 1780452130433
+  },
+  {
+    "id": "k-0102",
+    "query": "Programação - Conceitos assíncronos (Promises/async-await)",
+    "content": "No JavaScript moderno, chamadas assíncronas são tratadas com Promises e `async/await`. Uma Promise representa uma operação que será concluída no futuro. Exemplo:\n\nasync function buscar(){\n  try{\n    const resp = await fetch('/api/dados');\n    const j = await resp.json();\n    return j;\n  }catch(e){ console.error(e); }\n}\n\nExplique erros, encadeamento de Promises e o loop de eventos para alunos. Use exemplos com fetch e timers (setTimeout).",
+    "created_at": 1717320102000,
+    "updated_at": 1780452130433
+  },
+  {
+    "id": "k-0103",
+    "query": "Programação - Boas práticas e debugging",
+    "content": "Boas práticas: escrever código legível, usar nomes significativos, empregar linting (ESLint), e manter funções curtas com responsabilidade única. Para debugging: use `console.log`, breakpoints no DevTools, e replicar o bug com casos de teste pequenos. Ensine o fluxo: reproduzir, isolar, corrigir e testar.",
+    "created_at": 1717320103000,
+    "updated_at": 1780452130433
+  },
+  {
+    "id": "k-roi",
+    "query": "roi",
+    "content": "Resposta curta para o gatilho 'roi': Olá! Você disse 'roi' — posso te ajudar com algo específico? Posso aprender frases e padrões se você me ensinar com /learn.",
+    "created_at": 1717320200000,
+    "updated_at": 1780452130433
+  }
 ]
