@@ -110,6 +110,62 @@ console.log('Problematic code suggestions:');
 suggestions.forEach(s => console.log(`  ${s}`));
 
 console.log('\n');
+// Test intention detection
+console.log('🎯 TEST 2.5: Natural Intention Detection\n');
+
+const intentionTests = [
+  { text: 'Analisa esse código', expectedIntention: 'analyze' },
+  { text: 'Corrija esse código', expectedIntention: 'correct' },
+  { text: 'Monte um jogo para mim', expectedIntention: 'create' },
+  { text: 'Explica como funciona', expectedIntention: 'explain' },
+  { text: 'Otimiza esse código', expectedIntention: 'optimize' },
+  { text: 'Verifica segurança aqui', expectedIntention: 'security' },
+  { text: 'Refatora esse código', expectedIntention: 'refactor' }
+];
+
+let intentionsCorrect = 0;
+let intentionsWrong = 0;
+
+intentionTests.forEach((test) => {
+  const result = codeAnalyzer.detectIntention(test.text);
+  const matches = result.detected && result.intention === test.expectedIntention;
+  const status = matches ? '✅' : '❌';
+  
+  console.log(`${status} "${test.text}"`);
+  console.log(`   Intention: ${result.intention} (expected: ${test.expectedIntention})`);
+  
+  if (matches) {
+    intentionsCorrect++;
+  } else {
+    intentionsWrong++;
+  }
+});
+
+console.log(`\n📈 INTENTION RESULTS: ${intentionsCorrect} correct, ${intentionsWrong} wrong\n`);
+
+// Test intention mapping
+console.log('🔄 TEST 2.6: Intention to Analysis Type Mapping\n');
+
+const mappingTests = [
+  { intention: 'analyze', expectedType: 'summary' },
+  { intention: 'explain', expectedType: 'learning' },
+  { intention: 'optimize', expectedType: 'optimization' },
+  { intention: 'security', expectedType: 'security' },
+  { intention: 'correct', expectedType: 'optimization' }
+];
+
+let mappingsCorrect = 0;
+
+mappingTests.forEach((test) => {
+  const result = codeAnalyzer.mapIntentionToAnalysisType(test.intention);
+  const matches = result === test.expectedType;
+  const status = matches ? '✅' : '❌';
+  
+  console.log(`${status} ${test.intention} → ${result} (expected: ${test.expectedType})`);
+  if (matches) mappingsCorrect++;
+});
+
+console.log(`\n✅ MAPPING RESULTS: ${mappingsCorrect}/${mappingTests.length} correct\n`);
 
 // Test format
 console.log('📋 TEST 3: Analysis Output Format\n');

@@ -220,11 +220,63 @@ function generateSuggestions(codeSnippet) {
   return suggestions;
 }
 
+/**
+ * Detecta intenção natural do usuário (sem precisar de /)
+ * Retorna: { detected: true/false, intention: 'analyze'|'correct'|'create'|'explain'|'optimize'|'security'|'refactor'|'improve' }
+ */
+function detectIntention(message) {
+  const text = (message || '').toLowerCase();
+  
+  // Padrões de intenção
+  const patterns = {
+    analyze: /analisa|analise|analyze|analisa este código|vê este código|examina|observe este código/i,
+    correct: /corrija|corrige|corrijo|fix|conserta|repara|corrige este código|fix this|arruma/i,
+    create: /cria|crie|create|monte|montar|faz um|faz|faça um|desenvolve|desenvolva|implemente/i,
+    explain: /explica|explique|explain|me ensina|ensina|me explica|como funciona/i,
+    optimize: /otimiza|otimize|improve|melhora|melhore|deixa mais rapido|fica mais rapido/i,
+    security: /segurança|segurança|security|vulnerabil|vulnerabilidades|unsafe|perigo/i,
+    refactor: /refatora|refatore|refactor|reorganiza|reorganize|limpa este código|cleanup/i,
+    improve: /melhora|melhore|aproveita|aproveite|enhancement|enhancement/i
+  };
+  
+  for (const [intention, pattern] of Object.entries(patterns)) {
+    if (pattern.test(text)) {
+      return {
+        detected: true,
+        intention,
+        confidence: 'high'
+      };
+    }
+  }
+  
+  return { detected: false };
+}
+
+/**
+ * Mapeia intenção para tipo de análise
+ */
+function mapIntentionToAnalysisType(intention) {
+  const mapping = {
+    analyze: 'summary',
+    correct: 'optimization',  // Correção é tipo otimização
+    explain: 'learning',
+    optimize: 'optimization',
+    security: 'security',
+    refactor: 'optimization',
+    improve: 'optimization',
+    create: 'create' // Não é análise, é criação
+  };
+  
+  return mapping[intention] || 'summary';
+}
+
 module.exports = {
   detectCode,
   analyzeCode,
   detectLanguage,
   formatAnalysis,
   generateSuggestions,
-  buildAnalysisPrompt
+  buildAnalysisPrompt,
+  detectIntention,
+  mapIntentionToAnalysisType
 };

@@ -350,6 +350,80 @@ function generateReply(userId, message, style, externalDb) {
     }
   }
 
+  // ====== DETECÇÃO INTELIGENTE DE INTENÇÃO (sem /) ======
+  // Detecta frases naturais como "analisa esse código", "corrija", "monte tal coisa"
+  const intention = codeAnalyzer.detectIntention(trimmed);
+  
+  if (intention.detected) {
+    const codeDetect = codeAnalyzer.detectCode(trimmed);
+    
+    // Se tem código + intenção
+    if (codeDetect.found) {
+      const analysisType = codeAnalyzer.mapIntentionToAnalysisType(intention.intention);
+      
+      // Se é criação, envia para codeGenerator
+      if (intention.intention === 'create') {
+        const genState = {
+          stage: 'creating',
+          creationType: 'component',
+          context: trimmed,
+          requirement: trimmed
+        };
+        state.codeGenState = genState;
+        memory.saveDB(db);
+        
+        return {
+          reply: `🎮 Entendi! Vou criar isso para você...\n⏳ Processando seu pedido...`
+        };
+      }
+      
+      // Se é análise
+      if (['summary', 'learning', 'optimization', 'security'].includes(analysisType)) {
+        state.analysisState = {
+          stage: 'analyzing',
+          code: codeDetect.code,
+          language: codeDetect.language,
+          type: analysisType
+        };
+        memory.saveDB(db);
+        
+        const intentionEmoji = {
+          analyze: '📊',
+          explain: '🎓',
+          optimize: '⚡',
+          security: '🔒',
+          correct: '✏️',
+          refactor: '🔧',
+          improve: '📈'
+        };
+        
+        const emoji = intentionEmoji[intention.intention] || '📊';
+        const actionText = {
+          analyze: 'Analisando',
+          explain: 'Explicando',
+          optimize: 'Otimizando',
+          security: 'Verificando segurança',
+          correct: 'Corrigindo',
+          refactor: 'Refatorando',
+          improve: 'Melhorando'
+        };
+        
+        // Executar análise
+        codeAnalyzer.analyzeCode(codeDetect.code, analysisType).then((result) => {
+          const formatted = codeAnalyzer.formatAnalysis(result);
+          memory.remember(db, uid, `[${intention.intention.toUpperCase()}] ${formatted}`);
+          memory.saveDB(db);
+        }).catch((e) => {
+          console.error('Erro ao analisar:', e);
+        });
+        
+        return {
+          reply: `${emoji} ${actionText[intention.intention] || 'Processando'} código ${codeDetect.language}...\n⏳ Um momento...`
+        };
+      }
+    }
+  }
+
   // Comandos de análise de código
   if (/^\/analisar\s*/i.test(trimmed)) {
     // Procura código na mensagem ou no histórico
