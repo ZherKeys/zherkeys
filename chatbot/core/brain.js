@@ -3,6 +3,9 @@ const contextManager = require('./contextManager');
 const phrases = require('./phrases');
 const vocab = require('./vocab');
 const programming = require('./programming');
+const codeGenerator = require('./codeGenerator');
+const ollama = require('./ollamaIntegration');
+const codeMemory = require('./codeMemory');
 
 function clearLearnState(user) {
   const state = memory.ensureState(user);
@@ -74,6 +77,129 @@ function handleLearnCommand(db, user, trimmed) {
   };
 }
 
+function handleCodeGeneration(db, user, trimmed, state) {
+  // Se não está em estado de geração, detecta nova requisição
+  if (!state.codeGenState) {
+    const creationType = codeGenerator.detectCreationType(trimmed);
+    if (!creationType) return null;
+
+    const description = codeGenerator.extractDescription(trimmed);
+    
+    // Verificar se já tem algo similar na memória
+    const memoryMatch = codeMemory.buildMemoryResponse(creationType, description, {});
+    if (memoryMatch.hasMemory) {
+      // Tem algo na memória!
+      state.codeGenState = codeGenerator.initCodeGeneration(user.id || 'anon', creationType, description);
+      state.codeGenState.stage = 'memory_found';
+      state.codeGenState.memoryMatch = memoryMatch;
+      memory.saveDB(db);
+      
+      return {
+        reply: `${memoryMatch.message}\n\n${memoryMatch.suggestion}`
+      };
+    }
+    
+    state.codeGenState = codeGenerator.initCodeGeneration(user.id || 'anon', creationType, description);
+    memory.saveDB(db);
+  }
+
+  // Se encontrou na memória
+  if (state.codeGenState.stage === 'memory_found') {
+    if (phrases.isAffirmative(trimmed)) {
+      // Usuário quer usar o código anterior
+      const existing = state.codeGenState.memoryMatch.existingCode;
+      state.codeGenState = null;
+      memory.saveDB(db);
+      return {
+        reply: `✅ Perfeito! Aqui está o código:\n\n${existing.content}`
+      };
+    } else if (phrases.isNegative(trimmed)) {
+      // Usuário quer gerar novo
+      state.codeGenState.stage = 'gathering_context';
+      state.codeGenState.memoryMatch = null;
+      memory.saveDB(db);
+      
+      const firstQuestion = codeGenerator.getNextContextQuestion(state.codeGenState);
+      return {
+        reply: `Certo! Vou gerar um novo ${state.codeGenState.type}.\n\n❓ ${firstQuestion.question}`
+      };
+    } else {
+      // Resposta inválida
+      return {
+        reply: `Diga "sim" para usar o código anterior ou "não" para gerar um novo.`
+      };
+    }
+  }
+
+  // Se está coletando contexto
+  if (state.codeGenState.stage === 'gathering_context') {
+    // Verifica se é resposta de contexto
+    if (codeGenerator.isContextResponse(trimmed, state.codeGenState)) {
+      codeGenerator.processContextAnswer(state.codeGenState, trimmed);
+
+      // Se tem mais perguntas
+      if (!codeGenerator.hasEnoughContext(state.codeGenState)) {
+        const nextQuestion = codeGenerator.getNextContextQuestion(state.codeGenState);
+        memory.saveDB(db);
+        return {
+          reply: `❓ ${nextQuestion.question}\n\n(Contexto coletado: ${Object.keys(state.codeGenState.answers).length}/${Object.keys(codeGenerator.CONTEXT_QUESTIONS[state.codeGenState.type]).length})`
+        };
+      }
+
+      // Contexto completo - prepara geração
+      state.codeGenState.stage = 'generating';
+      memory.saveDB(db);
+
+      // Retorna mensagem de "carregando"
+      return {
+        reply: `✨ Perfeito! Vou gerar o código agora...\n\n⏳ Isso pode levar alguns segundos...\n(Vou salvar na minha memória para usar depois! 🧠)`
+      };
+    }
+
+    // Se não respondeu ainda a primeira pergunta
+    const currentQuestion = codeGenerator.getNextContextQuestion(state.codeGenState);
+    if (currentQuestion) {
+      return {
+        reply: `❓ ${currentQuestion.question}`
+      };
+    }
+  }
+
+  return null;
+}
+
+async function completeCodeGeneration(db, state, uid) {
+  if (!state.codeGenState || state.codeGenState.stage !== 'generating') {
+    return null;
+  }
+
+  try {
+    const prompt = codeGenerator.buildCodePrompt(state.codeGenState);
+    const result = await ollama.generateCodeWithFallback(prompt, ollama.DEFAULT_MODEL);
+
+    if (result.success) {
+      // Salvar na memória!
+      const codeId = codeMemory.rememberGeneratedCode(db, uid, state.codeGenState, result.code);
+      memory.saveDB(db);
+      
+      state.codeGenState.stage = 'completed';
+      return {
+        reply: `✅ Código gerado com sucesso e salvo na minha memória! 🧠\n\n${result.code}`,
+        code: result.code,
+        codeId: codeId
+      };
+    } else {
+      return {
+        reply: `⚠️ Erro ao gerar código: ${result.error}\n\n${result.template || ''}`
+      };
+    }
+  } catch (error) {
+    return {
+      reply: `❌ Erro: ${error.message}`
+    };
+  }
+}
+
 function generateReply(userId, message, style, externalDb) {
   const db = externalDb || (memory.loadDB ? memory.loadDB() : memory.loadUsers());
   const uid = userId || 'anon';
@@ -113,6 +239,65 @@ function generateReply(userId, message, style, externalDb) {
 
   if (/^\/learn\s+/i.test(trimmed)) {
     return handleLearnCommand(db, user, trimmed);
+  }
+
+  // Comandos de memória
+  if (/^\/memoria$/i.test(trimmed) || /^\/memory$/i.test(trimmed)) {
+    const stats = codeMemory.getLearningStats(db);
+    memory.saveDB(db);
+    return { 
+      reply: codeMemory.formatStats(stats)
+    };
+  }
+
+  if (/^\/codigos$/i.test(trimmed)) {
+    const codes = codeMemory.findCodeByType(null);
+    if (codes.length === 0) {
+      return { 
+        reply: '📭 Ainda não gerei nenhum código. Peça para eu criar um! Exemplo: "crie um jogo agar.io"'
+      };
+    }
+    const list = codes.slice(0, 10).map((c, i) => {
+      const summary = codeMemory.getCodeSummary(c);
+      return `${i + 1}. 📝 ${summary.description}\n   💾 ${summary.language} (${summary.lines} linhas)`;
+    }).join('\n\n');
+    return { 
+      reply: `🧠 Códigos na minha memória:\n\n${list}\n\n(Mostrando ${Math.min(10, codes.length)} de ${codes.length} códigos)`
+    };
+  }
+
+  if (/^\/buscar\s+/i.test(trimmed)) {
+    const query = trimmed.replace(/^\/buscar\s+/i, '').trim();
+    const results = codeMemory.findSimilarCode(query);
+    if (results.length === 0) {
+      return { 
+        reply: `❌ Não encontrei código similar a "${query}" na minha memória.`
+      };
+    }
+    const best = results[0];
+    const summary = codeMemory.getCodeSummary(best);
+    return { 
+      reply: `✅ Encontrei!\n\n📝 ${summary.description}\n💾 ${summary.language}\n\n${summary.preview}`
+    };
+  }
+
+  // Lidar com geração de código
+  const codeGenReply = handleCodeGeneration(db, user, trimmed, state);
+  if (codeGenReply) {
+    // Se está gerando, aguarda conclusão
+    if (state.codeGenState && state.codeGenState.stage === 'generating') {
+      // Executar asincronamente (sem bloquear)
+      completeCodeGeneration(db, state, uid).then((result) => {
+        if (result) {
+          memory.remember(db, uid, `[BOT_CODE] ${result.code || 'Geração completada'}`);
+          memory.saveDB(db);
+        }
+      }).catch((e) => {
+        console.error('Erro ao completar geração:', e);
+      });
+      return codeGenReply;
+    }
+    return codeGenReply;
   }
 
   if (programming.isProgrammingMessage(trimmed, state)) {

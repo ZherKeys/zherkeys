@@ -3,7 +3,7 @@ const router = express.Router();
 const brain = require('../core/brain');
 const memory = require('../core/memoryManager');
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { userId, message, style } = req.body || {};
   if (!message) return res.status(400).json({ error: 'message obrigatório' });
 
