@@ -6,6 +6,7 @@ const programming = require('./programming');
 const codeGenerator = require('./codeGenerator');
 const ollama = require('./ollamaIntegration');
 const codeMemory = require('./codeMemory');
+const sessionMemory = require('./sessionMemory');
 
 function clearLearnState(user) {
   const state = memory.ensureState(user);
@@ -278,6 +279,44 @@ function generateReply(userId, message, style, externalDb) {
     const summary = codeMemory.getCodeSummary(best);
     return { 
       reply: `✅ Encontrei!\n\n📝 ${summary.description}\n💾 ${summary.language}\n\n${summary.preview}`
+    };
+  }
+
+  // Comandos de histórico de sessão
+  if (/^\/historico$/i.test(trimmed)) {
+    const history = sessionMemory.getSessionHistory(db, uid, 15);
+    if (history.length === 0) {
+      return {
+        reply: '📭 Nenhuma conversa registrada ainda. Comece falando algo!'
+      };
+    }
+    const formatted = sessionMemory.formatHistoryForDisplay(history);
+    return {
+      reply: `📋 Últimas ${history.length} mensagens:\n\n${formatted}`
+    };
+  }
+
+  if (/^\/relatorio$/i.test(trimmed)) {
+    const report = sessionMemory.generateConversationReport(db, uid);
+    memory.saveDB(db);
+    return {
+      reply: report
+    };
+  }
+
+  if (/^\/exportar$/i.test(trimmed)) {
+    const exported = sessionMemory.exportHistory(db, uid);
+    memory.saveDB(db);
+    return {
+      reply: `📄 Histórico exportado:\n\n${exported.substring(0, 2000)}...\n\n(Use /relatorio para ver tudo)`
+    };
+  }
+
+  if (/^\/limpar historico$/i.test(trimmed)) {
+    sessionMemory.clearSessionHistory(db, uid);
+    memory.saveDB(db);
+    return {
+      reply: '🗑️ Histórico da sessão foi limpo.'
     };
   }
 
