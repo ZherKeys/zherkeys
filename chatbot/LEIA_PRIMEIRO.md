@@ -30,14 +30,20 @@
 - ✅ **Sugestões automáticas** de problemas (infinite loops, eval, etc)
 - ✅ **Persistência** em histórico de sessão
 
----
+### Fase 5: Linguagem Natural (Sem /) 🆕
+- ✅ **Detectar intenções** sem precisar de "/" (analisa, corrija, monte, etc)
+- ✅ **8 intenções** reconhecidas automaticamente
+- ✅ **Conversação natural** - Fale como se estivesse conversando
+- ✅ **Exemplos**: "Analisa esse código", "Corrija isso", "Monte um jogo"
+- ✅ **Mapeamento automático** para ação apropriada
+- ✅ **100% compatível** com comandos "/" quando quiser ser específico
 
 ## 📊 Números
 
-- **4 módulos novos** criados
-- **2 arquivos** modificados
-- **4 documentos** completos
-- **11 comandos** de memória
+- **5 módulos principais** criados
+- **8 intenções** naturais detectadas
+- **20+ comandos** funcionando
+- **12+ linguagens** suportadas
 - **0 custos** (Ollama é gratuito)
 - **100% privado** (tudo local)
 
@@ -115,7 +121,9 @@ curl http://localhost:3001/api/chat -X POST `
 - [CODEGEN_README.md](CODEGEN_README.md) - Como gerar código
 - [MEMORY_GUIDE.md](MEMORY_GUIDE.md) - Como usar code memory
 - [SESSION_MEMORY_GUIDE.md](SESSION_MEMORY_GUIDE.md) - Como usar histórico
-- [CODE_ANALYZER_GUIDE.md](CODE_ANALYZER_GUIDE.md) - Como analisar código (NOVO!)
+- [CODE_ANALYZER_GUIDE.md](CODE_ANALYZER_GUIDE.md) - Como analisar código
+- [NATURAL_LANGUAGE_GUIDE.md](NATURAL_LANGUAGE_GUIDE.md) - **Comande sem "/" (NOVO!)**
+- [CODE_ANALYZER_EXAMPLES.md](CODE_ANALYZER_EXAMPLES.md) - 14 testes práticos
 - [FINAL_SUMMARY.md](FINAL_SUMMARY.md) - Visão geral completa
 
 ---
