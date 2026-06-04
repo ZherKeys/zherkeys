@@ -22,6 +22,14 @@
 - ✅ **Persistência** em `memory/users.json`
 - ✅ **Até 100 mensagens** por sessão
 
+### Fase 4: Code Analyzer (Análise de Código) 🆕
+- ✅ **Detectar automaticamente** qualquer código enviado
+- ✅ **Suportar qualquer linguagem** (Python, JS, Java, C++, PHP, etc)
+- ✅ **5 tipos de análise**: resumir, explicar, otimizar, segurança, detalhado
+- ✅ **Comandos:** `/resumir`, `/explicar`, `/otimizar`, `/seguranca`, `/analisar`
+- ✅ **Sugestões automáticas** de problemas (infinite loops, eval, etc)
+- ✅ **Persistência** em histórico de sessão
+
 ---
 
 ## 📊 Números
@@ -86,6 +94,16 @@ curl http://localhost:3001/api/chat -X POST `
 /limpar historico     → Deletar histórico
 ```
 
+### Análise de Código (NOVO!) 🆕
+```
+[envie código]        → Bot detecta e oferece opções
+/resumir              → Resumo breve
+/explicar             → Explicação detalhada
+/otimizar             → Sugestões de performance
+/seguranca            → Análise de vulnerabilidades
+/analisar             → Análise geral
+```
+
 ---
 
 ## 📚 Documentação (Escolha uma)
@@ -97,6 +115,7 @@ curl http://localhost:3001/api/chat -X POST `
 - [CODEGEN_README.md](CODEGEN_README.md) - Como gerar código
 - [MEMORY_GUIDE.md](MEMORY_GUIDE.md) - Como usar code memory
 - [SESSION_MEMORY_GUIDE.md](SESSION_MEMORY_GUIDE.md) - Como usar histórico
+- [CODE_ANALYZER_GUIDE.md](CODE_ANALYZER_GUIDE.md) - Como analisar código (NOVO!)
 - [FINAL_SUMMARY.md](FINAL_SUMMARY.md) - Visão geral completa
 
 ---

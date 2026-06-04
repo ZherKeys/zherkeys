@@ -7,6 +7,7 @@ const codeGenerator = require('./codeGenerator');
 const ollama = require('./ollamaIntegration');
 const codeMemory = require('./codeMemory');
 const sessionMemory = require('./sessionMemory');
+const codeAnalyzer = require('./codeAnalyzer');
 
 function clearLearnState(user) {
   const state = memory.ensureState(user);
@@ -347,6 +348,135 @@ function generateReply(userId, message, style, externalDb) {
       memory.saveDB(db);
       return { reply: progOut.reply, sources: progOut.problemId ? ['programming:' + progOut.problemId] : ['programming'] };
     }
+  }
+
+  // Comandos de análise de código
+  if (/^\/analisar\s*/i.test(trimmed)) {
+    // Procura código na mensagem ou no histórico
+    const codeDetect = codeAnalyzer.detectCode(trimmed.replace(/^\/analisar\s*/i, ''));
+    
+    if (codeDetect.found) {
+      state.analysisState = {
+        stage: 'analyzing',
+        code: codeDetect.code,
+        language: codeDetect.language,
+        type: 'summary'
+      };
+      memory.saveDB(db);
+      
+      // Executar análise assincronamente
+      codeAnalyzer.analyzeCode(codeDetect.code, 'summary').then((result) => {
+        const formatted = codeAnalyzer.formatAnalysis(result);
+        memory.remember(db, uid, `[CODE_ANALYSIS] ${formatted}`);
+        memory.saveDB(db);
+      }).catch((e) => {
+        console.error('Erro ao analisar código:', e);
+      });
+      
+      return {
+        reply: `📊 Analisando código ${codeDetect.language}...\n⏳ Isso pode levar alguns segundos...`
+      };
+    }
+    
+    return {
+      reply: `❌ Nenhum código detectado. Use:\n\`\`\`linguagem\ncodigo aqui\n\`\`\`\n\nOu envie código após /analisar`
+    };
+  }
+
+  if (/^\/resumir$/i.test(trimmed)) {
+    const codeDetect = codeAnalyzer.detectCode(trimmed);
+    
+    if (codeDetect.found) {
+      codeAnalyzer.analyzeCode(codeDetect.code, 'summary').then((result) => {
+        const formatted = codeAnalyzer.formatAnalysis(result);
+        memory.remember(db, uid, `[CODE_SUMMARY] ${formatted}`);
+        memory.saveDB(db);
+      });
+      
+      return {
+        reply: `📝 Resumindo código ${codeDetect.language}...\n⏳ Processando...`
+      };
+    }
+    
+    return {
+      reply: `❌ Envie código para resumir. Exemplo:\n\`\`\`javascript\nconst x = 5;\nconsole.log(x);\n\`\`\`\n\nDepois use /resumir`
+    };
+  }
+
+  if (/^\/explicar$/i.test(trimmed)) {
+    const codeDetect = codeAnalyzer.detectCode(trimmed);
+    
+    if (codeDetect.found) {
+      codeAnalyzer.analyzeCode(codeDetect.code, 'learning').then((result) => {
+        const formatted = codeAnalyzer.formatAnalysis(result);
+        memory.remember(db, uid, `[CODE_EXPLANATION] ${formatted}`);
+        memory.saveDB(db);
+      });
+      
+      return {
+        reply: `🎓 Explicando código ${codeDetect.language}...\n⏳ Gerando explicação detalhada...`
+      };
+    }
+    
+    return {
+      reply: `❌ Envie código para explicar no formato:\n\`\`\`linguagem\ncodigo\n\`\`\``
+    };
+  }
+
+  if (/^\/otimizar$/i.test(trimmed)) {
+    const codeDetect = codeAnalyzer.detectCode(trimmed);
+    
+    if (codeDetect.found) {
+      codeAnalyzer.analyzeCode(codeDetect.code, 'optimization').then((result) => {
+        const formatted = codeAnalyzer.formatAnalysis(result);
+        memory.remember(db, uid, `[CODE_OPTIMIZATION] ${formatted}`);
+        memory.saveDB(db);
+      });
+      
+      return {
+        reply: `⚡ Analisando otimizações para ${codeDetect.language}...\n⏳ Processando...`
+      };
+    }
+    
+    return {
+      reply: `❌ Envie código para otimizar`
+    };
+  }
+
+  if (/^\/seguranca$/i.test(trimmed)) {
+    const codeDetect = codeAnalyzer.detectCode(trimmed);
+    
+    if (codeDetect.found) {
+      codeAnalyzer.analyzeCode(codeDetect.code, 'security').then((result) => {
+        const formatted = codeAnalyzer.formatAnalysis(result);
+        memory.remember(db, uid, `[SECURITY_ANALYSIS] ${formatted}`);
+        memory.saveDB(db);
+      });
+      
+      return {
+        reply: `🔒 Analisando segurança do código ${codeDetect.language}...\n⏳ Verificando vulnerabilidades...`
+      };
+    }
+    
+    return {
+      reply: `❌ Envie código para análise de segurança`
+    };
+  }
+
+  // Detectar código automaticamente e oferecer análise
+  const autoDetectCode = codeAnalyzer.detectCode(trimmed);
+  if (autoDetectCode.found && !trimmed.startsWith('/')) {
+    // Oferece análise automática
+    const suggestions = codeAnalyzer.generateSuggestions(autoDetectCode.code);
+    let suggestionsText = '';
+    
+    if (suggestions.length > 0) {
+      suggestionsText = `\n\n💡 Sugestões:\n${suggestions.join('\n')}`;
+    }
+    
+    return {
+      reply: `📊 Detectei código em ${autoDetectCode.language}!${suggestionsText}\n\nUse:\n• /resumir — Resumo breve\n• /explicar — Explicação detalhada\n• /otimizar — Melhorias de performance\n• /seguranca — Análise de segurança`
+    };
   }
 
   if (phrases.wantsSearch(trimmed)) {
