@@ -17,11 +17,7 @@ const arquivosParaAprender = [
     'chatbot/LEIA_PRIMEIRO.md',
     'chatbot/NATURAL_LANGUAGE_GUIDE.md',
     'chatbot/QUICKSTART.md',
-    'chatbot/SESSION_MEMORY_GUIDE.md',
-    'chatbot/core/codeAnalyzer.js',
-    'chatbot/core/codeMemory.js',
-    'chatbot/core/codeGenerator.js',
-    'chatbot/core/ollamaIntegration.js'
+    'chatbot/SESSION_MEMORY_GUIDE.md'
 ];
 
 async function transferir() {
@@ -53,6 +49,37 @@ async function transferir() {
             }
         } else {
             console.log(`❌ Arquivo não encontrado: ${arquivo}`);
+        }
+    }
+
+    // Limpeza: remove códigos .js da base de conhecimento para evitar respostas confusas
+    const kbOriginalCount = kb.length;
+    kb = kb.filter(item => {
+        const query = String(item.query || '');
+        return !query.includes('.js');
+    });
+    const removidos = kbOriginalCount - kb.length;
+    if (removidos > 0) {
+        console.log(`\n🧹 Removidos ${removidos} arquivos de código-fonte (.js) que estavam poluindo a memória.`);
+        adicionados++; // Força a gravação no disco
+    }
+
+    // Limpeza também do arquivo legacy para evitar re-merge
+    const LEGACY_KNOW_FILE = path.join(__dirname, 'chatbot', 'memory', 'knowledge.json');
+    if (fs.existsSync(LEGACY_KNOW_FILE)) {
+        try {
+            let legacyKb = JSON.parse(fs.readFileSync(LEGACY_KNOW_FILE, 'utf8'));
+            const origCount = legacyKb.length;
+            legacyKb = legacyKb.filter(item => {
+                const query = String(item.query || '');
+                return !query.includes('.js');
+            });
+            if (origCount - legacyKb.length > 0) {
+                fs.writeFileSync(LEGACY_KNOW_FILE, JSON.stringify(legacyKb, null, 2), 'utf8');
+                console.log(`🧹 Limpo banco legacy: ${origCount - legacyKb.length} itens removidos.`);
+            }
+        } catch (e) {
+            console.error('Erro ao limpar legacy knowledge:', e);
         }
     }
 
