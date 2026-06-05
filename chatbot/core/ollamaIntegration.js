@@ -5,7 +5,7 @@
 
 const http = require('http');
 
-const OLLAMA_URL = 'http://localhost:11434';
+const OLLAMA_URL = 'http://127.0.0.1:11434';
 const DEFAULT_MODEL = 'mistral';
 const MODELS = ['mistral', 'neural-chat', 'dolphin-mixtral', 'codellama'];
 
@@ -23,7 +23,7 @@ function callOllama(prompt, model = DEFAULT_MODEL) {
     });
 
     const options = {
-      hostname: 'localhost',
+      hostname: '127.0.0.1',
       port: 11434,
       path: '/api/generate',
       method: 'POST',
@@ -65,7 +65,7 @@ function callOllama(prompt, model = DEFAULT_MODEL) {
 async function isOllamaAvailable() {
   return new Promise((resolve) => {
     const options = {
-      hostname: 'localhost',
+      hostname: '127.0.0.1',
       port: 11434,
       path: '/api/tags',
       method: 'GET'

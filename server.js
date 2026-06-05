@@ -4724,11 +4724,29 @@ Sua missão: Conversar naturalmente e criar ou corrigir códigos completos sempr
 Base de Conhecimento da Zher Keys (use APENAS se a pergunta for sobre regras da loja, caso contrário responda usando seu conhecimento global):
 ${knowledgeText || '(Nenhuma)'}`;
 
+                // Detectar modelo disponível no Ollama
+                let ollamaModel = 'codellama';
+                try {
+                    const tagsResp = await fetch('http://127.0.0.1:11434/api/tags');
+                    if (tagsResp.ok) {
+                        const tagsData = await tagsResp.json();
+                        const models = tagsData.models || [];
+                        if (models.length > 0) {
+                            const hasCodeLlama = models.some(m => m.name && m.name.startsWith('codellama'));
+                            if (!hasCodeLlama) {
+                                ollamaModel = models[0].name;
+                            }
+                        }
+                    }
+                } catch (tagErr) {
+                    console.error('Erro ao buscar tags do Ollama, usando codellama padrão:', tagErr.message);
+                }
+
                 const ollamaResp = await fetch('http://127.0.0.1:11434/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        model: 'codellama', // Usa o cérebro do CodeLlama do seu computador
+                        model: ollamaModel,
                         messages: [
                             { role: 'system', content: systemMsg },
                             { role: 'user', content: message }
@@ -4740,6 +4758,8 @@ ${knowledgeText || '(Nenhuma)'}`;
                 if (ollamaResp.ok) {
                     const data = await ollamaResp.json();
                     return res.json({ reply: data.message.content });
+                } else {
+                    console.error(`Ollama retornou status ${ollamaResp.status} para o modelo ${ollamaModel}`);
                 }
             } catch (e) {
                 console.error('Ollama não respondeu (verifique se está rodando):', e.message);
