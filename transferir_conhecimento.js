@@ -12,8 +12,16 @@ const arquivosParaAprender = [
     'chatbot/CODEGEN_README.md',
     'chatbot/MEMORY_GUIDE.md',
     'chatbot/FINAL_SUMMARY.md',
+    'chatbot/CODE_ANALYZER_EXAMPLES.md',
+    'chatbot/CODE_ANALYZER_GUIDE.md',
+    'chatbot/LEIA_PRIMEIRO.md',
+    'chatbot/NATURAL_LANGUAGE_GUIDE.md',
+    'chatbot/QUICKSTART.md',
+    'chatbot/SESSION_MEMORY_GUIDE.md',
     'chatbot/core/codeAnalyzer.js',
-    'chatbot/core/codeMemory.js'
+    'chatbot/core/codeMemory.js',
+    'chatbot/core/codeGenerator.js',
+    'chatbot/core/ollamaIntegration.js'
 ];
 
 async function transferir() {
