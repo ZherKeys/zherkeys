@@ -321,6 +321,14 @@ async function initDB() {
             }
             console.log('✅ Produtos iniciais transferidos para o Banco de Dados.');
         }
+
+        // Garante que o usuário administrador zherkeys@gmail.com existe localmente para desenvolvimento
+        const checkAdmin = await pool.query('SELECT COUNT(*) FROM users WHERE email = $1', ['zherkeys@gmail.com']);
+        if (parseInt(checkAdmin.rows[0].count) === 0) {
+            const hash = bcrypt.hashSync('admin123', 10);
+            await pool.query('INSERT INTO users (email, password_hash, is_verified) VALUES ($1, $2, $3)', ['zherkeys@gmail.com', hash, 1]);
+            console.log('✅ Usuário Administrador (zherkeys@gmail.com) criado no Banco de Dados com a senha "admin123".');
+        }
     } catch(err) {
         console.error('Error in initDB:', err);
     }
