@@ -324,18 +324,19 @@ async function generateReply(userId, message, style, externalDb) {
   // Lidar com geração de código
   const codeGenReply = handleCodeGeneration(db, user, trimmed, state);
   if (codeGenReply) {
-    // Se está gerando, aguarda conclusão
+    // Se está gerando, aguarda conclusão de forma síncrona
     if (state.codeGenState && state.codeGenState.stage === 'generating') {
-      // Executar asincronamente (sem bloquear)
-      completeCodeGeneration(db, state, uid).then((result) => {
+      try {
+        const result = await completeCodeGeneration(db, state, uid);
         if (result) {
           memory.remember(db, uid, `[BOT_CODE] ${result.code || 'Geração completada'}`);
           memory.saveDB(db);
+          return result;
         }
-      }).catch((e) => {
+      } catch (e) {
         console.error('Erro ao completar geração:', e);
-      });
-      return codeGenReply;
+        return { reply: `❌ Erro ao gerar código: ${e.message}` };
+      }
     }
     return codeGenReply;
   }
@@ -408,18 +409,17 @@ async function generateReply(userId, message, style, externalDb) {
           improve: 'Melhorando'
         };
         
-        // Executar análise
-        codeAnalyzer.analyzeCode(codeDetect.code, analysisType).then((result) => {
+        // Executar análise de forma síncrona
+        try {
+          const result = await codeAnalyzer.analyzeCode(codeDetect.code, analysisType);
           const formatted = codeAnalyzer.formatAnalysis(result);
           memory.remember(db, uid, `[${intention.intention.toUpperCase()}] ${formatted}`);
           memory.saveDB(db);
-        }).catch((e) => {
+          return { reply: formatted };
+        } catch (e) {
           console.error('Erro ao analisar:', e);
-        });
-        
-        return {
-          reply: `${emoji} ${actionText[intention.intention] || 'Processando'} código ${codeDetect.language}...\n⏳ Um momento...`
-        };
+          return { reply: `❌ Erro ao analisar: ${e.message}` };
+        }
       }
     }
   }
@@ -438,18 +438,17 @@ async function generateReply(userId, message, style, externalDb) {
       };
       memory.saveDB(db);
       
-      // Executar análise assincronamente
-      codeAnalyzer.analyzeCode(codeDetect.code, 'summary').then((result) => {
+      // Executar análise de forma síncrona
+      try {
+        const result = await codeAnalyzer.analyzeCode(codeDetect.code, 'summary');
         const formatted = codeAnalyzer.formatAnalysis(result);
         memory.remember(db, uid, `[CODE_ANALYSIS] ${formatted}`);
         memory.saveDB(db);
-      }).catch((e) => {
+        return { reply: formatted };
+      } catch (e) {
         console.error('Erro ao analisar código:', e);
-      });
-      
-      return {
-        reply: `📊 Analisando código ${codeDetect.language}...\n⏳ Isso pode levar alguns segundos...`
-      };
+        return { reply: `❌ Erro ao analisar código: ${e.message}` };
+      }
     }
     
     return {
@@ -461,15 +460,15 @@ async function generateReply(userId, message, style, externalDb) {
     const codeDetect = codeAnalyzer.detectCode(trimmed);
     
     if (codeDetect.found) {
-      codeAnalyzer.analyzeCode(codeDetect.code, 'summary').then((result) => {
+      try {
+        const result = await codeAnalyzer.analyzeCode(codeDetect.code, 'summary');
         const formatted = codeAnalyzer.formatAnalysis(result);
         memory.remember(db, uid, `[CODE_SUMMARY] ${formatted}`);
         memory.saveDB(db);
-      });
-      
-      return {
-        reply: `📝 Resumindo código ${codeDetect.language}...\n⏳ Processando...`
-      };
+        return { reply: formatted };
+      } catch (e) {
+        return { reply: `❌ Erro ao resumir: ${e.message}` };
+      }
     }
     
     return {
@@ -481,15 +480,15 @@ async function generateReply(userId, message, style, externalDb) {
     const codeDetect = codeAnalyzer.detectCode(trimmed);
     
     if (codeDetect.found) {
-      codeAnalyzer.analyzeCode(codeDetect.code, 'learning').then((result) => {
+      try {
+        const result = await codeAnalyzer.analyzeCode(codeDetect.code, 'learning');
         const formatted = codeAnalyzer.formatAnalysis(result);
         memory.remember(db, uid, `[CODE_EXPLANATION] ${formatted}`);
         memory.saveDB(db);
-      });
-      
-      return {
-        reply: `🎓 Explicando código ${codeDetect.language}...\n⏳ Gerando explicação detalhada...`
-      };
+        return { reply: formatted };
+      } catch (e) {
+        return { reply: `❌ Erro ao explicar: ${e.message}` };
+      }
     }
     
     return {
@@ -501,15 +500,15 @@ async function generateReply(userId, message, style, externalDb) {
     const codeDetect = codeAnalyzer.detectCode(trimmed);
     
     if (codeDetect.found) {
-      codeAnalyzer.analyzeCode(codeDetect.code, 'optimization').then((result) => {
+      try {
+        const result = await codeAnalyzer.analyzeCode(codeDetect.code, 'optimization');
         const formatted = codeAnalyzer.formatAnalysis(result);
         memory.remember(db, uid, `[CODE_OPTIMIZATION] ${formatted}`);
         memory.saveDB(db);
-      });
-      
-      return {
-        reply: `⚡ Analisando otimizações para ${codeDetect.language}...\n⏳ Processando...`
-      };
+        return { reply: formatted };
+      } catch (e) {
+        return { reply: `❌ Erro ao otimizar: ${e.message}` };
+      }
     }
     
     return {
@@ -521,15 +520,15 @@ async function generateReply(userId, message, style, externalDb) {
     const codeDetect = codeAnalyzer.detectCode(trimmed);
     
     if (codeDetect.found) {
-      codeAnalyzer.analyzeCode(codeDetect.code, 'security').then((result) => {
+      try {
+        const result = await codeAnalyzer.analyzeCode(codeDetect.code, 'security');
         const formatted = codeAnalyzer.formatAnalysis(result);
         memory.remember(db, uid, `[SECURITY_ANALYSIS] ${formatted}`);
         memory.saveDB(db);
-      });
-      
-      return {
-        reply: `🔒 Analisando segurança do código ${codeDetect.language}...\n⏳ Verificando vulnerabilidades...`
-      };
+        return { reply: formatted };
+      } catch (e) {
+        return { reply: `❌ Erro na análise de segurança: ${e.message}` };
+      }
     }
     
     return {
