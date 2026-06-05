@@ -569,13 +569,7 @@ async function generateReply(userId, message, style, externalDb) {
   const topicGuess = contextManager.getLastUserTopic(user);
   if (topicGuess && topicGuess !== trimmed) state.lastTopic = topicGuess;
 
-  if (!programming.extractCode(trimmed)) {
-    const hits = searchKnowledge(trimmed, 5);
-    if (hits.length) {
-      memory.saveDB(db);
-      return replyFromHits(hits, lang);
-    }
-  }
+  // Removido o dump de conhecimento direto para frases normais não-perguntas
 
   const isQuestion = /\?$/i.test(trimmed)
     || /^(o que é|o que são|o que quer dizer|como funciona|me conte mais sobre|fale sobre|what is|what are|define|defina)\b/i.test(phrases.normalizeText(trimmed));
@@ -616,6 +610,32 @@ async function generateReply(userId, message, style, externalDb) {
       memory.saveDB(db);
       return { reply: follow };
     }
+  }
+
+  // Se nada foi acionado, e o Ollama está rodando, vamos usar o Ollama para responder naturalmente!
+  try {
+    const isOllamaRunning = await ollama.isOllamaAvailable();
+    if (isOllamaRunning) {
+      const hits = searchKnowledge(trimmed, 3);
+      const knowledgeText = hits.map(k => `Fonte: "${k.query}"\n${k.content}`).join('\n\n');
+      
+      const systemMsg = `Você é o ZherTalk, um assistente virtual super inteligente, amigável e um verdadeiro Engenheiro de Software Sênior.
+Sua missão: Conversar de forma natural, amigável e responder dúvidas técnicas ou gerais.
+Base de Conhecimento Local (use apenas se a pergunta for sobre isso):
+${knowledgeText || '(Nenhuma)'}
+
+Responda à mensagem do usuário em português de forma clara e natural.`;
+      
+      const prompt = `System Instructions: ${systemMsg}\n\nUser Message: ${trimmed}`;
+      const replyText = await ollama.callOllama(prompt, ollama.DEFAULT_MODEL);
+      if (replyText) {
+        state.lastBotPrompt = 'ollama_chat';
+        memory.saveDB(db);
+        return { reply: replyText };
+      }
+    }
+  } catch (e) {
+    console.error('Erro na conversa com Ollama:', e);
   }
 
   state.lastBotPrompt = 'unknown';
