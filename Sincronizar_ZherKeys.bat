@@ -46,5 +46,16 @@ if %errorlevel% equ 0 (
     echo  ERRO! Falha ao sincronizar. Verifique o aviso acima.
     echo ========================================================
 )
+
+echo.
+echo ========================================================
+echo   3. INICIANDO SITE LOCAL (LOCALHOST:3000)
+echo ========================================================
+echo.
+echo [Node] Iniciando servidor do site em uma nova janela...
+start "Zher Keys - Local Server" cmd /k npm start
+
+echo.
+echo Pronto! Voce ja pode abrir http://localhost:3000 no seu navegador.
 echo.
 pause
