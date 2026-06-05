@@ -4670,13 +4670,20 @@ app.post('/api/zhertalk/chat', requireAdmin, async (req, res) => {
                 // build context from topItems
                 const knowledgeText = topItems.map(k => `Fonte: "${k.query}"\n${k.content}`).join('\n\n---\n\n');
                 // map style to instruction
-                const styleInstr = (style || 'direct') === 'explain' ? 'Explique passo a passo e detalhe o raciocínio.'
-                    : (style || 'direct') === 'concise' ? 'Responda de forma concisa e objetiva, com bullet points quando aplicável.'
-                    : (style || 'direct') === 'technical' ? 'Use linguagem técnica, termos precisos e exemplos práticos quando necessário.'
-                    : 'Responda diretamente, como um assistente técnico, adaptando o nível conforme pedido.';
+                const styleInstr = (style || 'direct') === 'explain' ? 'Explique passo a passo de forma bem didática e amigável.'
+                    : (style || 'direct') === 'concise' ? 'Responda direto ao ponto, mas mantendo a simpatia e clareza.'
+                    : (style || 'direct') === 'technical' ? 'Aja como um Tech Lead experiente: foque em performance, clean code e segurança.'
+                    : 'Converse de forma natural, humana e amigável.';
 
-                const systemMsg = `Você é um assistente técnico objetivo, semelhante ao ChatGPT. Sempre responda de forma profissional e clara. ${styleInstr}`;
-                const userMsg = `Pergunta: ${message}\n\nConhecimento disponível:\n${knowledgeText || '(nenhum)'}\n\nSe o conhecimento não for suficiente, diga que não há informação e sugira usar "/study <tópico>".`;
+                const systemMsg = `Você é o ZherTalk, um assistente virtual super inteligente, amigável e um verdadeiro Engenheiro de Software Sênior.
+Sua missão:
+1. Conversar normalmente com o usuário, como se fosse uma pessoa real (com simpatia, empatia e sem parecer um robô).
+2. Criar códigos inteiros (jogos, sites, scripts) sempre que pedido, fornecendo blocos markdown completos e bem estruturados.
+3. Corrigir, analisar e otimizar qualquer trecho de código fornecido pelo usuário.
+4. NUNCA diga 'não há informação' se o usuário estiver puxando assunto ou pedindo para programar. Use o conhecimento local APENAS para regras da loja/site Zher Keys. Se for sobre código ou conversa geral, use sua inteligência nativa.
+Estilo: ${styleInstr}`;
+
+                const userMsg = `Mensagem do Usuário: "${message}"\n\nConhecimento Base (Use apenas se a pergunta for sobre regras específicas da loja, caso contrário ignore):\n${knowledgeText || '(Nenhum)'}`;
 
                 const resp = await fetch('https://api.openai.com/v1/chat/completions', {
                     method: 'POST',
@@ -4708,14 +4715,49 @@ app.post('/api/zhertalk/chat', requireAdmin, async (req, res) => {
                 console.error('Erro gerando resposta via OpenAI:', e);
                 // proceed to local fallback
             }
+        } else {
+            // INTEGRAÇÃO OLLAMA: Conecta todo o conhecimento do CodeLlama ao ZherTalk!
+            try {
+                const knowledgeText = topItems.map(k => `Fonte: "${k.query}"\n${k.content}`).join('\n\n');
+                const systemMsg = `Você é o ZherTalk, um assistente virtual super inteligente, amigável e um verdadeiro Engenheiro de Software Sênior.
+Sua missão: Conversar naturalmente e criar ou corrigir códigos completos sempre que o usuário pedir. Você possui um vasto conhecimento de programação (arquitetura, clean code, linguagens como Python, JS, C++, etc).
+Base de Conhecimento da Zher Keys (use APENAS se a pergunta for sobre regras da loja, caso contrário responda usando seu conhecimento global):
+${knowledgeText || '(Nenhuma)'}`;
+
+                const ollamaResp = await fetch('http://127.0.0.1:11434/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'codellama', // Usa o cérebro do CodeLlama do seu computador
+                        messages: [
+                            { role: 'system', content: systemMsg },
+                            { role: 'user', content: message }
+                        ],
+                        stream: false
+                    })
+                });
+
+                if (ollamaResp.ok) {
+                    const data = await ollamaResp.json();
+                    return res.json({ reply: data.message.content });
+                }
+            } catch (e) {
+                console.error('Ollama não respondeu (verifique se está rodando):', e.message);
+                // Se o Ollama estiver fechado, ele ignora e cai no fallback robótico abaixo
+            }
         }
 
         // Local fallback (no OpenAI or failure): return direct/technical phrasing
         if (scored.length === 0) {
-            reply = `Não localizei referências no meu conhecimento. Administradores podem usar \"/study <tópico>\" para que eu pesquise e armazene o conteúdo.`;
+            const isGreeting = /^(oi|ola|olá|bom dia|boa tarde|boa noite|e ai|tudo bem|opa)/i.test(message);
+            if (isGreeting) {
+                reply = "Olá! Tudo bem? Como posso te ajudar hoje? 😄\n\n*(Nota: A inteligência artificial dinâmica não está habilitada. Para eu gerar e corrigir códigos, inicie o Ollama ou adicione uma OPENAI_API_KEY).*";
+            } else {
+                reply = `Entendi! No momento estou no modo de pesquisa offline básico, então só consigo responder ao que foi salvo na minha memória.\n\nPara que eu possa **criar e corrigir códigos como um dev sênior**, certifique-se de que a integração avançada de IA (OpenAI ou Ollama) está rodando! 🚀`;
+            }
         } else {
-            const top = topItems.map(k => `Fonte: "${k.query}"\n${k.content}`).join('\n\n---\n\n');
-            reply = `Baseado no meu conhecimento armazenado:\n\n${top}`;
+            const top = topItems.map(k => `Lembrei disso aqui:\n"${k.query}"\n${k.content}`).join('\n\n---\n\n');
+            reply = `Achei isso nas minhas anotações:\n\n${top}`;
         }
 
         res.json({ reply });

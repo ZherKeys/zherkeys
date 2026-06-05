@@ -202,7 +202,7 @@ async function completeCodeGeneration(db, state, uid) {
   }
 }
 
-function generateReply(userId, message, style, externalDb) {
+async function generateReply(userId, message, style, externalDb) {
   const db = externalDb || (memory.loadDB ? memory.loadDB() : memory.loadUsers());
   const uid = userId || 'anon';
   const user = memory.getUser(db, uid);

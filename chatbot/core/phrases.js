@@ -126,9 +126,9 @@ function paraphraseKnowledge(item) {
 
 function pickGreeting(lang) {
   const pt = [
-    'Oi! Sou o ZherTalk — ensino com /learn, monto exercícios de código (/problema) e ajudo a resolver/debugar (cole código entre ```).',
-    'Olá! Posso explicar programação, gerar desafios (ex.: "monte um problema de loop em python") ou revisar seu código.',
-    'E aí! Use /learn para memória permanente ou peça um exercício: /problema arrays facil javascript'
+    'Oi! Sou o ZherTalk, seu assistente de programação. O que vamos codar ou corrigir hoje?',
+    'Fala aí! Tudo beleza? Manda seu código que eu analiso, ou me diz qual ideia de projeto você quer tirar do papel!',
+    'Olá! Estou pronto para ajudar. Quer que eu crie um script do zero, encontre um bug no seu código ou bater um papo técnico?'
   ];
   const en = [
     'Hi! I am ZherTalk — ask me anything or teach me with /learn word=explanation.',
