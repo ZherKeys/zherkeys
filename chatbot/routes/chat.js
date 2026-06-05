@@ -14,7 +14,7 @@ router.post('/', async (req, res) => {
   // Salvar mensagem do usuário no histórico
   sessionMemory.addMessageToHistory(db, uid, 'user', message, { style });
 
-  const out = brain.generateReply(uid, message, style, db);
+  const out = await brain.generateReply(uid, message, style, db);
 
   const replyText = typeof out === 'string' ? out : (out.reply || '');
   
