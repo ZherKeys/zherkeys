@@ -201,6 +201,12 @@
 
         async function loadLoginTurnstile() {
             if (turnstileLoginLoaded) return;
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            if (isLocal) {
+                const el = document.getElementById('turnstile-login-container');
+                if (el) el.style.display = 'none';
+                return;
+            }
             const sitekey = await fetchSitekey();
             if (window.turnstile) {
                 window.turnstile.render('#turnstile-login-container', {
@@ -219,6 +225,12 @@
 
         async function loadRegisterTurnstile() {
             if (turnstileRegisterLoaded) return;
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            if (isLocal) {
+                const el = document.getElementById('turnstile-container');
+                if (el) el.style.display = 'none';
+                return;
+            }
             const sitekey = await fetchSitekey();
             if (window.turnstile) {
                 window.turnstile.render('#turnstile-container', {
@@ -283,7 +295,8 @@
             e.preventDefault();
             
             // Validação client-side do Turnstile
-            if(!turnstileLoginToken) {
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            if(!isLocal && !turnstileLoginToken) {
                 showAlert('Por favor, confirme que você não é um robô.', true);
                 return;
             }
@@ -351,7 +364,8 @@
             e.preventDefault();
             
             // Validação client-side do Turnstile
-            if(!turnstileRegisterToken) {
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            if(!isLocal && !turnstileRegisterToken) {
                 showAlert('Por favor, confirme que você não é um robô.', true);
                 return;
             }
