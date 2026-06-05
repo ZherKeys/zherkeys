@@ -103,6 +103,13 @@ function handleCodeGeneration(db, user, trimmed, state) {
     
     state.codeGenState = codeGenerator.initCodeGeneration(user.id || 'anon', creationType, description);
     memory.saveDB(db);
+    
+    const firstQuestion = codeGenerator.getNextContextQuestion(state.codeGenState);
+    if (firstQuestion) {
+      return {
+        reply: `❓ ${firstQuestion.question}`
+      };
+    }
   }
 
   // Se encontrou na memória
