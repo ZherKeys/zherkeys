@@ -597,7 +597,7 @@ async function generateReply(userId, message, style, externalDb) {
     return { reply: `Me ensine com: /learn ${state.lastTopic}=sua explicação aqui` };
   }
 
-  if (/\b(continuar|e depois|aprofunde|aprofundar)\b/i.test(trimmed) || (phrases.isAffirmative(trimmed) && state.lastBotPrompt === 'offer_deepen')) {
+  if (/\b(continuar|e depois|aprofunde|aprofundar)\b/i.test(trimmed) || (phrases.isAffirmative(trimmed) && (state.lastBotPrompt === 'offer_deepen' || state.lastBotPrompt === 'vocab_follow'))) {
     const topic = state.lastTopic || topicGuess;
     const topicHits = topic ? searchKnowledge(topic, 3) : [];
     if (topicHits.length) return replyFromHits(topicHits, lang);
