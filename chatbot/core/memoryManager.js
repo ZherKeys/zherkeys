@@ -193,12 +193,13 @@ function findKnowledgeByKeyword(q, limit = 5) {
     const query = String(it.query || '').toLowerCase();
     const text = ((it.query || '') + ' ' + (it.content || '')).toLowerCase();
     const itemTokens = phrases.expandTokens(text);
+    const queryTokens = phrases.expandTokens(query);
     let score = 0;
     for (const qt of qTokens) {
       if (query === qt || query.includes(qt)) score += 2;
       if (itemTokens.includes(qt)) score += 1;
-      for (const itok of itemTokens) {
-        if (phrases.fuzzyMatch(qt, itok)) score += 0.4;
+      for (const qtok of queryTokens) {
+        if (phrases.fuzzyMatch(qt, qtok)) score += 0.4;
       }
     }
     scored.push({ it, score });
