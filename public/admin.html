@@ -51,6 +51,15 @@
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
     </style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18202657831">
+</script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'AW-18202657831');
+</script>
 </head>
 <body class="text-slate-200 antialiased mesh-bg min-h-screen flex flex-col">
 
@@ -100,7 +109,8 @@
                     
                     <div>
                         <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">TÍTULO (Ex: Zher Key Basic)</label>
-                        <input type="text" id="prod-title" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen focus:ring-1 focus:ring-toxicgreen transition-all">
+                        <input type="text" id="prod-title" required list="game-templates" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen focus:ring-1 focus:ring-toxicgreen transition-all">
+                        <datalist id="game-templates"></datalist>
                     </div>
                     
                     <div>
@@ -137,8 +147,8 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-orbitron tracking-widest text-emerald-400 font-bold mb-1"><i data-lucide="key" class="w-3 h-3 inline"></i> CHAVE DE ATIVAÇÃO OCULTA</label>
-                        <input type="text" id="prod-activation" placeholder="XXXX-XXXX-XXXX" class="w-full bg-slate-950 border border-emerald-900 rounded-lg px-4 py-3 text-emerald-400 focus:outline-none focus:border-emerald-500 transition-all placeholder-emerald-900/50">
+                        <label class="block text-xs font-orbitron tracking-widest text-emerald-400 font-bold mb-1"><i data-lucide="key" class="w-3 h-3 inline"></i> CHAVES DE ATIVAÇÃO OCULTAS (UMA POR LINHA)</label>
+                        <textarea id="prod-activation" placeholder="Insira as Keys (uma por linha)&#10;KEY1-XXXX-XXXX&#10;KEY2-XXXX-XXXX" class="w-full bg-slate-950 border border-emerald-900 rounded-lg px-4 py-3 text-emerald-400 focus:outline-none focus:border-emerald-500 transition-all placeholder-emerald-900/50 h-28 resize-y"></textarea>
                         <p class="text-[9px] text-slate-500 mt-1">Essa chave será revelada ao comprador quando o pagamento for aprovado.</p>
                     </div>
 
@@ -887,6 +897,59 @@
             });
         }
 
+        let gameTemplates = [];
+        async function loadTemplates() {
+            try {
+                const res = await fetch('/api/admin/products/templates');
+                if (res.ok) {
+                    gameTemplates = await res.json();
+                    const datalist = document.getElementById('game-templates');
+                    if (datalist) {
+                        datalist.innerHTML = '';
+                        gameTemplates.forEach(t => {
+                            const opt = document.createElement('option');
+                            opt.value = t.title;
+                            datalist.appendChild(opt);
+                        });
+                    }
+                }
+            } catch(e) {
+                console.error("Erro ao carregar templates:", e);
+            }
+        }
+
+        document.getElementById('prod-title').addEventListener('input', (e) => {
+            const val = e.target.value;
+            const idVal = document.getElementById('prod-id').value;
+            if (idVal) return; // Apenas preenche ao criar novo produto
+            
+            const match = gameTemplates.find(t => t.title.toLowerCase() === val.toLowerCase());
+            if (match) {
+                document.getElementById('prod-desc').value = match.description || '';
+                document.getElementById('prod-image').value = match.image || '';
+                
+                document.querySelectorAll('.category-radio').forEach(rb => {
+                    rb.checked = (rb.value === match.category);
+                });
+                
+                document.getElementById('prod-price').value = formatNumberToMask(match.price);
+                document.getElementById('prod-old-price').value = match.old_price ? formatNumberToMask(match.old_price) : '';
+                
+                const genresListStr = (match.genres || '').split(',').map(s => s.trim());
+                document.querySelectorAll('.genre-checkbox').forEach(cb => {
+                    cb.checked = genresListStr.includes(cb.value);
+                });
+                
+                document.getElementById('prod-global').checked = match.is_global !== false;
+                document.getElementById('div-restricted').classList.toggle('hidden', match.is_global !== false);
+                
+                const restrictedList = (match.restricted_countries || '').split(',').map(s => s.trim());
+                document.querySelectorAll('.country-checkbox').forEach(cb => {
+                    cb.checked = restrictedList.includes(cb.value);
+                });
+            }
+        });
+
         document.getElementById('product-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -1528,6 +1591,7 @@
         renderGenres();
         renderCountries();
         loadProducts();
+        loadTemplates();
         applyCurrencyMask(document.getElementById('prod-price'));
         applyCurrencyMask(document.getElementById('prod-old-price'));
 

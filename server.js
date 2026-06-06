@@ -92,6 +92,7 @@ async function initDB() {
             );
             
             ALTER TABLE products ADD COLUMN IF NOT EXISTS activation_key TEXT;
+            ALTER TABLE order_items ADD COLUMN IF NOT EXISTS activation_key TEXT;
             ALTER TABLE products ADD COLUMN IF NOT EXISTS in_stock BOOLEAN DEFAULT true;
             ALTER TABLE products ADD COLUMN IF NOT EXISTS is_global BOOLEAN DEFAULT true;
             ALTER TABLE products ADD COLUMN IF NOT EXISTS restricted_countries TEXT;
@@ -395,28 +396,89 @@ const requireAdmin = async (req, res, next) => {
 // ========================
 
 // Ajudante para limpar pedidos pendentes expirados e restaurar seus estoques de chaves com segurança
+async function assignKeysToOrder(client, orderId) {
+    const itemsRes = await client.query('SELECT product_id, quantity FROM order_items WHERE order_id = $1', [orderId]);
+    for (let item of itemsRes.rows) {
+        const productId = item.product_id;
+        const qty = item.quantity || 1;
+        
+        const prodRes = await client.query('SELECT title, activation_key, in_stock FROM products WHERE id = $1 FOR UPDATE', [productId]);
+        if (prodRes.rows.length === 0) continue;
+        
+        const prod = prodRes.rows[0];
+        const allKeys = (prod.activation_key || '').split('\n').map(k => k.trim()).filter(Boolean);
+        
+        const soldKeys = allKeys.slice(0, qty);
+        const remainingKeys = allKeys.slice(qty);
+        
+        const soldKeysStr = soldKeys.join(', ');
+        const remainingKeysStr = remainingKeys.join('\n');
+        
+        await client.query(
+            'UPDATE order_items SET activation_key = $1 WHERE order_id = $2 AND product_id = $3',
+            [soldKeysStr, orderId, productId]
+        );
+        
+        const inStock = remainingKeys.length > 0;
+        await client.query(
+            'UPDATE products SET activation_key = $1, in_stock = $2 WHERE id = $3',
+            [remainingKeysStr, inStock, productId]
+        );
+        
+        console.log(`[KEYS-ASSIGN] Atribuídas ${soldKeys.length} chaves para o Produto ID ${productId} no Pedido #${orderId}. Restantes no estoque: ${remainingKeys.length}`);
+    }
+}
+
+async function restoreKeysFromExpiredOrders(client, expiredIds) {
+    const itemsRes = await client.query(
+        "SELECT product_id, activation_key FROM order_items WHERE order_id = ANY($1::int[]) AND activation_key IS NOT NULL AND activation_key != ''",
+        [expiredIds]
+    );
+    
+    for (let item of itemsRes.rows) {
+        const productId = item.product_id;
+        const keysToRestore = item.activation_key.split(', ').map(k => k.trim()).filter(Boolean);
+        if (keysToRestore.length === 0) continue;
+        
+        const prodRes = await client.query('SELECT activation_key FROM products WHERE id = $1 FOR UPDATE', [productId]);
+        if (prodRes.rows.length === 0) continue;
+        
+        const currentKeys = (prodRes.rows[0].activation_key || '').split('\n').map(k => k.trim()).filter(Boolean);
+        const newKeys = keysToRestore.concat(currentKeys);
+        const newKeysStr = newKeys.join('\n');
+        
+        await client.query(
+            'UPDATE products SET activation_key = $1, in_stock = true WHERE id = $2',
+            [newKeysStr, productId]
+        );
+        
+        console.log(`[KEYS-RESTORE] Devolvidas ${keysToRestore.length} chaves para o estoque do Produto ID ${productId} devido ao cancelamento dos pedidos.`);
+    }
+}
+
 async function cleanupExpiredOrders() {
     try {
-        // Encontra todos os pedidos pendentes com mais de 10 minutos
         const expiredRes = await pool.query(
             "SELECT id FROM orders WHERE status = 'pending' AND created_at < NOW() - INTERVAL '10 minutes'"
         );
         const expiredIds = expiredRes.rows.map(o => o.id);
         
         if (expiredIds.length > 0) {
-            // Restaura o estoque (in_stock = true) de todos os produtos desses pedidos expirados (que não sejam depósitos)
-            await pool.query(`
-                UPDATE products SET in_stock = true WHERE id IN (
-                    SELECT product_id FROM order_items WHERE order_id = ANY($1::int[])
-                )
-            `, [expiredIds]);
-            
-            // Cancela os pedidos correspondentes
-            await pool.query(`
-                UPDATE orders SET status = 'cancelled' WHERE id = ANY($1::int[])
-            `, [expiredIds]);
-            
-            console.log(`[EXPIRED-CLEANUP] ${expiredIds.length} pedidos pendentes cancelados automaticamente e seus estoques foram restaurados.`);
+            const client = await pool.connect();
+            try {
+                await client.query('BEGIN');
+                await restoreKeysFromExpiredOrders(client, expiredIds);
+                await client.query(`
+                    UPDATE orders SET status = 'cancelled' WHERE id = ANY($1::int[])
+                `, [expiredIds]);
+                await client.query('COMMIT');
+                console.log(`[EXPIRED-CLEANUP] ${expiredIds.length} pedidos pendentes cancelados automaticamente e seus estoques foram restaurados.`);
+            } catch (err) {
+                await client.query('ROLLBACK');
+                throw err;
+            } finally {
+                client.release();
+            }
         }
     } catch (err) {
         console.error("[EXPIRED-CLEANUP] Erro ao limpar pedidos pendentes expirados:", err);
@@ -458,13 +520,25 @@ app.get('/api/admin/products', requireAdmin, async (req, res) => {
     }
 });
 
+// Listar templates de produtos (Admin)
+app.get('/api/admin/products/templates', requireAdmin, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT DISTINCT ON (title) title, image, description, category, price, old_price, genres, is_global, restricted_countries FROM products ORDER BY title, id DESC');
+        res.json(result.rows);
+    } catch(e) {
+        console.error("Erro ao buscar templates:", e);
+        res.status(500).json({ error: 'Erro ao buscar templates' });
+    }
+});
+
 // Criar produto (Admin)
 app.post('/api/admin/products', requireAdmin, async (req, res) => {
     const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id } = req.body;
     try {
+        const hasKeys = activation_key && activation_key.trim() !== '';
         await pool.query(
-            'INSERT INTO products (title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
-            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, image, category, activation_key || '', is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '']
+            'INSERT INTO products (title, description, price, old_price, image, category, activation_key, in_stock, is_global, restricted_countries, genres, gameflip_listing_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
+            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, image, category, activation_key || '', hasKeys, is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '']
         );
         productsCache = null; // Limpa o cache para atualizar a home imediatamente
         res.status(201).json({ message: 'Produto adicionado' });
@@ -523,12 +597,13 @@ app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
     const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id } = req.body;
     try {
+        const hasKeys = activation_key && activation_key.trim() !== '';
         await pool.query(
-            'UPDATE products SET title=$1, description=$2, price=$3, old_price=$4, image=$5, category=$6, activation_key=$7, in_stock=true, is_global=$8, restricted_countries=$9, genres=$10, gameflip_listing_id=$11 WHERE id=$12',
-            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, image, category, activation_key || '', is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '', id]
+            'UPDATE products SET title=$1, description=$2, price=$3, old_price=$4, image=$5, category=$6, activation_key=$7, in_stock=$8, is_global=$9, restricted_countries=$10, genres=$11, gameflip_listing_id=$12 WHERE id=$13',
+            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, image, category, activation_key || '', hasKeys, is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '', id]
         );
         productsCache = null; // Limpa o cache para atualizar a home imediatamente
-        res.json({ message: 'Produto atualizado e retornado ao estoque' });
+        res.json({ message: 'Produto atualizado' });
     } catch(e) {
         console.error("Erro ao atualizar produto:", e);
         res.status(500).json({ error: 'Erro ao atualizar' });
@@ -654,9 +729,8 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
                     }
                 }
                 
-                // BLOQUEIA O ESTOQUE IMEDIATAMENTE (Atualiza o estoque local do produto para in_stock = false)
-                // Isso faz com que as chaves fiquem indisponíveis para outros compradores enquanto o pagamento estiver pendente!
-                await client.query('UPDATE products SET in_stock = false WHERE id = ANY($1::int[])', [ids]);
+                // Atribui as chaves temporariamente (reserva) e atualiza o estoque
+                await assignKeysToOrder(client, orderId);
                 
                 // Delistar anúncio correspondente no Gameflip
                 const productsRes = await client.query('SELECT gameflip_listing_id FROM products WHERE id = ANY($1::int[])', [ids]);
@@ -804,8 +878,8 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
                     [req.session.userId, -totalAmount, 'purchase', `Compra do Pedido #${orderId}`]
                 );
                 
-                // Atualiza o estoque local do produto (marca como fora de estoque)
-                await client.query('UPDATE products SET in_stock = false WHERE id = ANY($1::int[])', [ids]);
+                // Atribui as chaves e atualiza o estoque
+                await assignKeysToOrder(client, orderId);
                 
                 // Delistar anúncio correspondente no Gameflip
                 const productsRes = await client.query('SELECT gameflip_listing_id FROM products WHERE id = ANY($1::int[])', [ids]);
@@ -824,7 +898,11 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
                 await client.query('COMMIT');
                 
                 // Envia e-mail de confirmação da compra aprovada contendo as chaves (Keys) reveladas!
-                const keysRes = await pool.query('SELECT title, activation_key FROM products WHERE id = ANY($1::int[])', [ids]);
+                // Envia e-mail de confirmação da compra aprovada contendo as chaves (Keys) reveladas!
+                const keysRes = await pool.query(
+                    'SELECT p.title, oi.activation_key FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = $1',
+                    [orderId]
+                );
                 let keysListHtml = '';
                 keysRes.rows.forEach(k => {
                     keysListHtml += `
@@ -956,8 +1034,8 @@ app.post('/create-checkout/paypal', requireAuth, async (req, res) => {
                 }
             }
             
-            // Atualiza o estoque local do produto (marca como fora de estoque)
-            await client.query('UPDATE products SET in_stock = false WHERE id = ANY($1::int[])', [ids]);
+            // Atribui as chaves e atualiza o estoque
+            await assignKeysToOrder(client, orderId);
             
             // Delistar anúncio correspondente no Gameflip
             const productsRes = await client.query('SELECT gameflip_listing_id FROM products WHERE id = ANY($1::int[])', [ids]);
@@ -970,7 +1048,11 @@ app.post('/create-checkout/paypal', requireAuth, async (req, res) => {
             await client.query('COMMIT');
             
             // Envia e-mail de confirmação da compra aprovada contendo as chaves (Keys) reveladas!
-            const keysRes = await pool.query('SELECT title, activation_key FROM products WHERE id = ANY($1::int[])', [ids]);
+            // Envia e-mail de confirmação da compra aprovada contendo as chaves (Keys) reveladas!
+            const keysRes = await pool.query(
+                'SELECT p.title, oi.activation_key FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = $1',
+                [orderId]
+            );
             let keysListHtml = '';
             keysRes.rows.forEach(k => {
                 keysListHtml += `
@@ -1409,12 +1491,14 @@ async function approveOrderSecure(orderId, paymentId) {
                 ).catch(err => console.error("Erro ao enviar e-mail de ativação de assinatura de leitura:", err));
             }
         } else {
-            // 4. Se for COMPRA DE PRODUTO, atualiza estoque e delista no Gameflip
-            const items = await client.query('SELECT product_id FROM order_items WHERE order_id = $1', [orderId]);
+            // 4. Se for COMPRA DE PRODUTO, garante que as chaves estão atribuídas e atualiza o estoque
+            const items = await client.query('SELECT product_id, activation_key FROM order_items WHERE order_id = $1', [orderId]);
             const pIds = items.rows.map(r => r.product_id);
             if (pIds.length > 0) {
-                // Bloqueia e marca como fora de estoque
-                await client.query('UPDATE products SET in_stock = false WHERE id = ANY($1::int[])', [pIds]);
+                const needsKeys = items.rows.some(r => !r.activation_key || r.activation_key.trim() === '');
+                if (needsKeys) {
+                    await assignKeysToOrder(client, orderId);
+                }
                 
                 // Delistar no Gameflip
                 const productsRes = await client.query('SELECT gameflip_listing_id FROM products WHERE id = ANY($1::int[])', [pIds]);
@@ -1435,7 +1519,10 @@ async function approveOrderSecure(orderId, paymentId) {
             const emailRes = await client.query('SELECT email FROM users WHERE id = $1', [order.user_id]);
             const email = emailRes.rows[0]?.email;
             if (email) {
-                const keysRes = await client.query('SELECT title, activation_key FROM products WHERE id = ANY($1::int[])', [pIds]);
+                const keysRes = await client.query(
+                    'SELECT p.title, oi.activation_key FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = $1',
+                    [orderId]
+                );
                 let keysListHtml = '';
                 keysRes.rows.forEach(k => {
                     keysListHtml += `
@@ -1527,8 +1614,9 @@ app.get('/api/my-orders', requireAuth, async (req, res) => {
         
         for (let order of orders) {
             const itemsRes = await pool.query(`
-                SELECT oi.quantity, oi.price, p.title, p.image, p.category, 
-                CASE WHEN $1 = 'approved' THEN p.activation_key ELSE NULL END as activation_key
+                SELECT oi.quantity, oi.price, 
+                CASE WHEN $1 = 'approved' THEN oi.activation_key ELSE NULL END as activation_key,
+                p.title, p.image, p.category
                 FROM order_items oi
                 JOIN products p ON oi.product_id = p.id
                 WHERE oi.order_id = $2
