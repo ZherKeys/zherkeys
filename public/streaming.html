@@ -81,6 +81,19 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'AW-18202657831');
 </script>
+<!-- Event snippet for Assinatura conversion page -->
+<script>
+  (function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('status') === 'success') {
+      gtag('event', 'conversion', {
+        'send_to': 'AW-18202657831/u7UsCMqAh7ocEKeI2udD',
+        'value': 9.99,
+        'currency': 'BRL'
+      });
+    }
+  })();
+</script>
 </head>
 <body class="mesh-bg min-h-screen flex flex-col font-inter">
 
