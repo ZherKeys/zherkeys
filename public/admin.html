@@ -147,9 +147,14 @@ gtag('config', 'AW-18202657831');
                     </div>
 
                     <div>
-                        <label class="block text-xs font-orbitron tracking-widest text-emerald-400 font-bold mb-1"><i data-lucide="key" class="w-3 h-3 inline"></i> CHAVES DE ATIVAÇÃO OCULTAS (UMA POR LINHA)</label>
-                        <textarea id="prod-activation" placeholder="Insira as Keys (uma por linha)&#10;KEY1-XXXX-XXXX&#10;KEY2-XXXX-XXXX" class="w-full bg-slate-950 border border-emerald-900 rounded-lg px-4 py-3 text-emerald-400 focus:outline-none focus:border-emerald-500 transition-all placeholder-emerald-900/50 h-28 resize-y"></textarea>
-                        <p class="text-[9px] text-slate-500 mt-1">Essa chave será revelada ao comprador quando o pagamento for aprovado.</p>
+                        <label class="block text-xs font-orbitron tracking-widest text-emerald-400 font-bold mb-1"><i data-lucide="key" class="w-3 h-3 inline"></i> CHAVES DE ATIVAÇÃO OCULTAS</label>
+                        <div id="keys-list-container" class="space-y-2 max-h-48 overflow-y-auto p-2 border border-slate-800 bg-slate-950 rounded-lg">
+                            <!-- Injetado dinamicamente -->
+                        </div>
+                        <button type="button" onclick="addKeyInput('')" class="mt-2 text-[10px] font-orbitron tracking-widest bg-slate-900 hover:bg-emerald-950/40 text-emerald-400 border border-emerald-900/30 hover:border-emerald-900/60 px-3.5 py-2 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> ADICIONAR KEY
+                        </button>
+                        <p class="text-[9px] text-slate-500 mt-1.5">Essas chaves serão reveladas individualmente aos compradores à medida que os pagamentos forem aprovados.</p>
                     </div>
 
                     <div>
@@ -659,6 +664,37 @@ gtag('config', 'AW-18202657831');
 
     <script>
         lucide.createIcons();
+        window.addKeyInput = (val = '') => {
+            const container = document.getElementById('keys-list-container');
+            if (!container) return;
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2 key-item-row';
+            div.innerHTML = `
+                <input type="text" value="${val}" placeholder="KEY-XXXX-XXXX-XXXX" class="flex-grow bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-emerald-400 focus:outline-none focus:border-emerald-500 placeholder-slate-700">
+                <button type="button" onclick="removeKeyRow(this)" class="bg-slate-900 hover:bg-rose-950 text-rose-500 hover:text-rose-400 p-2.5 rounded-lg border border-slate-800 hover:border-rose-900 transition-colors flex items-center justify-center cursor-pointer">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            `;
+            container.appendChild(div);
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+        };
+
+        window.removeKeyRow = (button) => {
+            const row = button.closest('.key-item-row');
+            if (row) {
+                row.remove();
+                const container = document.getElementById('keys-list-container');
+                if (container && container.children.length === 0) {
+                    addKeyInput('');
+                }
+            }
+        };
+
+        // Inicializa com um input vazio
+        addKeyInput('');
+
         let allOrders = [];
         let currentOrderId = null;
 
@@ -969,7 +1005,10 @@ gtag('config', 'AW-18202657831');
                 old_price: parseMaskedFloat(document.getElementById('prod-old-price').value),
                 image: imageVal,
                 description: document.getElementById('prod-desc').value,
-                activation_key: document.getElementById('prod-activation').value,
+                activation_key: Array.from(document.querySelectorAll('.key-item-row input'))
+                    .map(input => input.value.trim())
+                    .filter(val => val !== '')
+                    .join('\n'),
                 gameflip_listing_id: document.getElementById('prod-gameflip').value,
                 is_global: document.getElementById('prod-global').checked,
                 restricted_countries: checkedCountries,
@@ -1007,7 +1046,20 @@ gtag('config', 'AW-18202657831');
             document.getElementById('prod-old-price').value = p.old_price ? formatNumberToMask(p.old_price) : '';
             document.getElementById('prod-image').value = p.image;
             document.getElementById('prod-desc').value = p.description;
-            document.getElementById('prod-activation').value = p.activation_key || '';
+            const container = document.getElementById('keys-list-container');
+            if (container) {
+                container.innerHTML = '';
+                if (p.activation_key) {
+                    const keys = p.activation_key.split('\n').map(k => k.trim()).filter(k => k !== '');
+                    if (keys.length > 0) {
+                        keys.forEach(k => addKeyInput(k));
+                    } else {
+                        addKeyInput('');
+                    }
+                } else {
+                    addKeyInput('');
+                }
+            }
             document.getElementById('prod-gameflip').value = p.gameflip_listing_id || '';
             
             const genresListStr = (p.genres || '').split(',').map(s => s.trim());
@@ -1032,6 +1084,11 @@ gtag('config', 'AW-18202657831');
         window.resetForm = () => {
             document.getElementById('product-form').reset();
             document.getElementById('prod-id').value = '';
+            const container = document.getElementById('keys-list-container');
+            if (container) {
+                container.innerHTML = '';
+                addKeyInput('');
+            }
             document.getElementById('prod-gameflip').value = '';
             document.getElementById('prod-global').checked = true;
             document.getElementById('div-restricted').classList.add('hidden');
