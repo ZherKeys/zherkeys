@@ -1,23 +1,9 @@
 @echo off
-title Zher Keys - Sincronizacao e Inicializacao IA
+title Zher Keys - Sincronizacao
 color 0A
 
 echo ========================================================
-echo   1. CERTIFICANDO QUE A IA (OLLAMA/CODELLAMA) ESTA ATIVA
-echo ========================================================
-echo.
-tasklist /FI "IMAGENAME eq ollama.exe" 2>NUL | find /I /N "ollama.exe" >NUL
-if "%ERRORLEVEL%"=="0" (
-    echo [Ollama] Ja esta ativo e rodando!
-) else (
-    echo [Ollama] Iniciando Ollama em segundo plano...
-    start /b ollama serve
-    timeout /t 3 /nobreak >nul
-)
-
-echo.
-echo ========================================================
-echo   2. SINCRONIZANDO SITE COM GITHUB E RENDER
+echo   1. SINCRONIZANDO SITE COM GITHUB E RENDER
 echo ========================================================
 echo.
 cd "C:\Users\convidado 1\Documents\zherkeysite"
@@ -49,7 +35,7 @@ if %errorlevel% equ 0 (
 
 echo.
 echo ========================================================
-echo   3. INICIANDO SITE LOCAL (LOCALHOST:3000)
+echo   2. INICIANDO SITE LOCAL (LOCALHOST:3000)
 echo ========================================================
 echo.
 echo [Node] Iniciando servidor do site em uma nova janela...

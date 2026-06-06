@@ -1,8 +1,0 @@
-[
-	{
-		"id": "k-roi",
-		"query": "roi",
-		"embedding": { "roi": 1 },
-		"created_at": 1717320200000
-	}
-]
