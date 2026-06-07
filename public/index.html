@@ -497,6 +497,9 @@ gtag('config', 'AW-18202657831');
                     <select id="filter-category" onchange="renderGrid()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-300 focus:outline-none focus:border-electricblue transition-colors text-sm font-inter appearance-none">
                         <option value="" data-i18n="cat_all">Todas as Categorias</option>
                         <option value="STEAM KEY" data-i18n="cat_steam">Steam Key</option>
+                        <option value="XBOX KEY" data-i18n="cat_xbox">Xbox Key / Conta</option>
+                        <option value="MICROSOFT STORE" data-i18n="cat_microsoft">Microsoft Store</option>
+                        <option value="EPIC GAMES" data-i18n="cat_epic">Epic Games Key</option>
                         <option value="CONTA" data-i18n="cat_account">Conta</option>
                         <option value="GIFT CARD" data-i18n="cat_giftcard">Gift Card</option>
                     </select>
@@ -1042,6 +1045,9 @@ gtag('config', 'AW-18202657831');
                 catalog_search: "Buscar jogos, contas...",
                 cat_all: "Todas as Categorias",
                 cat_steam: "Steam Key",
+                cat_xbox: "Xbox Key / Conta",
+                cat_microsoft: "Microsoft Store",
+                cat_epic: "Epic Games Key",
                 cat_account: "Conta",
                 cat_giftcard: "Gift Card",
                 genre_all: "Todos os Gêneros",
@@ -1112,6 +1118,9 @@ gtag('config', 'AW-18202657831');
                 catalog_search: "Search games, accounts...",
                 cat_all: "All Categories",
                 cat_steam: "Steam Key",
+                cat_xbox: "Xbox Key / Account",
+                cat_microsoft: "Microsoft Store",
+                cat_epic: "Epic Games Key",
                 cat_account: "Account",
                 cat_giftcard: "Gift Card",
                 genre_all: "All Genres",
@@ -1182,6 +1191,9 @@ gtag('config', 'AW-18202657831');
                 catalog_search: "Buscar juegos, cuentas...",
                 cat_all: "Todas las Categorías",
                 cat_steam: "Steam Key",
+                cat_xbox: "Xbox Key / Cuenta",
+                cat_microsoft: "Microsoft Store",
+                cat_epic: "Epic Games Key",
                 cat_account: "Cuenta",
                 cat_giftcard: "Gift Card",
                 genre_all: "Todos los Géneros",
@@ -1388,16 +1400,50 @@ gtag('config', 'AW-18202657831');
 
                 const genresTags = p.genres ? p.genres.split(',').slice(0,2).map(g => `<span class="bg-slate-800 border border-slate-700 text-slate-300 font-orbitron text-[8px] tracking-widest px-2 py-0.5 rounded uppercase">${g.trim()}</span>`).join(' ') : '';
 
-                // Steam logo overlay if category is Steam Key
-                const isSteam = p.category === 'STEAM KEY';
-                const steamBadge = isSteam ? `
-                    <div class="absolute top-3 left-3 bg-black/75 border border-slate-700/80 px-2 py-1 rounded backdrop-blur-md flex items-center gap-1.5 z-10 text-[9px] font-orbitron text-slate-200 tracking-widest uppercase">
-                        <svg class="w-3.5 h-3.5 text-slate-300" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-3.328 17.514c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189zm.065-2.923c-.767-.008-1.464.385-1.859 1.03l-2.45-.754c-.116-.036-.182-.16-.146-.276l.781-2.54c.036-.116.16-.182.276-.146l2.36.726c.45-.373 1.01-.58 1.595-.589.626-.008 1.222.215 1.688.625l3.29-2.285c.105-.072.247-.043.318.062l1.62 2.336c.072.104.043.247-.062.318l-3.23 2.244c-.218.66-.827 1.127-1.52 1.139-.026.001-.052.001-.078.001zm6.953-3.693c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189z"/>
-                        </svg>
-                        STEAM
-                    </div>
-                ` : '';
+                // Category badge overlay (Steam, Xbox, Microsoft Store, Epic Games)
+                let badgeOverlay = '';
+                const catUpper = p.category.toUpperCase();
+                
+                if (catUpper.includes('STEAM')) {
+                    badgeOverlay = `
+                        <div class="absolute top-3 left-3 bg-black/75 border border-slate-700/80 px-2 py-1 rounded backdrop-blur-md flex items-center gap-1.5 z-10 text-[9px] font-orbitron text-slate-200 tracking-widest uppercase">
+                            <svg class="w-3.5 h-3.5 text-slate-300" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-3.328 17.514c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189zm.065-2.923c-.767-.008-1.464.385-1.859 1.03l-2.45-.754c-.116-.036-.182-.16-.146-.276l.781-2.54c.036-.116.16-.182.276-.146l2.36.726c.45-.373 1.01-.58 1.595-.589.626-.008 1.222.215 1.688.625l3.29-2.285c.105-.072.247-.043.318.062l1.62 2.336c.072.104.043.247-.062.318l-3.23 2.244c-.218.66-.827 1.127-1.52 1.139-.026.001-.052.001-.078.001zm6.953-3.693c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189z"/>
+                            </svg>
+                            STEAM
+                        </div>
+                    `;
+                } else if (catUpper.includes('XBOX')) {
+                    badgeOverlay = `
+                        <div class="absolute top-3 left-3 bg-black/75 border border-emerald-900/80 px-2 py-1 rounded backdrop-blur-md flex items-center gap-1.5 z-10 text-[9px] font-orbitron text-emerald-400 tracking-widest uppercase">
+                            <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M7.202 15.967a8 8 0 0 1-3.552-1.26c-.898-.585-1.101-.826-1.101-1.306 0-.965 1.062-2.656 2.879-4.583C6.459 7.723 7.897 6.44 8.052 6.475c.302.068 2.718 2.423 3.622 3.531 1.43 1.753 2.088 3.189 1.754 3.829-.254.486-1.83 1.437-2.987 1.802-.954.301-2.207.429-3.239.33m-5.866-3.57C.589 11.253.212 10.127.03 8.497c-.06-.539-.038-.846.137-1.95.218-1.377 1.002-2.97 1.945-3.95.401-.417.437-.427.926-.263.595.2 1.23.638 2.213 1.528l.574.519-.313.385C4.056 6.553 2.52 9.086 1.94 10.653c-.315.852-.442 1.707-.306 2.063.091.24.007.15-.3-.319Zm13.101.195c.074-.36-.019-1.02-.238-1.687-.473-1.443-2.055-4.128-3.508-5.953l-.457-.575.494-.454c.646-.593 1.095-.948 1.58-1.25.381-.237.927-.448 1.161-.448.145 0 .654.528 1.065 1.104a8.4 8.4 0 0 1 1.343 3.102c.153.728.166 2.286.024 3.012a9.5 9.5 0 0 1-.6 1.893c-.179.393-.624 1.156-.82 1.404-.1.128-.1.127-.043-.148ZM7.335 1.952c-.67-.34-1.704-.705-2.276-.803a4 4 0 0 0-.759-.043c-.471.024-.45 0 .306-.358A7.8 7.8 0 0 1 6.47.128c.8-.169 2.306-.17 3.094-.005.85.18 1.853.552 2.418.9l.168.103-.385-.02c-.766-.038-1.88.27-3.078.853-.361.176-.676.316-.699.312a12 12 0 0 1-.654-.319Z"/>
+                            </svg>
+                            XBOX
+                        </div>
+                    `;
+                } else if (catUpper.includes('MICROSOFT')) {
+                    badgeOverlay = `
+                        <div class="absolute top-3 left-3 bg-black/75 border border-blue-900/80 px-2 py-1 rounded backdrop-blur-md flex items-center gap-1.5 z-10 text-[9px] font-orbitron text-blue-400 tracking-widest uppercase">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 23 23" fill="none">
+                                <rect x="0" y="0" width="10" height="10" fill="#F25022"/>
+                                <rect x="11" y="0" width="10" height="10" fill="#7FBA00"/>
+                                <rect x="0" y="11" width="10" height="10" fill="#00A4EF"/>
+                                <rect x="11" y="11" width="10" height="10" fill="#FFB900"/>
+                            </svg>
+                            MS STORE
+                        </div>
+                    `;
+                } else if (catUpper.includes('EPIC')) {
+                    badgeOverlay = `
+                        <div class="absolute top-3 left-3 bg-black/75 border border-slate-700/80 px-2 py-1 rounded backdrop-blur-md flex items-center gap-1.5 z-10 text-[9px] font-orbitron text-slate-200 tracking-widest uppercase">
+                            <svg class="w-3.5 h-3.5 text-slate-300" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 0L2.5 5.5v13L12 24l9.5-5.5v-13L12 0zm0 2.25l7.5 4.33v8.66L12 19.58l-7.5-4.34V6.58L12 2.25z"/>
+                            </svg>
+                            EPIC GAMES
+                        </div>
+                    `;
+                }
 
                 // Favorites button in top right
                 const favActive = isFavorite(p.id);
@@ -1413,7 +1459,7 @@ gtag('config', 'AW-18202657831');
                 grid.innerHTML += `
                     <div class="advantage-card bg-slate-950/80 border border-slate-800/80 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all duration-300 cursor-pointer flex flex-col h-full" onclick="window.location.href='/produto/${p.id}-${slug}'">
                         <div class="h-48 w-full overflow-hidden relative">
-                            ${steamBadge}
+                            ${badgeOverlay}
                             ${favoriteBtn}
                             <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ${p.in_stock === false ? 'grayscale opacity-50' : ''}">
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 to-transparent"></div>

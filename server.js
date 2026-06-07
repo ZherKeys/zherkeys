@@ -1778,7 +1778,8 @@ app.get('/produto/:id', async (req, res) => {
         const title = product.title;
         const description = product.description.substring(0, 160).replace(/"/g, '&quot;');
         const fullDescription = product.description;
-        const image = product.image.startsWith('http') ? product.image : `https://zherkeys.com${product.image}`;
+        const imgPath = product.image || '/logo.png';
+        const image = imgPath.startsWith('http') ? imgPath : `https://zherkeys.com${imgPath}`;
         
         // Multi-conversão dinâmica de moedas via Query Parameter (ex: ?currency=USD)
         const exchangeRates = { BRL: 1.0, USD: 0.19, EUR: 0.17 };
