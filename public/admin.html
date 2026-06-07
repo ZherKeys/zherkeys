@@ -146,14 +146,20 @@ gtag('config', 'AW-18202657831');
                         <p id="upload-status" class="text-[9px] text-toxicgreen mt-1 hidden"></p>
                     </div>
 
-                    <!-- Galeria de Imagens Secundárias -->
+                    <!-- Galeria de Midia (Upload de Slides / Videos / YouTube) -->
                     <div>
-                        <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">GALERIA DE IMAGENS SECUNDÁRIAS (Upload de Slides)</label>
-                        <div class="flex gap-2">
-                            <label class="w-full bg-slate-900/60 hover:bg-slate-800/80 text-slate-300 hover:text-white px-4 py-3 rounded-lg cursor-pointer flex items-center justify-center gap-2 transition-all border border-dashed border-slate-700 hover:border-slate-500 font-orbitron text-xs tracking-widest">
-                                <i data-lucide="image" class="w-5 h-5 text-electricblue"></i> SELECIONAR IMAGENS DA GALERIA
-                                <input type="file" id="prod-gallery-files" accept="image/*" multiple class="hidden">
+                        <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">GALERIA DE MIDIA (Upload de Imagens/Videos ou Link do YouTube)</label>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <label class="flex-1 bg-slate-900/60 hover:bg-slate-800/80 text-slate-300 hover:text-white px-4 py-3 rounded-lg cursor-pointer flex items-center justify-center gap-2 transition-all border border-dashed border-slate-700 hover:border-slate-500 font-orbitron text-xs tracking-widest text-center">
+                                <i data-lucide="film" class="w-5 h-5 text-electricblue"></i> ARQUIVOS (FOTOS/VIDEOS)
+                                <input type="file" id="prod-gallery-files" accept="image/*,video/*" multiple class="hidden">
                             </label>
+                            <div class="flex-1 flex gap-2">
+                                <input type="text" id="prod-youtube-url" placeholder="URL do Video do YouTube" class="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-xs text-white focus:outline-none focus:border-toxicgreen transition-all placeholder-slate-700">
+                                <button type="button" onclick="addYoutubeVideo()" class="bg-slate-900 hover:bg-electricblue/20 text-electricblue border border-slate-800 hover:border-electricblue/50 px-4 py-3 rounded-lg text-xs font-orbitron tracking-widest transition-all cursor-pointer">
+                                    + YT
+                                </button>
+                            </div>
                         </div>
                         <div id="gallery-preview-container" class="grid grid-cols-4 sm:grid-cols-6 gap-2 mt-3"></div>
                     </div>
@@ -1118,6 +1124,9 @@ gtag('config', 'AW-18202657831');
             productGallery = [];
             renderGalleryPreview();
             document.getElementById('prod-gallery-files').value = '';
+            if (document.getElementById('prod-youtube-url')) {
+                document.getElementById('prod-youtube-url').value = '';
+            }
             document.querySelectorAll('.country-checkbox').forEach(cb => cb.checked = false);
             document.querySelectorAll('.genre-checkbox').forEach(cb => cb.checked = false);
             const firstCat = document.querySelector('.category-radio');
@@ -1170,15 +1179,19 @@ gtag('config', 'AW-18202657831');
             document.getElementById('btn-remove-upload').classList.add('hidden');
         };
 
-        // Logica para Galeria de Imagens Secundarias (Slides)
+        // Logica para Galeria de Midia (Fotos, Videos locais e YouTube)
         document.getElementById('prod-gallery-files').addEventListener('change', async function(e) {
             const files = Array.from(e.target.files);
             if (files.length === 0) return;
             
             const promises = files.map(file => {
                 return new Promise((resolve) => {
-                    if (file.size > 2 * 1024 * 1024) {
-                        alert(`A imagem ${file.name} e maior que 2MB e sera ignorada.`);
+                    const isVideo = file.type.startsWith('video/');
+                    const maxSize = isVideo ? 15 * 1024 * 1024 : 2 * 1024 * 1024; // 15MB para videos, 2MB para imagens
+                    const maxText = isVideo ? "15MB" : "2MB";
+                    
+                    if (file.size > maxSize) {
+                        alert(`O arquivo ${file.name} e maior que ${maxText} e sera ignorada.`);
                         resolve(null);
                         return;
                     }
@@ -1194,32 +1207,94 @@ gtag('config', 'AW-18202657831');
             });
             
             const results = await Promise.all(promises);
-            const validImages = results.filter(img => img !== null);
-            productGallery = productGallery.concat(validImages);
+            const validMedia = results.filter(item => item !== null);
+            productGallery = productGallery.concat(validMedia);
             renderGalleryPreview();
             this.value = ''; // Reseta o input para permitir selecionar o mesmo arquivo se necessario
         });
+
+        window.addYoutubeVideo = () => {
+            const urlInput = document.getElementById('prod-youtube-url');
+            if (!urlInput) return;
+            const urlVal = urlInput.value.trim();
+            if (!urlVal) {
+                alert("Por favor, insira uma URL do YouTube.");
+                return;
+            }
+            
+            if (!urlVal.includes('youtube.com') && !urlVal.includes('youtu.be')) {
+                alert("Por favor, insira uma URL valida do YouTube (ex: youtube.com ou youtu.be).");
+                return;
+            }
+            
+            productGallery.push(urlVal);
+            renderGalleryPreview();
+            urlInput.value = '';
+        };
 
         window.renderGalleryPreview = () => {
             const container = document.getElementById('gallery-preview-container');
             if (!container) return;
             container.innerHTML = '';
             
-            productGallery.forEach((imgSrc, idx) => {
+            productGallery.forEach((mediaSrc, idx) => {
                 const wrapper = document.createElement('div');
                 wrapper.className = "relative group aspect-square rounded-lg overflow-hidden border border-slate-800 bg-slate-950/50 flex items-center justify-center";
                 
-                const img = document.createElement('img');
-                img.src = imgSrc;
-                img.className = "object-cover w-full h-full";
+                // Detecta o tipo de midia
+                let mediaElement;
+                if (mediaSrc.startsWith('data:video/') || mediaSrc.endsWith('.mp4') || mediaSrc.endsWith('.webm') || mediaSrc.endsWith('.ogg')) {
+                    mediaElement = document.createElement('video');
+                    mediaElement.src = mediaSrc;
+                    mediaElement.muted = true;
+                    mediaElement.playsInline = true;
+                    mediaElement.className = "object-cover w-full h-full";
+                    
+                    wrapper.onmouseenter = () => mediaElement.play();
+                    wrapper.onmouseleave = () => {
+                        mediaElement.pause();
+                        mediaElement.currentTime = 0;
+                    };
+                } else if (mediaSrc.includes('youtube.com') || mediaSrc.includes('youtu.be')) {
+                    let ytId = '';
+                    if (mediaSrc.includes('youtu.be/')) {
+                        ytId = mediaSrc.split('youtu.be/')[1]?.split(/[?#]/)[0];
+                    } else if (mediaSrc.includes('v=')) {
+                        ytId = mediaSrc.split('v=')[1]?.split(/[&?#]/)[0];
+                    } else if (mediaSrc.includes('/embed/')) {
+                        ytId = mediaSrc.split('/embed/')[1]?.split(/[?#]/)[0];
+                    }
+                    
+                    mediaElement = document.createElement('div');
+                    mediaElement.className = "w-full h-full relative bg-slate-950 flex items-center justify-center";
+                    
+                    if (ytId) {
+                        const img = document.createElement('img');
+                        img.src = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+                        img.className = "object-cover w-full h-full opacity-60";
+                        mediaElement.appendChild(img);
+                    }
+                    
+                    const playIcon = document.createElement('div');
+                    playIcon.className = "absolute inset-0 flex items-center justify-center text-red-500 bg-black/40";
+                    playIcon.innerHTML = `<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+                    mediaElement.appendChild(playIcon);
+                } else {
+                    mediaElement = document.createElement('img');
+                    mediaElement.src = mediaSrc;
+                    mediaElement.className = "object-cover w-full h-full";
+                }
                 
                 const removeBtn = document.createElement('button');
                 removeBtn.type = "button";
-                removeBtn.className = "absolute top-1 right-1 bg-rose-600 hover:bg-rose-700 text-white rounded p-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer flex items-center justify-center";
+                removeBtn.className = "absolute top-1 right-1 bg-rose-600 hover:bg-rose-700 text-white rounded p-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer flex items-center justify-center z-10";
                 removeBtn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>`;
-                removeBtn.onclick = () => removeGalleryImage(idx);
+                removeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    removeGalleryImage(idx);
+                };
                 
-                wrapper.appendChild(img);
+                wrapper.appendChild(mediaElement);
                 wrapper.appendChild(removeBtn);
                 container.appendChild(wrapper);
             });

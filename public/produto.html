@@ -418,7 +418,7 @@ gtag('config', 'AW-18202657831');
         // Injetado do servidor
         window.currentProduct = {{{PRODUCT_JSON}}};
 
-        // Configura o carrossel de slides (galeria de imagens)
+        // Configura o carrossel de slides (galeria de imagens, videos locais e YouTube)
         let galleryImages = [];
         try {
             if (window.currentProduct.gallery) {
@@ -443,6 +443,30 @@ gtag('config', 'AW-18202657831');
         let activeSlideIndex = 0;
         let autoPlayInterval = null;
 
+        function getMediaType(url) {
+            if (!url) return 'image';
+            if (url.startsWith('data:video/') || url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.ogg')) {
+                return 'video';
+            }
+            if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('youtube-nocookie.com')) {
+                return 'youtube';
+            }
+            return 'image';
+        }
+
+        function getYoutubeId(url) {
+            if (!url) return '';
+            let ytId = '';
+            if (url.includes('youtu.be/')) {
+                ytId = url.split('youtu.be/')[1]?.split(/[?#]/)[0];
+            } else if (url.includes('v=')) {
+                ytId = url.split('v=')[1]?.split(/[&?#]/)[0];
+            } else if (url.includes('/embed/')) {
+                ytId = url.split('/embed/')[1]?.split(/[?#]/)[0];
+            }
+            return ytId || '';
+        }
+
         function initSlider() {
             const container = document.getElementById('product-slides-container');
             const btnPrev = document.getElementById('slider-btn-prev');
@@ -454,13 +478,49 @@ gtag('config', 'AW-18202657831');
             container.innerHTML = '';
             if (dotsContainer) dotsContainer.innerHTML = '';
             
-            allImages.forEach((imgSrc, index) => {
-                const img = document.createElement('img');
-                img.src = imgSrc;
-                img.alt = window.currentProduct.title;
-                img.className = `absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0'}`;
-                img.id = `slide-img-${index}`;
-                container.appendChild(img);
+            allImages.forEach((mediaSrc, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = `absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0'}`;
+                wrapper.id = `slide-item-${index}`;
+                
+                const type = getMediaType(mediaSrc);
+                
+                if (type === 'video') {
+                    const video = document.createElement('video');
+                    video.src = mediaSrc;
+                    video.controls = true;
+                    video.muted = true;
+                    video.playsInline = true;
+                    video.className = "w-full h-full object-cover rounded-xl";
+                    video.id = `slide-media-${index}`;
+                    
+                    video.onplay = () => {
+                        if (autoPlayInterval) {
+                            clearInterval(autoPlayInterval);
+                            autoPlayInterval = null;
+                        }
+                    };
+                    wrapper.appendChild(video);
+                } else if (type === 'youtube') {
+                    const ytId = getYoutubeId(mediaSrc);
+                    const iframe = document.createElement('iframe');
+                    iframe.src = `https://www.youtube.com/embed/${ytId}?enablejsapi=1&rel=0`;
+                    iframe.className = "w-full h-full border-0 rounded-xl";
+                    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+                    iframe.allowFullscreen = true;
+                    iframe.id = `slide-media-${index}`;
+                    
+                    wrapper.appendChild(iframe);
+                } else {
+                    const img = document.createElement('img');
+                    img.src = mediaSrc;
+                    img.alt = window.currentProduct.title;
+                    img.className = "w-full h-full object-cover rounded-xl";
+                    img.id = `slide-media-${index}`;
+                    wrapper.appendChild(img);
+                }
+                
+                container.appendChild(wrapper);
                 
                 if (allImages.length > 1 && dotsContainer) {
                     const dot = document.createElement('button');
@@ -474,7 +534,11 @@ gtag('config', 'AW-18202657831');
             if (allImages.length > 1) {
                 if (btnPrev) btnPrev.classList.remove('hidden');
                 if (btnNext) btnNext.classList.remove('hidden');
-                startAutoPlay();
+                
+                const firstType = getMediaType(allImages[0]);
+                if (firstType !== 'video' && firstType !== 'youtube') {
+                    startAutoPlay();
+                }
             }
         }
 
@@ -486,8 +550,19 @@ gtag('config', 'AW-18202657831');
             if (index >= slidesCount) nextIndex = 0;
             if (index < 0) nextIndex = slidesCount - 1;
             
+            const prevMedia = document.getElementById(`slide-media-${activeSlideIndex}`);
+            if (prevMedia) {
+                if (prevMedia.tagName === 'VIDEO') {
+                    prevMedia.pause();
+                } else if (prevMedia.tagName === 'IFRAME') {
+                    const currentSrc = prevMedia.src;
+                    prevMedia.src = '';
+                    prevMedia.src = currentSrc;
+                }
+            }
+            
             for (let i = 0; i < slidesCount; i++) {
-                const slide = document.getElementById(`slide-img-${i}`);
+                const slide = document.getElementById(`slide-item-${i}`);
                 const dot = document.getElementById(`slide-dot-${i}`);
                 if (slide) {
                     if (i === nextIndex) {
@@ -508,6 +583,21 @@ gtag('config', 'AW-18202657831');
             }
             
             activeSlideIndex = nextIndex;
+            
+            const nextMedia = document.getElementById(`slide-media-${nextIndex}`);
+            const nextType = getMediaType(allImages[nextIndex]);
+            
+            if (nextType === 'video' || nextType === 'youtube') {
+                if (autoPlayInterval) {
+                    clearInterval(autoPlayInterval);
+                    autoPlayInterval = null;
+                }
+                if (nextType === 'video' && nextMedia) {
+                    nextMedia.play().catch(e => console.log("Autoplay de video local bloqueado pelo navegador"));
+                }
+            } else {
+                startAutoPlay();
+            }
         }
 
         window.nextSlide = () => {
@@ -533,10 +623,12 @@ gtag('config', 'AW-18202657831');
         }
 
         function resetAutoPlay() {
-            startAutoPlay();
+            const currentType = getMediaType(allImages[activeSlideIndex]);
+            if (currentType !== 'video' && currentType !== 'youtube') {
+                startAutoPlay();
+            }
         }
 
-        // Inicializa o carrossel
         initSlider();
 
         // Lucide
