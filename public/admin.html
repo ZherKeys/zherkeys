@@ -1049,7 +1049,8 @@ gtag('config', 'AW-18202657831');
                     resetForm();
                     loadProducts();
                 } else {
-                    alert("Erro ao salvar.");
+                    const errData = await res.json().catch(() => ({}));
+                    alert(errData.error || "Erro ao salvar.");
                 }
             } catch(err) {
                 alert("Erro de rede.");

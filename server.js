@@ -356,6 +356,80 @@ async function sendEmailViaBrevo(toEmail, subject, textContent, htmlContent) {
 }
 console.log('Motor de E-mail configurado via Brevo API');
 
+async function checkDuplicateKeysAndNotify(activation_key, productTitle, excludeProductId = null) {
+    if (!activation_key) return;
+    
+    const newKeys = activation_key.split('\n').map(k => k.trim()).filter(Boolean);
+    if (newKeys.length === 0) return;
+    
+    // 1. Verificar duplicatas no proprio payload
+    const seenNewKeys = new Set();
+    for (const key of newKeys) {
+        const keyUpper = key.toUpperCase();
+        if (seenNewKeys.has(keyUpper)) {
+            throw new Error(`A chave "${key}" esta duplicada na propria lista informada.`);
+        }
+        seenNewKeys.add(keyUpper);
+    }
+    
+    // 2. Verificar duplicatas contra o banco de dados
+    let query = 'SELECT id, title, activation_key FROM products';
+    let params = [];
+    if (excludeProductId) {
+        query += ' WHERE id != $1';
+        params.push(excludeProductId);
+    }
+    
+    const result = await pool.query(query, params);
+    const existingKeys = new Map(); // keyString -> { id, title }
+    result.rows.forEach(row => {
+        const keys = (row.activation_key || '').split('\n').map(k => k.trim()).filter(Boolean);
+        keys.forEach(k => {
+            existingKeys.set(k.toUpperCase(), { id: row.id, title: row.title });
+        });
+    });
+    
+    const duplicatesFound = [];
+    for (const key of newKeys) {
+        const keyUpper = key.toUpperCase();
+        if (existingKeys.has(keyUpper)) {
+            const conflict = existingKeys.get(keyUpper);
+            duplicatesFound.push({ key, conflict });
+        }
+    }
+    
+    if (duplicatesFound.length > 0) {
+        // Envia email de notificacao para o Admin
+        const duplicateListHtml = duplicatesFound.map(d => `<li>Chave: <code>${d.key}</code> - Conflito com: <strong>${d.conflict.title}</strong> (ID: ${d.conflict.id})</li>`).join('');
+        const duplicateListText = duplicatesFound.map(d => `Chave: ${d.key} - Conflito com: ${d.conflict.title} (ID: ${d.conflict.id})`).join('\n');
+        
+        const emailSubject = '⚠️ ALERTA DE SEGURANCA: Tentativa de Cadastro de Chave Duplicada';
+        const emailText = `Alerta de Seguranca - Zher Keys\n\nFoi detectada e bloqueada uma tentativa de cadastrar chave(s) duplicada(s).\n\nProduto Alvo: ${productTitle}\n\nChave(s) Duplicada(s):\n${duplicateListText}\n\nData: ${new Date().toISOString()}`;
+        const emailHtml = `
+            <div style="font-family: sans-serif; padding: 20px; background-color: #0b0f19; color: #f8fafc; border-radius: 8px; border: 1px solid #1e293b;">
+                <h2 style="color: #ef4444; margin-top: 0;">⚠️ Alerta de Seguranca - Zher Keys</h2>
+                <p>Uma tentativa de cadastrar chaves de ativacao duplicadas foi <strong>bloqueada automaticamente</strong>.</p>
+                <p><strong>Produto Alvo:</strong> ${productTitle}</p>
+                <p><strong>Detalhes das chaves conflitantes:</strong></p>
+                <ul style="background-color: #0f172a; padding: 15px; border-radius: 6px; list-style-type: none; margin: 0 0 20px 0; border: 1px solid #334155;">
+                    ${duplicateListHtml}
+                </ul>
+                <p style="font-size: 12px; color: #64748b; margin-bottom: 0;">Data/Hora do bloqueio: ${new Date().toLocaleString('pt-BR')}</p>
+            </div>
+        `;
+        
+        try {
+            await sendEmailViaBrevo('zherkeys@gmail.com', emailSubject, emailText, emailHtml);
+            console.log('E-mail de alerta de seguranca de chaves enviado.');
+        } catch (mailErr) {
+            console.error('Erro ao enviar e-mail de alerta de seguranca:', mailErr);
+        }
+        
+        const firstDup = duplicatesFound[0];
+        throw new Error(`A chave "${firstDup.key}" ja esta cadastrada no produto "${firstDup.conflict.title}" (ID: ${firstDup.conflict.id}).`);
+    }
+}
+
 // Middlewares
 const requireAuth = (req, res, next) => {
     if (req.session.userId) {
@@ -526,6 +600,9 @@ app.get('/api/admin/products/templates', requireAdmin, async (req, res) => {
 app.post('/api/admin/products', requireAdmin, async (req, res) => {
     const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id, gallery } = req.body;
     try {
+        // Validacao de chaves duplicadas
+        await checkDuplicateKeysAndNotify(activation_key, title);
+        
         const hasKeys = activation_key && activation_key.trim() !== '';
         await pool.query(
             'INSERT INTO products (title, description, price, old_price, image, category, activation_key, in_stock, is_global, restricted_countries, genres, gameflip_listing_id, gallery) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
@@ -535,7 +612,7 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
         res.status(201).json({ message: 'Produto adicionado' });
     } catch(e) {
         console.error("Erro ao adicionar produto:", e);
-        res.status(500).json({ error: 'Erro ao adicionar' });
+        res.status(400).json({ error: e.message || 'Erro ao adicionar' });
     }
 });
 
@@ -547,6 +624,71 @@ app.post('/api/admin/products/bulk', requireAdmin, async (req, res) => {
     }
     
     try {
+        // Validacao de chaves duplicadas para o lote inteiro antes de comecar a insercao
+        const dbResult = await pool.query('SELECT id, title, activation_key FROM products');
+        const existingKeys = new Map();
+        dbResult.rows.forEach(row => {
+            const keys = (row.activation_key || '').split('\n').map(k => k.trim()).filter(Boolean);
+            keys.forEach(k => {
+                existingKeys.set(k.toUpperCase(), { id: row.id, title: row.title });
+            });
+        });
+        
+        const duplicatesFound = [];
+        for (const p of products) {
+            const newKeys = (p.activation_key || '').split('\n').map(k => k.trim()).filter(Boolean);
+            
+            // Verifica duplicatas no proprio produto
+            const seenNewKeys = new Set();
+            for (const key of newKeys) {
+                const keyUpper = key.toUpperCase();
+                if (seenNewKeys.has(keyUpper)) {
+                    throw new Error(`A chave "${key}" esta duplicada na propria lista do produto "${p.title}" a ser importado.`);
+                }
+                seenNewKeys.add(keyUpper);
+            }
+            
+            // Verifica contra banco e contra os outros itens ja processados do lote
+            for (const key of newKeys) {
+                const keyUpper = key.toUpperCase();
+                if (existingKeys.has(keyUpper)) {
+                    const conflict = existingKeys.get(keyUpper);
+                    duplicatesFound.push({ key, productTitle: p.title, conflict });
+                } else {
+                    existingKeys.set(keyUpper, { title: p.title });
+                }
+            }
+        }
+        
+        if (duplicatesFound.length > 0) {
+            const duplicateListHtml = duplicatesFound.map(d => `<li>Chave: <code>${d.key}</code> no produto importado <strong>${d.productTitle}</strong> - Conflito com: <strong>${d.conflict.title}</strong> ${d.conflict.id ? `(ID: ${d.conflict.id})` : '(Lote)'}</li>`).join('');
+            const duplicateListText = duplicatesFound.map(d => `Chave: ${d.key} no produto ${d.productTitle} - Conflito com: ${d.conflict.title}`).join('\n');
+            
+            const emailSubject = '⚠️ ALERTA DE SEGURANCA: Tentativa de Importacao de Chaves Duplicadas';
+            const emailText = `Alerta de Seguranca - Zher Keys\n\nFoi detectada e bloqueada uma tentativa de importacao de chave(s) duplicada(s) em lote.\n\nDetalhes:\n${duplicateListText}\n\nData: ${new Date().toISOString()}`;
+            const emailHtml = `
+                <div style="font-family: sans-serif; padding: 20px; background-color: #0b0f19; color: #f8fafc; border-radius: 8px; border: 1px solid #1e293b;">
+                    <h2 style="color: #ef4444; margin-top: 0;">⚠️ Alerta de Seguranca - Importacao Zher Keys</h2>
+                    <p>Uma tentativa de importar chaves de ativacao duplicadas foi <strong>bloqueada automaticamente</strong>.</p>
+                    <p><strong>Detalhes das chaves conflitantes:</strong></p>
+                    <ul style="background-color: #0f172a; padding: 15px; border-radius: 6px; list-style-type: none; margin: 0 0 20px 0; border: 1px solid #334155;">
+                        ${duplicateListHtml}
+                    </ul>
+                    <p style="font-size: 12px; color: #64748b; margin-bottom: 0;">Data/Hora do bloqueio: ${new Date().toLocaleString('pt-BR')}</p>
+                </div>
+            `;
+            
+            try {
+                await sendEmailViaBrevo('zherkeys@gmail.com', emailSubject, emailText, emailHtml);
+            } catch (mailErr) {
+                console.error('Erro ao enviar e-mail de alerta de seguranca de bulk:', mailErr);
+            }
+            
+            const firstDup = duplicatesFound[0];
+            const conflictText = firstDup.conflict.id ? `cadastrada no produto "${firstDup.conflict.title}" (ID: ${firstDup.conflict.id})` : `duplicada no lote (produto: "${firstDup.conflict.title}")`;
+            return res.status(400).json({ error: `A chave "${firstDup.key}" do produto "${firstDup.productTitle}" ja esta ${conflictText}.` });
+        }
+        
         await pool.query('BEGIN');
         
         for (const p of products) {
@@ -588,6 +730,9 @@ app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
     const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id, gallery } = req.body;
     try {
+        // Validacao de chaves duplicadas (exclui o proprio produto)
+        await checkDuplicateKeysAndNotify(activation_key, title, id);
+        
         const hasKeys = activation_key && activation_key.trim() !== '';
         await pool.query(
             'UPDATE products SET title=$1, description=$2, price=$3, old_price=$4, image=$5, category=$6, activation_key=$7, in_stock=$8, is_global=$9, restricted_countries=$10, genres=$11, gameflip_listing_id=$12, gallery=$13 WHERE id=$14',
@@ -597,7 +742,7 @@ app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
         res.json({ message: 'Produto atualizado' });
     } catch(e) {
         console.error("Erro ao atualizar produto:", e);
-        res.status(500).json({ error: 'Erro ao atualizar' });
+        res.status(400).json({ error: e.message || 'Erro ao atualizar' });
     }
 });
 
