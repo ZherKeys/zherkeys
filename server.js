@@ -89,6 +89,7 @@ async function initDB() {
             ALTER TABLE products ADD COLUMN IF NOT EXISTS genres TEXT;
             ALTER TABLE products ADD COLUMN IF NOT EXISTS old_price NUMERIC(10, 2);
             ALTER TABLE products ADD COLUMN IF NOT EXISTS gameflip_listing_id TEXT;
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS gallery TEXT DEFAULT '[]';
             
             ALTER TABLE users ADD COLUMN IF NOT EXISTS balance NUMERIC(10, 2) DEFAULT 0.00;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS points INTEGER DEFAULT 0;
@@ -523,12 +524,12 @@ app.get('/api/admin/products/templates', requireAdmin, async (req, res) => {
 
 // Criar produto (Admin)
 app.post('/api/admin/products', requireAdmin, async (req, res) => {
-    const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id } = req.body;
+    const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id, gallery } = req.body;
     try {
         const hasKeys = activation_key && activation_key.trim() !== '';
         await pool.query(
-            'INSERT INTO products (title, description, price, old_price, image, category, activation_key, in_stock, is_global, restricted_countries, genres, gameflip_listing_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
-            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, image, category, activation_key || '', hasKeys, is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '']
+            'INSERT INTO products (title, description, price, old_price, image, category, activation_key, in_stock, is_global, restricted_countries, genres, gameflip_listing_id, gallery) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
+            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, image, category, activation_key || '', hasKeys, is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '', gallery || '[]']
         );
         productsCache = null; // Limpa o cache para atualizar a home imediatamente
         res.status(201).json({ message: 'Produto adicionado' });
@@ -585,12 +586,12 @@ app.post('/api/admin/products/bulk', requireAdmin, async (req, res) => {
 // Editar produto (Admin)
 app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
-    const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id } = req.body;
+    const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id, gallery } = req.body;
     try {
         const hasKeys = activation_key && activation_key.trim() !== '';
         await pool.query(
-            'UPDATE products SET title=$1, description=$2, price=$3, old_price=$4, image=$5, category=$6, activation_key=$7, in_stock=$8, is_global=$9, restricted_countries=$10, genres=$11, gameflip_listing_id=$12 WHERE id=$13',
-            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, image, category, activation_key || '', hasKeys, is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '', id]
+            'UPDATE products SET title=$1, description=$2, price=$3, old_price=$4, image=$5, category=$6, activation_key=$7, in_stock=$8, is_global=$9, restricted_countries=$10, genres=$11, gameflip_listing_id=$12, gallery=$13 WHERE id=$14',
+            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, image, category, activation_key || '', hasKeys, is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '', gallery || '[]', id]
         );
         productsCache = null; // Limpa o cache para atualizar a home imediatamente
         res.json({ message: 'Produto atualizado' });
@@ -1764,7 +1765,7 @@ app.get('/produto/:id', async (req, res) => {
             return res.redirect('/');
         }
         
-        const result = await pool.query('SELECT id, title, description, price, old_price, image, category, in_stock, is_global, restricted_countries, genres FROM products WHERE id = $1', [id]);
+        const result = await pool.query('SELECT id, title, description, price, old_price, image, category, in_stock, is_global, restricted_countries, genres, gallery FROM products WHERE id = $1', [id]);
         
         if (result.rows.length === 0) {
             return res.redirect('/');

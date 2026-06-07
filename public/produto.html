@@ -177,11 +177,27 @@ gtag('config', 'AW-18202657831');
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
             
-            <!-- Imagem e Mídia do Produto (Col 5) -->
+            <!-- Imagem e Midia do Produto (Col 5) - Carrossel de Slides Autoplay -->
             <div class="lg:col-span-5 relative group">
                 <div class="relative overflow-hidden rounded-2xl border border-slate-800/85 bg-slate-950/80 p-2 shadow-2xl transition-all duration-300 hover:border-slate-700 shadow-cyber/20">
-                    <img src="{{PRODUCT_IMAGE}}" alt="{{PRODUCT_TITLE}}" class="w-full h-auto object-cover rounded-xl shadow-lg transform transition-transform duration-700 group-hover:scale-102">
-                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/40 to-transparent pointer-events-none"></div>
+                    <!-- Slides Container -->
+                    <div id="product-slides-container" class="relative w-full aspect-[4/5] sm:aspect-[3/4] md:aspect-square overflow-hidden rounded-xl bg-slate-950">
+                        <img src="{{PRODUCT_IMAGE}}" alt="{{PRODUCT_TITLE}}" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out opacity-100 z-10">
+                    </div>
+                    
+                    <!-- Gradiente de sombra no rodape da imagem -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/40 to-transparent pointer-events-none z-10"></div>
+                    
+                    <!-- Navegacao (Setas) -->
+                    <button id="slider-btn-prev" onclick="prevSlide()" class="absolute left-5 top-1/2 -translate-y-1/2 bg-slate-950/80 hover:bg-electricblue/20 text-white hover:text-electricblue border border-slate-800 hover:border-electricblue/50 p-2 rounded-full transition-all duration-300 cursor-pointer hidden z-20">
+                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                    </button>
+                    <button id="slider-btn-next" onclick="nextSlide()" class="absolute right-5 top-1/2 -translate-y-1/2 bg-slate-950/80 hover:bg-electricblue/20 text-white hover:text-electricblue border border-slate-800 hover:border-electricblue/50 p-2 rounded-full transition-all duration-300 cursor-pointer hidden z-20">
+                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                    </button>
+                    
+                    <!-- Indicadores (Dots) -->
+                    <div id="slider-dots" class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 z-20"></div>
                 </div>
             </div>
 
@@ -401,6 +417,127 @@ gtag('config', 'AW-18202657831');
     <script>
         // Injetado do servidor
         window.currentProduct = {{{PRODUCT_JSON}}};
+
+        // Configura o carrossel de slides (galeria de imagens)
+        let galleryImages = [];
+        try {
+            if (window.currentProduct.gallery) {
+                if (typeof window.currentProduct.gallery === 'string') {
+                    galleryImages = JSON.parse(window.currentProduct.gallery || '[]');
+                } else if (Array.isArray(window.currentProduct.gallery)) {
+                    galleryImages = window.currentProduct.gallery;
+                }
+            }
+        } catch(e) {
+            console.error("Erro ao parsear galeria:", e);
+        }
+
+        const allImages = [];
+        if (window.currentProduct.image) {
+            allImages.push(window.currentProduct.image);
+        }
+        galleryImages.forEach(img => {
+            if (img) allImages.push(img);
+        });
+
+        let activeSlideIndex = 0;
+        let autoPlayInterval = null;
+
+        function initSlider() {
+            const container = document.getElementById('product-slides-container');
+            const btnPrev = document.getElementById('slider-btn-prev');
+            const btnNext = document.getElementById('slider-btn-next');
+            const dotsContainer = document.getElementById('slider-dots');
+            
+            if (!container || allImages.length === 0) return;
+            
+            container.innerHTML = '';
+            if (dotsContainer) dotsContainer.innerHTML = '';
+            
+            allImages.forEach((imgSrc, index) => {
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.alt = window.currentProduct.title;
+                img.className = `absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0'}`;
+                img.id = `slide-img-${index}`;
+                container.appendChild(img);
+                
+                if (allImages.length > 1 && dotsContainer) {
+                    const dot = document.createElement('button');
+                    dot.className = `w-2 h-2 rounded-full transition-all duration-300 ${index === 0 ? 'bg-electricblue w-4' : 'bg-slate-600 hover:bg-slate-400'}`;
+                    dot.onclick = () => goToSlide(index);
+                    dot.id = `slide-dot-${index}`;
+                    dotsContainer.appendChild(dot);
+                }
+            });
+            
+            if (allImages.length > 1) {
+                if (btnPrev) btnPrev.classList.remove('hidden');
+                if (btnNext) btnNext.classList.remove('hidden');
+                startAutoPlay();
+            }
+        }
+
+        function showSlide(index) {
+            const slidesCount = allImages.length;
+            if (slidesCount <= 1) return;
+            
+            let nextIndex = index;
+            if (index >= slidesCount) nextIndex = 0;
+            if (index < 0) nextIndex = slidesCount - 1;
+            
+            for (let i = 0; i < slidesCount; i++) {
+                const slide = document.getElementById(`slide-img-${i}`);
+                const dot = document.getElementById(`slide-dot-${i}`);
+                if (slide) {
+                    if (i === nextIndex) {
+                        slide.classList.remove('opacity-0', 'z-0');
+                        slide.classList.add('opacity-100', 'z-10');
+                    } else {
+                        slide.classList.remove('opacity-100', 'z-10');
+                        slide.classList.add('opacity-0', 'z-0');
+                    }
+                }
+                if (dot) {
+                    if (i === nextIndex) {
+                        dot.className = "w-2 h-2 rounded-full transition-all duration-300 bg-electricblue w-4";
+                    } else {
+                        dot.className = "w-2 h-2 rounded-full transition-all duration-300 bg-slate-600 hover:bg-slate-400";
+                    }
+                }
+            }
+            
+            activeSlideIndex = nextIndex;
+        }
+
+        window.nextSlide = () => {
+            resetAutoPlay();
+            showSlide(activeSlideIndex + 1);
+        };
+
+        window.prevSlide = () => {
+            resetAutoPlay();
+            showSlide(activeSlideIndex - 1);
+        };
+
+        window.goToSlide = (index) => {
+            resetAutoPlay();
+            showSlide(index);
+        };
+
+        function startAutoPlay() {
+            if (autoPlayInterval) clearInterval(autoPlayInterval);
+            autoPlayInterval = setInterval(() => {
+                showSlide(activeSlideIndex + 1);
+            }, 3500);
+        }
+
+        function resetAutoPlay() {
+            startAutoPlay();
+        }
+
+        // Inicializa o carrossel
+        initSlider();
 
         // Lucide
         lucide.createIcons();
