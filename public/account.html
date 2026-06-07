@@ -1852,6 +1852,9 @@ gtag('config', 'AW-18202657831');
                     } else if (n.type === 'warning') {
                         iconHtml = '<i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400"></i>';
                         typeClass = 'bg-rose-950/20 border-rose-900/30';
+                    } else if (n.type === 'system') {
+                        iconHtml = '<i data-lucide="award" class="w-4 h-4 text-amber-400"></i>';
+                        typeClass = 'bg-amber-950/20 border-amber-900/30';
                     }
                     
                     const readIndicator = n.is_read ? '' : '<span class="w-1.5 h-1.5 bg-cyberrose rounded-full animate-ping flex-shrink-0"></span>';

@@ -3494,39 +3494,77 @@ app.post('/api/sweepstake/join', requireAuth, async (req, res) => {
     }
 });
 
-// Lógica de Sorteio Automático
+// Helper para mascarar e-mails de ganhadores preservando privacidade
+function maskEmail(email) {
+    if (!email) return 'Ninguem';
+    const parts = email.split('@');
+    if (parts.length !== 2) return email;
+    const name = parts[0];
+    const domain = parts[1];
+    if (name.length <= 3) {
+        return name[0] + '***@' + domain;
+    }
+    return name.substring(0, 3) + '***@' + domain;
+}
+
+// Obter ultimo ganhador do sorteio
+app.get('/api/sweepstake/last-winner', async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT h.drawn_at, h.prize_amount, u.email 
+             FROM sweepstake_history h 
+             LEFT JOIN users u ON h.winner_id = u.id 
+             ORDER BY h.id DESC LIMIT 1`
+        );
+        if (result.rows.length === 0) {
+            return res.json({ winner: null });
+        }
+        const row = result.rows[0];
+        const winnerEmail = row.email ? maskEmail(row.email) : 'Ninguem';
+        res.json({
+            winner: winnerEmail,
+            prize_amount: row.prize_amount,
+            drawn_at: row.drawn_at
+        });
+    } catch (err) {
+        console.error("[SWEEPSTAKE-LAST-WINNER] Erro ao buscar ultimo ganhador:", err);
+        res.status(500).json({ error: 'Erro ao obter ultimo ganhador.' });
+    }
+});
+
+// Logica de Sorteio Automatico
 async function runSweepstakeDraw() {
     try {
         const now = new Date();
         
-        // Determina o último domingo às 20h
+        // Determina o ultimo domingo as 23h UTC (20h no Horario de Brasilia)
         let lastSunday = new Date();
-        lastSunday.setDate(now.getDate() - now.getDay());
-        lastSunday.setHours(20, 0, 0, 0);
+        lastSunday.setUTCDate(now.getUTCDate() - now.getUTCDay());
+        lastSunday.setUTCHours(23, 0, 0, 0);
         
-        // Se hoje for domingo e ainda não passou das 20h, o último sorteio foi no domingo da semana anterior
-        if (now.getDay() === 0 && now.getHours() < 20) {
-            lastSunday.setDate(lastSunday.getDate() - 7);
+        // Se hoje for domingo e ainda nao passou das 23h UTC, o ultimo sorteio foi no domingo da semana anterior
+        if (now.getUTCDay() === 0 && now.getUTCHours() < 23) {
+            lastSunday.setUTCDate(lastSunday.getUTCDate() - 7);
         }
         
-        // Verifica se já houve sorteio realizado depois do último domingo às 20h
+        // Verifica se ja houve sorteio realizado depois do ultimo domingo as 23h UTC
         const checkDraw = await pool.query(
             "SELECT COUNT(*) FROM sweepstake_history WHERE drawn_at >= $1",
             [lastSunday]
         );
         
         if (parseInt(checkDraw.rows[0].count) > 0) {
-            // Sorteio desta semana já foi realizado
+            // Sorteio desta semana ja foi realizado
             return;
         }
         
-        // Se passou do horário de domingo 20h e ainda não houve sorteio, realizamos agora!
+        // Se passou do horario de domingo 23h UTC e ainda nao houve sorteio, realizamos agora!
         let targetSunday = new Date();
-        targetSunday.setDate(now.getDate() - now.getDay());
-        targetSunday.setHours(20, 0, 0, 0);
+        targetSunday.setUTCDate(now.getUTCDate() - now.getUTCDay());
+        targetSunday.setUTCHours(23, 0, 0, 0);
         
         if (now >= targetSunday) {
-            console.log('[SWEEPSTAKE] Horário do sorteio atingido! Sorteando ganhador...');
+            console.log('[SWEEPSTAKE] Horario do sorteio atingido! Sorteando ganhador...');
             
             // Busca todos os participantes
             const participantsRes = await pool.query("SELECT user_id FROM sweepstake_participants");
@@ -3549,7 +3587,7 @@ async function runSweepstakeDraw() {
             try {
                 await client.query('BEGIN');
                 
-                // Adiciona os 10 milhões de Z-Points (points) para o usuário vencedor
+                // Adiciona os 10 milhoes de Z-Points (points) para o usuario vencedor
                 const userRes = await client.query("SELECT points, email FROM users WHERE id = $1 FOR UPDATE", [winnerId]);
                 if (userRes.rows.length > 0) {
                     const currentPoints = parseInt(userRes.rows[0].points || 0);
@@ -3559,98 +3597,139 @@ async function runSweepstakeDraw() {
                     await client.query("UPDATE users SET points = $1 WHERE id = $2", [newPoints, winnerId]);
                     await client.query("INSERT INTO points_earnings (user_id, amount) VALUES ($1, $2)", [winnerId, 10000000]);
                     
-                    // Adiciona transação
+                    // Adiciona transacao
                     await client.query(
                         "INSERT INTO wallet_transactions (user_id, amount, type, description) VALUES ($1, $2, $3, $4)",
-                        [winnerId, 0.00, 'minigame', 'Prêmio do Sorteio Semanal: +10.000.000 Z-Coins']
+                        [winnerId, 0.00, 'minigame', 'Premio do Sorteio Semanal: +10.000.000 Z-Coins']
                     );
                     
-                    // Adiciona notificação para o vencedor
+                    // Adiciona notificacao para o vencedor
                     await client.query(
                         "INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)",
                         [
                             winnerId,
-                            "🏆 VOCÊ GANHOU O SORTEIO!",
-                            "Parabéns! Você foi o grande vencedor do sorteio semanal e acaba de receber 10.000.000 de Z-Coins na sua conta!",
+                            "🏆 VOCE GANHOU O SORTEIO!",
+                            "Parabens! Voce foi o grande vencedor do sorteio semanal e acaba de receber 10.000.000 de Z-Coins na sua conta!",
                             "system"
                         ]
                     );
                     
                     console.log(`[SWEEPSTAKE] Sorteio realizado com sucesso! Vencedor: ${email} (ID: ${winnerId})`);
+
+                    // Envia email especifico para o ganhador
+                    sendEmailViaBrevo(
+                        email,
+                        "🏆 Voce ganhou o Sorteio Semanal da Zher Keys!",
+                        `Parabens! Voce foi o grande vencedor do sorteio semanal da Zher Keys e recebeu 10.000.000 Z-Coins!`,
+                        `<div style="background-color: #020617; color: #f8fafc; padding: 40px 20px; font-family: sans-serif; text-align: center; border: 1px solid #1e293b; border-radius: 16px; max-w: 600px; margin: 0 auto;">
+                            <h2 style="color: #F59E0B; font-size: 24px; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px;">🏆 VOCE GANHOU O SORTEIO!</h2>
+                            <p style="color: #94a3b8; font-size: 14px; margin-top: 0; margin-bottom: 25px;">Zher Keys Sweepstake Winner</p>
+                            
+                            <div style="background-color: rgba(245, 158, 11, 0.1); border: 1px solid #F59E0B; color: #F59E0B; display: inline-block; padding: 8px 16px; border-radius: 9999px; font-size: 12px; font-weight: bold; letter-spacing: 1px; margin-bottom: 25px;">
+                                🎉 10.000.000 Z-COINS RECEBIDOS
+                            </div>
+                            
+                            <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6; margin-bottom: 25px; text-align: left;">
+                                Ola, jogador!<br><br>
+                                Temos o imenso prazer de informar que voce foi o grande vencedor do nosso sorteio semanal de <strong>10.000.000 de Z-Coins</strong>!
+                                O premio ja foi creditado diretamente na sua carteira de Z-Points e voce pode utiliza-lo para rodar a roleta ou aproveitar os minijogos do site.
+                            </p>
+                            
+                            <div style="background-color: #0f172a; border: 1px solid #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 25px; text-align: left;">
+                                <h4 style="color: white; margin-top: 0; margin-bottom: 10px; font-size: 14px; font-weight: bold; letter-spacing: 1px;">Detalhes do Premio:</h4>
+                                <ul style="color: #94a3b8; font-size: 13px; padding-left: 20px; margin: 0; line-height: 1.8;">
+                                    <li><strong>Premio:</strong> 10.000.000 Z-Coins</li>
+                                    <li><strong>Transacao:</strong> Credito automatico via sistema</li>
+                                    <li><strong>Data do Sorteio:</strong> Todo Domingo</li>
+                                </ul>
+                            </div>
+                            
+                            <a href="${process.env.APP_URL || 'https://zherkeys.com'}/account.html" style="background-color: #F59E0B; color: black; display: inline-block; padding: 14px 28px; border-radius: 8px; font-size: 13px; font-weight: bold; text-decoration: none; letter-spacing: 1.5px;">
+                                IR PARA MINHA CARTEIRA
+                            </a>
+                        </div>`
+                    ).catch(e => console.error("[SWEEPSTAKE-EMAIL-WINNER] Erro ao enviar e-mail de ganhador:", e));
                 }
                 
-                // Registra na história
+                // Registra na historia
                 await client.query(
                     "INSERT INTO sweepstake_history (winner_id, prize_amount) VALUES ($1, $2)",
                     [winnerId, 10000000]
                 );
                 
-                // Limpa todos os participantes para a próxima semana
+                // Limpa todos os participantes para a proxima semana
                 await client.query("DELETE FROM sweepstake_participants");
                 
                 await client.query('COMMIT');
 
-                // Envia e-mail de notificação para todos os usuários cadastrados participarem do novo sorteio
+                // Envia e-mail de notificacao para todos os usuarios cadastrados participarem do novo sorteio
                 (async () => {
                     try {
                         const allUsersRes = await pool.query("SELECT email FROM users");
                         const allUsers = allUsersRes.rows;
-                        console.log(`[SWEEPSTAKE] Notificando ${allUsers.length} usuários sobre o início do novo sorteio semanal...`);
+                        console.log(`[SWEEPSTAKE] Notificando ${allUsers.length} usuarios sobre o inicio do novo sorteio semanal...`);
                         
+                        const winnerEmail = userRes.rows.length > 0 ? userRes.rows[0].email : '';
+                        const winnerEmailMasked = maskEmail(winnerEmail);
+
                         for (let userRow of allUsers) {
                             sendEmailViaBrevo(
                                 userRow.email,
-                                "🎟️ Novo Sorteio Semanal Ativo - Ganhe 10 Milhões de Z-Coins!",
-                                `Olá! Um novo sorteio de 10.000.000 Z-Coins acabou de começar na Zher Keys! Acesse a nossa página inicial, complete a tarefa rápida de anúncios e garanta a sua inscrição para concorrer neste domingo às 20h! Boa sorte!`,
+                                "🎟️ Novo Sorteio Semanal Ativo - Ganhe 10 Milhoes de Z-Coins!",
+                                `Ola! Um novo sorteio de 10.000.000 Z-Coins acabou de comecar na Zher Keys! O ganhador do ultimo sorteio foi o usuario ${winnerEmailMasked}. Acesse a nossa pagina inicial, complete a tarefa rapida de anuncios e garanta a sua inscricao para concorrer neste domingo as 20h! Boa sorte!`,
                                 `<div style="background-color: #020617; color: #f8fafc; padding: 40px 20px; font-family: sans-serif; text-align: center; border: 1px solid #1e293b; border-radius: 16px; max-w: 600px; margin: 0 auto;">
                                     <h2 style="color: #F43F5E; font-size: 24px; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px;">NOVO SORTEIO ZHER KEYS</h2>
                                     <p style="color: #94a3b8; font-size: 14px; margin-top: 0; margin-bottom: 25px;">Oportunidade Semanal Recorrente</p>
                                     
                                     <div style="background-color: rgba(244, 63, 94, 0.1); border: 1px solid #F43F5E; color: #F43F5E; display: inline-block; padding: 8px 16px; border-radius: 9999px; font-size: 12px; font-weight: bold; letter-spacing: 1px; margin-bottom: 25px;">
-                                        🎟️ INSCRIÇÕES ABERTAS
+                                        🎟️ INSCRICOES ABERTAS
                                     </div>
                                     
                                     <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6; margin-bottom: 25px; text-align: left;">
-                                        Olá, jogador!<br><br>
-                                        Um novo sorteio de <strong>10.000.000 de Z-Coins</strong> acaba de ser iniciado! A lista de participantes da semana anterior foi redefinida, o que significa que <strong>todas as inscrições estão zeradas</strong> e você já pode garantir a sua vaga.
+                                        Ola, jogador!<br><br>
+                                        Um novo sorteio de <strong>10.000.000 de Z-Coins</strong> acaba de ser iniciado! A lista de participantes da semana anterior foi redefinida, o que significa que <strong>todas as inscricoes estao zeradas</strong> e voce ja pode garantir a sua vaga.
+                                    </p>
+
+                                    <p style="color: #cbd5e1; font-size: 14px; font-style: italic; margin-bottom: 25px; text-align: center; background-color: #0f172a; border: 1px solid #1e293b; padding: 12px; border-radius: 8px;">
+                                        🏆 O grande vencedor do ultimo sorteio foi: <strong>${winnerEmailMasked}</strong>!
                                     </p>
 
                                     <div style="margin: 25px 0;">
-                                        <img src="${process.env.APP_URL || 'https://zherkeys.com'}/sorteio_zcoins.png" alt="Sorteio 10 Milhões Z-Coins" style="width: 100%; max-width: 440px; border-radius: 12px; border: 1px solid #1e293b; display: block; margin: 0 auto; box-shadow: 0 0 20px rgba(244, 63, 94, 0.2);" />
+                                        <img src="${process.env.APP_URL || 'https://zherkeys.com'}/sorteio_zcoins.png" alt="Sorteio 10 Milhoes Z-Coins" style="width: 100%; max-width: 440px; border-radius: 12px; border: 1px solid #1e293b; display: block; margin: 0 auto; box-shadow: 0 0 20px rgba(244, 63, 94, 0.2);" />
                                     </div>
                                     
                                     <div style="background-color: #0f172a; border: 1px solid #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 25px; text-align: left;">
                                         <h4 style="color: white; margin-top: 0; margin-bottom: 10px; font-size: 14px; font-weight: bold; letter-spacing: 1px;">Regras de Entrada:</h4>
                                         <ul style="color: #94a3b8; font-size: 13px; padding-left: 20px; margin: 0; line-height: 1.8;">
-                                            <li><strong>Prêmio Semanal:</strong> 10.000.000 Z-Coins</li>
-                                            <li><strong>Como participar:</strong> Entre no site e assista a 5 anúncios curtos.</li>
-                                            <li><strong>Data Limite:</strong> Domingo às 20:00h (Horário do Servidor)</li>
+                                            <li><strong>Premio Semanal:</strong> 10.000.000 Z-Coins</li>
+                                            <li><strong>Como participar:</strong> Entre no site e assista a 5 anuncios curtos.</li>
+                                            <li><strong>Data Limite:</strong> Todo Domingo as 20:00h (Horario de Brasilia / 23:00h UTC)</li>
                                         </ul>
                                     </div>
                                     
                                     <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin-bottom: 30px; text-align: left;">
-                                        Não perca tempo! Quanto antes você garantir sua inscrição, mais tempo terá para aproveitar os minijogos e rodar a roleta com suas chaves diárias. Quem sabe você será o próximo sortudo da Zher Keys?
+                                        Nao perca tempo! Quanto antes voce garantir sua inscricao, mais tempo tera para aproveitar os minijogos e rodar a roleta com suas chaves diarias. Quem sabe voce sera o proximo sortudo da Zher Keys?
                                     </p>
                                     
                                     <a href="${process.env.APP_URL || 'https://zherkeys.com'}" style="background-color: #F43F5E; color: white; display: inline-block; padding: 14px 28px; border-radius: 8px; font-size: 13px; font-weight: bold; text-decoration: none; letter-spacing: 1.5px;">
                                         GARANTIR MINHA VAGA NO SORTEIO
                                     </a>
                                 </div>`
-                            ).catch(e => console.error("[SWEEPSTAKE-BULK-EMAIL] Erro ao notificar usuário:", e));
+                            ).catch(e => console.error("[SWEEPSTAKE-BULK-EMAIL] Erro ao notificar usuario:", e));
                         }
                     } catch (bulkErr) {
-                        console.error("[SWEEPSTAKE-BULK-EMAIL] Erro ao buscar lista de usuários:", bulkErr);
+                        console.error("[SWEEPSTAKE-BULK-EMAIL] Erro ao buscar lista de usuarios:", bulkErr);
                     }
                 })();
             } catch (err) {
                 await client.query('ROLLBACK');
-                console.error("[SWEEPSTAKE] Erro durante transação de sorteio:", err);
+                console.error("[SWEEPSTAKE] Erro durante transacao de sorteio:", err);
             } finally {
                 client.release();
             }
         }
     } catch (err) {
-        console.error("[SWEEPSTAKE] Erro na verificação do sorteio:", err);
+        console.error("[SWEEPSTAKE] Erro na verificacao do sorteio:", err);
     }
 }
 
