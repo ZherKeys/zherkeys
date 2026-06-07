@@ -2123,7 +2123,11 @@ app.get('/google-shopping.xml', async (req, res) => {
         <description>Gaming &amp; Keys Premium Marketplace</description>\n`;
 
         products.forEach(p => {
-            const slug = (p.title || '')
+            const titleStr = p.title || 'Produto Zher Keys';
+            const descStr = p.description || 'Chave de ativacao de jogo premium na Zher Keys.';
+            const imageStr = p.image || '/logo.png';
+            
+            const slug = titleStr
                 .toLowerCase()
                 .normalize('NFD')
                 .replace(/[\u0300-\u036f]/g, '')
@@ -2132,12 +2136,20 @@ app.get('/google-shopping.xml', async (req, res) => {
             const safeSlug = slug || 'produto';
             
             // Clean XML special characters
-            const titleClean = (p.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
-            const descClean = (p.description || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').substring(0, 1000);
+            const titleClean = titleStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+            const descClean = descStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').substring(0, 1000);
             
-            const imageLink = p.image.startsWith('http') ? p.image : `${domain}${p.image}`;
+            let imageLink = imageStr;
+            if (!imageLink.startsWith('http')) {
+                if (!imageLink.startsWith('/')) {
+                    imageLink = '/' + imageLink;
+                }
+                imageLink = `${domain}${imageLink}`;
+            }
+            
             const availability = p.in_stock ? 'in stock' : 'out of stock';
-            const priceFormatted = `${parseFloat(p.price).toFixed(2)} BRL`;
+            const priceVal = parseFloat(p.price || 0);
+            const priceFormatted = `${priceVal.toFixed(2)} BRL`;
 
             xml += `        <item>
             <g:id>${p.id}</g:id>
@@ -2149,6 +2161,7 @@ app.get('/google-shopping.xml', async (req, res) => {
             <g:availability>${availability}</g:availability>
             <g:price>${priceFormatted}</g:price>
             <g:brand>Zher Keys</g:brand>
+            <g:identifier_exists>no</g:identifier_exists>
         </item>\n`;
         });
 
