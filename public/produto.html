@@ -432,17 +432,6 @@ gtag('config', 'AW-18202657831');
             console.error("Erro ao parsear galeria:", e);
         }
 
-        const allImages = [];
-        if (window.currentProduct.image) {
-            allImages.push(window.currentProduct.image);
-        }
-        galleryImages.forEach(img => {
-            if (img) allImages.push(img);
-        });
-
-        let activeSlideIndex = 0;
-        let autoPlayInterval = null;
-
         function getMediaType(url) {
             if (!url) return 'image';
             if (url.startsWith('data:video/') || url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.ogg')) {
@@ -467,6 +456,30 @@ gtag('config', 'AW-18202657831');
             return ytId || '';
         }
 
+        const rawMedia = [];
+        if (window.currentProduct.image) {
+            rawMedia.push(window.currentProduct.image);
+        }
+        galleryImages.forEach(img => {
+            if (img) rawMedia.push(img);
+        });
+
+        // Separar videos de imagens para colocar os videos em primeiro
+        const videos = [];
+        const images = [];
+        rawMedia.forEach(item => {
+            if (getMediaType(item) === 'image') {
+                images.push(item);
+            } else {
+                videos.push(item);
+            }
+        });
+
+        const allImages = videos.concat(images);
+
+        let activeSlideIndex = 0;
+        let autoPlayInterval = null;
+
         function initSlider() {
             const container = document.getElementById('product-slides-container');
             const btnPrev = document.getElementById('slider-btn-prev');
@@ -489,10 +502,14 @@ gtag('config', 'AW-18202657831');
                     const video = document.createElement('video');
                     video.src = mediaSrc;
                     video.controls = true;
-                    video.muted = true;
+                    video.muted = false; // Com som!
                     video.playsInline = true;
                     video.className = "w-full h-full object-cover rounded-xl";
                     video.id = `slide-media-${index}`;
+                    
+                    if (index === 0) {
+                        video.autoplay = true;
+                    }
                     
                     video.onplay = () => {
                         if (autoPlayInterval) {
@@ -504,7 +521,8 @@ gtag('config', 'AW-18202657831');
                 } else if (type === 'youtube') {
                     const ytId = getYoutubeId(mediaSrc);
                     const iframe = document.createElement('iframe');
-                    iframe.src = `https://www.youtube.com/embed/${ytId}?enablejsapi=1&rel=0`;
+                    const autoplayParams = index === 0 ? '&autoplay=1' : '';
+                    iframe.src = `https://www.youtube.com/embed/${ytId}?enablejsapi=1&rel=0${autoplayParams}`;
                     iframe.className = "w-full h-full border-0 rounded-xl";
                     iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
                     iframe.allowFullscreen = true;
@@ -556,8 +574,10 @@ gtag('config', 'AW-18202657831');
                     prevMedia.pause();
                 } else if (prevMedia.tagName === 'IFRAME') {
                     const currentSrc = prevMedia.src;
+                    let cleanSrc = currentSrc.replace('&autoplay=1', '').replace('?autoplay=1', '');
+                    cleanSrc = cleanSrc.replace('&mute=1', '').replace('?mute=1', '');
                     prevMedia.src = '';
-                    prevMedia.src = currentSrc;
+                    prevMedia.src = cleanSrc;
                 }
             }
             
@@ -593,7 +613,14 @@ gtag('config', 'AW-18202657831');
                     autoPlayInterval = null;
                 }
                 if (nextType === 'video' && nextMedia) {
+                    nextMedia.muted = false; // Com som!
                     nextMedia.play().catch(e => console.log("Autoplay de video local bloqueado pelo navegador"));
+                } else if (nextType === 'youtube' && nextMedia) {
+                    let currentSrc = nextMedia.src;
+                    let cleanSrc = currentSrc.replace('&autoplay=1', '').replace('?autoplay=1', '');
+                    cleanSrc = cleanSrc.replace('&mute=1', '').replace('?mute=1', '');
+                    const separator = cleanSrc.includes('?') ? '&' : '?';
+                    nextMedia.src = `${cleanSrc}${separator}autoplay=1`;
                 }
             } else {
                 startAutoPlay();
