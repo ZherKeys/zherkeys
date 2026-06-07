@@ -118,6 +118,9 @@ gtag('config', 'AW-18202657831');
                         <div id="categories-container" class="bg-slate-950 border border-slate-800 rounded-lg p-3 grid grid-cols-2 gap-2">
                             <!-- Gerado via JS -->
                         </div>
+                        <div id="custom-category-wrapper" class="hidden mt-2">
+                            <input type="text" id="custom-category-input" placeholder="DIGITE A NOVA CATEGORIA (Ex: NINTENDO KEY)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-[10px] text-white focus:outline-none focus:border-toxicgreen focus:ring-1 focus:ring-toxicgreen transition-all uppercase placeholder-slate-700 font-orbitron tracking-widest">
+                        </div>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4">
@@ -889,13 +892,33 @@ gtag('config', 'AW-18202657831');
 
         function renderCategories() {
             const container = document.getElementById('categories-container');
-            container.innerHTML = categoryList.map(c => `
+            let html = categoryList.map(c => `
                 <label class="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-white transition-colors text-xs font-inter">
-                    <input type="radio" name="prod_cat" value="${c}" class="category-radio w-4 h-4 text-toxicgreen bg-slate-900 border-slate-700 focus:ring-0" ${c === 'STEAM KEY' ? 'checked' : ''}>
+                    <input type="radio" name="prod_cat" value="${c}" class="category-radio w-4 h-4 text-toxicgreen bg-slate-900 border-slate-700 focus:ring-0" ${c === 'STEAM KEY' ? 'checked' : ''} onchange="toggleCustomCategoryInput(false)">
                     <span class="truncate">${c}</span>
                 </label>
             `).join('');
+            
+            html += `
+                <label class="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-white transition-colors text-xs font-inter col-span-2 mt-1 border-t border-slate-800/60 pt-2 font-orbitron tracking-widest text-electricblue font-bold">
+                    <input type="radio" name="prod_cat" value="OUTRA" class="category-radio w-4 h-4 text-toxicgreen bg-slate-900 border-slate-700 focus:ring-0" onchange="toggleCustomCategoryInput(true)">
+                    <span>+ OUTRA CATEGORIA</span>
+                </label>
+            `;
+            container.innerHTML = html;
         }
+
+        window.toggleCustomCategoryInput = (show) => {
+            const wrapper = document.getElementById('custom-category-wrapper');
+            if (wrapper) {
+                if (show) {
+                    wrapper.classList.remove('hidden');
+                } else {
+                    wrapper.classList.add('hidden');
+                    document.getElementById('custom-category-input').value = '';
+                }
+            }
+        };
 
         function renderGenres() {
             const container = document.getElementById('genres-container');
@@ -1017,9 +1040,18 @@ gtag('config', 'AW-18202657831');
                 return;
             }
 
+            let categoryVal = document.querySelector('.category-radio:checked')?.value || '';
+            if (categoryVal === 'OUTRA') {
+                categoryVal = document.getElementById('custom-category-input').value.trim().toUpperCase();
+            }
+            if (!categoryVal) {
+                alert("Por favor, selecione ou digite uma categoria.");
+                return;
+            }
+
             const payload = {
                 title: document.getElementById('prod-title').value,
-                category: document.querySelector('.category-radio:checked')?.value || '',
+                category: categoryVal,
                 price: parseMaskedFloat(document.getElementById('prod-price').value),
                 old_price: parseMaskedFloat(document.getElementById('prod-old-price').value),
                 image: imageVal,
@@ -1060,9 +1092,20 @@ gtag('config', 'AW-18202657831');
         window.editProduct = (p) => {
             document.getElementById('prod-id').value = p.id;
             document.getElementById('prod-title').value = p.title;
+            const hasCat = categoryList.includes(p.category);
             document.querySelectorAll('.category-radio').forEach(rb => {
-                rb.checked = (rb.value === p.category);
+                if (hasCat) {
+                    rb.checked = (rb.value === p.category);
+                } else {
+                    rb.checked = (rb.value === 'OUTRA');
+                }
             });
+            if (hasCat) {
+                toggleCustomCategoryInput(false);
+            } else {
+                toggleCustomCategoryInput(true);
+                document.getElementById('custom-category-input').value = p.category;
+            }
             document.getElementById('prod-price').value = formatNumberToMask(p.price);
             document.getElementById('prod-old-price').value = p.old_price ? formatNumberToMask(p.old_price) : '';
             document.getElementById('prod-image').value = p.image;
@@ -1132,6 +1175,7 @@ gtag('config', 'AW-18202657831');
             document.querySelectorAll('.genre-checkbox').forEach(cb => cb.checked = false);
             const firstCat = document.querySelector('.category-radio');
             if (firstCat) firstCat.checked = true;
+            toggleCustomCategoryInput(false);
             document.getElementById('btn-save').innerText = "SALVAR PRODUTO";
             document.getElementById('btn-save').classList.replace('bg-electricblue', 'bg-toxicgreen');
             document.getElementById('btn-cancel').classList.add('hidden');

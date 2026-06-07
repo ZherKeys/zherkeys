@@ -1003,11 +1003,53 @@ gtag('config', 'AW-18202657831');
         // ========================================
         let produtos = [];
 
+        function populateCategoryFilter() {
+            const filterSelect = document.getElementById('filter-category');
+            if (!filterSelect) return;
+            
+            const categories = Array.from(new Set(produtos.map(p => p.category)))
+                                    .filter(Boolean)
+                                    .sort();
+            
+            const currentValue = filterSelect.value;
+            filterSelect.innerHTML = '<option value="" data-i18n="cat_all">Todas as Categorias</option>';
+            
+            categories.forEach(cat => {
+                let labelKey = '';
+                let defaultLabel = cat;
+                
+                if (cat === 'STEAM KEY') { labelKey = 'cat_steam'; defaultLabel = 'Steam Key'; }
+                else if (cat === 'XBOX KEY') { labelKey = 'cat_xbox'; defaultLabel = 'Xbox Key / Conta'; }
+                else if (cat === 'MICROSOFT STORE') { labelKey = 'cat_microsoft'; defaultLabel = 'Microsoft Store'; }
+                else if (cat === 'EPIC GAMES') { labelKey = 'cat_epic'; defaultLabel = 'Epic Games Key'; }
+                else if (cat === 'CONTA') { labelKey = 'cat_account'; defaultLabel = 'Conta'; }
+                else if (cat === 'GIFT CARD') { labelKey = 'cat_giftcard'; defaultLabel = 'Gift Card'; }
+                
+                const option = document.createElement('option');
+                option.value = cat;
+                if (labelKey) {
+                    option.setAttribute('data-i18n', labelKey);
+                }
+                option.innerText = defaultLabel;
+                filterSelect.appendChild(option);
+            });
+            
+            if (categories.includes(currentValue)) {
+                filterSelect.value = currentValue;
+            } else {
+                filterSelect.value = '';
+            }
+            
+            const currentLang = window.currentCurrency === 'USD' ? 'en' : (window.currentCurrency === 'EUR' ? 'es' : 'pt');
+            applyTranslations(currentLang);
+        }
+
         async function loadProducts() {
             try {
                 const res = await fetch('/api/products');
                 if(!res.ok) throw new Error("Falha ao buscar produtos");
                 produtos = await res.json();
+                populateCategoryFilter();
                 renderGrid();
             } catch(e) {
                 console.error("Erro ao carregar produtos:", e);
