@@ -1044,12 +1044,52 @@ gtag('config', 'AW-18202657831');
             applyTranslations(currentLang);
         }
 
+        function populateGenreFilter() {
+            const filterSelect = document.getElementById('filter-genre');
+            if (!filterSelect) return;
+            
+            const genresSet = new Set();
+            produtos.forEach(p => {
+                if (p.genres) {
+                    p.genres.split(',').forEach(g => {
+                        const trimmed = g.trim();
+                        if (trimmed) {
+                            const capitalized = trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+                            genresSet.add(capitalized);
+                        }
+                    });
+                }
+            });
+            
+            const genres = Array.from(genresSet).sort();
+            const currentValue = filterSelect.value;
+            
+            filterSelect.innerHTML = '<option value="" data-i18n="genre_all">Todos os Gêneros</option>';
+            
+            genres.forEach(g => {
+                const option = document.createElement('option');
+                option.value = g.toLowerCase();
+                option.innerText = g;
+                filterSelect.appendChild(option);
+            });
+            
+            if (genres.map(g => g.toLowerCase()).includes(currentValue.toLowerCase())) {
+                filterSelect.value = currentValue;
+            } else {
+                filterSelect.value = '';
+            }
+            
+            const currentLang = window.currentCurrency === 'USD' ? 'en' : (window.currentCurrency === 'EUR' ? 'es' : 'pt');
+            applyTranslations(currentLang);
+        }
+
         async function loadProducts() {
             try {
                 const res = await fetch('/api/products');
                 if(!res.ok) throw new Error("Falha ao buscar produtos");
                 produtos = await res.json();
                 populateCategoryFilter();
+                populateGenreFilter();
                 renderGrid();
             } catch(e) {
                 console.error("Erro ao carregar produtos:", e);
