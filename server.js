@@ -1874,6 +1874,9 @@ app.get('/ads.txt', (req, res) => {
 app.get('/privacy-policy', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'politica-de-privacidade.html'));
 });
+app.get('/shipping-policy', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'politica-de-entrega.html'));
+});
 app.get('/refund-policy', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'politica-de-devolucao.html'));
 });
