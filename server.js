@@ -478,6 +478,7 @@ async function initDB() {
             
             ALTER TABLE products ADD COLUMN IF NOT EXISTS activation_key TEXT;
             ALTER TABLE order_items ADD COLUMN IF NOT EXISTS activation_key TEXT;
+            ALTER TABLE order_items ADD COLUMN IF NOT EXISTS key_viewed BOOLEAN DEFAULT false;
             ALTER TABLE products ADD COLUMN IF NOT EXISTS in_stock BOOLEAN DEFAULT true;
             ALTER TABLE products ADD COLUMN IF NOT EXISTS is_global BOOLEAN DEFAULT true;
             ALTER TABLE products ADD COLUMN IF NOT EXISTS restricted_countries TEXT;
@@ -2206,7 +2207,7 @@ app.get('/api/my-orders', requireAuth, async (req, res) => {
         
         for (let order of orders) {
             const itemsRes = await pool.query(`
-                SELECT oi.quantity, oi.price, 
+                SELECT oi.quantity, oi.price, oi.product_id, oi.key_viewed,
                 CASE WHEN $1 = 'approved' THEN oi.activation_key ELSE NULL END as activation_key,
                 p.title, p.image, p.category
                 FROM order_items oi
@@ -2218,6 +2219,27 @@ app.get('/api/my-orders', requireAuth, async (req, res) => {
         res.json(orders);
     } catch(e) {
         res.status(500).json({ error: 'Erro ao buscar pedidos' });
+    }
+});
+
+app.post('/api/orders/:orderId/items/:productId/reveal', requireAuth, async (req, res) => {
+    const { orderId, productId } = req.params;
+    try {
+        // Verifica se o pedido pertence ao usuario e está aprovado
+        const orderRes = await pool.query('SELECT id, status FROM orders WHERE id = $1 AND user_id = $2', [orderId, req.session.userId]);
+        if (orderRes.rows.length === 0) {
+            return res.status(403).json({ error: 'Acesso negado' });
+        }
+        if (orderRes.rows[0].status !== 'approved') {
+            return res.status(400).json({ error: 'Pedido nao aprovado' });
+        }
+
+        // Marca a chave como visualizada
+        await pool.query('UPDATE order_items SET key_viewed = true WHERE order_id = $1 AND product_id = $2', [orderId, productId]);
+        res.json({ success: true });
+    } catch (e) {
+        console.error("Erro ao marcar chave como visualizada:", e);
+        res.status(500).json({ error: 'Erro no servidor' });
     }
 });
 
@@ -2259,7 +2281,7 @@ app.get('/api/admin/orders', requireAdmin, async (req, res) => {
         
         for (let order of orders) {
             const itemsRes = await pool.query(`
-                SELECT oi.quantity, oi.price, p.title, oi.activation_key
+                SELECT oi.quantity, oi.price, p.title, oi.activation_key, oi.key_viewed
                 FROM order_items oi
                 JOIN products p ON oi.product_id = p.id
                 WHERE oi.order_id = $1
