@@ -168,9 +168,14 @@ async function fetchSteamGameInfo(title) {
         }
         
         const headerImage = gameData.header_image || null;
-        let libraryImage = null;
-        if (headerImage) {
-            libraryImage = headerImage.replace('/header.jpg', '/library_600x900.jpg');
+        let libraryImage = `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appid}/library_600x900.jpg`;
+        try {
+            const headRes = await fetch(libraryImage, { method: 'HEAD' });
+            if (!headRes.ok) {
+                libraryImage = headerImage;
+            }
+        } catch (e) {
+            libraryImage = headerImage;
         }
         const screenshots = (gameData.screenshots || []).map(s => s.path_full).slice(0, 5);
         
