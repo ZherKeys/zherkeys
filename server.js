@@ -133,7 +133,7 @@ async function migrateExistingBase64Images() {
 async function fetchSteamGameInfo(title) {
     const cleanTitle = title
         .replace(/\b(steam|key|pc|deluxe|definitive|global|edition|gift|card|standard|gold|ultimate|premium|bundle|package|row|activation)\b/gi, '')
-        .replace(/[:\-]/g, ' ')
+        .replace(/[():]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
         
@@ -146,7 +146,7 @@ async function fetchSteamGameInfo(title) {
         if (!searchRes.ok) return null;
         
         const searchData = await searchRes.json();
-        if (!searchData.success || !searchData.items || searchData.items.length === 0) {
+        if (!searchData.items || searchData.items.length === 0) {
             return null;
         }
         
