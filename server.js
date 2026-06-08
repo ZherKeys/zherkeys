@@ -49,84 +49,15 @@ const pool = new Pool({
     ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
-// Helper para decodificar e salvar imagem em Base64 como arquivo fisico no servidor
+// Helper para decodificar e salvar imagem em Base64 - Ajustado para persistir strings Base64 diretamente no banco de dados.
+// Isso evita a perda de imagens customizadas em servidores com filesystem efemero (como o Render).
 function saveBase64Image(base64Str, prefix = 'product') {
-    if (!base64Str || !base64Str.startsWith('data:image/')) {
-        return base64Str; // Ja e um link ou nao e base64
-    }
-    try {
-        const matches = base64Str.match(/^data:image\/([A-Za-z0-9]+);base64,(.+)$/);
-        if (!matches || matches.length !== 3) {
-            return base64Str;
-        }
-        const ext = matches[1];
-        const data = matches[2];
-        const buffer = Buffer.from(data, 'base64');
-        
-        const uploadsDir = path.join(__dirname, 'public', 'uploads', 'products');
-        if (!fs.existsSync(uploadsDir)) {
-            fs.mkdirSync(uploadsDir, { recursive: true });
-        }
-        
-        const filename = `${prefix}_${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
-        const filePath = path.join(uploadsDir, filename);
-        fs.writeFileSync(filePath, buffer);
-        
-        return `/uploads/products/${filename}`;
-    } catch (err) {
-        console.error("[SAVE-BASE64] Erro ao salvar imagem base64:", err);
-        return base64Str;
-    }
+    return base64Str;
 }
 
-// Migra imagens Base64 existentes no banco de dados para arquivos fisicos
+// Migracao desativada para manter persistencia do Base64 diretamente no banco de dados PostgreSQL
 async function migrateExistingBase64Images() {
-    try {
-        const result = await pool.query("SELECT id, image, gallery FROM products");
-        for (const row of result.rows) {
-            let updated = false;
-            let newImage = row.image;
-            let newGallery = row.gallery;
-            
-            if (row.image && row.image.startsWith('data:image/')) {
-                console.log(`[MIGRACAO] Convertendo imagem base64 do produto ID: ${row.id}...`);
-                newImage = saveBase64Image(row.image, `product_${row.id}`);
-                updated = true;
-            }
-            
-            if (row.gallery) {
-                try {
-                    let galleryArr = JSON.parse(row.gallery);
-                    if (Array.isArray(galleryArr)) {
-                        let galleryUpdated = false;
-                        galleryArr = galleryArr.map((imgUrl, index) => {
-                            if (imgUrl && imgUrl.startsWith('data:image/')) {
-                                galleryUpdated = true;
-                                return saveBase64Image(imgUrl, `gallery_${row.id}_${index}`);
-                            }
-                            return imgUrl;
-                        });
-                        if (galleryUpdated) {
-                            newGallery = JSON.stringify(galleryArr);
-                            updated = true;
-                        }
-                    }
-                } catch (e) {
-                    // Ignora erros de parse da galeria
-                }
-            }
-            
-            if (updated) {
-                await pool.query(
-                    "UPDATE products SET image = $1, gallery = $2 WHERE id = $3",
-                    [newImage, newGallery, row.id]
-                );
-                console.log(`[MIGRACAO] Produto ID: ${row.id} atualizado com sucesso.`);
-            }
-        }
-    } catch (err) {
-        console.error("[MIGRACAO] Erro ao migrar imagens base64:", err);
-    }
+    return;
 }
 
 // Ajudante interno para buscar detalhes no Steam
@@ -363,7 +294,15 @@ async function autoUpdateProductSteamInfo(productId, title, currentDescription) 
             let newGallery = product.gallery || '[]';
             let needsUpdate = false;
             
-            if (!newImage || newImage.trim() === '' || newImage === '/logo.png') {
+            let isCurrentImgBroken = !newImage || newImage.trim() === '' || newImage === '/logo.png';
+            if (!isCurrentImgBroken && newImage.startsWith('/uploads/')) {
+                const physicalPath = path.join(__dirname, 'public', newImage);
+                if (!fs.existsSync(physicalPath)) {
+                    isCurrentImgBroken = true;
+                }
+            }
+            
+            if (isCurrentImgBroken) {
                 if (steamInfo.libraryImage) {
                     newImage = steamInfo.libraryImage;
                     needsUpdate = true;
@@ -423,6 +362,12 @@ async function syncAllProductsSteamInfo() {
                     }
                 } catch (e) {
                     // Ignora erros de rede e mantem o status atual
+                }
+            } else if (!isImageBroken && p.image && p.image.startsWith('/uploads/')) {
+                const physicalPath = path.join(__dirname, 'public', p.image);
+                if (!fs.existsSync(physicalPath)) {
+                    isImageBroken = true;
+                    console.log(`[STEAM-SYNC] Imagem local nao encontrada fisicamente para o produto ID ${p.id} (${p.title}). Marcando como quebrada.`);
                 }
             }
             if (!p.description || !p.description.includes('<!-- STEAM_METADATA_START -->') || !p.description.includes('Classificacao:') || isImageBroken) {
