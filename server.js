@@ -2371,6 +2371,10 @@ app.get('/produto/:id', async (req, res) => {
             }
         });
 
+        const is18Plus = formattedDesc.includes('Classificacao: 18');
+        const isLoggedIn = !!req.session.userId;
+        const requiresAgeGate = is18Plus && !isLoggedIn;
+
         html = html
             .replace(/{{PRODUCT_TITLE}}/g, title)
             .replace(/{{PRODUCT_DESCRIPTION}}/g, description)
@@ -2384,7 +2388,8 @@ app.get('/produto/:id', async (req, res) => {
             .replace(/{{PRODUCT_GENRES}}/g, genresTags)
             .replace(/{{PRODUCT_IN_STOCK}}/g, stockStatus)
             .replace(/{{SCHEMA_JSON}}/g, schemaJson)
-            .replace(/{{{PRODUCT_JSON}}}/g, JSON.stringify(product));
+            .replace(/{{{PRODUCT_JSON}}}/g, JSON.stringify(product))
+            .replace(/{{{REQUIRES_AGE_GATE}}}/g, requiresAgeGate ? 'true' : 'false');
             
         res.send(html);
     } catch(e) {

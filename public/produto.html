@@ -426,9 +426,63 @@ gtag('config', 'AW-18202657831');
         </div>
     </footer>
 
+    <!-- Modal de Classificacao 18 Anos -->
+    <div id="age-gate-modal" class="fixed inset-0 z-[9999] bg-slate-950/95 flex items-center justify-center p-4 backdrop-blur-xl hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full text-center relative overflow-hidden shadow-2xl">
+            <!-- Efeito decorativo de fundo -->
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl"></div>
+            
+            <div class="w-16 h-16 rounded-2xl bg-rose-950/30 border border-rose-900/50 flex items-center justify-center text-rose-500 font-orbitron font-extrabold text-2xl mx-auto mb-6">
+                18
+            </div>
+            
+            <h3 class="font-orbitron font-bold text-lg text-white tracking-wider uppercase mb-3">// CONTEUDO RESTRITO</h3>
+            <p class="font-inter text-xs text-slate-400 leading-relaxed mb-8">
+                Este jogo possui classificacao indicativa de <strong>18 anos ou mais</strong>. Para visualizar os detalhes do produto, por favor confirme que voce possui a idade recomendada.
+            </p>
+            
+            <div class="grid grid-cols-2 gap-4 font-orbitron text-xs tracking-wider">
+                <button onclick="confirmAge()" class="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold py-3.5 px-4 rounded-xl border border-emerald-500/30 transition-all duration-300 shadow-lg shadow-emerald-500/15 uppercase">
+                    Sim, tenho 18+
+                </button>
+                <button onclick="rejectAge()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3.5 px-4 rounded-xl border border-slate-700 transition-all duration-300 uppercase">
+                    Sair
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Injetado do servidor
         window.currentProduct = {{{PRODUCT_JSON}}};
+        window.requiresAgeGate = {{{REQUIRES_AGE_GATE}}};
+
+        // Controle de Classificacao Indicativa (Age Gate)
+        function checkAgeGate() {
+            const ageGateModal = document.getElementById('age-gate-modal');
+            if (!ageGateModal) return;
+            
+            const isConfirmed = localStorage.getItem('zher_age_confirmed') === 'true';
+            if (window.requiresAgeGate && !isConfirmed) {
+                ageGateModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        window.confirmAge = () => {
+            localStorage.setItem('zher_age_confirmed', 'true');
+            const ageGateModal = document.getElementById('age-gate-modal');
+            if (ageGateModal) {
+                ageGateModal.classList.add('hidden');
+            }
+            document.body.style.overflow = '';
+        };
+        
+        window.rejectAge = () => {
+            window.location.href = '/';
+        };
+
+        checkAgeGate();
 
         // Configura o carrossel de slides (galeria de imagens, videos locais e YouTube)
         let galleryImages = [];
