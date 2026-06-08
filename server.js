@@ -180,6 +180,19 @@ async function fetchSteamGameInfo(title) {
     }
 }
 
+// Limpa e formata a descricao do produto para exibicao publica (converte markdown e remove asteriscos soltos)
+function formatProductDescription(desc) {
+    if (!desc) return '';
+    return desc
+        // Converte **texto** para <strong>texto</strong>
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        // Substitui asteriscos de lista (* item) no inicio de linhas por bullet points (• item)
+        .replace(/^\s*\*\s+/gm, '• ')
+        // Remove quaisquer outros asteriscos soltos
+        .replace(/\*/g, '')
+        .trim();
+}
+
 // Atualiza a descricao do produto com os dados obtidos do Steam
 async function autoUpdateProductSteamInfo(productId, title, currentDescription) {
     try {
@@ -195,11 +208,20 @@ async function autoUpdateProductSteamInfo(productId, title, currentDescription) 
             cleanReq = cleanReq.replace(/^(<strong>)?\s*(m&iacute;nimos|m&iacute;nimo|m&iacute;nimos:|m&iacute;nimo:|minimos|minimo|minimos:|minimo:|minimum|minimum:)\s*(<\/strong>)?\s*(<br\s*\/?>)?/gi, '');
             cleanReq = cleanReq.replace(/class="[^"]*"/gi, '');
             cleanReq = cleanReq.replace(/style="[^"]*"/gi, '');
+            cleanReq = cleanReq.replace(/\*/g, '');
         } else {
             cleanReq = 'Requisitos nao informados no Steam.';
         }
         
-        const languagesClean = steamInfo.languages.replace(/&amp;/g, '&');
+        let languagesClean = steamInfo.languages.replace(/&amp;/g, '&');
+        // Limpa a nota explicativa de suporte de audio e remove os asteriscos soltos dos idiomas
+        if (languagesClean.includes('<br>')) {
+            languagesClean = languagesClean.split('<br>')[0];
+        }
+        if (languagesClean.includes('<p>')) {
+            languagesClean = languagesClean.split('<p>')[0];
+        }
+        languagesClean = languagesClean.replace(/\*/g, '').trim().replace(/,\s*$/, '');
         
         // Monta o bloco HTML estilizado em cyberpunk
         const metadataBlock = `<!-- STEAM_METADATA_START -->
@@ -797,7 +819,10 @@ app.get('/api/products', async (req, res) => {
         await cleanupExpiredOrders();
 
         const result = await pool.query('SELECT id, title, description, price, old_price, image, category, in_stock, is_global, restricted_countries, genres FROM products ORDER BY id ASC');
-        productsCache = result.rows;
+        productsCache = result.rows.map(row => ({
+            ...row,
+            description: formatProductDescription(row.description)
+        }));
         productsCacheTime = now;
         res.json(productsCache);
     } catch(e) {
@@ -2203,8 +2228,9 @@ app.get('/produto/:id', async (req, res) => {
         let html = await fs.promises.readFile(templatePath, 'utf8');
         
         const title = product.title;
-        const description = product.description.substring(0, 160).replace(/"/g, '&quot;');
-        const fullDescription = product.description;
+        const formattedDesc = formatProductDescription(product.description);
+        const description = formattedDesc.replace(/<[^>]*>/g, '').substring(0, 160).replace(/"/g, '&quot;');
+        const fullDescription = formattedDesc;
         const imgPath = product.image || '/logo.png';
         const image = (imgPath.startsWith('http') || imgPath.startsWith('data:')) ? imgPath : `https://zherkeys.com${imgPath}`;
         
@@ -2416,9 +2442,10 @@ app.get('/google-shopping.xml', async (req, res) => {
                 .replace(/(^-|-$)+/g, '');
             const safeSlug = slug || 'produto';
             
-            // Clean XML special characters
+            // Clean XML special characters and remove asterisks and HTML tags
             const titleClean = titleStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
-            const descClean = descStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').substring(0, 1000);
+            const descStripped = descStr.replace(/<[^>]*>/g, '').replace(/\*/g, '');
+            const descClean = descStripped.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').substring(0, 1000);
             
             let imageLink = imageStr;
             if (imageLink.startsWith('data:image/')) {
