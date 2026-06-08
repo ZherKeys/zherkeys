@@ -309,7 +309,7 @@ async function autoUpdateProductSteamInfo(productId, title, currentDescription) 
             let newGallery = product.gallery || '[]';
             let needsUpdate = false;
             
-            if (!newImage || newImage.startsWith('/uploads/products/') || newImage.startsWith('data:image/')) {
+            if (!newImage || newImage.trim() === '' || newImage === '/logo.png') {
                 if (steamInfo.libraryImage) {
                     newImage = steamInfo.libraryImage;
                     needsUpdate = true;
@@ -321,7 +321,7 @@ async function autoUpdateProductSteamInfo(productId, title, currentDescription) 
                 }
             }
             
-            if (newGallery === '[]' || !newGallery || newGallery.includes('/uploads/products/')) {
+            if (newGallery === '[]' || !newGallery || newGallery === 'null') {
                 if (steamInfo.screenshots && steamInfo.screenshots.length > 0) {
                     newGallery = JSON.stringify(steamInfo.screenshots);
                     needsUpdate = true;
@@ -360,7 +360,7 @@ async function syncAllProductsSteamInfo() {
         
         let count = 0;
         for (const p of products) {
-            let isImageBroken = !p.image || p.image.startsWith('/uploads/products/') || p.image.startsWith('data:image/');
+            let isImageBroken = !p.image || p.image.trim() === '' || p.image === '/logo.png';
             if (!isImageBroken && p.image && p.image.includes('steamstatic.com')) {
                 try {
                     const checkRes = await fetch(p.image, { method: 'HEAD' });
@@ -2202,7 +2202,7 @@ app.get('/api/admin/orders', requireAdmin, async (req, res) => {
         
         for (let order of orders) {
             const itemsRes = await pool.query(`
-                SELECT oi.quantity, oi.price, p.title
+                SELECT oi.quantity, oi.price, p.title, oi.activation_key
                 FROM order_items oi
                 JOIN products p ON oi.product_id = p.id
                 WHERE oi.order_id = $1
@@ -4213,6 +4213,35 @@ app.post('/api/admin/users/:id/credits', requireAdmin, async (req, res) => {
         res.status(500).json({ error: 'Erro ao ajustar créditos.' });
     } finally {
         client.release();
+    }
+});
+
+// Obter histórico de compras de um usuário (Admin)
+app.get('/api/admin/users/:id/orders', requireAdmin, async (req, res) => {
+    try {
+        const userId = parseInt(req.params.id);
+        const ordersRes = await pool.query(`
+            SELECT o.*, u.email as user_email
+            FROM orders o
+            JOIN users u ON o.user_id = u.id
+            WHERE o.user_id = $1
+            ORDER BY o.id DESC
+        `, [userId]);
+        const orders = ordersRes.rows;
+        
+        for (let order of orders) {
+            const itemsRes = await pool.query(`
+                SELECT oi.quantity, oi.price, p.title, oi.activation_key
+                FROM order_items oi
+                JOIN products p ON oi.product_id = p.id
+                WHERE oi.order_id = $1
+            `, [order.id]);
+            order.items = itemsRes.rows;
+        }
+        res.json(orders);
+    } catch(e) {
+        console.error("[ADMIN-USER-ORDERS] Erro ao buscar pedidos do usuário:", e);
+        res.status(500).json({ error: 'Erro ao buscar pedidos do usuário' });
     }
 });
 

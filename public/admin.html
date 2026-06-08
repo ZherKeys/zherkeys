@@ -307,6 +307,7 @@ gtag('config', 'AW-18202657831');
                                 <th class="py-3 px-4">E-mail</th>
                                 <th class="py-3 px-4">Saldo Atual</th>
                                 <th class="py-3 px-4 text-center">Ações de Crédito (Adicionar/Remover)</th>
+                                <th class="py-3 px-4 text-center">Compras</th>
                             </tr>
                         </thead>
                         <tbody id="admin-users-list">
@@ -769,7 +770,7 @@ gtag('config', 'AW-18202657831');
                 
                 const container = document.getElementById('admin-users-list');
                 if (users.length === 0) {
-                    container.innerHTML = '<tr><td colspan="4" class="text-center py-10 text-slate-500 font-orbitron text-xs">Nenhum usuário cadastrado.</td></tr>';
+                    container.innerHTML = '<tr><td colspan="5" class="text-center py-10 text-slate-500 font-orbitron text-xs">Nenhum usuário cadastrado.</td></tr>';
                     return;
                 }
                 
@@ -787,6 +788,11 @@ gtag('config', 'AW-18202657831');
                                         AJUSTAR CRÉDITO
                                     </button>
                                 </div>
+                            </td>
+                            <td class="py-4 px-4 text-center">
+                                <button onclick="viewUserHistory(${u.id}, '${u.email}')" class="px-4 py-2 bg-slate-800 border border-slate-700 hover:border-electricblue hover:bg-slate-700 text-electricblue font-orbitron text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 mx-auto">
+                                    <i data-lucide="shopping-bag" class="w-4 h-4"></i> VER HISTÓRICO
+                                </button>
                             </td>
                         </tr>
                     `;
@@ -832,10 +838,12 @@ gtag('config', 'AW-18202657831');
         }
 
         // --- PRODUTOS LOGIC ---
+        let allProducts = [];
         async function loadProducts() {
             try {
                 const res = await fetch('/api/admin/products');
                 const products = await res.json();
+                window.allProducts = products;
                 
                 const container = document.getElementById('products-list');
                 
@@ -860,9 +868,9 @@ gtag('config', 'AW-18202657831');
                     html += `
                         <div class="flex flex-col sm:flex-row items-center gap-6 bg-slate-950 p-4 rounded-xl border border-slate-800">
                             <img src="${p.image}" class="w-24 h-24 object-cover rounded-lg shadow-lg">
-                            <div class="flex-grow text-center sm:text-left">
+                            <div class="flex-grow text-center sm:text-left min-w-0 flex-1">
                                 <span class="bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[10px] px-2 py-0.5 rounded-full uppercase">${p.category}</span>
-                                <h4 class="text-white font-orbitron font-bold text-lg mt-1">${p.title}</h4>
+                                <h4 class="text-white font-orbitron font-bold text-lg mt-1 truncate w-full">${p.title}</h4>
                                 <span class="text-toxicgreen font-bold text-sm">R$ ${parseFloat(p.price).toFixed(2).replace('.', ',')}</span>
                                 <br>
                                 ${hasKey}
@@ -870,7 +878,7 @@ gtag('config', 'AW-18202657831');
                                 ${regionTag}
                             </div>
                             <div class="flex items-center gap-2">
-                                <button onclick='editProduct(${JSON.stringify(p).replace(/'/g, "\\'")})' class="p-2 bg-slate-800 text-electricblue rounded hover:bg-slate-700 transition" title="Editar">
+                                <button onclick="editProduct(${p.id})" class="p-2 bg-slate-800 text-electricblue rounded hover:bg-slate-700 transition" title="Editar">
                                     <i data-lucide="edit" class="w-4 h-4"></i>
                                 </button>
                                 <button onclick="deleteProduct(${p.id})" class="p-2 bg-slate-800 text-cyberrose rounded hover:bg-slate-700 transition" title="Excluir">
@@ -1003,7 +1011,7 @@ gtag('config', 'AW-18202657831');
             
             const match = gameTemplates.find(t => t.title.toLowerCase() === val.toLowerCase());
             if (match) {
-                document.getElementById('prod-desc').value = match.description || '';
+                document.getElementById('prod-desc').value = (match.description || '').split('<!-- STEAM_METADATA_START -->')[0].trim();
                 document.getElementById('prod-image').value = match.image || '';
                 
                 document.querySelectorAll('.category-radio').forEach(rb => {
@@ -1089,7 +1097,9 @@ gtag('config', 'AW-18202657831');
             }
         });
 
-        window.editProduct = (p) => {
+        window.editProduct = (productId) => {
+            const p = window.allProducts.find(x => x.id === productId);
+            if (!p) return;
             document.getElementById('prod-id').value = p.id;
             document.getElementById('prod-title').value = p.title;
             const hasCat = categoryList.includes(p.category);
@@ -1109,7 +1119,7 @@ gtag('config', 'AW-18202657831');
             document.getElementById('prod-price').value = formatNumberToMask(p.price);
             document.getElementById('prod-old-price').value = p.old_price ? formatNumberToMask(p.old_price) : '';
             document.getElementById('prod-image').value = p.image;
-            document.getElementById('prod-desc').value = p.description;
+            document.getElementById('prod-desc').value = (p.description || '').split('<!-- STEAM_METADATA_START -->')[0].trim();
             try {
                 productGallery = JSON.parse(p.gallery || '[]');
             } catch(e) {
@@ -1560,7 +1570,19 @@ gtag('config', 'AW-18202657831');
                         statusText = "APROVADO";
                     }
                     
-                    let itemsHtml = o.items.map(i => `<span class="text-xs text-slate-400">${i.quantity}x ${i.title}</span>`).join(', ');
+                    let itemsHtml = o.items.map(i => {
+                        let keyBadge = '';
+                        if (i.activation_key) {
+                            const cleanKeys = i.activation_key.split('\n').map(k => k.trim()).filter(Boolean).join(', ');
+                            keyBadge = `<span class="block text-[10px] text-electricblue font-mono mt-0.5 bg-slate-900/50 border border-slate-800/80 px-2 py-1 rounded w-fit uppercase">KEY: ${cleanKeys}</span>`;
+                        }
+                        return `
+                            <div class="text-xs text-slate-300 mt-1">
+                                <span class="font-semibold">${i.quantity}x ${i.title}</span>
+                                ${keyBadge}
+                            </div>
+                        `;
+                    }).join('');
 
                     const unreadStyle = o.chat.length > 0 && o.chat[o.chat.length-1].sender_type === 'user' ? 'border-cyberrose shadow-lg shadow-cyberrose/20' : 'border-slate-800 hover:border-slate-600';
 
@@ -1582,7 +1604,7 @@ gtag('config', 'AW-18202657831');
                                 </div>
                             </div>
                             <div class="text-sm text-slate-300 mb-1"><i data-lucide="user" class="w-3 h-3 inline"></i> ${o.user_email}</div>
-                            <div class="text-xs text-slate-500 truncate mb-2">${itemsHtml}</div>
+                            <div class="space-y-1 mb-2 bg-slate-900/20 p-2.5 rounded-lg border border-slate-900/50">${itemsHtml}</div>
                             <div class="font-orbitron text-electricblue text-sm font-bold">R$ ${parseFloat(o.total_amount).toFixed(2).replace('.', ',')}</div>
                         </div>
                     `;
@@ -2695,6 +2717,113 @@ gtag('config', 'AW-18202657831');
                 alert('Erro ao excluir mídia de leitura.');
             }
         }
+
+        async function viewUserHistory(userId, email) {
+            document.getElementById('history-modal-user-email').innerText = `CLIENTE: ${email} (ID: #${userId})`;
+            const container = document.getElementById('history-modal-content');
+            container.innerHTML = '<div class="text-center text-slate-500 py-10 font-orbitron text-xs">Buscando histórico de compras...</div>';
+            
+            openUserHistoryModal();
+            
+            try {
+                const res = await fetch(`/api/admin/users/${userId}/orders`);
+                if (!res.ok) throw new Error("Erro ao buscar histórico");
+                const orders = await res.json();
+                
+                if (orders.length === 0) {
+                    container.innerHTML = '<div class="text-center text-slate-500 py-10 font-orbitron text-xs">Nenhum pedido realizado por este cliente.</div>';
+                    return;
+                }
+                
+                let html = '';
+                orders.forEach(o => {
+                    let statusColor = "bg-slate-800 text-slate-400";
+                    let statusText = "PENDENTE";
+                    if(o.status === 'approved') {
+                        statusColor = "bg-emerald-900/50 border-emerald-500/50 text-emerald-400";
+                        statusText = "APROVADO";
+                    }
+                    
+                    let itemsHtml = o.items.map(i => {
+                        let keyBadge = '';
+                        if (i.activation_key) {
+                            const cleanKeys = i.activation_key.split('\n').map(k => k.trim()).filter(Boolean).join(', ');
+                            keyBadge = `<div class="mt-1.5 p-2 bg-slate-950 border border-slate-800 rounded font-mono text-[10px] text-emerald-400 uppercase break-all">KEY LIBERADA: ${cleanKeys}</div>`;
+                        } else {
+                            keyBadge = `<div class="mt-1.5 p-2 bg-slate-950 border border-slate-800 rounded font-mono text-[10px] text-rose-400 uppercase">SEM KEY (AGUARDANDO APROVAÇÃO)</div>`;
+                        }
+                        return `
+                            <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800/80">
+                                <div class="flex justify-between items-center text-xs text-white">
+                                    <span class="font-bold uppercase tracking-wider">${i.title}</span>
+                                    <span class="font-orbitron font-bold text-slate-400">${i.quantity}x — R$ ${parseFloat(i.price).toFixed(2).replace('.', ',')}</span>
+                                </div>
+                                ${keyBadge}
+                            </div>
+                        `;
+                    }).join('');
+
+                    html += `
+                        <div class="bg-slate-950/40 p-4 rounded-xl border border-slate-800 space-y-3">
+                            <div class="flex justify-between items-center border-b border-slate-900 pb-2">
+                                <span class="font-orbitron font-bold text-white text-xs">#PEDIDO-${o.id}</span>
+                                <span class="font-orbitron text-[9px] px-2 py-0.5 rounded border ${statusColor}">${statusText}</span>
+                            </div>
+                            <div class="space-y-2">${itemsHtml}</div>
+                            <div class="flex justify-between items-center pt-1">
+                                <span class="text-[10px] text-slate-500 uppercase tracking-widest font-orbitron">Total Pago</span>
+                                <span class="font-orbitron text-electricblue text-sm font-bold">R$ ${parseFloat(o.total_amount).toFixed(2).replace('.', ',')}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+                if (window.lucide) window.lucide.createIcons();
+            } catch (err) {
+                container.innerHTML = `<div class="text-center text-rose-500 py-10 font-orbitron text-xs">Erro ao carregar histórico: ${err.message}</div>`;
+            }
+        }
+        
+        function openUserHistoryModal() {
+            const modal = document.getElementById('user-history-modal');
+            const content = document.getElementById('user-history-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
+        
+        function closeUserHistoryModal() {
+            const modal = document.getElementById('user-history-modal');
+            const content = document.getElementById('user-history-modal-content');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
     </script>
+
+    <!-- MODAL: HISTÓRICO DE COMPRAS -->
+    <div id="user-history-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 sm:p-6 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onclick="closeUserHistoryModal()"></div>
+        <div class="relative w-full max-w-3xl bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[85vh] p-6" id="user-history-modal-content">
+            <h3 class="font-orbitron font-black text-xl text-electricblue mb-1 uppercase tracking-widest flex items-center gap-2">
+                <i data-lucide="history" class="w-6 h-6"></i> HISTÓRICO DE COMPRAS
+            </h3>
+            <p class="text-slate-400 font-inter text-xs mb-6 border-b border-slate-800 pb-3 uppercase tracking-wider" id="history-modal-user-email">CLIENTE: carregando...</p>
+            
+            <div id="history-modal-content" class="flex-grow overflow-y-auto space-y-4 pr-1 mb-6 min-h-[300px]">
+                <div class="text-center text-slate-500 py-10">Buscando histórico de compras...</div>
+            </div>
+            
+            <button onclick="closeUserHistoryModal()" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-orbitron text-xs tracking-widest font-bold py-4 rounded-xl transition-colors uppercase">
+                FECHAR HISTÓRICO
+            </button>
+        </div>
+    </div>
 </body>
 </html>

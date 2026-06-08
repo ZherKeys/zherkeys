@@ -434,6 +434,11 @@ gtag('config', 'AW-18202657831');
                     total += priceNum;
                 }
 
+                let cleanDesc = (item.description || '').split('<!-- STEAM_METADATA_START -->')[0].replace(/<[^>]*>/g, '').trim();
+                if (cleanDesc.length > 120) {
+                    cleanDesc = cleanDesc.substring(0, 120) + '...';
+                }
+
                 // Steam logo overlay if category is Steam Key
                 const isSteam = item.category === 'STEAM KEY';
                 const steamBadge = isSteam ? `
@@ -458,7 +463,7 @@ gtag('config', 'AW-18202657831');
                         <div class="flex-grow text-center sm:text-left overflow-hidden min-w-0 w-full ${isSoldOut ? 'opacity-40' : ''}">
                             <span class="bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[8px] tracking-widest px-2 py-0.5 rounded-full uppercase inline-block mb-2">${item.category}</span>
                             <h4 class="text-white font-orbitron font-bold text-base sm:text-lg uppercase tracking-wide truncate w-full">${item.title}</h4>
-                            <p class="text-slate-500 font-inter text-xs mt-1 truncate w-full hidden sm:block">${item.description}</p>
+                            <p class="text-slate-500 font-inter text-xs mt-1 truncate w-full hidden sm:block">${cleanDesc}</p>
                         </div>
                         <div class="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto flex-shrink-0 mt-2 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-0 border-slate-800/50">
                             ${priceBadge}
