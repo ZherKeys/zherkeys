@@ -167,12 +167,22 @@ async function fetchSteamGameInfo(title) {
             return null;
         }
         
+        const headerImage = gameData.header_image || null;
+        let libraryImage = null;
+        if (headerImage) {
+            libraryImage = headerImage.replace('/header.jpg', '/library_600x900.jpg');
+        }
+        const screenshots = (gameData.screenshots || []).map(s => s.path_full).slice(0, 5);
+        
         return {
             developers: (gameData.developers || []).join(', '),
             publishers: (gameData.publishers || []).join(', '),
             releaseDate: gameData.release_date ? gameData.release_date.date : 'Nao informada',
             languages: gameData.supported_languages ? gameData.supported_languages.replace(/<strong[^>]*>|<\/strong>|<span[^>]*>|<\/span>/gi, '') : 'Nao informado',
-            requirementsMin: gameData.pc_requirements ? gameData.pc_requirements.minimum : null
+            requirementsMin: gameData.pc_requirements ? gameData.pc_requirements.minimum : null,
+            headerImage,
+            libraryImage,
+            screenshots
         };
     } catch (err) {
         console.error(`[STEAM-API] Erro ao buscar dados para o jogo "${title}":`, err);
@@ -256,12 +266,50 @@ async function autoUpdateProductSteamInfo(productId, title, currentDescription) 
             newDescription = newDescription.trim() + '\n\n' + metadataBlock;
         }
         
+        // Verifica e atualiza imagem e galeria se forem locais/base64 (evita imagens quebradas)
+        const prodRes = await pool.query("SELECT image, gallery FROM products WHERE id = $1", [productId]);
+        let imageUpdated = false;
+        if (prodRes.rows.length > 0) {
+            const product = prodRes.rows[0];
+            let newImage = product.image;
+            let newGallery = product.gallery || '[]';
+            let needsUpdate = false;
+            
+            if (!newImage || newImage.startsWith('/uploads/products/') || newImage.startsWith('data:image/')) {
+                if (steamInfo.libraryImage) {
+                    newImage = steamInfo.libraryImage;
+                    needsUpdate = true;
+                    console.log(`[STEAM-SYNC] Atualizando imagem do produto ID ${productId} para imagem da biblioteca do Steam: ${newImage}`);
+                } else if (steamInfo.headerImage) {
+                    newImage = steamInfo.headerImage;
+                    needsUpdate = true;
+                    console.log(`[STEAM-SYNC] Atualizando imagem do produto ID ${productId} para imagem de cabecalho do Steam: ${newImage}`);
+                }
+            }
+            
+            if (newGallery === '[]' || !newGallery || newGallery.includes('/uploads/products/')) {
+                if (steamInfo.screenshots && steamInfo.screenshots.length > 0) {
+                    newGallery = JSON.stringify(steamInfo.screenshots);
+                    needsUpdate = true;
+                    console.log(`[STEAM-SYNC] Atualizando galeria do produto ID ${productId} com capturas de tela do Steam.`);
+                }
+            }
+            
+            if (needsUpdate) {
+                await pool.query(
+                    "UPDATE products SET image = $1, gallery = $2 WHERE id = $3",
+                    [newImage, newGallery, productId]
+                );
+                imageUpdated = true;
+            }
+        }
+        
         await pool.query(
             "UPDATE products SET description = $1 WHERE id = $2",
             [newDescription, productId]
         );
         
-        console.log(`[STEAM-SYNC] Produto ID: ${productId} (${title}) atualizado com metadados do Steam.`);
+        console.log(`[STEAM-SYNC] Produto ID: ${productId} (${title}) atualizado com metadados do Steam.${imageUpdated ? ' Imagens atualizadas.' : ''}`);
         return true;
     } catch (err) {
         console.error(`[STEAM-SYNC] Erro ao atualizar produto ID: ${productId}:`, err);
@@ -273,12 +321,13 @@ async function autoUpdateProductSteamInfo(productId, title, currentDescription) 
 async function syncAllProductsSteamInfo() {
     try {
         console.log('[STEAM-SYNC] Iniciando sincronizacao de requisitos de jogos...');
-        const result = await pool.query("SELECT id, title, description FROM products");
+        const result = await pool.query("SELECT id, title, description, image FROM products");
         const products = result.rows;
         
         let count = 0;
         for (const p of products) {
-            if (!p.description || !p.description.includes('<!-- STEAM_METADATA_START -->')) {
+            const isImageBroken = !p.image || p.image.startsWith('/uploads/products/') || p.image.startsWith('data:image/');
+            if (!p.description || !p.description.includes('<!-- STEAM_METADATA_START -->') || isImageBroken) {
                 // Aguarda 2 segundos antes de cada requisicao para evitar block do Steam
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 const success = await autoUpdateProductSteamInfo(p.id, p.title, p.description);
