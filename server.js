@@ -49,6 +49,86 @@ const pool = new Pool({
     ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
+// Helper para decodificar e salvar imagem em Base64 como arquivo fisico no servidor
+function saveBase64Image(base64Str, prefix = 'product') {
+    if (!base64Str || !base64Str.startsWith('data:image/')) {
+        return base64Str; // Ja e um link ou nao e base64
+    }
+    try {
+        const matches = base64Str.match(/^data:image\/([A-Za-z0-9]+);base64,(.+)$/);
+        if (!matches || matches.length !== 3) {
+            return base64Str;
+        }
+        const ext = matches[1];
+        const data = matches[2];
+        const buffer = Buffer.from(data, 'base64');
+        
+        const uploadsDir = path.join(__dirname, 'public', 'uploads', 'products');
+        if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+        
+        const filename = `${prefix}_${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
+        const filePath = path.join(uploadsDir, filename);
+        fs.writeFileSync(filePath, buffer);
+        
+        return `/uploads/products/${filename}`;
+    } catch (err) {
+        console.error("[SAVE-BASE64] Erro ao salvar imagem base64:", err);
+        return base64Str;
+    }
+}
+
+// Migra imagens Base64 existentes no banco de dados para arquivos fisicos
+async function migrateExistingBase64Images() {
+    try {
+        const result = await pool.query("SELECT id, image, gallery FROM products");
+        for (const row of result.rows) {
+            let updated = false;
+            let newImage = row.image;
+            let newGallery = row.gallery;
+            
+            if (row.image && row.image.startsWith('data:image/')) {
+                console.log(`[MIGRACAO] Convertendo imagem base64 do produto ID: ${row.id}...`);
+                newImage = saveBase64Image(row.image, `product_${row.id}`);
+                updated = true;
+            }
+            
+            if (row.gallery) {
+                try {
+                    let galleryArr = JSON.parse(row.gallery);
+                    if (Array.isArray(galleryArr)) {
+                        let galleryUpdated = false;
+                        galleryArr = galleryArr.map((imgUrl, index) => {
+                            if (imgUrl && imgUrl.startsWith('data:image/')) {
+                                galleryUpdated = true;
+                                return saveBase64Image(imgUrl, `gallery_${row.id}_${index}`);
+                            }
+                            return imgUrl;
+                        });
+                        if (galleryUpdated) {
+                            newGallery = JSON.stringify(galleryArr);
+                            updated = true;
+                        }
+                    }
+                } catch (e) {
+                    // Ignora erros de parse da galeria
+                }
+            }
+            
+            if (updated) {
+                await pool.query(
+                    "UPDATE products SET image = $1, gallery = $2 WHERE id = $3",
+                    [newImage, newGallery, row.id]
+                );
+                console.log(`[MIGRACAO] Produto ID: ${row.id} atualizado com sucesso.`);
+            }
+        }
+    } catch (err) {
+        console.error("[MIGRACAO] Erro ao migrar imagens base64:", err);
+    }
+}
+
 async function initDB() {
     try {
         await pool.query(`
@@ -321,6 +401,9 @@ async function initDB() {
             await pool.query('INSERT INTO users (email, password_hash, is_verified) VALUES ($1, $2, $3)', ['zherkeys@gmail.com', hash, 1]);
             console.log('✅ Usuário Administrador (zherkeys@gmail.com) criado no Banco de Dados com a senha "admin123".');
         }
+        
+        // Executa a migracao de imagens Base64 antigas em segundo plano
+        migrateExistingBase64Images().catch(e => console.error("Erro ao migrar imagens antigas no initDB:", e));
     } catch(err) {
         console.error('Error in initDB:', err);
     }
@@ -603,10 +686,25 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
         // Validacao de chaves duplicadas
         await checkDuplicateKeysAndNotify(activation_key, title);
         
+        // Converte imagem e galeria Base64 para arquivos
+        const savedImage = saveBase64Image(image, 'product');
+        let savedGallery = gallery || '[]';
+        if (gallery) {
+            try {
+                let galleryArr = JSON.parse(gallery);
+                if (Array.isArray(galleryArr)) {
+                    galleryArr = galleryArr.map((imgUrl, index) => saveBase64Image(imgUrl, `gallery_${index}`));
+                    savedGallery = JSON.stringify(galleryArr);
+                }
+            } catch(e) {
+                // Silenciosamente falha se nao for JSON valido
+            }
+        }
+        
         const hasKeys = activation_key && activation_key.trim() !== '';
         await pool.query(
             'INSERT INTO products (title, description, price, old_price, image, category, activation_key, in_stock, is_global, restricted_countries, genres, gameflip_listing_id, gallery) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
-            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, image, category, activation_key || '', hasKeys, is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '', gallery || '[]']
+            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, savedImage, category, activation_key || '', hasKeys, is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '', savedGallery]
         );
         productsCache = null; // Limpa o cache para atualizar a home imediatamente
         res.status(201).json({ message: 'Produto adicionado' });
@@ -697,6 +795,8 @@ app.post('/api/admin/products/bulk', requireAdmin, async (req, res) => {
                 throw new Error(`Dados obrigatórios ausentes no produto: ${title || 'Sem título'}`);
             }
             
+            const savedImage = saveBase64Image(image, 'product_bulk');
+            
             await pool.query(
                 'INSERT INTO products (title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
                 [
@@ -704,7 +804,7 @@ app.post('/api/admin/products/bulk', requireAdmin, async (req, res) => {
                     description, 
                     parseFloat(price), 
                     old_price ? parseFloat(old_price) : null, 
-                    image, 
+                    savedImage, 
                     category, 
                     activation_key || '', 
                     is_global === false ? false : true, 
@@ -733,10 +833,25 @@ app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
         // Validacao de chaves duplicadas (exclui o proprio produto)
         await checkDuplicateKeysAndNotify(activation_key, title, id);
         
+        // Converte imagem e galeria Base64 para arquivos
+        const savedImage = saveBase64Image(image, `product_${id}`);
+        let savedGallery = gallery || '[]';
+        if (gallery) {
+            try {
+                let galleryArr = JSON.parse(gallery);
+                if (Array.isArray(galleryArr)) {
+                    galleryArr = galleryArr.map((imgUrl, index) => saveBase64Image(imgUrl, `gallery_${id}_${index}`));
+                    savedGallery = JSON.stringify(galleryArr);
+                }
+            } catch(e) {
+                // Silenciosamente falha se nao for JSON valido
+            }
+        }
+        
         const hasKeys = activation_key && activation_key.trim() !== '';
         await pool.query(
             'UPDATE products SET title=$1, description=$2, price=$3, old_price=$4, image=$5, category=$6, activation_key=$7, in_stock=$8, is_global=$9, restricted_countries=$10, genres=$11, gameflip_listing_id=$12, gallery=$13 WHERE id=$14',
-            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, image, category, activation_key || '', hasKeys, is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '', gallery || '[]', id]
+            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, savedImage, category, activation_key || '', hasKeys, is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '', savedGallery, id]
         );
         productsCache = null; // Limpa o cache para atualizar a home imediatamente
         res.json({ message: 'Produto atualizado' });
@@ -2140,6 +2255,9 @@ app.get('/google-shopping.xml', async (req, res) => {
             const descClean = descStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').substring(0, 1000);
             
             let imageLink = imageStr;
+            if (imageLink.startsWith('data:image/')) {
+                imageLink = '/logo.png';
+            }
             if (!imageLink.startsWith('http')) {
                 if (!imageLink.startsWith('/')) {
                     imageLink = '/' + imageLink;
