@@ -712,7 +712,8 @@ gtag('config', 'AW-18202657831');
             <div class="p-6 sm:p-8 -mt-20 relative z-10">
                 <span id="modal-category" class="bg-electricblue/20 border border-electricblue/30 text-electricblue font-orbitron text-[10px] tracking-widest px-3 py-1 rounded-full uppercase font-bold backdrop-blur-md">STEAM KEY</span>
                 <h3 id="modal-title" class="font-orbitron font-black text-2xl sm:text-3xl text-white mt-4 mb-2 uppercase">Nome do Jogo</h3>
-                <div id="modal-genres" class="flex flex-wrap gap-2 mt-2 mb-4"></div>
+                <div id="modal-genres" class="flex flex-wrap gap-2 mt-2 mb-2"></div>
+                <div id="modal-age-rating" class="mt-2 mb-4"></div>
                 <div id="modal-region-warning" class="hidden mb-4 p-3 bg-rose-950/40 border border-rose-900/50 rounded-lg text-rose-400 text-[10px] sm:text-xs font-orbitron tracking-widest flex items-center gap-2"></div>
                 <div class="flex items-end gap-3 mb-6">
                     <span id="modal-price" class="font-orbitron font-bold text-3xl text-cyberrose">R$ 0,00</span>
@@ -1362,6 +1363,105 @@ gtag('config', 'AW-18202657831');
             }
         }
 
+        function getAgeRatingFromDescription(desc) {
+            if (!desc) return 'Livre';
+            const match = desc.match(/(?:Classificacao|Classificação):\s*(?:<\/strong>\s*)?([^<\n]+)/i);
+            if (match) {
+                return match[1].trim().replace(/\s*anos?/gi, '').trim();
+            }
+            const ageMatch = desc.match(/\b(18|16|14|12|10)\s*anos?\b/i);
+            if (ageMatch) {
+                return ageMatch[1];
+            }
+            return 'Livre';
+        }
+
+        function getAgeRatingBadgeHtml(description) {
+            const rating = getAgeRatingFromDescription(description);
+            let bgClass = 'bg-emerald-600';
+            let textClass = 'text-white';
+            let label = 'L';
+            let fullName = 'Livre';
+            
+            const rLower = rating.toLowerCase();
+            if (rLower.includes('18')) {
+                bgClass = 'bg-black border border-slate-700';
+                textClass = 'text-white';
+                label = '18';
+                fullName = 'Não recomendado para menores de 18 anos';
+            } else if (rLower.includes('16')) {
+                bgClass = 'bg-red-600';
+                textClass = 'text-white';
+                label = '16';
+                fullName = 'Não recomendado para menores de 16 anos';
+            } else if (rLower.includes('14')) {
+                bgClass = 'bg-orange-500';
+                textClass = 'text-white';
+                label = '14';
+                fullName = 'Não recomendado para menores de 14 anos';
+            } else if (rLower.includes('12')) {
+                bgClass = 'bg-yellow-400';
+                textClass = 'text-slate-900';
+                label = '12';
+                fullName = 'Não recomendado para menores de 12 anos';
+            } else if (rLower.includes('10')) {
+                bgClass = 'bg-blue-500';
+                textClass = 'text-white';
+                label = '10';
+                fullName = 'Não recomendado para menores de 10 anos';
+            }
+            
+            return `
+                <div class="inline-flex items-center gap-2 bg-slate-900/60 border border-slate-800 p-2 rounded-xl" title="${fullName}">
+                    <div class="${bgClass} ${textClass} w-6 h-6 flex items-center justify-center font-orbitron font-bold text-xs rounded select-none shadow-sm">${label}</div>
+                    <span class="text-[10px] text-slate-400 font-orbitron font-bold uppercase tracking-wider">${fullName}</span>
+                </div>
+            `;
+        }
+
+        function getAgeRatingMiniBadgeHtml(description) {
+            const rating = getAgeRatingFromDescription(description);
+            let bgClass = 'bg-emerald-600';
+            let textClass = 'text-white';
+            let label = 'L';
+            let fullName = 'Livre';
+            
+            const rLower = rating.toLowerCase();
+            if (rLower.includes('18')) {
+                bgClass = 'bg-black border border-slate-700';
+                textClass = 'text-white';
+                label = '18';
+                fullName = '18+';
+            } else if (rLower.includes('16')) {
+                bgClass = 'bg-red-600';
+                textClass = 'text-white';
+                label = '16';
+                fullName = '16+';
+            } else if (rLower.includes('14')) {
+                bgClass = 'bg-orange-500';
+                textClass = 'text-white';
+                label = '14';
+                fullName = '14+';
+            } else if (rLower.includes('12')) {
+                bgClass = 'bg-yellow-400';
+                textClass = 'text-slate-900';
+                label = '12';
+                fullName = '12+';
+            } else if (rLower.includes('10')) {
+                bgClass = 'bg-blue-500';
+                textClass = 'text-white';
+                label = '10';
+                fullName = '10+';
+            }
+            
+            return `
+                <div class="inline-flex items-center gap-1.5 bg-slate-900/40 border border-slate-800/50 px-2 py-1 rounded" title="Classificação Indicativa: ${fullName}">
+                    <div class="${bgClass} ${textClass} w-4 h-4 flex items-center justify-center font-orbitron font-black text-[9px] rounded-sm select-none">${label}</div>
+                    <span class="text-[8px] text-slate-400 font-orbitron font-bold tracking-wider">${fullName}</span>
+                </div>
+            `;
+        }
+
         function formatPrice(priceBRL) {
             const rate = window.exchangeRates[window.currentCurrency] || 1.0;
             const converted = parseFloat(priceBRL) * rate;
@@ -1558,7 +1658,10 @@ gtag('config', 'AW-18202657831');
                                 <a href="/produto/${p.id}-${slug}" class="hover:text-electricblue transition-colors">${p.title}</a>
                             </h4>
                             <div class="flex flex-wrap gap-1 mt-1 mb-1">${genresTags}</div>
-                            ${regionIcon}
+                            <div class="flex items-center flex-wrap gap-2.5 mt-2">
+                                ${regionIcon.replace('mt-1 mb-2', '')}
+                                ${getAgeRatingMiniBadgeHtml(p.description)}
+                            </div>
                             <div class="mt-auto flex items-center justify-between pt-4">
                                 ${precoFormatado}
                                 ${cartBtn}
@@ -1631,6 +1734,9 @@ gtag('config', 'AW-18202657831');
             }
             let cleanDesc = (currentProduct.description || '').split('<!-- STEAM_METADATA_START -->')[0];
             document.getElementById('modal-description').innerHTML = cleanDesc;
+            
+            // Injeta a classificação indicativa no modal
+            document.getElementById('modal-age-rating').innerHTML = getAgeRatingBadgeHtml(currentProduct.description);
             
             const modalGenres = document.getElementById('modal-genres');
             if(currentProduct.genres) {

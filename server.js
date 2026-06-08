@@ -221,6 +221,62 @@ function formatProductDescription(desc, isGlobal = true, restrictedCountries = '
     return formatted;
 }
 
+// Auxiliares para extrair e gerar classificacao indicativa (ClassInd Brasil)
+function getAgeRatingFromDescription(desc) {
+    if (!desc) return 'Livre';
+    const match = desc.match(/(?:Classificacao|Classificação):\s*(?:<\/strong>\s*)?([^<\n]+)/i);
+    if (match) {
+        return match[1].trim().replace(/\s*anos?/gi, '').trim();
+    }
+    const ageMatch = desc.match(/\b(18|16|14|12|10)\s*anos?\b/i);
+    if (ageMatch) {
+        return ageMatch[1];
+    }
+    return 'Livre';
+}
+
+function getAgeRatingBadgeHtml(rating) {
+    let bgClass = 'bg-emerald-600';
+    let textClass = 'text-white';
+    let label = 'L';
+    let fullName = 'Livre';
+    
+    const rLower = rating.toLowerCase();
+    if (rLower.includes('18')) {
+        bgClass = 'bg-black border border-slate-700';
+        textClass = 'text-white';
+        label = '18';
+        fullName = 'Não recomendado para menores de 18 anos';
+    } else if (rLower.includes('16')) {
+        bgClass = 'bg-red-600';
+        textClass = 'text-white';
+        label = '16';
+        fullName = 'Não recomendado para menores de 16 anos';
+    } else if (rLower.includes('14')) {
+        bgClass = 'bg-orange-500';
+        textClass = 'text-white';
+        label = '14';
+        fullName = 'Não recomendado para menores de 14 anos';
+    } else if (rLower.includes('12')) {
+        bgClass = 'bg-yellow-400';
+        textClass = 'text-slate-900';
+        label = '12';
+        fullName = 'Não recomendado para menores de 12 anos';
+    } else if (rLower.includes('10')) {
+        bgClass = 'bg-blue-500';
+        textClass = 'text-white';
+        label = '10';
+        fullName = 'Não recomendado para menores de 10 anos';
+    }
+    
+    return `
+        <div class="inline-flex items-center gap-2 bg-slate-900/60 border border-slate-800 p-2 rounded-xl" title="${fullName}">
+            <div class="${bgClass} ${textClass} w-6 h-6 flex items-center justify-center font-orbitron font-bold text-xs rounded select-none shadow-sm">${label}</div>
+            <span class="text-[10px] text-slate-400 font-orbitron font-bold uppercase tracking-wider">${fullName}</span>
+        </div>
+    `;
+}
+
 // Atualiza a descricao do produto com os dados obtidos do Steam
 async function autoUpdateProductSteamInfo(productId, title, currentDescription) {
     try {
@@ -2372,7 +2428,9 @@ app.get('/produto/:id', async (req, res) => {
             }
         });
 
-        const is18Plus = formattedDesc.includes('Classificacao: 18');
+        const ratingVal = getAgeRatingFromDescription(product.description);
+        const ratingHtml = getAgeRatingBadgeHtml(ratingVal);
+        const is18Plus = ratingVal === '18';
         const isLoggedIn = !!req.session.userId;
         const requiresAgeGate = is18Plus && !isLoggedIn;
 
@@ -2387,6 +2445,7 @@ app.get('/produto/:id', async (req, res) => {
             .replace(/{{PRODUCT_ID}}/g, product.id)
             .replace(/{{PRODUCT_REGION_BADGE}}/g, regionBadge)
             .replace(/{{PRODUCT_GENRES}}/g, genresTags)
+            .replace(/{{PRODUCT_AGE_RATING}}/g, ratingHtml)
             .replace(/{{PRODUCT_IN_STOCK}}/g, stockStatus)
             .replace(/{{SCHEMA_JSON}}/g, schemaJson)
             .replace(/{{{PRODUCT_JSON}}}/g, JSON.stringify(product))
