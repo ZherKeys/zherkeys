@@ -331,7 +331,17 @@ async function syncAllProductsSteamInfo() {
         
         let count = 0;
         for (const p of products) {
-            const isImageBroken = !p.image || p.image.startsWith('/uploads/products/') || p.image.startsWith('data:image/');
+            let isImageBroken = !p.image || p.image.startsWith('/uploads/products/') || p.image.startsWith('data:image/');
+            if (!isImageBroken && p.image && p.image.includes('steamstatic.com')) {
+                try {
+                    const checkRes = await fetch(p.image, { method: 'HEAD' });
+                    if (!checkRes.ok) {
+                        isImageBroken = true;
+                    }
+                } catch (e) {
+                    // Ignora erros de rede e mantem o status atual
+                }
+            }
             if (!p.description || !p.description.includes('<!-- STEAM_METADATA_START -->') || isImageBroken) {
                 // Aguarda 2 segundos antes de cada requisicao para evitar block do Steam
                 await new Promise(resolve => setTimeout(resolve, 2000));
