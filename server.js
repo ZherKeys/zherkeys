@@ -129,6 +129,151 @@ async function migrateExistingBase64Images() {
     }
 }
 
+// Busca informacoes de jogos (requisitos, distribuidora, desenvolvedor, etc) na API publica do Steam
+async function fetchSteamGameInfo(title) {
+    const cleanTitle = title
+        .replace(/\b(steam|key|pc|deluxe|definitive|global|edition|gift|card|standard|gold|ultimate|premium|bundle|package|row|activation)\b/gi, '')
+        .replace(/[:\-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+        
+    if (!cleanTitle) return null;
+    
+    try {
+        // 1. Busca o AppID do jogo no Steam
+        const searchUrl = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(cleanTitle)}&l=portuguese&cc=BR`;
+        const searchRes = await fetch(searchUrl);
+        if (!searchRes.ok) return null;
+        
+        const searchData = await searchRes.json();
+        if (!searchData.success || !searchData.items || searchData.items.length === 0) {
+            return null;
+        }
+        
+        const appid = searchData.items[0].id;
+        
+        // 2. Busca detalhes do AppID
+        const detailsUrl = `https://store.steampowered.com/api/appdetails?appids=${appid}&l=portuguese&cc=BR`;
+        const detailsRes = await fetch(detailsUrl);
+        if (!detailsRes.ok) return null;
+        
+        const detailsData = await detailsRes.json();
+        if (!detailsData[appid] || !detailsData[appid].success) {
+            return null;
+        }
+        
+        const gameData = detailsData[appid].data;
+        if (gameData.type !== 'game') {
+            return null;
+        }
+        
+        return {
+            developers: (gameData.developers || []).join(', '),
+            publishers: (gameData.publishers || []).join(', '),
+            releaseDate: gameData.release_date ? gameData.release_date.date : 'Nao informada',
+            languages: gameData.supported_languages ? gameData.supported_languages.replace(/<strong[^>]*>|<\/strong>|<span[^>]*>|<\/span>/gi, '') : 'Nao informado',
+            requirementsMin: gameData.pc_requirements ? gameData.pc_requirements.minimum : null
+        };
+    } catch (err) {
+        console.error(`[STEAM-API] Erro ao buscar dados para o jogo "${title}":`, err);
+        return null;
+    }
+}
+
+// Atualiza a descricao do produto com os dados obtidos do Steam
+async function autoUpdateProductSteamInfo(productId, title, currentDescription) {
+    try {
+        const steamInfo = await fetchSteamGameInfo(title);
+        if (!steamInfo) {
+            console.log(`[STEAM-SYNC] Informacoes nao encontradas no Steam para o jogo: ${title}`);
+            return false;
+        }
+        
+        // Formata os requisitos minimos
+        let cleanReq = steamInfo.requirementsMin;
+        if (cleanReq) {
+            cleanReq = cleanReq.replace(/^(<strong>)?\s*(m&iacute;nimos|m&iacute;nimo|m&iacute;nimos:|m&iacute;nimo:|minimos|minimo|minimos:|minimo:|minimum|minimum:)\s*(<\/strong>)?\s*(<br\s*\/?>)?/gi, '');
+            cleanReq = cleanReq.replace(/class="[^"]*"/gi, '');
+            cleanReq = cleanReq.replace(/style="[^"]*"/gi, '');
+        } else {
+            cleanReq = 'Requisitos nao informados no Steam.';
+        }
+        
+        const languagesClean = steamInfo.languages.replace(/&amp;/g, '&');
+        
+        // Monta o bloco HTML estilizado em cyberpunk
+        const metadataBlock = `<!-- STEAM_METADATA_START -->
+<div class="mt-8 border-t border-slate-900 pt-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-slate-950/40 border border-slate-900 p-5 rounded-xl text-left">
+            <h4 class="font-orbitron font-bold text-xs tracking-wider text-electricblue uppercase mb-4">// FICHA TECNICA</h4>
+            <ul class="space-y-2.5 font-inter text-xs text-slate-400">
+                <li><strong class="text-slate-300">Desenvolvedor:</strong> ${steamInfo.developers || 'Nao informado'}</li>
+                <li><strong class="text-slate-300">Distribuidora:</strong> ${steamInfo.publishers || 'Nao informado'}</li>
+                <li><strong class="text-slate-300">Data de Lancamento:</strong> ${steamInfo.releaseDate}</li>
+                <li><strong class="text-slate-300">Idiomas:</strong> ${languagesClean}</li>
+            </ul>
+        </div>
+        <div class="bg-slate-950/40 border border-slate-900 p-5 rounded-xl text-left">
+            <h4 class="font-orbitron font-bold text-xs tracking-wider text-cyberrose uppercase mb-4">// REQUISITOS MINIMOS</h4>
+            <div class="font-inter text-xs text-slate-400 leading-relaxed steam-requirements">
+                ${cleanReq}
+            </div>
+        </div>
+    </div>
+</div>
+<!-- STEAM_METADATA_END -->`;
+
+        // Modifica a descricao mantendo a parte original e substituindo/adicionando a parte do Steam
+        let newDescription = currentDescription || '';
+        const regex = /<!-- STEAM_METADATA_START -->[\s\S]*?<!-- STEAM_METADATA_END -->/g;
+        
+        if (regex.test(newDescription)) {
+            newDescription = newDescription.replace(regex, metadataBlock);
+        } else {
+            newDescription = newDescription.trim() + '\n\n' + metadataBlock;
+        }
+        
+        await pool.query(
+            "UPDATE products SET description = $1 WHERE id = $2",
+            [newDescription, productId]
+        );
+        
+        console.log(`[STEAM-SYNC] Produto ID: ${productId} (${title}) atualizado com metadados do Steam.`);
+        return true;
+    } catch (err) {
+        console.error(`[STEAM-SYNC] Erro ao atualizar produto ID: ${productId}:`, err);
+        return false;
+    }
+}
+
+// Sincroniza todos os produtos pendentes
+async function syncAllProductsSteamInfo() {
+    try {
+        console.log('[STEAM-SYNC] Iniciando sincronizacao de requisitos de jogos...');
+        const result = await pool.query("SELECT id, title, description FROM products");
+        const products = result.rows;
+        
+        let count = 0;
+        for (const p of products) {
+            if (!p.description || !p.description.includes('<!-- STEAM_METADATA_START -->')) {
+                // Aguarda 2 segundos antes de cada requisicao para evitar block do Steam
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                const success = await autoUpdateProductSteamInfo(p.id, p.title, p.description);
+                if (success) count++;
+            }
+        }
+        
+        if (count > 0) {
+            productsCache = null; // Limpa cache se algum produto atualizou
+        }
+        console.log(`[STEAM-SYNC] Sincronizacao finalizada. ${count} produtos atualizados.`);
+    } catch (err) {
+        console.error("[STEAM-SYNC] Erro na sincronizacao geral:", err);
+    }
+}
+
+
 async function initDB() {
     try {
         await pool.query(`
@@ -404,6 +549,9 @@ async function initDB() {
         
         // Executa a migracao de imagens Base64 antigas em segundo plano
         migrateExistingBase64Images().catch(e => console.error("Erro ao migrar imagens antigas no initDB:", e));
+        
+        // Inicia a sincronizacao de dados de jogos via Steam em segundo plano apos 10 segundos
+        setTimeout(syncAllProductsSteamInfo, 10000);
     } catch(err) {
         console.error('Error in initDB:', err);
     }
@@ -702,10 +850,15 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
         }
         
         const hasKeys = activation_key && activation_key.trim() !== '';
-        await pool.query(
-            'INSERT INTO products (title, description, price, old_price, image, category, activation_key, in_stock, is_global, restricted_countries, genres, gameflip_listing_id, gallery) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
+        const insertRes = await pool.query(
+            'INSERT INTO products (title, description, price, old_price, image, category, activation_key, in_stock, is_global, restricted_countries, genres, gameflip_listing_id, gallery) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id',
             [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, savedImage, category, activation_key || '', hasKeys, is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '', savedGallery]
         );
+        const productId = insertRes.rows[0].id;
+        
+        // Sincroniza metadados do Steam em segundo plano (apos 2 segundos)
+        setTimeout(() => autoUpdateProductSteamInfo(productId, title, description), 2000);
+        
         productsCache = null; // Limpa o cache para atualizar a home imediatamente
         res.status(201).json({ message: 'Produto adicionado' });
     } catch(e) {
@@ -789,6 +942,7 @@ app.post('/api/admin/products/bulk', requireAdmin, async (req, res) => {
         
         await pool.query('BEGIN');
         
+        const insertedProducts = [];
         for (const p of products) {
             const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id } = p;
             if (!title || !description || isNaN(parseFloat(price)) || !image || !category) {
@@ -797,8 +951,8 @@ app.post('/api/admin/products/bulk', requireAdmin, async (req, res) => {
             
             const savedImage = saveBase64Image(image, 'product_bulk');
             
-            await pool.query(
-                'INSERT INTO products (title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
+            const insertRes = await pool.query(
+                'INSERT INTO products (title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id',
                 [
                     title, 
                     description, 
@@ -813,9 +967,17 @@ app.post('/api/admin/products/bulk', requireAdmin, async (req, res) => {
                     gameflip_listing_id || ''
                 ]
             );
+            const productId = insertRes.rows[0].id;
+            insertedProducts.push({ id: productId, title, description });
         }
         
         await pool.query('COMMIT');
+        
+        // Agenda a busca de dados no Steam de forma escalonada (a cada 3 segundos por produto para nao tomar block)
+        insertedProducts.forEach((p, index) => {
+            setTimeout(() => autoUpdateProductSteamInfo(p.id, p.title, p.description), (index + 1) * 3000);
+        });
+        
         productsCache = null; // Limpa o cache público
         res.status(201).json({ message: `${products.length} produtos adicionados com sucesso!` });
     } catch(e) {
@@ -853,6 +1015,10 @@ app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
             'UPDATE products SET title=$1, description=$2, price=$3, old_price=$4, image=$5, category=$6, activation_key=$7, in_stock=$8, is_global=$9, restricted_countries=$10, genres=$11, gameflip_listing_id=$12, gallery=$13 WHERE id=$14',
             [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, savedImage, category, activation_key || '', hasKeys, is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '', savedGallery, id]
         );
+        
+        // Atualiza/Sincroniza metadados do Steam em segundo plano (apos 2 segundos)
+        setTimeout(() => autoUpdateProductSteamInfo(id, title, description), 2000);
+        
         productsCache = null; // Limpa o cache para atualizar a home imediatamente
         res.json({ message: 'Produto atualizado' });
     } catch(e) {
