@@ -131,13 +131,23 @@ async function migrateExistingBase64Images() {
 
 // Busca informacoes de jogos (requisitos, distribuidora, desenvolvedor, etc) na API publica do Steam
 async function fetchSteamGameInfo(title) {
-    const cleanTitle = title
+    let cleanTitle = title
         .replace(/\b(steam|key|pc|deluxe|definitive|global|edition|gift|card|standard|gold|ultimate|premium|bundle|package|row|activation)\b/gi, '')
         .replace(/[():]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
         
     if (!cleanTitle) return null;
+
+    // Normalização de erros comuns de digitação
+    const lowerTitle = cleanTitle.toLowerCase();
+    if (lowerTitle.includes("devil may cri")) {
+        cleanTitle = cleanTitle.replace(/devil may cri/gi, "Devil May Cry");
+    } else if (lowerTitle.includes("injustise") || lowerTitle.includes("injustiçe")) {
+        cleanTitle = cleanTitle.replace(/injustis[eç]/gi, "Injustice");
+    } else if (lowerTitle.includes("mine craft")) {
+        cleanTitle = cleanTitle.replace(/mine craft/gi, "Minecraft");
+    }
     
     try {
         // 1. Busca o AppID do jogo no Steam
@@ -224,9 +234,9 @@ async function fetchSteamGameInfo(title) {
 }
 
 // Limpa e formata a descricao do produto para exibicao publica (converte markdown e remove asteriscos soltos)
-function formatProductDescription(desc) {
-    if (!desc) return '';
-    return desc
+function formatProductDescription(desc, isGlobal = true, restrictedCountries = '') {
+    if (!desc) desc = '';
+    let formatted = desc
         // Converte **texto** para <strong>texto</strong>
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         // Substitui asteriscos de lista (* item) no inicio de linhas por bullet points (• item)
@@ -234,6 +244,29 @@ function formatProductDescription(desc) {
         // Remove quaisquer outros asteriscos soltos
         .replace(/\*/g, '')
         .trim();
+
+    // Se o produto não for global, anexa a lista de países de ativação permitidos
+    if (isGlobal === false && restrictedCountries && restrictedCountries.trim() !== '') {
+        const countriesList = restrictedCountries.split(',').map(c => c.trim()).filter(Boolean).join(', ');
+        
+        // Remove blocos de países duplicados se já existirem
+        const countriesRegex = /<!-- REGION_COUNTRIES_START -->[\s\S]*?<!-- REGION_COUNTRIES_END -->/g;
+        formatted = formatted.replace(countriesRegex, '');
+        
+        formatted += `\n\n<!-- REGION_COUNTRIES_START -->
+<div class="mt-4 p-4 border border-rose-500/20 bg-rose-500/5 rounded-xl text-left">
+    <div class="flex items-center gap-2 mb-2 text-rose-400 font-orbitron text-[10px] font-bold tracking-widest">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        PAÍSES PERMITIDOS PARA ATIVAÇÃO:
+    </div>
+    <p class="font-inter text-xs text-slate-400 leading-relaxed">
+        Este produto é <strong>restrito</strong> e só pode ser ativado nos seguintes países: <span class="text-slate-200 font-semibold">${countriesList}</span>.
+    </p>
+</div>
+<!-- REGION_COUNTRIES_END -->`;
+    }
+    
+    return formatted;
 }
 
 // Atualiza a descricao do produto com os dados obtidos do Steam
@@ -667,6 +700,8 @@ async function initDB() {
         
         // Inicia a sincronizacao de dados de jogos via Steam em segundo plano apos 10 segundos
         setTimeout(syncAllProductsSteamInfo, 10000);
+        // Agenda sincronização periódica a cada 30 minutos
+        setInterval(syncAllProductsSteamInfo, 30 * 60 * 1000);
     } catch(err) {
         console.error('Error in initDB:', err);
     }
@@ -914,7 +949,7 @@ app.get('/api/products', async (req, res) => {
         const result = await pool.query('SELECT id, title, description, price, old_price, image, category, in_stock, is_global, restricted_countries, genres FROM products ORDER BY id ASC');
         productsCache = result.rows.map(row => ({
             ...row,
-            description: formatProductDescription(row.description)
+            description: formatProductDescription(row.description, row.is_global, row.restricted_countries)
         }));
         productsCacheTime = now;
         res.json(productsCache);
@@ -2321,7 +2356,7 @@ app.get('/produto/:id', async (req, res) => {
         let html = await fs.promises.readFile(templatePath, 'utf8');
         
         const title = product.title;
-        const formattedDesc = formatProductDescription(product.description);
+        const formattedDesc = formatProductDescription(product.description, product.is_global, product.restricted_countries);
         const description = formattedDesc.replace(/<[^>]*>/g, '').substring(0, 160).replace(/"/g, '&quot;');
         const fullDescription = formattedDesc;
         const imgPath = product.image || '/logo.png';
