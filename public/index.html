@@ -1431,33 +1431,32 @@ gtag('config', 'AW-18202657831');
                 bgClass = 'bg-black border border-slate-700';
                 textClass = 'text-white';
                 label = '18';
-                fullName = '18+';
+                fullName = '18 anos';
             } else if (rLower.includes('16')) {
                 bgClass = 'bg-red-600';
                 textClass = 'text-white';
                 label = '16';
-                fullName = '16+';
+                fullName = '16 anos';
             } else if (rLower.includes('14')) {
                 bgClass = 'bg-orange-500';
                 textClass = 'text-white';
                 label = '14';
-                fullName = '14+';
+                fullName = '14 anos';
             } else if (rLower.includes('12')) {
                 bgClass = 'bg-yellow-400';
                 textClass = 'text-slate-900';
                 label = '12';
-                fullName = '12+';
+                fullName = '12 anos';
             } else if (rLower.includes('10')) {
                 bgClass = 'bg-blue-500';
                 textClass = 'text-white';
                 label = '10';
-                fullName = '10+';
+                fullName = '10 anos';
             }
             
             return `
-                <div class="inline-flex items-center gap-1.5 bg-slate-900/40 border border-slate-800/50 px-2 py-1 rounded" title="Classificação Indicativa: ${fullName}">
-                    <div class="${bgClass} ${textClass} w-4 h-4 flex items-center justify-center font-orbitron font-black text-[9px] rounded-sm select-none">${label}</div>
-                    <span class="text-[8px] text-slate-400 font-orbitron font-bold tracking-wider">${fullName}</span>
+                <div class="inline-flex items-center" title="Classificação Indicativa: ${fullName}">
+                    <div class="${bgClass} ${textClass} w-5 h-5 flex items-center justify-center font-orbitron font-black text-[10px] rounded select-none shadow-sm">${label}</div>
                 </div>
             `;
         }
