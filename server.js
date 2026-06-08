@@ -2630,7 +2630,13 @@ app.get('/google-shopping.xml', async (req, res) => {
             <g:availability>${availability}</g:availability>
             <g:price>${priceFormatted}</g:price>
             <g:brand>Zher Keys</g:brand>
+            <g:google_product_category>5057</g:google_product_category>
             <g:identifier_exists>no</g:identifier_exists>
+            <g:shipping>
+                <g:country>BR</g:country>
+                <g:service>Entrega Digital</g:service>
+                <g:price>0.00 BRL</g:price>
+            </g:shipping>
         </item>\n`;
         });
 
