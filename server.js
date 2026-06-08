@@ -129,26 +129,8 @@ async function migrateExistingBase64Images() {
     }
 }
 
-// Busca informacoes de jogos (requisitos, distribuidora, desenvolvedor, etc) na API publica do Steam
-async function fetchSteamGameInfo(title) {
-    let cleanTitle = title
-        .replace(/\b(steam|key|pc|deluxe|definitive|global|edition|gift|card|standard|gold|ultimate|premium|bundle|package|row|activation)\b/gi, '')
-        .replace(/[():]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-        
-    if (!cleanTitle) return null;
-
-    // Normalização de erros comuns de digitação
-    const lowerTitle = cleanTitle.toLowerCase();
-    if (lowerTitle.includes("devil may cri")) {
-        cleanTitle = cleanTitle.replace(/devil may cri/gi, "Devil May Cry");
-    } else if (lowerTitle.includes("injustise") || lowerTitle.includes("injustiçe")) {
-        cleanTitle = cleanTitle.replace(/injustis[eç]/gi, "Injustice");
-    } else if (lowerTitle.includes("mine craft")) {
-        cleanTitle = cleanTitle.replace(/mine craft/gi, "Minecraft");
-    }
-    
+// Ajudante interno para buscar detalhes no Steam
+async function querySteamAPI(cleanTitle) {
     try {
         // 1. Busca o AppID do jogo no Steam
         const searchUrl = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(cleanTitle)}&l=portuguese&cc=BR`;
@@ -228,9 +210,48 @@ async function fetchSteamGameInfo(title) {
             ageRating
         };
     } catch (err) {
-        console.error(`[STEAM-API] Erro ao buscar dados para o jogo "${title}":`, err);
+        console.error(`[STEAM-API] Erro ao buscar dados para o jogo "${cleanTitle}":`, err);
         return null;
     }
+}
+
+// Busca informacoes do jogo no Steam
+async function fetchSteamGameInfo(title) {
+    let cleanTitle = title
+        .replace(/\b(steam|key|pc|deluxe|definitive|global|edition|gift|card|standard|gold|ultimate|premium|bundle|package|row|activation)\b/gi, '')
+        .replace(/[():]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+        
+    if (!cleanTitle) return null;
+
+    // Normalização de erros comuns de digitação
+    const lowerTitle = cleanTitle.toLowerCase();
+    if (lowerTitle.includes("devil may cri")) {
+        cleanTitle = cleanTitle.replace(/devil may cri/gi, "Devil May Cry");
+    } else if (lowerTitle.includes("injustise") || lowerTitle.includes("injustiçe")) {
+        cleanTitle = cleanTitle.replace(/injustis[eç]/gi, "Injustice");
+    } else if (lowerTitle.includes("mine craft")) {
+        cleanTitle = cleanTitle.replace(/mine craft/gi, "Minecraft");
+    }
+    
+    let result = await querySteamAPI(cleanTitle);
+    
+    // Fallback: se falhar ou retornar nulo (ex: DLC / Personagem tipo "Vergil"), tenta o jogo base
+    if (!result) {
+        let baseTitle = title.split(/[-+:]/)[0].trim();
+        baseTitle = baseTitle
+            .replace(/\b(vergil|dlc|expansion|soundtrack|ost|pass|pack|addon|add-on)\b/gi, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+            
+        if (baseTitle && baseTitle.toLowerCase() !== title.toLowerCase()) {
+            console.log(`[STEAM-SYNC] Falhou para "${title}". Tentando buscar pelo jogo base: "${baseTitle}"`);
+            result = await fetchSteamGameInfo(baseTitle);
+        }
+    }
+    
+    return result;
 }
 
 // Limpa e formata a descricao do produto para exibicao publica (converte markdown e remove asteriscos soltos)
