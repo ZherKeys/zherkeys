@@ -179,6 +179,33 @@ async function fetchSteamGameInfo(title) {
         }
         const screenshots = (gameData.screenshots || []).map(s => s.path_full).slice(0, 5);
         
+        let ageRating = 'Livre';
+        const ratings = gameData.ratings;
+        if (ratings && ratings.dejus && ratings.dejus.rating) {
+            const dejusRating = ratings.dejus.rating.toLowerCase();
+            if (dejusRating === 'l') {
+                ageRating = 'Livre';
+            } else {
+                ageRating = dejusRating + ' anos';
+            }
+        } else if (gameData.required_age && parseInt(gameData.required_age) > 0) {
+            ageRating = gameData.required_age + ' anos';
+        } else if (ratings && ratings.pegi && ratings.pegi.rating) {
+            const pegiRating = ratings.pegi.rating.toLowerCase();
+            if (pegiRating === '3') {
+                ageRating = 'Livre';
+            } else {
+                ageRating = pegiRating + ' anos';
+            }
+        } else if (ratings && ratings.esrb && ratings.esrb.rating) {
+            const esrbLower = ratings.esrb.rating.toLowerCase();
+            if (esrbLower === 'e') ageRating = 'Livre';
+            else if (esrbLower === 'e10') ageRating = '10 anos';
+            else if (esrbLower === 't') ageRating = '13 anos';
+            else if (esrbLower === 'm') ageRating = '17 anos';
+            else if (esrbLower === 'ao') ageRating = '18 anos';
+        }
+        
         return {
             developers: (gameData.developers || []).join(', '),
             publishers: (gameData.publishers || []).join(', '),
@@ -187,7 +214,8 @@ async function fetchSteamGameInfo(title) {
             requirementsMin: gameData.pc_requirements ? gameData.pc_requirements.minimum : null,
             headerImage,
             libraryImage,
-            screenshots
+            screenshots,
+            ageRating
         };
     } catch (err) {
         console.error(`[STEAM-API] Erro ao buscar dados para o jogo "${title}":`, err);
@@ -249,6 +277,7 @@ async function autoUpdateProductSteamInfo(productId, title, currentDescription) 
                 <li><strong class="text-slate-300">Distribuidora:</strong> ${steamInfo.publishers || 'Nao informado'}</li>
                 <li><strong class="text-slate-300">Data de Lancamento:</strong> ${steamInfo.releaseDate}</li>
                 <li><strong class="text-slate-300">Idiomas:</strong> ${languagesClean}</li>
+                <li><strong class="text-slate-300">Classificacao:</strong> ${steamInfo.ageRating || 'Nao informada'}</li>
             </ul>
         </div>
         <div class="bg-slate-950/40 border border-slate-900 p-5 rounded-xl text-left">
@@ -342,7 +371,7 @@ async function syncAllProductsSteamInfo() {
                     // Ignora erros de rede e mantem o status atual
                 }
             }
-            if (!p.description || !p.description.includes('<!-- STEAM_METADATA_START -->') || isImageBroken) {
+            if (!p.description || !p.description.includes('<!-- STEAM_METADATA_START -->') || !p.description.includes('Classificacao:') || isImageBroken) {
                 // Aguarda 2 segundos antes de cada requisicao para evitar block do Steam
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 const success = await autoUpdateProductSteamInfo(p.id, p.title, p.description);
