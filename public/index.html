@@ -703,11 +703,11 @@ gtag('config', 'AW-18202657831');
         </div>
     </section>
 
-    <!-- FOOTER -->
     <footer id="suporte" class="bg-slate-950 pt-16 pb-8 border-t border-slate-900 px-4">
-        <div class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+        <div class="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 mb-12">
             
-            <div>
+            <!-- Coluna 1: Sobre -->
+            <div class="col-span-2 sm:col-span-3 md:col-span-1">
                 <div class="flex items-center gap-3 mb-4">
                     <div class="w-8 h-8 rounded-md bg-electricblue flex items-center justify-center">
                         <i data-lucide="shield-alert" class="w-5 h-5 text-white"></i>
@@ -734,33 +734,48 @@ gtag('config', 'AW-18202657831');
                 </div>
             </div>
 
+            <!-- Coluna 2: Comprar -->
             <div>
-                <h5 data-i18n="footer_nav_title" class="font-orbitron text-xs tracking-widest text-white uppercase mb-4">NAVEGAÇÃO SENSÍVEL</h5>
+                <h5 data-i18n="footer_col_buy" class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">COMPRAR</h5>
                 <ul class="font-inter text-xs text-slate-400 space-y-2.5">
-                    <li><a href="#catalogo" data-i18n="footer_nav_1" class="hover:text-electricblue transition-colors">Drops Black</a></li>
-                    <li><a href="/refund-policy" class="hover:text-electricblue transition-colors">Política de Devolução</a></li>
-                    <li><a href="/shipping-policy" class="hover:text-electricblue transition-colors">Política de Entrega</a></li>
-                    <li><a href="/terms-of-service" data-i18n="footer_nav_2" class="hover:text-electricblue transition-colors">Termos de Serviço</a></li>
-                    <li><a href="/privacy-policy" data-i18n="footer_nav_3" class="hover:text-electricblue transition-colors">Política de Privacidade</a></li>
+                    <li><a href="#catalogo" data-i18n="footer_buy_1" class="hover:text-electricblue transition-colors">Como Comprar</a></li>
+                    <li><a href="#catalogo" data-i18n="footer_buy_2" class="hover:text-electricblue transition-colors">Coleções de Jogos</a></li>
+                    <li><a href="#catalogo" data-i18n="footer_buy_3" class="hover:text-electricblue transition-colors">Cupons & Descontos</a></li>
+                    <li><a href="#vitrine" data-i18n="footer_buy_4" class="hover:text-electricblue transition-colors">Destaques Semanais</a></li>
                 </ul>
             </div>
 
+            <!-- Coluna 3: Suporte & Ajuda -->
             <div>
-                <h5 data-i18n="footer_contact_title" class="font-orbitron text-xs tracking-widest text-white uppercase mb-4">CONTATO E EMPRESA</h5>
-                <ul class="font-inter text-xs text-slate-400 space-y-3">
-                    <li class="flex items-center gap-2">
-                        <i data-lucide="mail" class="w-4 h-4 text-electricblue shrink-0"></i>
-                        <a href="mailto:zherkeys@gmail.com" class="hover:text-electricblue transition-colors">zherkeys@gmail.com</a>
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <i data-lucide="phone" class="w-4 h-4 text-electricblue shrink-0"></i>
-                        <span data-i18n="footer_contact_phone">+55 (22) 98833-4537</span>
-                    </li>
+                <h5 data-i18n="footer_col_help" class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">SUPORTE E AJUDA</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5">
+                    <li><a href="/contact.html" data-i18n="footer_help_1" class="hover:text-electricblue transition-colors">FAQ / Dúvidas</a></li>
+                    <li><a href="/contact.html" data-i18n="footer_help_2" class="hover:text-electricblue transition-colors">Como Ativar Chaves</a></li>
+                    <li><a href="/refund-policy" data-i18n="footer_help_3" class="hover:text-electricblue transition-colors">Política de Devolução</a></li>
+                    <li><a href="/shipping-policy" data-i18n="footer_help_4" class="hover:text-electricblue transition-colors">Política de Entrega</a></li>
+                    <li><a href="/terms-of-service" data-i18n="footer_help_5" class="hover:text-electricblue transition-colors">Termos de Serviço</a></li>
+                    <li><a href="/privacy-policy" data-i18n="footer_help_6" class="hover:text-electricblue transition-colors">Política de Privacidade</a></li>
                 </ul>
             </div>
 
+            <!-- Coluna 4: Comunidade -->
             <div>
-                <h5 data-i18n="footer_sec_title" class="font-orbitron text-xs tracking-widest text-white uppercase mb-4">SEGURANÇA INTERNA</h5>
+                <h5 data-i18n="footer_col_comm" class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">COMUNIDADE</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5">
+                    <li><a href="/minigames.html" data-i18n="footer_comm_1" class="hover:text-electricblue transition-colors">Minijogos ZCoins</a></li>
+                    <li><a href="#vitrine" data-i18n="footer_comm_2" class="hover:text-electricblue transition-colors">Sorteio Oficial</a></li>
+                    <li><a href="/contact.html" data-i18n="footer_comm_3" class="hover:text-electricblue transition-colors">Torne-se Afiliado</a></li>
+                    <li><a href="mailto:zherkeys@gmail.com" data-i18n="footer_comm_4" class="hover:text-electricblue transition-colors">Contato Comercial</a></li>
+                </ul>
+            </div>
+
+            <!-- Coluna 5: Negócios & Segurança -->
+            <div>
+                <h5 data-i18n="footer_col_business" class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">NEGÓCIOS</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-3 mb-4">
+                    <li><a href="/contact.html" data-i18n="footer_bus_1" class="hover:text-electricblue transition-colors">Vender na Zher Keys</a></li>
+                    <li><a href="/contact.html" data-i18n="footer_bus_2" class="hover:text-electricblue transition-colors">Anunciar Conosco</a></li>
+                </ul>
                 <div class="space-y-3">
                     <div class="flex items-center gap-2 bg-slate-900/60 border border-slate-800 px-3 py-2 rounded-lg">
                         <i data-lucide="lock" class="w-4 h-4 text-emerald-400"></i>
@@ -772,7 +787,6 @@ gtag('config', 'AW-18202657831');
                     </div>
                 </div>
             </div>
-
         </div>
 
         <div class="max-w-7xl mx-auto pt-8 border-t border-slate-900 font-inter text-[11px] text-slate-600">
@@ -1258,11 +1272,26 @@ gtag('config', 'AW-18202657831');
                 review_3_text: "Melhor preço de chaves globais do mercado. Já comprei 3 jogos aqui e todos ativaram perfeitamente na Steam. Nota 10!",
                 review_verified: "Comprador Verificado",
                 footer_description: "A plataforma definitiva de distribuição de bens digitais de luxo para entusiastas e e-sports competitivos.",
-                footer_nav_title: "NAVEGAÇÃO SENSÍVEL",
-                footer_nav_1: "Drops Black",
-                footer_nav_2: "Termos de Serviço",
-                footer_nav_3: "Política de Privacidade",
-                footer_contact_title: "CONTATO E EMPRESA",
+                footer_col_buy: "COMPRAR",
+                footer_buy_1: "Como Comprar",
+                footer_buy_2: "Coleções de Jogos",
+                footer_buy_3: "Cupons & Descontos",
+                footer_buy_4: "Destaques Semanais",
+                footer_col_help: "SUPORTE E AJUDA",
+                footer_help_1: "FAQ / Dúvidas",
+                footer_help_2: "Como Ativar Chaves",
+                footer_help_3: "Política de Devolução",
+                footer_help_4: "Política de Entrega",
+                footer_help_5: "Termos de Serviço",
+                footer_help_6: "Política de Privacidade",
+                footer_col_comm: "COMUNIDADE",
+                footer_comm_1: "Minijogos ZCoins",
+                footer_comm_2: "Sorteio Oficial",
+                footer_comm_3: "Torne-se Afiliado",
+                footer_comm_4: "Contato Comercial",
+                footer_col_business: "NEGÓCIOS",
+                footer_bus_1: "Vender na Zher Keys",
+                footer_bus_2: "Anunciar Conosco",
                 footer_contact_phone: "+55 (22) 98833-4537",
                 footer_sec_title: "SEGURANÇA INTERNA",
                 footer_sec_desc: "PAGAMENTO 100% SEGURO",
@@ -1340,11 +1369,26 @@ gtag('config', 'AW-18202657831');
                 review_3_text: "Best price for global keys on the market. I've already bought 3 games here and all activated perfectly on Steam. 10/10!",
                 review_verified: "Verified Buyer",
                 footer_description: "The ultimate digital luxury goods distribution platform for enthusiasts and competitive esports.",
-                footer_nav_title: "OPERATIONAL NAVIGATION",
-                footer_nav_1: "Black Drops",
-                footer_nav_2: "Terms of Service",
-                footer_nav_3: "Privacy Policy",
-                footer_contact_title: "CONTACT & BUSINESS",
+                footer_col_buy: "BUY",
+                footer_buy_1: "How to Buy",
+                footer_buy_2: "Game Collections",
+                footer_buy_3: "Coupons & Discounts",
+                footer_buy_4: "Weekly Highlights",
+                footer_col_help: "HELP & SUPPORT",
+                footer_help_1: "FAQ / Questions",
+                footer_help_2: "How to Activate Keys",
+                footer_help_3: "Return Policy",
+                footer_help_4: "Delivery Policy",
+                footer_help_5: "Terms of Service",
+                footer_help_6: "Privacy Policy",
+                footer_col_comm: "COMMUNITY",
+                footer_comm_1: "ZCoins Minigames",
+                footer_comm_2: "Official Giveaway",
+                footer_comm_3: "Become Affiliate",
+                footer_comm_4: "Business Contact",
+                footer_col_business: "BUSINESS",
+                footer_bus_1: "Sell on Zher Keys",
+                footer_bus_2: "Advertise with Us",
                 footer_contact_phone: "+55 (22) 98833-4537",
                 footer_sec_title: "INTERNAL SECURITY",
                 footer_sec_desc: "100% SECURE PAYMENT",
@@ -1422,11 +1466,26 @@ gtag('config', 'AW-18202657831');
                 review_3_text: "El mejor precio en claves globales del mercado. Ya he comprado 3 juegos aquí y todos se activaron perfectamente en Steam. ¡10/10!",
                 review_verified: "Comprador Verificado",
                 footer_description: "La plataforma definitiva de distribución de bienes digitales de lujo para entusiastas y deportes electrónicos competitivos.",
-                footer_nav_title: "NAVEGACIÓN OPERATIVA",
-                footer_nav_1: "Drops Black",
-                footer_nav_2: "Términos de Servicio",
-                footer_nav_3: "Política de Privacidad",
-                footer_contact_title: "CONTACTO Y EMPRESA",
+                footer_col_buy: "COMPRAR",
+                footer_buy_1: "Cómo Comprar",
+                footer_buy_2: "Colecciones de Juegos",
+                footer_buy_3: "Cupones y Descuentos",
+                footer_buy_4: "Destacados Semanales",
+                footer_col_help: "SOPORTE Y AYUDA",
+                footer_help_1: "FAQ / Preguntas",
+                footer_help_2: "Cómo Activar Claves",
+                footer_help_3: "Política de Devolución",
+                footer_help_4: "Política de Entrega",
+                footer_help_5: "Términos de Servicio",
+                footer_help_6: "Política de Privacidad",
+                footer_col_comm: "COMUNIDAD",
+                footer_comm_1: "Minijuegos ZCoins",
+                footer_comm_2: "Sorteo Oficial",
+                footer_comm_3: "Hazte Afiliado",
+                footer_comm_4: "Contacto Comercial",
+                footer_col_business: "NEGOCIOS",
+                footer_bus_1: "Vender en Zher Keys",
+                footer_bus_2: "Anunciar con Nosotros",
                 footer_contact_phone: "+55 (22) 98833-4537",
                 footer_sec_title: "SEGURIDAD INTERNA",
                 footer_sec_desc: "PAGO 100% SEGURO",
