@@ -2504,23 +2504,23 @@ app.get('/ads.txt', (req, res) => {
     res.send('google.com, pub-3654713194554139, DIRECT, f08c47fec0942fa0');
 });
 
-// Clean URLs for Google Merchant Center compliance
-app.get('/privacy-policy', (req, res) => {
+// Clean URLs for Google Merchant Center compliance (English and Portuguese translations)
+app.get(['/privacy-policy', '/politica-de-privacidade'], (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'politica-de-privacidade.html'));
 });
-app.get('/shipping-policy', (req, res) => {
+app.get(['/shipping-policy', '/politica-de-entrega'], (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'politica-de-entrega.html'));
 });
-app.get('/refund-policy', (req, res) => {
+app.get(['/refund-policy', '/politica-de-devolucao', '/politica-de-reembolso'], (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'politica-de-devolucao.html'));
 });
-app.get('/terms-of-service', (req, res) => {
+app.get(['/terms-of-service', '/termos-de-servico', '/termos'], (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'termos-de-servico.html'));
 });
 app.get('/sobre-nos', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'sobre-nos.html'));
 });
-app.get('/contact', (req, res) => {
+app.get(['/contact', '/contato', '/fale-conosco'], (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'contact.html'));
 });
 
