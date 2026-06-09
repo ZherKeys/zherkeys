@@ -2384,14 +2384,14 @@ app.get('/produto/:id', async (req, res) => {
     try {
         const idStr = req.params.id.split('-')[0];
         const id = parseInt(idStr, 10);
-        if (isNaN(id)) {
-            return res.redirect('/');
+        if (isNaN(id) || id <= 0) {
+            return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
         }
         
         const result = await pool.query('SELECT id, title, description, price, old_price, image, category, in_stock, is_global, restricted_countries, genres, gallery FROM products WHERE id = $1', [id]);
         
         if (result.rows.length === 0) {
-            return res.redirect('/');
+            return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
         }
         
         const product = result.rows[0];
@@ -5295,6 +5295,11 @@ app.post('/api/admin/reading/upload-pages', requireAdmin, uploadGeneric.array('f
     });
     
     res.json({ urls });
+});
+
+// Catch-all 404 handler for any other unmatched routes
+app.use((req, res) => {
+    res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
 // Start Server
