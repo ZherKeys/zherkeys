@@ -2490,7 +2490,6 @@ app.get('/robots.txt', (req, res) => {
     res.send(`User-agent: *
 Allow: /
 Allow: /api/products
-Allow: /api/notifications/unread-count
 Disallow: /admin.html
 Disallow: /account.html
 Disallow: /api/
