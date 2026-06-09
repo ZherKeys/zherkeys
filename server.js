@@ -2517,6 +2517,9 @@ app.get('/refund-policy', (req, res) => {
 app.get('/terms-of-service', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'termos-de-servico.html'));
 });
+app.get('/sobre-nos', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'sobre-nos.html'));
+});
 app.get('/contact', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'contact.html'));
 });
