@@ -900,7 +900,7 @@ gtag('config', 'AW-18202657831');
                                         </div>
                                         <div class="flex gap-2">
                                             <button onclick="toggleKeyVisibility('${keyId}', this, ${o.id}, ${item.product_id})" class="text-xs text-emerald-500 hover:text-emerald-300 bg-emerald-900/30 px-2 py-1 rounded flex items-center justify-center" title="Mostrar/Ocultar"><i data-lucide="${eyeIcon}" class="w-4 h-4"></i></button>
-                                            <button onclick="copyToClipboard('${item.activation_key}')" class="text-xs text-emerald-500 hover:text-emerald-300 bg-emerald-900/30 px-2 py-1 rounded">${lang === 'en' ? 'COPY' : 'COPIAR'}</button>
+                                            <button onclick="copyToClipboard('${item.activation_key}', ${o.id}, ${item.product_id}, '${keyId}')" class="text-xs text-emerald-500 hover:text-emerald-300 bg-emerald-900/30 px-2 py-1 rounded">${lang === 'en' ? 'COPY' : 'COPIAR'}</button>
                                         </div>
                                     </div>
                                 `;
@@ -983,9 +983,24 @@ gtag('config', 'AW-18202657831');
             lucide.createIcons();
         };
 
-        window.copyToClipboard = (text) => {
+        window.copyToClipboard = (text, orderId, productId, keyId) => {
             navigator.clipboard.writeText(text);
             alert("Chave copiada para a área de transferência!");
+            if (orderId && productId) {
+                fetch(`/api/orders/${orderId}/items/${productId}/reveal`, { method: 'POST' })
+                    .then(() => {
+                        if (keyId) {
+                            const el = document.getElementById(keyId);
+                            if (el && el.classList.contains('blur-sm')) {
+                                el.classList.remove('blur-sm', 'select-none');
+                                const btn = el.closest('.group').querySelector('button[title]');
+                                if (btn) btn.innerHTML = '<i data-lucide="eye-off" class="w-4 h-4"></i>';
+                                if (window.lucide) window.lucide.createIcons();
+                            }
+                        }
+                    })
+                    .catch(err => console.error("Erro ao registrar visualizacao da chave", err));
+            }
         };
 
         // --- CHAT LOGIC ---

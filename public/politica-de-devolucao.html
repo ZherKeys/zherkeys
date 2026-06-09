@@ -150,7 +150,7 @@ gtag('config', 'AW-18202657831');
         <div class="mb-8 flex items-center gap-2 text-slate-400 text-xs font-orbitron tracking-widest">
             <a href="/" class="hover:text-electricblue transition-colors">HOME</a>
             <i data-lucide="chevron-right" class="w-3 h-3 opacity-60"></i>
-            <span class="text-white">POLÍTICA DE DEVOLUÇÃO</span>
+            <span class="text-white">POLÍTICA DE REEMBOLSO E DEVOLUÇÃO</span>
         </div>
 
         <div class="bg-slate-950/45 border border-slate-900/90 rounded-3xl p-8 sm:p-12 backdrop-blur-md cyber-panel-glow">
@@ -176,20 +176,20 @@ gtag('config', 'AW-18202657831');
                         Uma chave de produto adquirida na <strong>Zher Keys</strong> pode ser devolvida para recebimento de reembolso em dois casos específicos:
                     </p>
                     <ul class="list-disc pl-5 mt-3 space-y-2 text-slate-300">
-                        <li><strong>Antes do código de produto ser visto (não mostrado):</strong> Conforme o direito de arrependimento (Artigo 49 do Código de Defesa do Consumidor - CDC), o cliente tem direito a desistir da compra no prazo de até 7 dias corridos, desde que a chave digital ainda não tenha sido exibida ou mostrada no painel da sua conta.</li>
+                        <li><strong>Antes do código de produto ser visto (não mostrado / não revelado):</strong> Conforme o direito de arrependimento (Artigo 49 do Código de Defesa do Consumidor - CDC), o cliente tem direito a desistir da compra no prazo de até 7 dias corridos, desde que a chave digital ainda não tenha sido exibida, revelada ou copiada no painel da sua conta.</li>
                         <li><strong>Problema com a chave de ativação em si:</strong> Caso o código de ativação fornecido apresente problemas funcionais (quer esteja inválido ou tenha sido resgatado por outra conta antes do momento exato de sua entrega).</li>
                     </ul>
                 </section>
 
                 <section class="bg-slate-950/80 border border-slate-900 rounded-2xl p-6 border-l-4 border-l-cyberrose">
                     <h3 class="font-orbitron font-bold text-white text-base tracking-widest mb-3 flex items-center gap-2 border-b border-slate-900 pb-3">
-                        <i data-lucide="alert-circle" class="w-5 h-5 text-cyberrose"></i> 2. CHAVES EXPOSTAS (JÁ MOSTRADAS)
+                        <i data-lucide="alert-circle" class="w-5 h-5 text-cyberrose"></i> 2. CHAVES EXPOSTAS (REVELADAS OU COPIADAS)
                     </h3>
                     <p>
-                        Caso você mude de ideia após **visualizar ou revelar a chave** em nosso sistema, a devolução e o reembolso **não serão possíveis**.
+                        Caso você mude de ideia após **visualizar, revelar ou copiar a chave** em nosso sistema, a devolução e o reembolso **não serão possíveis sob qualquer pretexto**.
                     </p>
                     <p class="mt-3">
-                        Como operamos como um marketplace de chaves digitais e não como a publicadora direta (como Steam ou Xbox), o vendedor não dispõe de meios técnicos para invalidar, revogar ou desativar chaves de produto que já foram visualizadas ou mostradas na tela do comprador.
+                        Ao clicar em "Revelar" (ícone de olho) ou no botão "Copiar" nos detalhes do pedido, a licença é exibida na tela e registrada em nosso banco de dados como consumida/exposta. Como operamos como um marketplace de chaves digitais e não como a publicadora direta (como Steam ou Xbox), o vendedor não dispõe de meios técnicos para invalidar, revogar ou desativar chaves de produto que já foram expostas na tela do comprador.
                     </p>
                 </section>
 
@@ -243,29 +243,92 @@ gtag('config', 'AW-18202657831');
     </main>
 
     <!-- FOOTER -->
-    <footer class="bg-slate-950 border-t border-slate-900 py-10 text-center text-xs text-slate-500 font-orbitron tracking-widest">
-        <div class="max-w-7xl mx-auto px-4">
-            <p class="mb-2">© 2026 ZHER KEYS • SEGURANÇA E LICENÇAS DIGITAIS ORIGINAIS</p>
-            <p class="text-[10px] text-slate-600 font-inter tracking-normal mt-1">Zher Keys | Caio Silva de Freitas | CPF: 220.235.437-97 | Rua Ernesto Machado, 9, Lagoinha, Araruama - RJ, CEP 28983-680</p>
-            <p class="text-[10px] text-slate-600 font-inter tracking-normal mt-1">
-                E-mail: <a href="mailto:zherkeys@gmail.com" class="hover:text-white transition-colors">zherkeys@gmail.com</a> • Tel: +55 (22) 98833-4537
-            </p>
-            <p class="text-[9px] text-slate-700 font-inter tracking-normal mt-3 leading-relaxed max-w-3xl mx-auto">
-                Isenção de responsabilidade: A Zher Keys é uma plataforma independente de distribuição de chaves de ativação digitais. Não somos afiliados, autorizados, patrocinados ou endossados por Valve Corporation (Steam), Microsoft Corporation (Xbox), Epic Games ou qualquer outra publicadora de jogos. Todas as marcas comerciais pertencem aos seus respectivos proprietários.
-            </p>
-            <div class="flex items-center justify-center gap-4 text-[10px] text-slate-600 mt-4 flex-wrap">
-                <a href="/" class="hover:text-slate-400 transition-colors">HOME</a>
-                <span>•</span>
-                <a href="/refund-policy" class="text-slate-400 hover:text-white transition-colors">POLÍTICA DE DEVOLUÇÃO</a>
-                <span>•</span>
-                <a href="/shipping-policy" class="hover:text-slate-400 transition-colors">POLÍTICA DE ENTREGA</a>
-                <span>•</span>
-                <a href="/terms-of-service" class="hover:text-slate-400 transition-colors">TERMOS DE SERVIÇO</a>
-                <span>•</span>
-                <a href="/privacy-policy" class="hover:text-slate-400 transition-colors">POLÍTICA DE PRIVACIDADE</a>
-                <span>•</span>
-                <a href="/contact" class="hover:text-slate-400 transition-colors">CONTATO</a>
+    <footer id="suporte" class="bg-slate-950 pt-16 pb-8 border-t border-slate-900 px-4 mt-auto">
+        <div class="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 mb-12">
+            
+            <!-- Coluna 1: Sobre nós -->
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">SOBRE NÓS</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5 mb-6">
+                    <li><a href="/contact.html" class="hover:text-electricblue transition-colors">Sobre nós</a></li>
+                    <li><a href="/contact.html" class="hover:text-electricblue transition-colors">Fale conosco</a></li>
+                    <li><a href="/contact.html" class="hover:text-electricblue transition-colors">Carreiras</a></li>
+                </ul>
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="font-orbitron font-black text-sm tracking-wider text-white">ZHER <span class="text-electricblue">KEYS</span></span>
+                </div>
+                <div class="flex items-center gap-4 text-slate-400">
+                    <a href="https://www.instagram.com/zher_keys/" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </a>
+                </div>
             </div>
+
+            <!-- Coluna 2: Comprar -->
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">COMPRAR</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5">
+                    <li><a href="/#catalogo" class="hover:text-electricblue transition-colors">Como comprar</a></li>
+                    <li><a href="/#catalogo" class="hover:text-electricblue transition-colors">Coleções</a></li>
+                    <li><a href="/#catalogo" class="hover:text-electricblue transition-colors">Descontos</a></li>
+                </ul>
+            </div>
+
+            <!-- Coluna 3: Ajuda -->
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">AJUDA</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5">
+                    <li><a href="/contact.html" class="hover:text-electricblue transition-colors">Perguntas Frequentes</a></li>
+                    <li><a href="/contact.html" class="hover:text-electricblue transition-colors">Como ativar um jogo</a></li>
+                    <li><a href="/contact.html" class="hover:text-electricblue transition-colors">Crie um ticket</a></li>
+                    <li><a href="/politica-de-devolucao.html" class="hover:text-electricblue transition-colors">Política de Devoluções</a></li>
+                </ul>
+            </div>
+
+            <!-- Coluna 4: Comunidade -->
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">COMUNIDADE</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5">
+                    <li><a href="/minigames.html" class="hover:text-electricblue transition-colors">Notícias sobre Jogos</a></li>
+                    <li><a href="/#vitrine" class="hover:text-electricblue transition-colors">Sorteios</a></li>
+                    <li><a href="/contact.html" class="hover:text-electricblue transition-colors">Afilie-se</a></li>
+                    <li><a href="/minigames.html" class="hover:text-electricblue transition-colors">ZCoins: Jogue e Ganhe</a></li>
+                </ul>
+            </div>
+
+            <!-- Coluna 5: Negócios & Segurança -->
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">NEGÓCIOS</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-3 mb-4">
+                    <li><a href="/contact.html" class="hover:text-electricblue transition-colors">Vender em Zher Keys</a></li>
+                    <li><a href="/contact.html" class="hover:text-electricblue transition-colors">Anuncie Conosco</a></li>
+                </ul>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2 bg-slate-900/60 border border-slate-800 px-3 py-2 rounded-lg">
+                        <i data-lucide="lock" class="w-4 h-4 text-emerald-400"></i>
+                        <span class="font-orbitron text-[9px] tracking-widest text-slate-300">SSL ENCRYPTED 256-BIT</span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-slate-900/60 border border-slate-800 px-3 py-2 rounded-lg">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-electricblue"></i>
+                        <span class="font-orbitron text-[9px] tracking-widest text-slate-300">PAGAMENTO 100% SEGURO</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto pt-8 border-t border-slate-900 font-inter text-[11px] text-slate-600">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
+                <p>&copy; 2026 ZHER KEYS. Desenvolvido por Vibe Studio. Direitos Reservados.</p>
+                <p class="mt-1 text-[10px] text-slate-700">Zher Keys | Caio Silva de Freitas | CPF: 220.235.437-97 | Rua Ernesto Machado, 9, Lagoinha, Araruama - RJ, CEP 28983-680</p>
+                <p class="font-orbitron tracking-widest">BUILD V2.04_SECURE</p>
+            </div>
+            <p class="text-[9px] text-slate-700 font-inter tracking-normal mt-2 leading-relaxed text-center max-w-4xl mx-auto">
+                Isenção de responsabilidade: A Zher Keys é uma plataforma independente de distribuição de chaves de ativação digitais. Não somos afiliados, autorizados, patrocinados ou endossados por Valve Corporation (Steam), Microsoft Corporation (Xbox), Epic Games ou qualquer outra publicadora de jogos. Todas as marcas comerciais, logotipos e nomes de produtos pertencem aos seus respectivos proprietários.
+            </p>
         </div>
     </footer>
 

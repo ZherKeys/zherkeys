@@ -4319,7 +4319,7 @@ app.get('/api/admin/users/:id/orders', requireAdmin, async (req, res) => {
         
         for (let order of orders) {
             const itemsRes = await pool.query(`
-                SELECT oi.quantity, oi.price, p.title, oi.activation_key
+                SELECT oi.quantity, oi.price, p.title, oi.activation_key, oi.key_viewed
                 FROM order_items oi
                 JOIN products p ON oi.product_id = p.id
                 WHERE oi.order_id = $1

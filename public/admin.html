@@ -2751,7 +2751,10 @@ gtag('config', 'AW-18202657831');
                         let keyBadge = '';
                         if (i.activation_key) {
                             const cleanKeys = i.activation_key.split('\n').map(k => k.trim()).filter(Boolean).join(', ');
-                            keyBadge = `<div class="mt-1.5 p-2 bg-slate-950 border border-slate-800 rounded font-mono text-[10px] text-emerald-400 uppercase break-all">KEY LIBERADA: ${cleanKeys}</div>`;
+                            const viewedBadge = i.key_viewed 
+                                ? `<span class="inline-block ml-2 px-1.5 py-0.5 rounded text-[8px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 uppercase font-orbitron tracking-wider">Viu a chave (Não reembolsável)</span>` 
+                                : `<span class="inline-block ml-2 px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase font-orbitron tracking-wider">Não viu a chave (Reembolsável)</span>`;
+                            keyBadge = `<div class="mt-1.5 p-2 bg-slate-950 border border-slate-800 rounded font-mono text-[10px] text-emerald-400 uppercase break-all flex items-center justify-between flex-wrap gap-2"><span>KEY LIBERADA: ${cleanKeys}</span>${viewedBadge}</div>`;
                         } else {
                             keyBadge = `<div class="mt-1.5 p-2 bg-slate-950 border border-slate-800 rounded font-mono text-[10px] text-rose-400 uppercase">SEM KEY (AGUARDANDO APROVAÇÃO)</div>`;
                         }
