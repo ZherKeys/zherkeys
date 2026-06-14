@@ -2456,6 +2456,14 @@ app.get('/produto/:id', async (req, res) => {
         const isLoggedIn = !!req.session.userId;
         const requiresAgeGate = is18Plus && !isLoggedIn;
 
+        const slug = (product.title || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // remove acentos
+            .replace(/[^a-z0-9]+/g, '-')     // substitui caracteres especiais por hifens
+            .replace(/(^-|-$)+/g, '');       // remove hifens no inicio/fim
+        const safeSlug = slug || 'produto';
+
         html = html
             .replace(/{{PRODUCT_TITLE}}/g, title)
             .replace(/{{PRODUCT_DESCRIPTION}}/g, description)
@@ -2465,6 +2473,7 @@ app.get('/produto/:id', async (req, res) => {
             .replace(/{{PRODUCT_OLD_PRICE}}/g, oldPriceHtml)
             .replace(/{{PRODUCT_CATEGORY}}/g, product.category)
             .replace(/{{PRODUCT_ID}}/g, product.id)
+            .replace(/{{PRODUCT_SLUG}}/g, safeSlug)
             .replace(/{{PRODUCT_REGION_BADGE}}/g, regionBadge)
             .replace(/{{PRODUCT_GENRES}}/g, genresTags)
             .replace(/{{PRODUCT_AGE_RATING}}/g, ratingHtml)
