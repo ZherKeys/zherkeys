@@ -475,6 +475,39 @@ gtag('config', 'AW-18202657831');
         </div>
     </div>
 
+    <!-- Modal de Restrição Regional -->
+    <div id="region-gate-modal" class="fixed inset-0 z-[9998] bg-slate-950/90 flex items-center justify-center p-4 backdrop-blur-md hidden">
+        <div class="bg-slate-900 border border-rose-900/50 rounded-2xl p-6 max-w-md w-full relative overflow-hidden shadow-2xl">
+            <!-- Efeito decorativo de fundo -->
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl"></div>
+            
+            <div class="w-16 h-16 rounded-2xl bg-rose-950/40 border border-rose-900/50 flex items-center justify-center text-rose-500 mx-auto mb-6">
+                <i data-lucide="globe" class="w-8 h-8"></i>
+            </div>
+            
+            <h3 class="font-orbitron font-bold text-lg text-white text-center tracking-wider uppercase mb-3">// RESTRIÇÃO REGIONAL</h3>
+            
+            <div class="font-inter text-xs text-slate-300 leading-relaxed mb-6 space-y-4">
+                <p>
+                    Este jogo possui <strong>restrição regional</strong> de ativação. Por favor, verifique atentamente se o seu país é aceito antes de comprar.
+                </p>
+                <div class="p-3 bg-rose-950/30 border border-rose-900/40 rounded-xl">
+                    <span class="block text-[10px] font-orbitron font-bold text-rose-400 tracking-wider mb-1">PAÍSES PERMITIDOS PARA ATIVAÇÃO:</span>
+                    <span id="region-countries-list" class="text-slate-200 font-semibold font-inter"></span>
+                </div>
+                <p class="text-rose-400 font-semibold text-center">
+                    Se você não reside em um dos países permitidos, NÃO compre este jogo, pois a ativação falhará e não realizamos reembolso.
+                </p>
+            </div>
+            
+            <div class="font-orbitron text-xs tracking-wider">
+                <button onclick="closeRegionModal()" class="w-full bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 text-white font-bold py-3.5 px-4 rounded-xl border border-rose-500/30 transition-all duration-300 shadow-lg shadow-rose-500/15 uppercase text-center">
+                    Entendi, estou ciente
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Injetado do servidor
         window.currentProduct = {{{PRODUCT_JSON}}};
@@ -498,14 +531,52 @@ gtag('config', 'AW-18202657831');
             if (ageGateModal) {
                 ageGateModal.classList.add('hidden');
             }
-            document.body.style.overflow = '';
+            // Check if region gate is visible, if not restore scroll
+            const regionGateModal = document.getElementById('region-gate-modal');
+            const regionGateVisible = regionGateModal && !regionGateModal.classList.contains('hidden');
+            if (!regionGateVisible) {
+                document.body.style.overflow = '';
+            }
         };
         
         window.rejectAge = () => {
             window.location.href = '/';
         };
 
+        // Controle de Restrição Regional
+        function checkRegionGate() {
+            const regionGateModal = document.getElementById('region-gate-modal');
+            if (!regionGateModal) return;
+
+            const isRestricted = window.currentProduct && window.currentProduct.is_global === false;
+            if (isRestricted) {
+                // Preenche a lista de países
+                const countriesEl = document.getElementById('region-countries-list');
+                if (countriesEl) {
+                    countriesEl.innerText = window.currentProduct.restricted_countries || 'alguns países específicos';
+                }
+                
+                // Exibe o modal
+                regionGateModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        window.closeRegionModal = () => {
+            const regionGateModal = document.getElementById('region-gate-modal');
+            if (regionGateModal) {
+                regionGateModal.classList.add('hidden');
+            }
+            // Só libera o scroll se o age gate também não estiver visível
+            const ageGateModal = document.getElementById('age-gate-modal');
+            const ageGateVisible = ageGateModal && !ageGateModal.classList.contains('hidden');
+            if (!ageGateVisible) {
+                document.body.style.overflow = '';
+            }
+        };
+
         checkAgeGate();
+        checkRegionGate();
 
         // Configura o carrossel de slides (galeria de imagens, videos locais e YouTube)
         let galleryImages = [];
