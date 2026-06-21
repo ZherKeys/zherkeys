@@ -1666,6 +1666,53 @@ gtag('config', 'AW-18202657831');
         const pipeGap = 145;
         let pipeSpeed = 2.4;
 
+        window.gameCountdownState = 'waiting_click';
+        window.gameCountdownVal = 3;
+        window.gameCountdownTimer = null;
+
+        function startGameCountdown() {
+            if (window.gameCountdownTimer) clearInterval(window.gameCountdownTimer);
+            window.gameCountdownState = 'countdown';
+            window.gameCountdownVal = 3;
+            
+            window.gameCountdownTimer = setInterval(() => {
+                window.gameCountdownVal--;
+                if (window.gameCountdownVal <= 0) {
+                    clearInterval(window.gameCountdownTimer);
+                    window.gameCountdownTimer = null;
+                    window.gameCountdownState = 'playing';
+                }
+            }, 1000);
+        }
+
+        function drawGenericCountdownOverlay() {
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.6)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            if (window.gameCountdownState === 'waiting_click') {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.textAlign = 'center';
+                ctx.font = 'bold 20px Orbitron';
+                ctx.shadowColor = '#F43F5E';
+                ctx.shadowBlur = 10;
+                ctx.fillText('PREPARE-SE!', canvas.width / 2, canvas.height / 2 - 30);
+                
+                ctx.fillStyle = '#94A3B8';
+                ctx.shadowBlur = 0;
+                ctx.font = '500 12px Inter';
+                ctx.fillText('Clique no canvas ou pressione ESPAÇO', canvas.width / 2, canvas.height / 2 + 10);
+                ctx.fillText('para iniciar a contagem de 3s.', canvas.width / 2, canvas.height / 2 + 30);
+            } else if (window.gameCountdownState === 'countdown') {
+                ctx.fillStyle = '#F43F5E';
+                ctx.textAlign = 'center';
+                ctx.font = '900 72px Orbitron';
+                ctx.shadowColor = '#F43F5E';
+                ctx.shadowBlur = 20;
+                ctx.fillText(window.gameCountdownVal, canvas.width / 2, canvas.height / 2 + 20);
+                ctx.shadowBlur = 0;
+            }
+        }
+
         function spawnPipe() {
             const minHeight = 50;
             const maxHeight = canvas.height - pipeGap - minHeight;
@@ -1902,8 +1949,6 @@ gtag('config', 'AW-18202657831');
         // --- Entrada de Controles (Teclado) ---
         let keysPressed = {};
         window.addEventListener('keydown', (e) => {
-            keysPressed[e.code] = true;
-            
             // Se o painel do jogo está visível mas o jogo não começou, qualquer tecla inicia
             const isGamePanelVisible = !document.getElementById('arcade-game-container').classList.contains('hidden');
             if (isGamePanelVisible && !gameActive && !gameInitialized) {
@@ -1911,6 +1956,23 @@ gtag('config', 'AW-18202657831');
                 handleStartTrigger();
                 return;
             }
+
+            // Se o jogo está ativo e está na tela de contagem, trata a contagem
+            if (gameActive && window.gameCountdownState === 'waiting_click') {
+                if (['Space', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'KeyA', 'KeyD', 'KeyW', 'KeyS'].includes(e.code)) {
+                    e.preventDefault();
+                    startGameCountdown();
+                    return;
+                }
+            }
+            if (gameActive && window.gameCountdownState === 'countdown') {
+                if (['Space', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'KeyA', 'KeyD', 'KeyW', 'KeyS'].includes(e.code)) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+
+            keysPressed[e.code] = true;
             
             if(e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'Space' || e.code === 'ArrowUp') {
                 e.preventDefault();
@@ -1947,11 +2009,13 @@ gtag('config', 'AW-18202657831');
 
         canvas.addEventListener('mousemove', (e) => {
             if(!gameActive || currentGame !== 'hacker') return;
+            if (window.gameCountdownState === 'waiting_click' || window.gameCountdownState === 'countdown') return;
             updatePlayerX(e.clientX);
         });
         canvas.addEventListener('touchmove', (e) => {
             if(!gameActive || currentGame !== 'hacker') return;
             e.preventDefault();
+            if (window.gameCountdownState === 'waiting_click' || window.gameCountdownState === 'countdown') return;
             if(e.touches.length > 0) {
                 updatePlayerX(e.touches[0].clientX);
             }
@@ -1964,6 +2028,14 @@ gtag('config', 'AW-18202657831');
                 return;
             }
             if (gameActive) {
+                if (window.gameCountdownState === 'waiting_click') {
+                    startGameCountdown();
+                    return;
+                }
+                if (window.gameCountdownState === 'countdown') {
+                    return;
+                }
+                
                 if (currentGame === 'flappy') {
                     bird.velocity = bird.jump;
                     synth.point();
@@ -2708,77 +2780,105 @@ gtag('config', 'AW-18202657831');
                 // LÓGICA DO JOGO: ZHER CLICKER
                 // ==========================================
                 
-                // Pulse central node slowly
-                clickerNode.pulse += 0.05;
-                const currentRadius = 75 + Math.sin(clickerNode.pulse) * 3;
-                
-                // Draw central server node
-                ctx.save();
-                ctx.shadowColor = clickerNode.color;
-                ctx.shadowBlur = 20;
-                ctx.fillStyle = '#091D17';
-                ctx.strokeStyle = clickerNode.color;
-                ctx.lineWidth = 4;
-                ctx.beginPath();
-                ctx.arc(canvas.width / 2, canvas.height / 2, currentRadius, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-                ctx.restore();
-
-                // Draw central glowing emblem
-                ctx.fillStyle = '#10B981';
-                ctx.font = '900 16px Orbitron';
-                ctx.textAlign = 'center';
-                ctx.fillText('DATABASE', canvas.width / 2, canvas.height / 2 - 5);
-                ctx.font = 'bold 11px Orbitron';
-                ctx.fillStyle = '#6EE7B7';
-                ctx.fillText('CLIQUE!', canvas.width / 2, canvas.height / 2 + 15);
-
-                // Update and draw floating texts
-                for (let i = floatingTexts.length - 1; i >= 0; i--) {
-                    const ft = floatingTexts[i];
-                    ft.y += ft.vy;
-                    ft.life--;
-                    if (ft.life <= 0) {
-                        floatingTexts.splice(i, 1);
-                        continue;
-                    }
-                    ctx.fillStyle = ft.color;
-                    ctx.font = 'bold 16px Orbitron';
-                    ctx.textAlign = 'center';
-                    ctx.globalAlpha = ft.life / 30;
-                    ctx.fillText(ft.text, ft.x, ft.y);
-                    ctx.globalAlpha = 1.0;
-                }
-
-                // Add random flying security glitch spikes to click for extra points (clicker challenge)
-                if (Math.random() < 0.01 && items.length < 3) {
-                    items.push({
-                        x: Math.random() * (canvas.width - 60) + 30,
-                        y: -20,
-                        speed: Math.random() * 2 + 1,
-                        size: 15,
-                        color: '#EF4444',
-                        score: -15, // if glitch is touched, score decreases
-                        type: 'clicker-glitch'
-                    });
-                }
-                
-                // Update and draw flying glitches in clicker mode
-                for (let i = items.length - 1; i >= 0; i--) {
-                    const item = items[i];
-                    item.y += item.speed;
-                    if (item.y > canvas.height + 20) {
-                        items.splice(i, 1);
-                        continue;
-                    }
-                    ctx.fillStyle = item.color;
-                    ctx.shadowColor = item.color;
-                    ctx.shadowBlur = 8;
+                if (window.gameCountdownState === 'waiting_click' || window.gameCountdownState === 'countdown') {
+                    // Pulse central node slowly
+                    clickerNode.pulse += 0.05;
+                    const currentRadius = 75 + Math.sin(clickerNode.pulse) * 3;
+                    
+                    // Draw central server node
+                    ctx.save();
+                    ctx.shadowColor = clickerNode.color;
+                    ctx.shadowBlur = 20;
+                    ctx.fillStyle = '#091D17';
+                    ctx.strokeStyle = clickerNode.color;
+                    ctx.lineWidth = 4;
                     ctx.beginPath();
-                    ctx.arc(item.x, item.y, item.size / 2, 0, Math.PI * 2);
+                    ctx.arc(canvas.width / 2, canvas.height / 2, currentRadius, 0, Math.PI * 2);
                     ctx.fill();
-                    ctx.shadowBlur = 0;
+                    ctx.stroke();
+                    ctx.restore();
+
+                    // Draw central glowing emblem
+                    ctx.fillStyle = '#10B981';
+                    ctx.font = '900 16px Orbitron';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('DATABASE', canvas.width / 2, canvas.height / 2 - 5);
+                    ctx.font = 'bold 11px Orbitron';
+                    ctx.fillStyle = '#6EE7B7';
+                    ctx.fillText('CLIQUE!', canvas.width / 2, canvas.height / 2 + 15);
+                } else {
+                    // Pulse central node slowly
+                    clickerNode.pulse += 0.05;
+                    const currentRadius = 75 + Math.sin(clickerNode.pulse) * 3;
+                    
+                    // Draw central server node
+                    ctx.save();
+                    ctx.shadowColor = clickerNode.color;
+                    ctx.shadowBlur = 20;
+                    ctx.fillStyle = '#091D17';
+                    ctx.strokeStyle = clickerNode.color;
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.arc(canvas.width / 2, canvas.height / 2, currentRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+
+                    // Draw central glowing emblem
+                    ctx.fillStyle = '#10B981';
+                    ctx.font = '900 16px Orbitron';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('DATABASE', canvas.width / 2, canvas.height / 2 - 5);
+                    ctx.font = 'bold 11px Orbitron';
+                    ctx.fillStyle = '#6EE7B7';
+                    ctx.fillText('CLIQUE!', canvas.width / 2, canvas.height / 2 + 15);
+
+                    // Update and draw floating texts
+                    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                        const ft = floatingTexts[i];
+                        ft.y += ft.vy;
+                        ft.life--;
+                        if (ft.life <= 0) {
+                            floatingTexts.splice(i, 1);
+                            continue;
+                        }
+                        ctx.fillStyle = ft.color;
+                        ctx.font = 'bold 16px Orbitron';
+                        ctx.textAlign = 'center';
+                        ctx.globalAlpha = ft.life / 30;
+                        ctx.fillText(ft.text, ft.x, ft.y);
+                        ctx.globalAlpha = 1.0;
+                    }
+
+                    // Add random flying security glitch spikes to click for extra points (clicker challenge)
+                    if (Math.random() < 0.01 && items.length < 3) {
+                        items.push({
+                            x: Math.random() * (canvas.width - 60) + 30,
+                            y: -20,
+                            speed: Math.random() * 2 + 1,
+                            size: 15,
+                            color: '#EF4444',
+                            score: -15, // if glitch is touched, score decreases
+                            type: 'clicker-glitch'
+                        });
+                    }
+                    
+                    // Update and draw flying glitches in clicker mode
+                    for (let i = items.length - 1; i >= 0; i--) {
+                        const item = items[i];
+                        item.y += item.speed;
+                        if (item.y > canvas.height + 20) {
+                            items.splice(i, 1);
+                            continue;
+                        }
+                        ctx.fillStyle = item.color;
+                        ctx.shadowColor = item.color;
+                        ctx.shadowBlur = 8;
+                        ctx.beginPath();
+                        ctx.arc(item.x, item.y, item.size / 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
                 }
 
             } else if (currentGame === 'runner') {
@@ -3101,6 +3201,10 @@ gtag('config', 'AW-18202657831');
                 // ==========================================
                 // LÓGICA DO JOGO: QUIZ GAMER
                 // ==========================================
+
+                if (window.gameCountdownState === 'waiting_click' || window.gameCountdownState === 'countdown') {
+                    quizQuestionStartTime = Date.now();
+                }
 
                 if (quizFinished) {
                     ctx.fillStyle = '#10B981';
