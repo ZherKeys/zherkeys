@@ -1735,9 +1735,10 @@ app.post('/api/admin/products/update-market-prices', requireAdmin, async (req, r
                 .trim();
 
             const pricesFound = [];
+            const originalPricesFound = [];
             const storesAnalyzed = [];
 
-            // 1. Buscar preço oficial em BRL na Steam Store
+            // 1. Buscar preço oficial em BRL na Steam Store (Preço em promoção e Preço Original sem desconto)
             try {
                 const steamUrl = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(cleanTitle)}&l=portuguese&cc=BR`;
                 const steamRes = await fetch(steamUrl);
@@ -1745,11 +1746,15 @@ app.post('/api/admin/products/update-market-prices', requireAdmin, async (req, r
                     const steamData = await steamRes.json();
                     if (steamData && steamData.items && steamData.items.length > 0) {
                         const item = steamData.items[0];
-                        if (item.price && item.price.final) {
-                            const brlPrice = item.price.final / 100;
+                        if (item.price) {
+                            const brlPrice = item.price.final ? (item.price.final / 100) : 0;
+                            const initialBrl = item.price.initial ? (item.price.initial / 100) : brlPrice;
                             if (brlPrice > 0) {
                                 pricesFound.push(brlPrice);
                                 storesAnalyzed.push('Steam Store (BR)');
+                            }
+                            if (initialBrl > 0) {
+                                originalPricesFound.push(initialBrl);
                             }
                         }
                     }
@@ -1766,11 +1771,16 @@ app.post('/api/admin/products/update-market-prices', requireAdmin, async (req, r
                     const csData = await csRes.json();
                     if (Array.isArray(csData) && csData.length > 0) {
                         for (const deal of csData) {
-                            const dealPriceUSD = parseFloat(deal.salePrice || deal.normalPrice);
-                            if (dealPriceUSD > 0) {
-                                const dealPriceBRL = parseFloat((dealPriceUSD * usdToBrlRate).toFixed(2));
+                            const saleUSD = parseFloat(deal.salePrice || deal.normalPrice);
+                            const normalUSD = parseFloat(deal.normalPrice || deal.salePrice);
+                            if (saleUSD > 0) {
+                                const dealPriceBRL = parseFloat((saleUSD * usdToBrlRate).toFixed(2));
                                 pricesFound.push(dealPriceBRL);
                                 storesAnalyzed.push(`Loja (ID ${deal.storeID})`);
+                            }
+                            if (normalUSD > 0) {
+                                const normalBRL = parseFloat((normalUSD * usdToBrlRate).toFixed(2));
+                                originalPricesFound.push(normalBRL);
                             }
                         }
                     }
@@ -1779,14 +1789,27 @@ app.post('/api/admin/products/update-market-prices', requireAdmin, async (req, r
                 console.error(`Erro ao buscar CheapShark para ${cleanTitle}:`, err.message);
             }
 
-            // 3. Se encontrou preços na internet, calcula a média
+            // 3. Se encontrou preços na internet, calcula a média de venda e o preço original sem desconto
             if (pricesFound.length > 0) {
                 const sum = pricesFound.reduce((acc, p) => acc + p, 0);
                 let avgPrice = parseFloat((sum / pricesFound.length).toFixed(2));
                 
                 // Aplica margem competitiva de 10% de desconto abaixo da média de mercado para garantir que a Zher Keys seja a mais barata
                 const competitivePrice = parseFloat((avgPrice * 0.90).toFixed(2));
-                const oldPrice = avgPrice;
+
+                // Busca o preço cheio sem desconto (risco vermelho)
+                let oldPrice = null;
+                if (originalPricesFound.length > 0) {
+                    const maxOriginal = Math.max(...originalPricesFound);
+                    if (maxOriginal > competitivePrice) {
+                        oldPrice = parseFloat(maxOriginal.toFixed(2));
+                    }
+                }
+
+                // Fallback para caso não haja preço original explícito maior que o novo preço
+                if (!oldPrice && avgPrice > competitivePrice) {
+                    oldPrice = avgPrice;
+                }
 
                 const currentPrice = parseFloat(prod.price);
                 
@@ -1800,7 +1823,7 @@ app.post('/api/admin/products/update-market-prices', requireAdmin, async (req, r
                     title: prod.title,
                     previousPrice: currentPrice,
                     newAveragePrice: competitivePrice,
-                    marketPrice: oldPrice,
+                    marketPrice: oldPrice || avgPrice,
                     sourcesCount: pricesFound.length,
                     stores: Array.from(new Set(storesAnalyzed)).join(', ')
                 });
