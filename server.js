@@ -216,7 +216,7 @@ async function querySteamAPI(cleanTitle) {
 // Busca informacoes do jogo no Steam
 async function fetchSteamGameInfo(title) {
     let cleanTitle = title
-        .replace(/\b(steam|key|pc|deluxe|definitive|global|edition|gift|card|standard|gold|ultimate|premium|bundle|package|row|activation)\b/gi, '')
+        .replace(/\b(steam|key|pc|deluxe|definitive|global|edition|gift|card|standard|gold|ultimate|premium|bundle|package|row|activation|account|cd|windows|store)\b/gi, '')
         .replace(/[():]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
