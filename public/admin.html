@@ -238,9 +238,14 @@ gtag('config', 'AW-18202657831');
 
             <!-- Lista de Produtos -->
             <div class="lg:col-span-2 bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-                <h3 class="font-orbitron font-bold text-white tracking-widest mb-6 border-b border-slate-800 pb-4 flex items-center gap-2">
-                    <i data-lucide="database" class="w-5 h-5 text-electricblue"></i> COFRE DE PRODUTOS
-                </h3>
+                <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-6">
+                    <h3 class="font-orbitron font-bold text-white tracking-widest flex items-center gap-2">
+                        <i data-lucide="database" class="w-5 h-5 text-electricblue"></i> COFRE DE PRODUTOS
+                    </h3>
+                    <button type="button" onclick="updateMarketPrices()" id="btn-update-prices" class="font-orbitron text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-lg shadow-emerald-950/40 border border-emerald-500/30 transition-all cursor-pointer">
+                        <i data-lucide="trending-up" class="w-4 h-4 text-emerald-200"></i> ATUALIZAR PREÇOS MÉDIOS (INTERNET)
+                    </button>
+                </div>
                 
                 <div id="products-list" class="space-y-4">
                     <div class="text-center text-slate-500 py-10">Carregando catálogo seguro...</div>
@@ -839,6 +844,45 @@ gtag('config', 'AW-18202657831');
 
         // --- PRODUTOS LOGIC ---
         let allProducts = [];
+
+        async function updateMarketPrices() {
+            const btn = document.getElementById('btn-update-prices');
+            if (!btn) return;
+            
+            if (!confirm("Deseja analisar os preços de mercado de vários e-commerces/lojas da internet (Steam, GOG, Humble Store, Fanatical, etc.) e calcular a média atualizada para todos os jogos do catálogo?")) {
+                return;
+            }
+
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin text-emerald-200 inline"></i> Analisando lojas da internet...`;
+            if (window.lucide) lucide.createIcons();
+
+            try {
+                const res = await fetch('/api/admin/products/update-market-prices', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    let msg = `✅ ${data.message}\n\nResumo das Atualizações:\n`;
+                    data.report.forEach(r => {
+                        msg += `• ${r.title}: De R$ ${r.previousPrice.toFixed(2)} -> Novo Preço Médio: R$ ${r.newAveragePrice.toFixed(2)} (Mercado: R$ ${r.marketPrice.toFixed(2)})\n`;
+                    });
+                    alert(msg);
+                    loadProducts();
+                } else {
+                    alert('⚠️ ' + (data.error || data.message || 'Erro ao atualizar preços.'));
+                }
+            } catch (e) {
+                alert('❌ Erro de conexão ao buscar preços da internet: ' + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+                if (window.lucide) lucide.createIcons();
+            }
+        }
         async function loadProducts() {
             try {
                 const res = await fetch('/api/admin/products');

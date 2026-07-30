@@ -1372,15 +1372,126 @@ app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
     }
 });
 
-// Deletar produto (Admin)
-app.delete('/api/admin/products/:id', requireAdmin, async (req, res) => {
+// Endpoint do Analisador de Preços Médios de Mercado (Busca nas Lojas da Internet)
+app.post('/api/admin/products/update-market-prices', requireAdmin, async (req, res) => {
     try {
-        await pool.query('DELETE FROM products WHERE id=$1', [req.params.id]);
-        productsCache = null; // Limpa o cache para atualizar a home imediatamente
-        syncProductsBackup().catch(e => console.error("Erro no backup de produto deletado:", e));
-        res.json({ message: 'Produto deletado' });
-    } catch(e) {
-        res.status(500).json({ error: 'Erro ao deletar' });
+        const productsResult = await pool.query('SELECT * FROM products ORDER BY id ASC');
+        const products = productsResult.rows;
+        
+        if (!products || products.length === 0) {
+            return res.status(400).json({ message: 'Nenhum produto cadastrado para atualizar.' });
+        }
+        
+        let usdToBrlRate = 5.50; // Taxa de conversão padrão caso API de câmbio falhe
+        try {
+            const exchangeRes = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+            if (exchangeRes.ok) {
+                const exchangeData = await exchangeRes.json();
+                if (exchangeData && exchangeData.rates && exchangeData.rates.BRL) {
+                    usdToBrlRate = exchangeData.rates.BRL;
+                }
+            }
+        } catch (e) {
+            console.log('Usando taxa USD->BRL padrão:', usdToBrlRate);
+        }
+
+        const updatedReport = [];
+
+        for (const prod of products) {
+            const cleanTitle = prod.title
+                .replace(/\(PC.*?\)/gi, '')
+                .replace(/\(Steam.*?\)/gi, '')
+                .replace(/\(Windows.*?\)/gi, '')
+                .replace(/Global/gi, '')
+                .replace(/Key/gi, '')
+                .trim();
+
+            const pricesFound = [];
+            const storesAnalyzed = [];
+
+            // 1. Buscar preço oficial em BRL na Steam Store
+            try {
+                const steamUrl = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(cleanTitle)}&l=portuguese&cc=BR`;
+                const steamRes = await fetch(steamUrl);
+                if (steamRes.ok) {
+                    const steamData = await steamRes.json();
+                    if (steamData && steamData.items && steamData.items.length > 0) {
+                        const item = steamData.items[0];
+                        if (item.price && item.price.final) {
+                            const brlPrice = item.price.final / 100;
+                            if (brlPrice > 0) {
+                                pricesFound.push(brlPrice);
+                                storesAnalyzed.push('Steam Store (BR)');
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error(`Erro ao buscar Steam BR para ${cleanTitle}:`, err.message);
+            }
+
+            // 2. Buscar ofertas agregadas no CheapShark (GOG, Humble, Fanatical, GMG, Epic, etc.)
+            try {
+                const csUrl = `https://www.cheapshark.com/api/1.0/deals?title=${encodeURIComponent(cleanTitle)}&limit=5`;
+                const csRes = await fetch(csUrl);
+                if (csRes.ok) {
+                    const csData = await csRes.json();
+                    if (Array.isArray(csData) && csData.length > 0) {
+                        for (const deal of csData) {
+                            const dealPriceUSD = parseFloat(deal.salePrice || deal.normalPrice);
+                            if (dealPriceUSD > 0) {
+                                const dealPriceBRL = parseFloat((dealPriceUSD * usdToBrlRate).toFixed(2));
+                                pricesFound.push(dealPriceBRL);
+                                storesAnalyzed.push(`Loja (ID ${deal.storeID})`);
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error(`Erro ao buscar CheapShark para ${cleanTitle}:`, err.message);
+            }
+
+            // 3. Se encontrou preços na internet, calcula a média
+            if (pricesFound.length > 0) {
+                const sum = pricesFound.reduce((acc, p) => acc + p, 0);
+                let avgPrice = parseFloat((sum / pricesFound.length).toFixed(2));
+                
+                // Aplica margem competitiva de 10% de desconto abaixo da média de mercado para garantir que a Zher Keys seja a mais barata
+                const competitivePrice = parseFloat((avgPrice * 0.90).toFixed(2));
+                const oldPrice = avgPrice;
+
+                const currentPrice = parseFloat(prod.price);
+                
+                await pool.query(
+                    'UPDATE products SET price = $1, old_price = $2 WHERE id = $3',
+                    [competitivePrice, oldPrice, prod.id]
+                );
+
+                updatedReport.push({
+                    id: prod.id,
+                    title: prod.title,
+                    previousPrice: currentPrice,
+                    newAveragePrice: competitivePrice,
+                    marketPrice: oldPrice,
+                    sourcesCount: pricesFound.length,
+                    stores: Array.from(new Set(storesAnalyzed)).join(', ')
+                });
+            }
+        }
+
+        productsCache = null; // Limpa o cache público
+        await syncProductsBackup(); // Sincroniza o backup local JSON permanentemente!
+
+        res.json({
+            success: true,
+            message: `Preços médios atualizados com sucesso para ${updatedReport.length} produtos baseados nas lojas da internet!`,
+            usdToBrlRate,
+            updatedCount: updatedReport.length,
+            report: updatedReport
+        });
+    } catch (err) {
+        console.error('Erro ao atualizar preços médios da internet:', err);
+        res.status(500).json({ error: 'Erro ao buscar e atualizar preços da internet.' });
     }
 });
 
