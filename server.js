@@ -3206,7 +3206,9 @@ app.get('/auth/google', (req, res) => {
             </script>
         `);
     }
-    const redirectUri = `${APP_URL}/auth/google/callback`;
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.get('host');
+    const redirectUri = process.env.APP_URL ? `${process.env.APP_URL}/auth/google/callback` : `${protocol}://${host}/auth/google/callback`;
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=email%20profile`;
     res.redirect(googleAuthUrl);
 });
@@ -3215,7 +3217,9 @@ app.get('/auth/google/callback', async (req, res) => {
     const { code } = req.query;
     if (!code) return res.redirect('/login.html');
 
-    const redirectUri = `${APP_URL}/auth/google/callback`;
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.get('host');
+    const redirectUri = process.env.APP_URL ? `${process.env.APP_URL}/auth/google/callback` : `${protocol}://${host}/auth/google/callback`;
 
     try {
         // Trocar o código de autorização por Access Token
@@ -3231,7 +3235,10 @@ app.get('/auth/google/callback', async (req, res) => {
             })
         });
         const tokenData = await tokenRes.json();
-        if (!tokenData.access_token) throw new Error("Não foi possível obter o token de acesso do Google.");
+        if (!tokenData.access_token) {
+            const errDetail = tokenData.error_description || tokenData.error || "Não foi possível obter o token de acesso do Google.";
+            throw new Error(errDetail);
+        }
 
         // Buscar dados do perfil do usuário
         const userRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
