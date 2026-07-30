@@ -49,6 +49,62 @@ const pool = new Pool({
     ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
+// Sistema de Backup de Segurança de Produtos em Arquivo JSON Local (Gravado no Git/GitHub)
+async function syncProductsBackup() {
+    try {
+        const res = await pool.query('SELECT * FROM products ORDER BY id ASC');
+        if (res.rows && res.rows.length > 0) {
+            const dataDir = path.join(__dirname, 'data');
+            if (!fs.existsSync(dataDir)) {
+                fs.mkdirSync(dataDir, { recursive: true });
+            }
+            const backupPath = path.join(dataDir, 'products_backup.json');
+            fs.writeFileSync(backupPath, JSON.stringify(res.rows, null, 2), 'utf-8');
+            console.log(`💾 Backup de ${res.rows.length} produtos salvo em data/products_backup.json`);
+        }
+    } catch (err) {
+        console.error('Erro ao salvar backup local de produtos:', err && err.message ? err.message : err);
+    }
+}
+
+async function restoreProductsFromBackup() {
+    try {
+        const backupPath = path.join(__dirname, 'data', 'products_backup.json');
+        if (fs.existsSync(backupPath)) {
+            const fileData = fs.readFileSync(backupPath, 'utf-8');
+            const backupProducts = JSON.parse(fileData);
+            if (Array.isArray(backupProducts) && backupProducts.length > 0) {
+                for (let p of backupProducts) {
+                    const exists = await pool.query('SELECT id FROM products WHERE title = $1', [p.title]);
+                    if (exists.rows.length === 0) {
+                        await pool.query(
+                            'INSERT INTO products (title, description, price, old_price, image, category, activation_key, in_stock, is_global, restricted_countries, genres, gameflip_listing_id, gallery) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
+                            [
+                                p.title,
+                                p.description || '',
+                                parseFloat(p.price) || 0,
+                                p.old_price ? parseFloat(p.old_price) : null,
+                                p.image || '',
+                                p.category || 'STEAM KEY',
+                                p.activation_key || '',
+                                p.in_stock !== false,
+                                p.is_global !== false,
+                                p.restricted_countries || '',
+                                p.genres || '',
+                                p.gameflip_listing_id || '',
+                                typeof p.gallery === 'string' ? p.gallery : JSON.stringify(p.gallery || [])
+                            ]
+                        );
+                    }
+                }
+                console.log(`✅ ${backupProducts.length} produtos restaurados do arquivo data/products_backup.json`);
+            }
+        }
+    } catch (err) {
+        console.error('Erro ao restaurar produtos do backup:', err && err.message ? err.message : err);
+    }
+}
+
 // Helper para decodificar e salvar imagem em Base64 - Ajustado para persistir strings Base64 diretamente no banco de dados.
 // Isso evita a perda de imagens customizadas em servidores com filesystem efemero (como o Render).
 function saveBase64Image(base64Str, prefix = 'product') {
@@ -815,6 +871,11 @@ async function initDB() {
         }
         console.log('✅ Produtos da lista transferidos para o Banco de Dados.');
 
+        // Restaura produtos adicionados do arquivo de backup de segurança data/products_backup.json
+        await restoreProductsFromBackup();
+        // Salva cópia de backup do estado atual de produtos no disco para inclusão no Git/GitHub
+        await syncProductsBackup();
+
         // Garante que o usuário administrador zherkeys@gmail.com existe localmente para desenvolvimento
         const checkAdmin = await pool.query('SELECT COUNT(*) FROM users WHERE email = $1', ['zherkeys@gmail.com']);
         if (parseInt(checkAdmin.rows[0].count) === 0) {
@@ -1141,6 +1202,7 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
         setTimeout(() => autoUpdateProductSteamInfo(productId, title, description), 2000);
         
         productsCache = null; // Limpa o cache para atualizar a home imediatamente
+        syncProductsBackup().catch(e => console.error("Erro no backup de produto:", e));
         res.status(201).json({ message: 'Produto adicionado' });
     } catch(e) {
         console.error("Erro ao adicionar produto:", e);
@@ -1260,6 +1322,7 @@ app.post('/api/admin/products/bulk', requireAdmin, async (req, res) => {
         });
         
         productsCache = null; // Limpa o cache público
+        syncProductsBackup().catch(e => console.error("Erro no backup de produtos bulk:", e));
         res.status(201).json({ message: `${products.length} produtos adicionados com sucesso!` });
     } catch(e) {
         await pool.query('ROLLBACK');
@@ -1301,6 +1364,7 @@ app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
         setTimeout(() => autoUpdateProductSteamInfo(id, title, description), 2000);
         
         productsCache = null; // Limpa o cache para atualizar a home imediatamente
+        syncProductsBackup().catch(e => console.error("Erro no backup de produto editado:", e));
         res.json({ message: 'Produto atualizado' });
     } catch(e) {
         console.error("Erro ao atualizar produto:", e);
@@ -1313,6 +1377,7 @@ app.delete('/api/admin/products/:id', requireAdmin, async (req, res) => {
     try {
         await pool.query('DELETE FROM products WHERE id=$1', [req.params.id]);
         productsCache = null; // Limpa o cache para atualizar a home imediatamente
+        syncProductsBackup().catch(e => console.error("Erro no backup de produto deletado:", e));
         res.json({ message: 'Produto deletado' });
     } catch(e) {
         res.status(500).json({ error: 'Erro ao deletar' });
