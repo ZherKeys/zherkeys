@@ -912,6 +912,8 @@ async function initDB() {
         pool.query("UPDATE products SET image = '/lego_dc_super_villains.jpg' WHERE title = 'LEGO DC Super-Villains Deluxe'").catch(()=>{});
         pool.query("UPDATE products SET image = '/shadow_of_war.jpg' WHERE title = 'Middle-earth: Shadow of War Definitive'").catch(()=>{});
         pool.query("UPDATE products SET image = '/lego_movie.jpg' WHERE title = 'The LEGO Movie Videogame'").catch(()=>{});
+        pool.query("DELETE FROM products WHERE title = 'The Incredible Adventures of Van Helsing'").catch(()=>{});
+        pool.query("UPDATE products SET image = 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/274270/header.jpg' WHERE title ILIKE '%Van Helsing II%'").catch(()=>{});
 
         // Popular produtos se estiverem ausentes no Banco de Dados
         const defaultProducts = [
@@ -1599,6 +1601,19 @@ app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
     } catch(e) {
         console.error("Erro ao atualizar produto:", e);
         res.status(400).json({ error: e.message || 'Erro ao atualizar' });
+    }
+});
+
+// Deletar produto (Admin)
+app.delete('/api/admin/products/:id', requireAdmin, async (req, res) => {
+    try {
+        await pool.query('DELETE FROM products WHERE id=$1', [req.params.id]);
+        productsCache = null; // Limpa o cache para atualizar a home imediatamente
+        syncFullDatabaseBackup().catch(e => console.error("Erro no backup de produto deletado:", e));
+        res.json({ message: 'Produto deletado com sucesso' });
+    } catch(e) {
+        console.error("Erro ao deletar produto:", e);
+        res.status(500).json({ error: 'Erro ao deletar produto do banco de dados.' });
     }
 });
 
