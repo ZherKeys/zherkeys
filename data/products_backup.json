@@ -210,5 +210,16 @@
     "activation_key": "VANH-ELSI-NG02-KEY2",
     "in_stock": true,
     "is_global": true
+  },
+  {
+    "title": "Metal Slug Tactics",
+    "price": 39.9,
+    "old_price": 73.99,
+    "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1590760/header.jpg",
+    "description": "Metal Slug Tactics traz o charme nostálgico e a ação tática roguelite da franquia cult METAL SLUG para uma nova dimensão tática de RPG. Lidere os Peregrine Falcons em batalhas táticas dinâmicas por turnos. Ativação via Steam.",
+    "category": "STEAM KEY",
+    "activation_key": "META-LSLU-GTAC-KEY1",
+    "in_stock": true,
+    "is_global": true
   }
 ]

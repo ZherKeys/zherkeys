@@ -1086,6 +1086,15 @@ async function initDB() {
                 description: "Borgova está à beira da ruína. Reúna seus aliados e enfrente a tirania militarista no papel do caçador de monstros definitivo em The Incredible Adventures of Van Helsing II. Jogo de RPG de ação no estilo Hack and Slash. Ativação via Steam.",
                 category: "STEAM KEY",
                 activation_key: "VANH-ELSI-NG02-KEY2"
+            },
+            {
+                title: "Metal Slug Tactics",
+                price: 39.90,
+                old_price: 73.99,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1590760/header.jpg",
+                description: "Metal Slug Tactics traz o charme nostálgico e a ação tática roguelite da franquia cult METAL SLUG para uma nova dimensão tática de RPG. Lidere os Peregrine Falcons em batalhas táticas dinâmicas por turnos. Ativação via Steam.",
+                category: "STEAM KEY",
+                activation_key: "META-LSLU-GTAC-KEY1"
             }
         ];
 
