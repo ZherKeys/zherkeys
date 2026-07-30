@@ -62,6 +62,7 @@
   {
     "title": "The LEGO Movie 2 Videogame",
     "price": 9.90,
+    "old_price": 129.99,
     "image": "/lego_movie_2.jpg",
     "description": "Os monstros alienígenas invasores deixaram Bricksburg em ruínas! Junte-se a Emmet e a um grupo de heróis para ir além do seu mundo e salvar seus amigos dos habitantes do Sistema Systar em The LEGO Movie 2 Videogame. Ativação via Steam.",
     "category": "STEAM KEY",
@@ -259,7 +260,7 @@
   {
     "title": "POSTAL 2",
     "price": 6.90,
-    "old_price": 39.90,
+    "old_price": 32.99,
     "image": "/postal_2.jpg",
     "description": "Viva uma semana na vida de 'Postal Dude', um homem comum tentando apenas cumprir suas tarefas diárias de forma totalmente politicamente incorreta e insana em POSTAL 2. Ativação via Steam.",
     "category": "STEAM KEY",

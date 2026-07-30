@@ -383,6 +383,14 @@ async function querySteamAPI(cleanTitle) {
             else if (esrbLower === 'ao') ageRating = '18 anos';
         }
         
+        let originalPrice = null;
+        if (gameData.price_overview) {
+            const initialCents = gameData.price_overview.initial || gameData.price_overview.final;
+            if (initialCents && initialCents > 0) {
+                originalPrice = parseFloat((initialCents / 100).toFixed(2));
+            }
+        }
+
         return {
             developers: (gameData.developers || []).join(', '),
             publishers: (gameData.publishers || []).join(', '),
@@ -393,7 +401,8 @@ async function querySteamAPI(cleanTitle) {
             libraryImage,
             screenshots,
             movies,
-            ageRating
+            ageRating,
+            originalPrice
         };
     } catch (err) {
         console.error(`[STEAM-API] Erro ao buscar dados para o jogo "${cleanTitle}":`, err);
@@ -657,6 +666,13 @@ async function autoUpdateProductSteamInfo(productId, title, currentDescription) 
             [newDescription, productId]
         );
         
+        if (steamInfo.originalPrice && steamInfo.originalPrice > 0) {
+            await pool.query(
+                "UPDATE products SET old_price = $1 WHERE id = $2 AND (old_price IS NULL OR old_price = 0 OR old_price < price)",
+                [steamInfo.originalPrice, productId]
+            );
+        }
+        
         console.log(`[STEAM-SYNC] Produto ID: ${productId} (${title}) atualizado com metadados do Steam.${imageUpdated ? ' Imagens atualizadas.' : ''}`);
         return true;
     } catch (err) {
@@ -912,10 +928,10 @@ async function initDB() {
         pool.query("UPDATE products SET image = '/lego_dc_super_villains.jpg' WHERE title = 'LEGO DC Super-Villains Deluxe'").catch(()=>{});
         pool.query("UPDATE products SET image = '/shadow_of_war.jpg' WHERE title = 'Middle-earth: Shadow of War Definitive'").catch(()=>{});
         pool.query("UPDATE products SET image = '/lego_movie.jpg' WHERE title = 'The LEGO Movie Videogame'").catch(()=>{});
-        pool.query("UPDATE products SET title = 'The LEGO Movie 2 Videogame', image = '/lego_movie_2.jpg' WHERE title ILIKE '%LEGO Movie 2%' OR title = 'The LEGO Movie Videogame'").catch(()=>{});
-        pool.query("UPDATE products SET image = '/lego_movie_2.jpg' WHERE title ILIKE '%LEGO Movie 2%'").catch(()=>{});
-        pool.query("UPDATE products SET image = '/postal_2.jpg' WHERE title ILIKE '%POSTAL 2%'").catch(()=>{});
-        pool.query("UPDATE products SET image = '/amnesia_the_bunker.jpg' WHERE title ILIKE '%Amnesia%Bunker%'").catch(()=>{});
+        pool.query("UPDATE products SET title = 'The LEGO Movie 2 Videogame', image = '/lego_movie_2.jpg', old_price = 129.99 WHERE title ILIKE '%LEGO Movie 2%' OR title = 'The LEGO Movie Videogame'").catch(()=>{});
+        pool.query("UPDATE products SET image = '/lego_movie_2.jpg', old_price = 129.99 WHERE title ILIKE '%LEGO Movie 2%'").catch(()=>{});
+        pool.query("UPDATE products SET image = '/postal_2.jpg', old_price = 32.99 WHERE title ILIKE '%POSTAL 2%'").catch(()=>{});
+        pool.query("UPDATE products SET image = '/amnesia_the_bunker.jpg', old_price = 73.99 WHERE title ILIKE '%Amnesia%Bunker%'").catch(()=>{});
         pool.query("DELETE FROM products WHERE title = 'The Incredible Adventures of Van Helsing'").catch(()=>{});
         pool.query("UPDATE products SET image = 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/272470/header.jpg' WHERE title ILIKE '%Van Helsing II%'").catch(()=>{});
 
@@ -1130,6 +1146,7 @@ async function initDB() {
             {
                 title: "The LEGO Movie 2 Videogame",
                 price: 9.90,
+                old_price: 129.99,
                 image: "/lego_movie_2.jpg",
                 description: "Os monstros alienígenas invasores deixaram Bricksburg em ruínas! Junte-se a Emmet e a um grupo de heróis para ir além do seu mundo e salvar seus amigos dos habitantes do Sistema Systar em The LEGO Movie 2 Videogame. Ativação via Steam.",
                 category: "STEAM KEY",
@@ -1138,7 +1155,7 @@ async function initDB() {
             {
                 title: "POSTAL 2",
                 price: 6.90,
-                old_price: 39.90,
+                old_price: 32.99,
                 image: "/postal_2.jpg",
                 description: "Viva uma semana na vida de 'Postal Dude', um homem comum tentando apenas cumprir suas tarefas diárias de forma totalmente politicamente incorreta e insana em POSTAL 2. Ativação via Steam.",
                 category: "STEAM KEY",
