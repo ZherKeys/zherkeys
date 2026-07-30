@@ -648,65 +648,172 @@ async function initDB() {
         pool.query("UPDATE products SET image = '/shadow_of_war.jpg' WHERE title = 'Middle-earth: Shadow of War Definitive'").catch(()=>{});
         pool.query("UPDATE products SET image = '/lego_movie.jpg' WHERE title = 'The LEGO Movie Videogame'").catch(()=>{});
 
-        // Popular produtos iniciais se estiver vazio
-        const checkProducts = await pool.query('SELECT COUNT(*) FROM products');
-        if (parseInt(checkProducts.rows[0].count) === 0) {
-            const defaultProducts = [
-                {
-                    title: "Human: Fall Flat",
-                    price: 7.79,
-                    image: "/human_fall_flat.jpg",
-                    description: "Human: Fall Flat é um jogo hilário e leve de plataforma baseado em física, ambientado em paisagens flutuantes e oníricas que podem ser jogadas solo ou com até 8 amigos online. Ativação via Steam.",
-                    category: "STEAM KEY",
-                    activation_key: "ABCD-1234-EFGH-5678"
-                },
-                {
-                    title: "Batman: Arkham Origins",
-                    price: 8.09,
-                    image: "/batman_arkham_origins.jpg",
-                    description: "Batman: Arkham Origins apresenta uma Gotham City expandida e uma história original prequela ambientada vários anos antes dos eventos de Batman: Arkham Asylum e Batman: Arkham City.",
-                    category: "STEAM KEY",
-                    activation_key: "WXYZ-9876-QWER-TYUI"
-                },
-                {
-                    title: "LEGO The Incredibles",
-                    price: 7.50,
-                    image: "/lego_the_incredibles.jpg",
-                    description: "Experimente as aventuras emocionantes da família Pera e use seus superpoderes para derrotar o crime e reviver momentos memoráveis dos filmes Os Incríveis e Os Incríveis 2 no mundo LEGO.",
-                    category: "STEAM KEY",
-                    activation_key: "LKJH-GFDS-MNBV-CXZA"
-                },
-                {
-                    title: "LEGO DC Super-Villains Deluxe",
-                    price: 12.01,
-                    image: "/lego_dc_super_villains.jpg",
-                    description: "É bom ser mau... Embarque em uma nova aventura da DC/LEGO tornando-se o melhor vilão que o universo já viu. A Deluxe Edition inclui conteúdo extra e DLCs exclusivos.",
-                    category: "STEAM KEY",
-                    activation_key: "POIU-YTRE-WQAS-DFGH"
-                },
-                {
-                    title: "Middle-earth: Shadow of War Definitive",
-                    price: 15.28,
-                    image: "/shadow_of_war.jpg",
-                    description: "Experimente um mundo épico aberto trazido à vida pelo Sistema Nêmesis premiado. Forje um novo Anel do Poder, conquiste Fortalezas e domine Mordor com seu próprio exército de orcs nesta Edição Definitiva completa.",
-                    category: "STEAM KEY",
-                    activation_key: "MKOI-JNBH-UYGV-CFTX"
-                },
-                {
-                    title: "The LEGO Movie Videogame",
-                    price: 5.28,
-                    image: "/lego_movie.jpg",
-                    description: "Junte-se a Emmet e um grupo improvável de rebeldes em sua busca heroica para impedir o plano maligno do Senhor Negócios. Construa com peças de LEGO nesta incrível aventura em formato de jogo.",
-                    category: "STEAM KEY",
-                    activation_key: "ZZZZ-XXXX-CCCC-VVVV"
-                }
-            ];
-            
-            for (let p of defaultProducts) {
-                await pool.query('INSERT INTO products (title, description, price, image, category, activation_key) VALUES ($1, $2, $3, $4, $5, $6)', [p.title, p.description, p.price, p.image, p.category, p.activation_key]);
+        // Popular produtos se estiverem ausentes no Banco de Dados
+        const defaultProducts = [
+            {
+                title: "Human: Fall Flat",
+                price: 7.79,
+                image: "/human_fall_flat.jpg",
+                description: "Human: Fall Flat é um jogo hilário e leve de plataforma baseado em física, ambientado em paisagens flutuantes e oníricas que podem ser jogadas solo ou com até 8 amigos online. Ativação via Steam.",
+                category: "STEAM KEY",
+                activation_key: "ABCD-1234-EFGH-5678"
+            },
+            {
+                title: "Batman: Arkham Origins",
+                price: 8.09,
+                image: "/batman_arkham_origins.jpg",
+                description: "Batman: Arkham Origins apresenta uma Gotham City expandida e uma história original prequela ambientada vários anos antes dos eventos de Batman: Arkham Asylum e Batman: Arkham City.",
+                category: "STEAM KEY",
+                activation_key: "WXYZ-9876-QWER-TYUI"
+            },
+            {
+                title: "LEGO The Incredibles",
+                price: 7.50,
+                image: "/lego_the_incredibles.jpg",
+                description: "Experimente as aventuras emocionantes da família Pera e use seus superpoderes para derrotar o crime e reviver momentos memoráveis dos filmes Os Incríveis e Os Incríveis 2 no mundo LEGO.",
+                category: "STEAM KEY",
+                activation_key: "LKJH-GFDS-MNBV-CXZA"
+            },
+            {
+                title: "LEGO Marvel Super Heroes 2",
+                price: 8.44,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/647830/header.jpg",
+                description: "Vá para o confronto direto com o viajante do tempo Kang, o Conquistador em LEGO Marvel Super Heroes 2.",
+                category: "STEAM KEY",
+                activation_key: "MARV-EL22-LEGO-KEY1"
+            },
+            {
+                title: "LEGO DC Super-Villains Deluxe",
+                price: 12.01,
+                image: "/lego_dc_super_villains.jpg",
+                description: "É bom ser mau... Embarque em uma nova aventura da DC/LEGO tornando-se o melhor vilão que o universo já viu. A Deluxe Edition inclui conteúdo extra e DLCs exclusivos.",
+                category: "STEAM KEY",
+                activation_key: "POIU-YTRE-WQAS-DFGH"
+            },
+            {
+                title: "Middle-earth: Shadow of War Definitive",
+                price: 15.28,
+                image: "/shadow_of_war.jpg",
+                description: "Experimente um mundo épico aberto trazido à vida pelo Sistema Nêmesis premiado. Forje um novo Anel do Poder, conquiste Fortalezas e domine Mordor com seu próprio exército de orcs nesta Edição Definitiva completa.",
+                category: "STEAM KEY",
+                activation_key: "MKOI-JNBH-UYGV-CFTX"
+            },
+            {
+                title: "The LEGO Movie Videogame",
+                price: 5.28,
+                image: "/lego_movie.jpg",
+                description: "Junte-se a Emmet e um grupo improvável de rebeldes em sua busca heroica para impedir o plano maligno do Senhor Negócios. Construa com peças de LEGO nesta incrível aventura em formato de jogo.",
+                category: "STEAM KEY",
+                activation_key: "ZZZZ-XXXX-CCCC-VVVV"
+            },
+            {
+                title: "Forza DLC #1",
+                price: 2.94,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1551360/header.jpg",
+                description: "Conteúdo adicional exclusivo DLC para Forza Horizon.",
+                category: "DLC",
+                activation_key: "FORZ-ADLC-1111-KEY1"
+            },
+            {
+                title: "Forza DLC #2",
+                price: 2.94,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1551360/header.jpg",
+                description: "Conteúdo adicional exclusivo DLC para Forza Horizon.",
+                category: "DLC",
+                activation_key: "FORZ-ADLC-2222-KEY2"
+            },
+            {
+                title: "Forza DLC #3",
+                price: 2.94,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1551360/header.jpg",
+                description: "Conteúdo adicional exclusivo DLC para Forza Horizon.",
+                category: "DLC",
+                activation_key: "FORZ-ADLC-3333-KEY3"
+            },
+            {
+                title: "Mad Max (PC Steam Key Global)",
+                price: 13.66,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/234140/header.jpg",
+                description: "Torne-se Mad Max, um guerreiro solitário em um mundo pós-apocalíptico selvagem onde os carros são a chave para a sobrevivência.",
+                category: "STEAM KEY",
+                activation_key: "MADM-AXX1-STEAM-KEY"
+            },
+            {
+                title: "Minecraft Legends (Windows Store Key Global)",
+                price: 7.75,
+                image: "/minecraft_legends.jpg",
+                description: "Explore uma terra verdejante e cheia de recursos à beira da destruição pela invasão dos piglins.",
+                category: "WINDOWS STORE",
+                activation_key: "MINE-LEG1-WIN-KEY"
+            },
+            {
+                title: "The Forest (PC Steam Account)",
+                price: 3.71,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/242760/header.jpg",
+                description: "Como único sobrevivente de um acidente de avião de passageiros, você se encontra em uma floresta misteriosa.",
+                category: "STEAM ACCOUNT",
+                activation_key: "FORE-ST01-ACC-PASS"
+            },
+            {
+                title: "Back 4 Blood",
+                price: 1.76,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/924970/header.jpg",
+                description: "Back 4 Blood é um jogo de tiro em primeira pessoa emocionante dos criadores da aclamada franquia Left 4 Dead.",
+                category: "STEAM KEY",
+                activation_key: "B4BL-OOD1-STEAM-KEY"
+            },
+            {
+                title: "Borderlands 2 (PC Steam Account)",
+                price: 3.83,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/49520/header.jpg",
+                description: "Uma nova era de tiro e saque está prestes a começar em Borderlands 2.",
+                category: "STEAM ACCOUNT",
+                activation_key: "BORD-ERL2-ACC-PASS"
+            },
+            {
+                title: "Metro 2033 Redux (PC Steam Account)",
+                price: 2.47,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/286690/header.jpg",
+                description: "Metro 2033 Redux é a versão definitiva do clássico 'Metro 2033', reconstruído no mais recente Engine 4.",
+                category: "STEAM ACCOUNT",
+                activation_key: "METR-O203-ACC-PASS"
+            },
+            {
+                title: "Bully: Scholarship Edition (PC Steam Account)",
+                price: 6.89,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/12200/header.jpg",
+                description: "Bully: Scholarship Edition conta a história do adolescente travesso Jimmy Hopkins e sua jornada na Bullworth Academy.",
+                category: "STEAM ACCOUNT",
+                activation_key: "BULL-YSE1-ACC-PASS"
+            },
+            {
+                title: "ARK: Survival Evolved (PC Steam Account)",
+                price: 4.04,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/346110/header.jpg",
+                description: "Como um homem ou mulher preso nu, congelando e faminto nas margens de uma ilha misteriosa chamada ARK, cace, colha e construa.",
+                category: "STEAM ACCOUNT",
+                activation_key: "ARKS-URV1-ACC-PASS"
+            },
+            {
+                title: "F.E.A.R. 2: Project Origin (PC Steam CD Key)",
+                price: 3.97,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/16450/header.jpg",
+                description: "Uma explosão devastadora destrói a cidade e desencadeia o terror sobrenatural de Alma em F.E.A.R. 2.",
+                category: "STEAM KEY",
+                activation_key: "FEAR-2PRO-KEY-KEY1"
             }
-            console.log('✅ Produtos iniciais transferidos para o Banco de Dados.');
+        ];
+
+        for (let p of defaultProducts) {
+            const exists = await pool.query('SELECT id FROM products WHERE title = $1', [p.title]);
+            if (exists.rows.length === 0) {
+                await pool.query(
+                    'INSERT INTO products (title, description, price, image, category, activation_key) VALUES ($1, $2, $3, $4, $5, $6)',
+                    [p.title, p.description, p.price, p.image, p.category, p.activation_key]
+                );
+            }
         }
+        console.log('✅ Produtos da lista transferidos para o Banco de Dados.');
 
         // Garante que o usuário administrador zherkeys@gmail.com existe localmente para desenvolvimento
         const checkAdmin = await pool.query('SELECT COUNT(*) FROM users WHERE email = $1', ['zherkeys@gmail.com']);
