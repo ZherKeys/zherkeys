@@ -662,19 +662,39 @@ gtag('config', 'AW-18202657831');
                     const video = document.createElement('video');
                     video.src = mediaSrc;
                     video.controls = true;
-                    video.muted = true; // Muted permitindo Autoplay automático em todos os navegadores!
+                    video.muted = false; // Tenta reproduzir com SOM por padrão!
                     video.loop = true;
                     video.playsInline = true;
                     video.setAttribute('playsinline', '');
-                    video.setAttribute('muted', '');
                     video.setAttribute('autoplay', '');
                     video.autoplay = true;
                     video.className = "w-full h-full object-cover rounded-xl";
                     video.id = `slide-media-${index}`;
                     
-                    // Tenta iniciar a reprodução imediata do trailer
+                    // Tenta iniciar a reprodução imediata com som
                     setTimeout(() => {
-                        video.play().catch(e => console.log('Autoplay do vídeo:', e));
+                        video.play().then(() => {
+                            console.log('✅ Vídeo e Som reproduzidos com sucesso!');
+                        }).catch(e => {
+                            console.log('⚠️ Navegador bloqueou áudio automático sem interação. Iniciando mudo e ativando no primeiro toque/clique.');
+                            video.muted = true;
+                            video.play().catch(err => console.log('Erro ao dar play no vídeo:', err));
+
+                            // Desmuta o áudio no primeiro toque, clique ou rolagem de página do usuário
+                            const unmuteOnInteraction = () => {
+                                video.muted = false;
+                                document.removeEventListener('click', unmuteOnInteraction);
+                                document.removeEventListener('keydown', unmuteOnInteraction);
+                                document.removeEventListener('touchstart', unmuteOnInteraction);
+                                document.removeEventListener('scroll', unmuteOnInteraction);
+                                if (soundBtn) soundBtn.innerHTML = '<span>🔇 MUTAR SOM</span>';
+                            };
+
+                            document.addEventListener('click', unmuteOnInteraction, { once: true });
+                            document.addEventListener('keydown', unmuteOnInteraction, { once: true });
+                            document.addEventListener('touchstart', unmuteOnInteraction, { once: true });
+                            document.addEventListener('scroll', unmuteOnInteraction, { once: true });
+                        });
                     }, 100);
                     
                     video.onplay = () => {
@@ -684,11 +704,11 @@ gtag('config', 'AW-18202657831');
                         }
                     };
 
-                    // Botão de atalho para desmutar o áudio com 1 clique
+                    // Botão de atalho para alternar o som
                     const soundBtn = document.createElement('button');
                     soundBtn.type = 'button';
                     soundBtn.className = 'absolute top-4 right-4 bg-slate-950/80 hover:bg-slate-900 text-white text-[10px] font-orbitron font-bold tracking-wider px-3 py-1.5 rounded-lg border border-slate-700/80 backdrop-blur-md shadow-lg transition-all z-30 cursor-pointer flex items-center gap-1.5';
-                    soundBtn.innerHTML = '<span>🔊 ATIVAR SOM</span>';
+                    soundBtn.innerHTML = video.muted ? '<span>🔊 ATIVAR SOM</span>' : '<span>🔇 MUTAR SOM</span>';
                     soundBtn.onclick = (e) => {
                         e.stopPropagation();
                         video.muted = !video.muted;
@@ -700,7 +720,7 @@ gtag('config', 'AW-18202657831');
                 } else if (type === 'youtube') {
                     const ytId = getYoutubeId(mediaSrc);
                     const iframe = document.createElement('iframe');
-                    iframe.src = `https://www.youtube.com/embed/${ytId}?enablejsapi=1&rel=0&autoplay=1&mute=1&loop=1&playlist=${ytId}`;
+                    iframe.src = `https://www.youtube.com/embed/${ytId}?enablejsapi=1&rel=0&autoplay=1&loop=1&playlist=${ytId}`;
                     iframe.className = "w-full h-full border-0 rounded-xl";
                     iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
                     iframe.allowFullscreen = true;
