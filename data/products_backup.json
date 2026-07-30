@@ -60,14 +60,15 @@
     "is_global": true
   },
   {
-    "title": "The LEGO Movie Videogame",
-    "price": 7.42,
-    "image": "/lego_movie.jpg",
-    "description": "Junte-se a Emmet e a um grupo improvável de rebeldes para deter o plano maligno do Sr. Negócios em The LEGO Movie Videogame.",
+    "title": "The LEGO Movie 2 Videogame",
+    "price": 9.90,
+    "image": "/lego_movie_2.jpg",
+    "description": "Os monstros alienígenas invasores deixaram Bricksburg em ruínas! Junte-se a Emmet e a um grupo de heróis para ir além do seu mundo e salvar seus amigos dos habitantes do Sistema Systar em The LEGO Movie 2 Videogame. Ativação via Steam.",
     "category": "STEAM KEY",
-    "activation_key": "ZZZZ-XXXX-CCCC-VVVV",
+    "activation_key": "LEGO-MOV2-STEAM-KEY1",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "genres": "Ação, Aventura, LEGO"
   },
   {
     "title": "Forza DLC #1",
@@ -254,5 +255,29 @@
     "activation_key": "INJU-STIC-EULT-KEY1",
     "in_stock": true,
     "is_global": true
+  },
+  {
+    "title": "POSTAL 2",
+    "price": 6.90,
+    "old_price": 39.90,
+    "image": "/postal_2.jpg",
+    "description": "Viva uma semana na vida de 'Postal Dude', um homem comum tentando apenas cumprir suas tarefas diárias de forma totalmente politicamente incorreta e insana em POSTAL 2. Ativação via Steam.",
+    "category": "STEAM KEY",
+    "activation_key": "POST-AL02-STEAM-KEY1",
+    "in_stock": true,
+    "is_global": true,
+    "genres": "Ação, Tiro, Comédia, FPS"
+  },
+  {
+    "title": "Amnesia: The Bunker",
+    "price": 18.90,
+    "old_price": 73.99,
+    "image": "/amnesia_the_bunker.jpg",
+    "description": "Amnesia: The Bunker é um jogo de terror em primeira pessoa ambientado em um bunker desolado da Primeira Guerra Mundial. Enfrente os terrores na escuridão e mantenha as luzes acesas a qualquer custo para sobreviver. Ativação via Steam.",
+    "category": "STEAM KEY",
+    "activation_key": "AMNE-SIA0-BUNK-ER01",
+    "in_stock": true,
+    "is_global": true,
+    "genres": "Terror, Sobrevivência, Ação"
   }
 ]

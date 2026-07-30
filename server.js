@@ -912,6 +912,10 @@ async function initDB() {
         pool.query("UPDATE products SET image = '/lego_dc_super_villains.jpg' WHERE title = 'LEGO DC Super-Villains Deluxe'").catch(()=>{});
         pool.query("UPDATE products SET image = '/shadow_of_war.jpg' WHERE title = 'Middle-earth: Shadow of War Definitive'").catch(()=>{});
         pool.query("UPDATE products SET image = '/lego_movie.jpg' WHERE title = 'The LEGO Movie Videogame'").catch(()=>{});
+        pool.query("UPDATE products SET title = 'The LEGO Movie 2 Videogame', image = '/lego_movie_2.jpg' WHERE title ILIKE '%LEGO Movie 2%' OR title = 'The LEGO Movie Videogame'").catch(()=>{});
+        pool.query("UPDATE products SET image = '/lego_movie_2.jpg' WHERE title ILIKE '%LEGO Movie 2%'").catch(()=>{});
+        pool.query("UPDATE products SET image = '/postal_2.jpg' WHERE title ILIKE '%POSTAL 2%'").catch(()=>{});
+        pool.query("UPDATE products SET image = '/amnesia_the_bunker.jpg' WHERE title ILIKE '%Amnesia%Bunker%'").catch(()=>{});
         pool.query("DELETE FROM products WHERE title = 'The Incredible Adventures of Van Helsing'").catch(()=>{});
         pool.query("UPDATE products SET image = 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/272470/header.jpg' WHERE title ILIKE '%Van Helsing II%'").catch(()=>{});
 
@@ -1122,6 +1126,32 @@ async function initDB() {
                 description: "Injustice: Gods Among Us Ultimate Edition aprimora a nova franquia arrojada para o gênero de jogos de luta de NetherRealm Studios. Apresentando 6 novos personagens jogáveis, mais de 30 novas skins e 60 novas missões S.T.A.R. Labs. Ativação via Steam.",
                 category: "STEAM KEY",
                 activation_key: "INJU-STIC-EULT-KEY1"
+            },
+            {
+                title: "The LEGO Movie 2 Videogame",
+                price: 9.90,
+                image: "/lego_movie_2.jpg",
+                description: "Os monstros alienígenas invasores deixaram Bricksburg em ruínas! Junte-se a Emmet e a um grupo de heróis para ir além do seu mundo e salvar seus amigos dos habitantes do Sistema Systar em The LEGO Movie 2 Videogame. Ativação via Steam.",
+                category: "STEAM KEY",
+                activation_key: "LEGO-MOV2-STEAM-KEY1"
+            },
+            {
+                title: "POSTAL 2",
+                price: 6.90,
+                old_price: 39.90,
+                image: "/postal_2.jpg",
+                description: "Viva uma semana na vida de 'Postal Dude', um homem comum tentando apenas cumprir suas tarefas diárias de forma totalmente politicamente incorreta e insana em POSTAL 2. Ativação via Steam.",
+                category: "STEAM KEY",
+                activation_key: "POST-AL02-STEAM-KEY1"
+            },
+            {
+                title: "Amnesia: The Bunker",
+                price: 18.90,
+                old_price: 73.99,
+                image: "/amnesia_the_bunker.jpg",
+                description: "Amnesia: The Bunker é um jogo de terror em primeira pessoa ambientado em um bunker desolado da Primeira Guerra Mundial. Enfrente os terrores na escuridão e mantenha as luzes acesas a qualquer custo para sobreviver. Ativação via Steam.",
+                category: "STEAM KEY",
+                activation_key: "AMNE-SIA0-BUNK-ER01"
             }
         ];
 

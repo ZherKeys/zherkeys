@@ -25,6 +25,18 @@ const imagesToDownload = [
     {
         name: 'lego_movie.jpg',
         url: 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/267530/library_600x900.jpg'
+    },
+    {
+        name: 'lego_movie_2.jpg',
+        url: 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/881320/library_600x900.jpg'
+    },
+    {
+        name: 'postal_2.jpg',
+        url: 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/223470/library_600x900.jpg'
+    },
+    {
+        name: 'amnesia_the_bunker.jpg',
+        url: 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1944430/library_600x900.jpg'
     }
 ];
 
