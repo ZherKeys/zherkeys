@@ -1095,6 +1095,15 @@ async function initDB() {
                 description: "Metal Slug Tactics traz o charme nostálgico e a ação tática roguelite da franquia cult METAL SLUG para uma nova dimensão tática de RPG. Lidere os Peregrine Falcons em batalhas táticas dinâmicas por turnos. Ativação via Steam.",
                 category: "STEAM KEY",
                 activation_key: "META-LSLU-GTAC-KEY1"
+            },
+            {
+                title: "Going Under",
+                price: 7.90,
+                old_price: 104.90,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1154810/header.jpg",
+                description: "Going Under é um jogo de exploração de masmorras satírico sobre explorar as ruínas amaldiçoadas de startups de tecnologia que faliram. Como um estagiário não remunerado na cidade distópica de Neo-Cascadia, você empunhará lixo de escritório como armas. Ativação via Steam.",
+                category: "STEAM KEY",
+                activation_key: "GOIN-GUND-ER01-KEY1"
             }
         ];
 
