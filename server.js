@@ -217,20 +217,23 @@ async function querySteamAPI(cleanTitle) {
 async function fetchSteamGameInfo(title) {
     let cleanTitle = title
         .replace(/\b(steam|key|pc|deluxe|definitive|global|edition|gift|card|standard|gold|ultimate|premium|bundle|package|row|activation|account|cd|windows|store)\b/gi, '')
+        .replace(/#[0-9]+/g, '')
         .replace(/[():]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
         
     if (!cleanTitle) return null;
 
-    // Normalização de erros comuns de digitação
+    // Normalização de erros comuns de digitação e mapeamento de DLCs
     const lowerTitle = cleanTitle.toLowerCase();
-    if (lowerTitle.includes("devil may cri")) {
-        cleanTitle = cleanTitle.replace(/devil may cri/gi, "Devil May Cry");
+    if (lowerTitle.includes("forza")) {
+        cleanTitle = "Forza Horizon 5";
+    } else if (lowerTitle.includes("devil may cri")) {
+        cleanTitle = "Devil May Cry";
     } else if (lowerTitle.includes("injustise") || lowerTitle.includes("injustiçe")) {
-        cleanTitle = cleanTitle.replace(/injustis[eç]/gi, "Injustice");
+        cleanTitle = "Injustice";
     } else if (lowerTitle.includes("mine craft")) {
-        cleanTitle = cleanTitle.replace(/mine craft/gi, "Minecraft");
+        cleanTitle = "Minecraft";
     }
     
     let result = await querySteamAPI(cleanTitle);
