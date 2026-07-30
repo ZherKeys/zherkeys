@@ -1066,6 +1066,15 @@ async function initDB() {
                 description: "Uma explosão devastadora destrói a cidade e desencadeia o terror sobrenatural de Alma em F.E.A.R. 2.",
                 category: "STEAM KEY",
                 activation_key: "FEAR-2PRO-KEY-KEY1"
+            },
+            {
+                title: "Suicide Squad: Kill the Justice League",
+                price: 24.90,
+                old_price: 279.90,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/315210/header.jpg",
+                description: "Dos criadores de Batman: Arkham, Suicide Squad: Kill the Justice League é um jogo de tiro em terceira pessoa de ação que desafia o gênero, onde a banda de desajustados definitiva deve fazer o impossível para salvar o mundo: matar a Liga da Justiça. Ativação via Steam.",
+                category: "STEAM KEY",
+                activation_key: "SUIC-IDES-QUAD-KEY1"
             }
         ];
 
