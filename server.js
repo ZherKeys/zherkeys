@@ -67,6 +67,15 @@ async function syncProductsBackup() {
     }
 }
 
+async function fixPostgresSequences() {
+    try {
+        const tables = ['users', 'products', 'orders', 'order_items', 'support_tickets', 'support_ticket_messages', 'streaming_media', 'streaming_episodes', 'reading_media', 'reading_chapters'];
+        for (let tbl of tables) {
+            await pool.query(`SELECT setval(pg_get_serial_sequence('${tbl}', 'id'), COALESCE(MAX(id), 1)) FROM ${tbl}`).catch(() => {});
+        }
+    } catch(e) {}
+}
+
 async function restoreProductsFromBackup() {
     try {
         const backupPath = path.join(__dirname, 'data', 'products_backup.json');
@@ -74,30 +83,56 @@ async function restoreProductsFromBackup() {
             const fileData = fs.readFileSync(backupPath, 'utf-8');
             const backupProducts = JSON.parse(fileData);
             if (Array.isArray(backupProducts) && backupProducts.length > 0) {
-                for (let p of backupProducts) {
-                    const exists = await pool.query('SELECT id FROM products WHERE title = $1', [p.title]);
-                    if (exists.rows.length === 0) {
-                        await pool.query(
-                            'INSERT INTO products (title, description, price, old_price, image, category, activation_key, in_stock, is_global, restricted_countries, genres, gameflip_listing_id, gallery) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
-                            [
-                                p.title,
-                                p.description || '',
-                                parseFloat(p.price) || 0,
-                                p.old_price ? parseFloat(p.old_price) : null,
-                                p.image || '',
-                                p.category || 'STEAM KEY',
-                                p.activation_key || '',
-                                p.in_stock !== false,
-                                p.is_global !== false,
-                                p.restricted_countries || '',
-                                p.genres || '',
-                                p.gameflip_listing_id || '',
-                                typeof p.gallery === 'string' ? p.gallery : JSON.stringify(p.gallery || [])
-                            ]
-                        );
+                const countRes = await pool.query('SELECT COUNT(*) FROM products');
+                const count = parseInt(countRes.rows[0].count, 10);
+                if (count === 0) {
+                    for (let p of backupProducts) {
+                        if (p.id) {
+                            await pool.query(
+                                `INSERT INTO products (id, title, description, price, old_price, image, category, activation_key, in_stock, is_global, restricted_countries, genres, gameflip_listing_id, gallery) 
+                                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                                 ON CONFLICT (id) DO NOTHING`,
+                                [
+                                    p.id,
+                                    p.title,
+                                    p.description || '',
+                                    parseFloat(p.price) || 0,
+                                    p.old_price ? parseFloat(p.old_price) : null,
+                                    p.image || '',
+                                    p.category || 'STEAM KEY',
+                                    p.activation_key || '',
+                                    p.in_stock !== false,
+                                    p.is_global !== false,
+                                    p.restricted_countries || '',
+                                    p.genres || '',
+                                    p.gameflip_listing_id || '',
+                                    typeof p.gallery === 'string' ? p.gallery : JSON.stringify(p.gallery || [])
+                                ]
+                            );
+                        } else {
+                            await pool.query(
+                                `INSERT INTO products (title, description, price, old_price, image, category, activation_key, in_stock, is_global, restricted_countries, genres, gameflip_listing_id, gallery) 
+                                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+                                [
+                                    p.title,
+                                    p.description || '',
+                                    parseFloat(p.price) || 0,
+                                    p.old_price ? parseFloat(p.old_price) : null,
+                                    p.image || '',
+                                    p.category || 'STEAM KEY',
+                                    p.activation_key || '',
+                                    p.in_stock !== false,
+                                    p.is_global !== false,
+                                    p.restricted_countries || '',
+                                    p.genres || '',
+                                    p.gameflip_listing_id || '',
+                                    typeof p.gallery === 'string' ? p.gallery : JSON.stringify(p.gallery || [])
+                                ]
+                            );
+                        }
                     }
+                    console.log(`✅ ${backupProducts.length} produtos restaurados do arquivo data/products_backup.json (Banco estava vazio)`);
                 }
-                console.log(`✅ ${backupProducts.length} produtos restaurados do arquivo data/products_backup.json`);
             }
         }
     } catch (err) {
@@ -161,27 +196,51 @@ async function restoreFullDatabaseFromBackup() {
             const usersData = JSON.parse(fs.readFileSync(usersBackupPath, 'utf-8'));
             if (Array.isArray(usersData)) {
                 for (let u of usersData) {
-                    const check = await pool.query('SELECT id FROM users WHERE email = $1', [u.email]);
+                    const check = await pool.query('SELECT id FROM users WHERE email = $1 OR id = $2', [u.email, u.id]);
                     if (check.rows.length === 0) {
-                        await pool.query(
-                            `INSERT INTO users (email, password_hash, is_verified, balance, points, game_nickname, google_id, facebook_id, steam_id, avatar, is_admin, subscription_expires_at, reading_subscription_expires_at) 
-                            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
-                            [
-                                u.email,
-                                u.password_hash || '',
-                                u.is_verified ? 1 : 0,
-                                parseFloat(u.balance) || 0.00,
-                                parseInt(u.points) || 0,
-                                u.game_nickname || null,
-                                u.google_id || null,
-                                u.facebook_id || null,
-                                u.steam_id || null,
-                                u.avatar || null,
-                                u.is_admin ? 1 : 0,
-                                u.subscription_expires_at || null,
-                                u.reading_subscription_expires_at || null
-                            ]
-                        );
+                        if (u.id) {
+                            await pool.query(
+                                `INSERT INTO users (id, email, password_hash, is_verified, balance, points, game_nickname, google_id, facebook_id, steam_id, avatar, is_admin, subscription_expires_at, reading_subscription_expires_at) 
+                                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                                ON CONFLICT (id) DO NOTHING`,
+                                [
+                                    u.id,
+                                    u.email,
+                                    u.password_hash || '',
+                                    u.is_verified ? 1 : 0,
+                                    parseFloat(u.balance) || 0.00,
+                                    parseInt(u.points) || 0,
+                                    u.game_nickname || null,
+                                    u.google_id || null,
+                                    u.facebook_id || null,
+                                    u.steam_id || null,
+                                    u.avatar || null,
+                                    u.is_admin ? 1 : 0,
+                                    u.subscription_expires_at || null,
+                                    u.reading_subscription_expires_at || null
+                                ]
+                            );
+                        } else {
+                            await pool.query(
+                                `INSERT INTO users (email, password_hash, is_verified, balance, points, game_nickname, google_id, facebook_id, steam_id, avatar, is_admin, subscription_expires_at, reading_subscription_expires_at) 
+                                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+                                [
+                                    u.email,
+                                    u.password_hash || '',
+                                    u.is_verified ? 1 : 0,
+                                    parseFloat(u.balance) || 0.00,
+                                    parseInt(u.points) || 0,
+                                    u.game_nickname || null,
+                                    u.google_id || null,
+                                    u.facebook_id || null,
+                                    u.steam_id || null,
+                                    u.avatar || null,
+                                    u.is_admin ? 1 : 0,
+                                    u.subscription_expires_at || null,
+                                    u.reading_subscription_expires_at || null
+                                ]
+                            );
+                        }
                     }
                 }
                 console.log(`✅ Usuários restaurados a partir de data/users_backup.json`);
@@ -287,6 +346,8 @@ async function restoreFullDatabaseFromBackup() {
             }
             console.log(`✅ Tickets de suporte restaurados a partir de data/tickets_backup.json`);
         }
+
+        await fixPostgresSequences();
 
     } catch (err) {
         console.error('Erro ao restaurar banco de dados completo do backup:', err && err.message ? err.message : err);
@@ -1172,19 +1233,22 @@ async function initDB() {
             }
         ];
 
-        for (let p of defaultProducts) {
-            const exists = await pool.query('SELECT id FROM products WHERE title = $1', [p.title]);
-            if (exists.rows.length === 0) {
+        // Restaura banco de dados completo (produtos, usuários, compras/chaves e suporte) dos arquivos de backup
+        await restoreFullDatabaseFromBackup();
+
+        // Se o banco de dados de produtos ainda estiver totalmente vazio (sem backup), popula com os produtos padrão
+        const prodCountRes = await pool.query('SELECT COUNT(*) FROM products');
+        const prodCount = parseInt(prodCountRes.rows[0].count, 10);
+        if (prodCount === 0) {
+            for (let p of defaultProducts) {
                 await pool.query(
                     'INSERT INTO products (title, description, price, image, category, activation_key) VALUES ($1, $2, $3, $4, $5, $6)',
                     [p.title, p.description, p.price, p.image, p.category, p.activation_key]
                 );
             }
+            console.log('✅ Produtos padrão inseridos no Banco de Dados (Banco estava vazio).');
         }
-        console.log('✅ Produtos da lista transferidos para o Banco de Dados.');
 
-        // Restaura banco de dados completo (produtos, usuários, compras/chaves e suporte) dos arquivos de backup
-        await restoreFullDatabaseFromBackup();
         // Salva cópia de backup do estado atual de todas as tabelas no disco para inclusão no Git/GitHub
         await syncFullDatabaseBackup();
 
@@ -1692,7 +1756,7 @@ app.delete('/api/admin/products/:id', requireAdmin, async (req, res) => {
     try {
         await pool.query('DELETE FROM products WHERE id=$1', [req.params.id]);
         productsCache = null; // Limpa o cache para atualizar a home imediatamente
-        syncFullDatabaseBackup().catch(e => console.error("Erro no backup de produto deletado:", e));
+        await syncFullDatabaseBackup();
         res.json({ message: 'Produto deletado com sucesso' });
     } catch(e) {
         console.error("Erro ao deletar produto:", e);
