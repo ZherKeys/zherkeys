@@ -677,17 +677,19 @@ gtag('config', 'AW-18202657831');
                         video.play().then(() => {
                             console.log('✅ Vídeo e Som reproduzidos com sucesso!');
                         }).catch(e => {
-                            console.log('⚠️ Navegador bloqueou áudio automático sem interação. Iniciando mudo e ativando no primeiro toque/clique.');
+                            console.log('⚠️ Navegador aguardando interação inicial. Iniciando mudo e ativando no primeiro toque/movimento.');
                             video.muted = true;
                             video.play().catch(err => console.log('Erro ao dar play no vídeo:', err));
 
-                            // Desmuta o áudio no primeiro toque, clique ou rolagem de página do usuário
+                            // Desmuta o áudio no primeiro toque, clique, movimento ou rolagem do usuário
                             const unmuteOnInteraction = () => {
                                 video.muted = false;
                                 document.removeEventListener('click', unmuteOnInteraction);
                                 document.removeEventListener('keydown', unmuteOnInteraction);
                                 document.removeEventListener('touchstart', unmuteOnInteraction);
                                 document.removeEventListener('scroll', unmuteOnInteraction);
+                                document.removeEventListener('mousemove', unmuteOnInteraction);
+                                document.removeEventListener('pointerdown', unmuteOnInteraction);
                                 if (soundBtn) soundBtn.innerHTML = '<span>🔇 MUTAR SOM</span>';
                             };
 
@@ -695,8 +697,10 @@ gtag('config', 'AW-18202657831');
                             document.addEventListener('keydown', unmuteOnInteraction, { once: true });
                             document.addEventListener('touchstart', unmuteOnInteraction, { once: true });
                             document.addEventListener('scroll', unmuteOnInteraction, { once: true });
+                            document.addEventListener('mousemove', unmuteOnInteraction, { once: true });
+                            document.addEventListener('pointerdown', unmuteOnInteraction, { once: true });
                         });
-                    }, 100);
+                    }, 50);
                     
                     video.onplay = () => {
                         if (autoPlayInterval) {

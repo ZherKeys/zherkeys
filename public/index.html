@@ -1897,7 +1897,67 @@ gtag('config', 'AW-18202657831');
             const lang = window.currentCurrency === 'USD' ? 'en' : (window.currentCurrency === 'EUR' ? 'es' : 'pt');
             const dict = TRANSLATIONS[lang] || TRANSLATIONS['pt'];
 
-            document.getElementById('modal-image').src = currentProduct.image;
+            const modalImg = document.getElementById('modal-image');
+            const mediaContainer = modalImg ? modalImg.parentElement : null;
+            if (mediaContainer) {
+                const oldMedia = mediaContainer.querySelector('video, iframe');
+                if (oldMedia) oldMedia.remove();
+                if (modalImg) modalImg.classList.remove('hidden');
+            }
+
+            let galleryMedia = [];
+            try {
+                if (currentProduct.gallery) {
+                    galleryMedia = typeof currentProduct.gallery === 'string' ? JSON.parse(currentProduct.gallery) : currentProduct.gallery;
+                }
+            } catch(e) {}
+
+            const videoItem = galleryMedia.find(item => {
+                if (!item) return false;
+                const clean = item.split('?')[0].toLowerCase();
+                return item.startsWith('data:video/') || clean.endsWith('.mp4') || clean.endsWith('.webm') || clean.endsWith('.ogg') || item.includes('video.akamai.steamstatic.com') || item.includes('store_trailers') || item.includes('youtube.com') || item.includes('youtu.be');
+            });
+
+            if (videoItem && mediaContainer) {
+                const isYt = videoItem.includes('youtube.com') || videoItem.includes('youtu.be');
+                if (isYt) {
+                    let ytId = '';
+                    if (videoItem.includes('youtu.be/')) ytId = videoItem.split('youtu.be/')[1]?.split(/[?#]/)[0];
+                    else if (videoItem.includes('v=')) ytId = videoItem.split('v=')[1]?.split(/[&?#]/)[0];
+                    else if (videoItem.includes('/embed/')) ytId = videoItem.split('/embed/')[1]?.split(/[?#]/)[0];
+
+                    if (ytId) {
+                        if (modalImg) modalImg.classList.add('hidden');
+                        const iframe = document.createElement('iframe');
+                        iframe.src = `https://www.youtube.com/embed/${ytId}?enablejsapi=1&rel=0&autoplay=1&playlist=${ytId}`;
+                        iframe.className = "w-full h-full object-cover border-0 z-10 relative";
+                        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+                        iframe.allowFullscreen = true;
+                        mediaContainer.appendChild(iframe);
+                    } else if (modalImg) {
+                        modalImg.src = currentProduct.image;
+                    }
+                } else {
+                    if (modalImg) modalImg.classList.add('hidden');
+                    const video = document.createElement('video');
+                    video.src = videoItem;
+                    video.controls = true;
+                    video.muted = false; // Tenta reproduzir com som
+                    video.loop = true;
+                    video.playsInline = true;
+                    video.autoplay = true;
+                    video.className = "w-full h-full object-cover z-10 relative bg-slate-950";
+                    mediaContainer.appendChild(video);
+                    
+                    video.play().catch(e => {
+                        video.muted = true;
+                        video.play().catch(()=>{});
+                    });
+                }
+            } else if (modalImg) {
+                modalImg.src = currentProduct.image;
+            }
+
             document.getElementById('modal-title').innerText = currentProduct.title;
             
             const warningEl = document.getElementById('modal-region-warning');
@@ -1965,6 +2025,15 @@ gtag('config', 'AW-18202657831');
         };
 
         window.closeModal = () => {
+            const modalImg = document.getElementById('modal-image');
+            if (modalImg && modalImg.parentElement) {
+                const oldMedia = modalImg.parentElement.querySelector('video, iframe');
+                if (oldMedia) {
+                    if (oldMedia.tagName === 'VIDEO') oldMedia.pause();
+                    oldMedia.remove();
+                }
+                modalImg.classList.remove('hidden');
+            }
             modal.classList.add('opacity-0', 'pointer-events-none');
             modalContent.classList.remove('scale-100');
             modalContent.classList.add('scale-95');
