@@ -475,30 +475,7 @@ async function initDB() {
                 total_amount NUMERIC(10, 2),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-            
-            ALTER TABLE products ADD COLUMN IF NOT EXISTS activation_key TEXT;
-            ALTER TABLE order_items ADD COLUMN IF NOT EXISTS activation_key TEXT;
-            ALTER TABLE order_items ADD COLUMN IF NOT EXISTS key_viewed BOOLEAN DEFAULT false;
-            ALTER TABLE products ADD COLUMN IF NOT EXISTS in_stock BOOLEAN DEFAULT true;
-            ALTER TABLE products ADD COLUMN IF NOT EXISTS is_global BOOLEAN DEFAULT true;
-            ALTER TABLE products ADD COLUMN IF NOT EXISTS restricted_countries TEXT;
-            ALTER TABLE products ADD COLUMN IF NOT EXISTS genres TEXT;
-            ALTER TABLE products ADD COLUMN IF NOT EXISTS old_price NUMERIC(10, 2);
-            ALTER TABLE products ADD COLUMN IF NOT EXISTS gameflip_listing_id TEXT;
-            ALTER TABLE products ADD COLUMN IF NOT EXISTS gallery TEXT DEFAULT '[]';
-            
-            ALTER TABLE users ADD COLUMN IF NOT EXISTS balance NUMERIC(10, 2) DEFAULT 0.00;
-            ALTER TABLE users ADD COLUMN IF NOT EXISTS points INTEGER DEFAULT 0;
-            ALTER TABLE users ADD COLUMN IF NOT EXISTS game_nickname TEXT UNIQUE;
-            ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT;
-            ALTER TABLE users ADD COLUMN IF NOT EXISTS facebook_id TEXT;
-            ALTER TABLE users ADD COLUMN IF NOT EXISTS steam_id TEXT;
-            ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT;
-            ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_deposit BOOLEAN DEFAULT false;
-            ALTER TABLE orders ADD COLUMN IF NOT EXISTS pix_qr_code TEXT;
-            ALTER TABLE orders ADD COLUMN IF NOT EXISTS pix_qr_code_base64 TEXT;
-            ALTER TABLE notifications ADD COLUMN IF NOT EXISTS order_id INTEGER REFERENCES orders(id);
-            
+
             CREATE TABLE IF NOT EXISTS wallet_transactions (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id),
@@ -562,9 +539,6 @@ async function initDB() {
                 drawn_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 prize_amount BIGINT DEFAULT 10000000
             );
-            
-            ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_expires_at TIMESTAMP DEFAULT NULL;
-            ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_subscription BOOLEAN DEFAULT false;
 
             CREATE TABLE IF NOT EXISTS streaming_media (
                 id SERIAL PRIMARY KEY,
@@ -591,9 +565,6 @@ async function initDB() {
                 subtitles TEXT DEFAULT '[]',
                 duration INTEGER DEFAULT 0
             );
-
-            ALTER TABLE users ADD COLUMN IF NOT EXISTS reading_subscription_expires_at TIMESTAMP DEFAULT NULL;
-            ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_reading_subscription BOOLEAN DEFAULT false;
 
             CREATE TABLE IF NOT EXISTS reading_media (
                 id SERIAL PRIMARY KEY,
@@ -632,6 +603,33 @@ async function initDB() {
                 message TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS activation_key TEXT;
+            ALTER TABLE order_items ADD COLUMN IF NOT EXISTS activation_key TEXT;
+            ALTER TABLE order_items ADD COLUMN IF NOT EXISTS key_viewed BOOLEAN DEFAULT false;
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS in_stock BOOLEAN DEFAULT true;
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS is_global BOOLEAN DEFAULT true;
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS restricted_countries TEXT;
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS genres TEXT;
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS old_price NUMERIC(10, 2);
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS gameflip_listing_id TEXT;
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS gallery TEXT DEFAULT '[]';
+            
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS balance NUMERIC(10, 2) DEFAULT 0.00;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS points INTEGER DEFAULT 0;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS game_nickname TEXT UNIQUE;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS facebook_id TEXT;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS steam_id TEXT;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT;
+            ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_deposit BOOLEAN DEFAULT false;
+            ALTER TABLE orders ADD COLUMN IF NOT EXISTS pix_qr_code TEXT;
+            ALTER TABLE orders ADD COLUMN IF NOT EXISTS pix_qr_code_base64 TEXT;
+            ALTER TABLE notifications ADD COLUMN IF NOT EXISTS order_id INTEGER REFERENCES orders(id);
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_expires_at TIMESTAMP DEFAULT NULL;
+            ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_subscription BOOLEAN DEFAULT false;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS reading_subscription_expires_at TIMESTAMP DEFAULT NULL;
+            ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_reading_subscription BOOLEAN DEFAULT false;
         `);
 
         // Popular gêneros antigos automaticamente
