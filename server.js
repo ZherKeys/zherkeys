@@ -1113,6 +1113,15 @@ async function initDB() {
                 description: "Bethesda Game Studios apresenta Fallout 76. Vinte e cinco anos após as bombas caírem, você e seus companheiros habitantes do Refúgio emergem na América pós-nuclear para explorar, construir e triunfar contra as maiores ameaças do deserto. Ativação via Steam.",
                 category: "STEAM KEY",
                 activation_key: "FALL-OUT7-6KEY-KEY1"
+            },
+            {
+                title: "Injustice: Gods Among Us (Ultimate Edition) (PC) Steam Key GLOBAL",
+                price: 7.90,
+                old_price: 89.99,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/242700/header.jpg",
+                description: "Injustice: Gods Among Us Ultimate Edition aprimora a nova franquia arrojada para o gênero de jogos de luta de NetherRealm Studios. Apresentando 6 novos personagens jogáveis, mais de 30 novas skins e 60 novas missões S.T.A.R. Labs. Ativação via Steam.",
+                category: "STEAM KEY",
+                activation_key: "INJU-STIC-EULT-KEY1"
             }
         ];
 
