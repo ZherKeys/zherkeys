@@ -1077,13 +1077,13 @@ async function initDB() {
                 activation_key: "SUIC-IDES-QUAD-KEY1"
             },
             {
-                title: "The Incredible Adventures of Van Helsing",
+                title: "The Incredible Adventures of Van Helsing II",
                 price: 7.90,
                 old_price: 47.90,
-                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/215530/header.jpg",
-                description: "Coloque o chapéu de abas largas, pegue suas armas e embarque em uma aventura gótica e sombria onde a caça aos monstros começa em Borgova. Jogo de RPG de ação no estilo Hack and Slash. Ativação via Steam.",
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/274270/header.jpg",
+                description: "Borgova está à beira da ruína. Reúna seus aliados e enfrente a tirania militarista no papel do caçador de monstros definitivo em The Incredible Adventures of Van Helsing II. Jogo de RPG de ação no estilo Hack and Slash. Ativação via Steam.",
                 category: "STEAM KEY",
-                activation_key: "VANH-ELSI-NG01-KEY1"
+                activation_key: "VANH-ELSI-NG02-KEY2"
             }
         ];
 
