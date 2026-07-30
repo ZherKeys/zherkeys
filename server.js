@@ -1004,7 +1004,8 @@ async function initDB() {
                 image: "/human_fall_flat.jpg",
                 description: "Human: Fall Flat é um jogo hilário e leve de plataforma baseado em física, ambientado em paisagens flutuantes e oníricas que podem ser jogadas solo ou com até 8 amigos online. Ativação via Steam.",
                 category: "STEAM KEY",
-                activation_key: "ABCD-1234-EFGH-5678"
+                activation_key: "ABCD-1234-EFGH-5678",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=2r1p8Wd_1e0"])
             },
             {
                 title: "Batman: Arkham Origins",
@@ -1012,7 +1013,8 @@ async function initDB() {
                 image: "/batman_arkham_origins.jpg",
                 description: "Batman: Arkham Origins apresenta uma Gotham City expandida e uma história original prequela ambientada vários anos antes dos eventos de Batman: Arkham Asylum e Batman: Arkham City.",
                 category: "STEAM KEY",
-                activation_key: "WXYZ-9876-QWER-TYUI"
+                activation_key: "WXYZ-9876-QWER-TYUI",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=9pnK8akbd2M"])
             },
             {
                 title: "LEGO The Incredibles",
@@ -1020,7 +1022,8 @@ async function initDB() {
                 image: "/lego_the_incredibles.jpg",
                 description: "Experimente as aventuras emocionantes da família Pera e use seus superpoderes para derrotar o crime e reviver momentos memoráveis dos filmes Os Incríveis e Os Incríveis 2 no mundo LEGO.",
                 category: "STEAM KEY",
-                activation_key: "LKJH-GFDS-MNBV-CXZA"
+                activation_key: "LKJH-GFDS-MNBV-CXZA",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=0h5U3x_y9OQ"])
             },
             {
                 title: "LEGO Marvel Super Heroes 2",
@@ -1028,7 +1031,8 @@ async function initDB() {
                 image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/647830/header.jpg",
                 description: "Vá para o confronto direto com o viajante do tempo Kang, o Conquistador em LEGO Marvel Super Heroes 2.",
                 category: "STEAM KEY",
-                activation_key: "MARV-EL22-LEGO-KEY1"
+                activation_key: "MARV-EL22-LEGO-KEY1",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=zJ-L_cE56w0"])
             },
             {
                 title: "LEGO DC Super-Villains Deluxe",
@@ -1036,7 +1040,8 @@ async function initDB() {
                 image: "/lego_dc_super_villains.jpg",
                 description: "É bom ser mau... Embarque em uma nova aventura da DC/LEGO tornando-se o melhor vilão que o universo já viu. A Deluxe Edition inclui conteúdo extra e DLCs exclusivos.",
                 category: "STEAM KEY",
-                activation_key: "POIU-YTRE-WQAS-DFGH"
+                activation_key: "POIU-YTRE-WQAS-DFGH",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=4L_V32K40n0"])
             },
             {
                 title: "Middle-earth: Shadow of War Definitive",
@@ -1044,7 +1049,8 @@ async function initDB() {
                 image: "/shadow_of_war.jpg",
                 description: "Experimente um mundo épico aberto trazido à vida pelo Sistema Nêmesis premiado. Forje um novo Anel do Poder, conquiste Fortalezas e domine Mordor com seu próprio exército de orcs nesta Edição Definitiva completa.",
                 category: "STEAM KEY",
-                activation_key: "MKOI-JNBH-UYGV-CFTX"
+                activation_key: "MKOI-JNBH-UYGV-CFTX",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=-_UJfX2728k"])
             },
             {
                 title: "The LEGO Movie Videogame",
@@ -1052,7 +1058,8 @@ async function initDB() {
                 image: "/lego_movie.jpg",
                 description: "Junte-se a Emmet e um grupo improvável de rebeldes em sua busca heroica para impedir o plano maligno do Senhor Negócios. Construa com peças de LEGO nesta incrível aventura em formato de jogo.",
                 category: "STEAM KEY",
-                activation_key: "ZZZZ-XXXX-CCCC-VVVV"
+                activation_key: "ZZZZ-XXXX-CCCC-VVVV",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=6vB-d_KkEWE"])
             },
             {
                 title: "Forza DLC #1",
@@ -1060,7 +1067,8 @@ async function initDB() {
                 image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1551360/header.jpg",
                 description: "Conteúdo adicional exclusivo DLC para Forza Horizon.",
                 category: "DLC",
-                activation_key: "FORZ-ADLC-1111-KEY1"
+                activation_key: "FORZ-ADLC-1111-KEY1",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=5z3n6v0d4Ew"])
             },
             {
                 title: "Forza DLC #2",
@@ -1068,7 +1076,8 @@ async function initDB() {
                 image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1551360/header.jpg",
                 description: "Conteúdo adicional exclusivo DLC para Forza Horizon.",
                 category: "DLC",
-                activation_key: "FORZ-ADLC-2222-KEY2"
+                activation_key: "FORZ-ADLC-2222-KEY2",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=5z3n6v0d4Ew"])
             },
             {
                 title: "Forza DLC #3",
@@ -1076,7 +1085,8 @@ async function initDB() {
                 image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1551360/header.jpg",
                 description: "Conteúdo adicional exclusivo DLC para Forza Horizon.",
                 category: "DLC",
-                activation_key: "FORZ-ADLC-3333-KEY3"
+                activation_key: "FORZ-ADLC-3333-KEY3",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=5z3n6v0d4Ew"])
             },
             {
                 title: "Mad Max (PC Steam Key Global)",
@@ -1084,7 +1094,8 @@ async function initDB() {
                 image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/234140/header.jpg",
                 description: "Torne-se Mad Max, um guerreiro solitário em um mundo pós-apocalíptico selvagem onde os carros são a chave para a sobrevivência.",
                 category: "STEAM KEY",
-                activation_key: "MADM-AXX1-STEAM-KEY"
+                activation_key: "MADM-AXX1-STEAM-KEY",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=vVbhO_4f3D8"])
             },
             {
                 title: "Minecraft Legends (Windows Store Key Global)",
@@ -1092,7 +1103,8 @@ async function initDB() {
                 image: "/minecraft_legends.jpg",
                 description: "Explore uma terra verdejante e cheia de recursos à beira da destruição pela invasão dos piglins.",
                 category: "WINDOWS STORE",
-                activation_key: "MINE-LEG1-WIN-KEY"
+                activation_key: "MINE-LEG1-WIN-KEY",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=1JSbhvq_E5E"])
             },
             {
                 title: "The Forest (PC Steam Account)",
@@ -1100,7 +1112,8 @@ async function initDB() {
                 image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/242760/header.jpg",
                 description: "Como único sobrevivente de um acidente de avião de passageiros, você se encontra em uma floresta misteriosa.",
                 category: "STEAM ACCOUNT",
-                activation_key: "FORE-ST01-ACC-PASS"
+                activation_key: "FORE-ST01-ACC-PASS",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=42_lIMlSbeU"])
             },
             {
                 title: "Back 4 Blood",
@@ -1108,7 +1121,8 @@ async function initDB() {
                 image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/924970/header.jpg",
                 description: "Back 4 Blood é um jogo de tiro em primeira pessoa emocionante dos criadores da aclamada franquia Left 4 Dead.",
                 category: "STEAM KEY",
-                activation_key: "B4BL-OOD1-STEAM-KEY"
+                activation_key: "B4BL-OOD1-STEAM-KEY",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=C3s_J3_v7_E"])
             },
             {
                 title: "Borderlands 2 (PC Steam Account)",
@@ -1116,7 +1130,8 @@ async function initDB() {
                 image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/49520/header.jpg",
                 description: "Uma nova era de tiro e saque está prestes a começar em Borderlands 2.",
                 category: "STEAM ACCOUNT",
-                activation_key: "BORD-ERL2-ACC-PASS"
+                activation_key: "BORD-ERL2-ACC-PASS",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=kKVsfTCv1N0"])
             },
             {
                 title: "Metro 2033 Redux (PC Steam Account)",
@@ -1124,7 +1139,8 @@ async function initDB() {
                 image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/286690/header.jpg",
                 description: "Metro 2033 Redux é a versão definitiva do clássico 'Metro 2033', reconstruído no mais recente Engine 4.",
                 category: "STEAM ACCOUNT",
-                activation_key: "METR-O203-ACC-PASS"
+                activation_key: "METR-O203-ACC-PASS",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=r3Z9x8k0_70"])
             },
             {
                 title: "Bully: Scholarship Edition (PC Steam Account)",
@@ -1132,7 +1148,8 @@ async function initDB() {
                 image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/12200/header.jpg",
                 description: "Bully: Scholarship Edition conta a história do adolescente travesso Jimmy Hopkins e sua jornada na Bullworth Academy.",
                 category: "STEAM ACCOUNT",
-                activation_key: "BULL-YSE1-ACC-PASS"
+                activation_key: "BULL-YSE1-ACC-PASS",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=r2wK2z8X7X8"])
             },
             {
                 title: "ARK: Survival Evolved (PC Steam Account)",
@@ -1140,7 +1157,8 @@ async function initDB() {
                 image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/346110/header.jpg",
                 description: "Como um homem ou mulher preso nu, congelando e faminto nas margens de uma ilha misteriosa chamada ARK, cace, colha e construa.",
                 category: "STEAM ACCOUNT",
-                activation_key: "ARKS-URV1-ACC-PASS"
+                activation_key: "ARKS-URV1-ACC-PASS",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=FW9vsrPWujI"])
             },
             {
                 title: "F.E.A.R. 2: Project Origin (PC Steam CD Key)",
@@ -1148,7 +1166,8 @@ async function initDB() {
                 image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/16450/header.jpg",
                 description: "Uma explosão devastadora destrói a cidade e desencadeia o terror sobrenatural de Alma em F.E.A.R. 2.",
                 category: "STEAM KEY",
-                activation_key: "FEAR-2PRO-KEY-KEY1"
+                activation_key: "FEAR-2PRO-KEY-KEY1",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=3Kk7s9k1X0w"])
             },
             {
                 title: "Suicide Squad: Kill the Justice League",
@@ -1157,7 +1176,8 @@ async function initDB() {
                 image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/315210/header.jpg",
                 description: "Dos criadores de Batman: Arkham, Suicide Squad: Kill the Justice League é um jogo de tiro em terceira pessoa de ação que desafia o gênero, onde a banda de desajustados definitiva deve fazer o impossível para salvar o mundo: matar a Liga da Justiça. Ativação via Steam.",
                 category: "STEAM KEY",
-                activation_key: "SUIC-IDES-QUAD-KEY1"
+                activation_key: "SUIC-IDES-QUAD-KEY1",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=2EVW2-q46K0"])
             },
             {
                 title: "The Incredible Adventures of Van Helsing II",
@@ -1166,7 +1186,8 @@ async function initDB() {
                 image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/272470/header.jpg",
                 description: "Borgova está à beira da ruína. Reúna seus aliados e enfrente a tirania militarista no papel do caçador de monstros definitivo em The Incredible Adventures of Van Helsing II. Jogo de RPG de ação no estilo Hack and Slash. Ativação via Steam.",
                 category: "STEAM KEY",
-                activation_key: "VANH-ELSI-NG02-KEY2"
+                activation_key: "VANH-ELSI-NG02-KEY2",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=7uK_Z2L1hE0"])
             },
             {
                 title: "Metal Slug Tactics",
@@ -1175,7 +1196,8 @@ async function initDB() {
                 image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1590760/header.jpg",
                 description: "Metal Slug Tactics traz o charme nostálgico e a ação tática roguelite da franquia cult METAL SLUG para uma nova dimensão tática de RPG. Lidere os Peregrine Falcons em batalhas táticas dinâmicas por turnos. Ativação via Steam.",
                 category: "STEAM KEY",
-                activation_key: "META-LSLU-GTAC-KEY1"
+                activation_key: "META-LSLU-GTAC-KEY1",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=8K-4_Y5_w40"])
             },
             {
                 title: "Going Under",
@@ -1184,7 +1206,8 @@ async function initDB() {
                 image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1154810/header.jpg",
                 description: "Going Under é um jogo de exploração de masmorras satírico sobre explorar as ruínas amaldiçoadas de startups de tecnologia que faliram. Como um estagiário não remunerado na cidade distópica de Neo-Cascadia, você empunhará lixo de escritório como armas. Ativação via Steam.",
                 category: "STEAM KEY",
-                activation_key: "GOIN-GUND-ER01-KEY1"
+                activation_key: "GOIN-GUND-ER01-KEY1",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=1xN5eB1S1e0"])
             },
             {
                 title: "Fallout 76",
@@ -1193,7 +1216,8 @@ async function initDB() {
                 image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1151340/header.jpg",
                 description: "Bethesda Game Studios apresenta Fallout 76. Vinte e cinco anos após as bombas caírem, você e seus companheiros habitantes do Refúgio emergem na América pós-nuclear para explorar, construir e triunfar contra as maiores ameaças do deserto. Ativação via Steam.",
                 category: "STEAM KEY",
-                activation_key: "FALL-OUT7-6KEY-KEY1"
+                activation_key: "FALL-OUT7-6KEY-KEY1",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=M9FGaan35s0"])
             },
             {
                 title: "Injustice: Gods Among Us (Ultimate Edition) (PC) Steam Key GLOBAL",
@@ -1202,7 +1226,8 @@ async function initDB() {
                 image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/242700/header.jpg",
                 description: "Injustice: Gods Among Us Ultimate Edition aprimora a nova franquia arrojada para o gênero de jogos de luta de NetherRealm Studios. Apresentando 6 novos personagens jogáveis, mais de 30 novas skins e 60 novas missões S.T.A.R. Labs. Ativação via Steam.",
                 category: "STEAM KEY",
-                activation_key: "INJU-STIC-EULT-KEY1"
+                activation_key: "INJU-STIC-EULT-KEY1",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=hM-m9x_v8x0"])
             },
             {
                 title: "The LEGO Movie 2 Videogame",
@@ -1211,7 +1236,8 @@ async function initDB() {
                 image: "/lego_movie_2.jpg",
                 description: "Os monstros alienígenas invasores deixaram Bricksburg em ruínas! Junte-se a Emmet e a um grupo de heróis para ir além do seu mundo e salvar seus amigos dos habitantes do Sistema Systar em The LEGO Movie 2 Videogame. Ativação via Steam.",
                 category: "STEAM KEY",
-                activation_key: "LEGO-MOV2-STEAM-KEY1"
+                activation_key: "LEGO-MOV2-STEAM-KEY1",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=6vB-d_KkEWE"])
             },
             {
                 title: "POSTAL 2",
@@ -1220,7 +1246,8 @@ async function initDB() {
                 image: "/postal_2.jpg",
                 description: "Viva uma semana na vida de 'Postal Dude', um homem comum tentando apenas cumprir suas tarefas diárias de forma totalmente politicamente incorreta e insana em POSTAL 2. Ativação via Steam.",
                 category: "STEAM KEY",
-                activation_key: "POST-AL02-STEAM-KEY1"
+                activation_key: "POST-AL02-STEAM-KEY1",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=r1K1m0q_1e0"])
             },
             {
                 title: "Amnesia: The Bunker",
@@ -1229,7 +1256,8 @@ async function initDB() {
                 image: "/amnesia_the_bunker.jpg",
                 description: "Amnesia: The Bunker é um jogo de terror em primeira pessoa ambientado em um bunker desolado da Primeira Guerra Mundial. Enfrente os terrores na escuridão e mantenha as luzes acesas a qualquer custo para sobreviver. Ativação via Steam.",
                 category: "STEAM KEY",
-                activation_key: "AMNE-SIA0-BUNK-ER01"
+                activation_key: "AMNE-SIA0-BUNK-ER01",
+                gallery: JSON.stringify(["https://www.youtube.com/watch?v=vD81W6vQ-78"])
             }
         ];
 

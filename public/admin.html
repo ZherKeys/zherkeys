@@ -1101,6 +1101,14 @@ gtag('config', 'AW-18202657831');
                 return;
             }
 
+            const ytInput = document.getElementById('prod-youtube-url');
+            if (ytInput && ytInput.value.trim()) {
+                const val = ytInput.value.trim();
+                if ((val.includes('youtube.com') || val.includes('youtu.be')) && !productGallery.includes(val)) {
+                    productGallery.unshift(val);
+                }
+            }
+
             const payload = {
                 title: document.getElementById('prod-title').value,
                 category: categoryVal,
@@ -1170,6 +1178,12 @@ gtag('config', 'AW-18202657831');
                 productGallery = [];
             }
             renderGalleryPreview();
+            
+            const ytInput = document.getElementById('prod-youtube-url');
+            if (ytInput) {
+                const existingYt = productGallery.find(item => typeof item === 'string' && (item.includes('youtube.com') || item.includes('youtu.be')));
+                ytInput.value = existingYt || '';
+            }
             const container = document.getElementById('keys-list-container');
             if (container) {
                 container.innerHTML = '';
