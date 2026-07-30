@@ -105,6 +105,194 @@ async function restoreProductsFromBackup() {
     }
 }
 
+// Sistema de Backup de Segurança Completo do Banco de Dados (Usuários, Pedidos, Chaves Entregues e Suporte)
+async function syncFullDatabaseBackup() {
+    try {
+        const dataDir = path.join(__dirname, 'data');
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
+        }
+
+        // 1. Backup de Produtos
+        await syncProductsBackup();
+
+        // 2. Backup de Usuários
+        const usersRes = await pool.query('SELECT id, email, password_hash, is_verified, balance, points, game_nickname, google_id, facebook_id, steam_id, avatar, is_admin, subscription_expires_at, reading_subscription_expires_at, created_at FROM users ORDER BY id ASC');
+        if (usersRes.rows) {
+            fs.writeFileSync(path.join(dataDir, 'users_backup.json'), JSON.stringify(usersRes.rows, null, 2), 'utf-8');
+            console.log(`💾 Backup de ${usersRes.rows.length} usuários salvo em data/users_backup.json`);
+        }
+
+        // 3. Backup de Pedidos e Chaves Entregues
+        const ordersRes = await pool.query('SELECT * FROM orders ORDER BY id ASC');
+        const orderItemsRes = await pool.query('SELECT * FROM order_items ORDER BY id ASC');
+        const ordersBackup = {
+            orders: ordersRes.rows || [],
+            order_items: orderItemsRes.rows || []
+        };
+        fs.writeFileSync(path.join(dataDir, 'orders_backup.json'), JSON.stringify(ordersBackup, null, 2), 'utf-8');
+        console.log(`💾 Backup de ${ordersRes.rows.length} pedidos e ${orderItemsRes.rows.length} itens/chaves entregues salvo em data/orders_backup.json`);
+
+        // 4. Backup de Tickets de Suporte
+        const ticketsRes = await pool.query('SELECT * FROM support_tickets ORDER BY id ASC');
+        const ticketMsgsRes = await pool.query('SELECT * FROM support_ticket_messages ORDER BY id ASC');
+        const ticketsBackup = {
+            tickets: ticketsRes.rows || [],
+            messages: ticketMsgsRes.rows || []
+        };
+        fs.writeFileSync(path.join(dataDir, 'tickets_backup.json'), JSON.stringify(ticketsBackup, null, 2), 'utf-8');
+        console.log(`💾 Backup de ${ticketsRes.rows.length} tickets de suporte salvo em data/tickets_backup.json`);
+
+    } catch (err) {
+        console.error('Erro ao salvar backup completo do banco de dados:', err && err.message ? err.message : err);
+    }
+}
+
+async function restoreFullDatabaseFromBackup() {
+    try {
+        // Restaura Produtos
+        await restoreProductsFromBackup();
+
+        const dataDir = path.join(__dirname, 'data');
+
+        // Restaura Usuários
+        const usersBackupPath = path.join(dataDir, 'users_backup.json');
+        if (fs.existsSync(usersBackupPath)) {
+            const usersData = JSON.parse(fs.readFileSync(usersBackupPath, 'utf-8'));
+            if (Array.isArray(usersData)) {
+                for (let u of usersData) {
+                    const check = await pool.query('SELECT id FROM users WHERE email = $1', [u.email]);
+                    if (check.rows.length === 0) {
+                        await pool.query(
+                            `INSERT INTO users (email, password_hash, is_verified, balance, points, game_nickname, google_id, facebook_id, steam_id, avatar, is_admin, subscription_expires_at, reading_subscription_expires_at) 
+                            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+                            [
+                                u.email,
+                                u.password_hash || '',
+                                u.is_verified ? 1 : 0,
+                                parseFloat(u.balance) || 0.00,
+                                parseInt(u.points) || 0,
+                                u.game_nickname || null,
+                                u.google_id || null,
+                                u.facebook_id || null,
+                                u.steam_id || null,
+                                u.avatar || null,
+                                u.is_admin ? 1 : 0,
+                                u.subscription_expires_at || null,
+                                u.reading_subscription_expires_at || null
+                            ]
+                        );
+                    }
+                }
+                console.log(`✅ Usuários restaurados a partir de data/users_backup.json`);
+            }
+        }
+
+        // Restaura Pedidos e Chaves Entregues aos clientes
+        const ordersBackupPath = path.join(dataDir, 'orders_backup.json');
+        if (fs.existsSync(ordersBackupPath)) {
+            const ordersData = JSON.parse(fs.readFileSync(ordersBackupPath, 'utf-8'));
+            if (ordersData && Array.isArray(ordersData.orders)) {
+                for (let ord of ordersData.orders) {
+                    const check = await pool.query('SELECT id FROM orders WHERE id = $1', [ord.id]);
+                    if (check.rows.length === 0) {
+                        await pool.query(
+                            `INSERT INTO orders (id, user_id, total, status, payment_method, is_deposit, pix_qr_code, pix_qr_code_base64, created_at)
+                             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                             ON CONFLICT (id) DO NOTHING`,
+                            [
+                                ord.id,
+                                ord.user_id,
+                                parseFloat(ord.total) || 0,
+                                ord.status || 'completed',
+                                ord.payment_method || 'PIX',
+                                ord.is_deposit || false,
+                                ord.pix_qr_code || '',
+                                ord.pix_qr_code_base64 || '',
+                                ord.created_at || new Date()
+                            ]
+                        );
+                    }
+                }
+            }
+
+            if (ordersData && Array.isArray(ordersData.order_items)) {
+                for (let item of ordersData.order_items) {
+                    const check = await pool.query('SELECT id FROM order_items WHERE id = $1', [item.id]);
+                    if (check.rows.length === 0) {
+                        await pool.query(
+                            `INSERT INTO order_items (id, order_id, product_id, title, price, activation_key, key_viewed)
+                             VALUES ($1, $2, $3, $4, $5, $6, $7)
+                             ON CONFLICT (id) DO NOTHING`,
+                            [
+                                item.id,
+                                item.order_id,
+                                item.product_id,
+                                item.title || '',
+                                parseFloat(item.price) || 0,
+                                item.activation_key || '',
+                                item.key_viewed || false
+                            ]
+                        );
+                    }
+                }
+            }
+            console.log(`✅ Pedidos e chaves entregues restaurados a partir de data/orders_backup.json`);
+        }
+
+        // Restaura Tickets de Suporte
+        const ticketsBackupPath = path.join(dataDir, 'tickets_backup.json');
+        if (fs.existsSync(ticketsBackupPath)) {
+            const ticketsData = JSON.parse(fs.readFileSync(ticketsBackupPath, 'utf-8'));
+            if (ticketsData && Array.isArray(ticketsData.tickets)) {
+                for (let t of ticketsData.tickets) {
+                    const check = await pool.query('SELECT id FROM support_tickets WHERE id = $1', [t.id]);
+                    if (check.rows.length === 0) {
+                        await pool.query(
+                            `INSERT INTO support_tickets (id, user_id, category, description, status, created_at, updated_at)
+                             VALUES ($1, $2, $3, $4, $5, $6, $7)
+                             ON CONFLICT (id) DO NOTHING`,
+                            [
+                                t.id,
+                                t.user_id,
+                                t.category || 'Geral',
+                                t.description || '',
+                                t.status || 'open',
+                                t.created_at || new Date(),
+                                t.updated_at || new Date()
+                            ]
+                        );
+                    }
+                }
+            }
+
+            if (ticketsData && Array.isArray(ticketsData.messages)) {
+                for (let msg of ticketsData.messages) {
+                    const check = await pool.query('SELECT id FROM support_ticket_messages WHERE id = $1', [msg.id]);
+                    if (check.rows.length === 0) {
+                        await pool.query(
+                            `INSERT INTO support_ticket_messages (id, ticket_id, sender_type, message, created_at)
+                             VALUES ($1, $2, $3, $4, $5)
+                             ON CONFLICT (id) DO NOTHING`,
+                            [
+                                msg.id,
+                                msg.ticket_id,
+                                msg.sender_type || 'user',
+                                msg.message || '',
+                                msg.created_at || new Date()
+                            ]
+                        );
+                    }
+                }
+            }
+            console.log(`✅ Tickets de suporte restaurados a partir de data/tickets_backup.json`);
+        }
+
+    } catch (err) {
+        console.error('Erro ao restaurar banco de dados completo do backup:', err && err.message ? err.message : err);
+    }
+}
+
 // Helper para decodificar e salvar imagem em Base64 - Ajustado para persistir strings Base64 diretamente no banco de dados.
 // Isso evita a perda de imagens customizadas em servidores com filesystem efemero (como o Render).
 function saveBase64Image(base64Str, prefix = 'product') {
@@ -892,10 +1080,13 @@ async function initDB() {
         }
         console.log('✅ Produtos da lista transferidos para o Banco de Dados.');
 
-        // Restaura produtos adicionados do arquivo de backup de segurança data/products_backup.json
-        await restoreProductsFromBackup();
-        // Salva cópia de backup do estado atual de produtos no disco para inclusão no Git/GitHub
-        await syncProductsBackup();
+        // Restaura banco de dados completo (produtos, usuários, compras/chaves e suporte) dos arquivos de backup
+        await restoreFullDatabaseFromBackup();
+        // Salva cópia de backup do estado atual de todas as tabelas no disco para inclusão no Git/GitHub
+        await syncFullDatabaseBackup();
+
+        // Agenda backup completo periódico a cada 10 minutos
+        setInterval(syncFullDatabaseBackup, 10 * 60 * 1000);
 
         // Garante que o usuário administrador zherkeys@gmail.com existe localmente para desenvolvimento
         const checkAdmin = await pool.query('SELECT COUNT(*) FROM users WHERE email = $1', ['zherkeys@gmail.com']);
@@ -1223,7 +1414,7 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
         setTimeout(() => autoUpdateProductSteamInfo(productId, title, description), 2000);
         
         productsCache = null; // Limpa o cache para atualizar a home imediatamente
-        syncProductsBackup().catch(e => console.error("Erro no backup de produto:", e));
+        syncFullDatabaseBackup().catch(e => console.error("Erro no backup do banco de dados:", e));
         res.status(201).json({ message: 'Produto adicionado' });
     } catch(e) {
         console.error("Erro ao adicionar produto:", e);
@@ -1343,7 +1534,7 @@ app.post('/api/admin/products/bulk', requireAdmin, async (req, res) => {
         });
         
         productsCache = null; // Limpa o cache público
-        syncProductsBackup().catch(e => console.error("Erro no backup de produtos bulk:", e));
+        syncFullDatabaseBackup().catch(e => console.error("Erro no backup do banco de dados:", e));
         res.status(201).json({ message: `${products.length} produtos adicionados com sucesso!` });
     } catch(e) {
         await pool.query('ROLLBACK');
@@ -1385,7 +1576,7 @@ app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
         setTimeout(() => autoUpdateProductSteamInfo(id, title, description), 2000);
         
         productsCache = null; // Limpa o cache para atualizar a home imediatamente
-        syncProductsBackup().catch(e => console.error("Erro no backup de produto editado:", e));
+        syncFullDatabaseBackup().catch(e => console.error("Erro no backup de produto editado:", e));
         res.json({ message: 'Produto atualizado' });
     } catch(e) {
         console.error("Erro ao atualizar produto:", e);
@@ -1501,7 +1692,7 @@ app.post('/api/admin/products/update-market-prices', requireAdmin, async (req, r
         }
 
         productsCache = null; // Limpa o cache público
-        await syncProductsBackup(); // Sincroniza o backup local JSON permanentemente!
+        await syncFullDatabaseBackup(); // Sincroniza o backup local JSON do banco completo permanentemente!
 
         res.json({
             success: true,
