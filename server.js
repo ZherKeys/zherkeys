@@ -1075,6 +1075,15 @@ async function initDB() {
                 description: "Dos criadores de Batman: Arkham, Suicide Squad: Kill the Justice League é um jogo de tiro em terceira pessoa de ação que desafia o gênero, onde a banda de desajustados definitiva deve fazer o impossível para salvar o mundo: matar a Liga da Justiça. Ativação via Steam.",
                 category: "STEAM KEY",
                 activation_key: "SUIC-IDES-QUAD-KEY1"
+            },
+            {
+                title: "The Incredible Adventures of Van Helsing",
+                price: 7.90,
+                old_price: 47.90,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/215530/header.jpg",
+                description: "Coloque o chapéu de abas largas, pegue suas armas e embarque em uma aventura gótica e sombria onde a caça aos monstros começa em Borgova. Jogo de RPG de ação no estilo Hack and Slash. Ativação via Steam.",
+                category: "STEAM KEY",
+                activation_key: "VANH-ELSI-NG01-KEY1"
             }
         ];
 
