@@ -158,6 +158,16 @@ async function querySteamAPI(cleanTitle) {
         }
         const screenshots = (gameData.screenshots || []).map(s => s.path_full).slice(0, 5);
         
+        let movies = [];
+        if (gameData.movies && gameData.movies.length > 0) {
+            gameData.movies.forEach(m => {
+                const mp4Url = m.mp4 ? (m.mp4.max || m.mp4['480'] || m.mp4['360']) : null;
+                const webmUrl = m.webm ? (m.webm.max || m.webm['480'] || m.webm['360']) : null;
+                if (mp4Url) movies.push(mp4Url);
+                else if (webmUrl) movies.push(webmUrl);
+            });
+        }
+
         let ageRating = 'Livre';
         const ratings = gameData.ratings;
         if (ratings && ratings.dejus && ratings.dejus.rating) {
@@ -194,6 +204,7 @@ async function querySteamAPI(cleanTitle) {
             headerImage,
             libraryImage,
             screenshots,
+            movies,
             ageRating
         };
     } catch (err) {
@@ -427,10 +438,17 @@ async function autoUpdateProductSteamInfo(productId, title, currentDescription) 
             }
             
             if (newGallery === '[]' || !newGallery || newGallery === 'null') {
+                let mediaItems = [];
+                if (steamInfo.movies && steamInfo.movies.length > 0) {
+                    mediaItems.push(steamInfo.movies[0]); // Vídeo de gameplay em primeiro!
+                }
                 if (steamInfo.screenshots && steamInfo.screenshots.length > 0) {
-                    newGallery = JSON.stringify(steamInfo.screenshots);
+                    mediaItems = mediaItems.concat(steamInfo.screenshots);
+                }
+                if (mediaItems.length > 0) {
+                    newGallery = JSON.stringify(mediaItems);
                     needsUpdate = true;
-                    console.log(`[STEAM-SYNC] Atualizando galeria do produto ID ${productId} com capturas de tela do Steam.`);
+                    console.log(`[STEAM-SYNC] Atualizando galeria e trailer de gameplay do produto ID ${productId}.`);
                 }
             }
             

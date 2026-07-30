@@ -662,14 +662,20 @@ gtag('config', 'AW-18202657831');
                     const video = document.createElement('video');
                     video.src = mediaSrc;
                     video.controls = true;
-                    video.muted = false; // Com som!
+                    video.muted = true; // Muted permitindo Autoplay automático em todos os navegadores!
+                    video.loop = true;
                     video.playsInline = true;
+                    video.setAttribute('playsinline', '');
+                    video.setAttribute('muted', '');
+                    video.setAttribute('autoplay', '');
+                    video.autoplay = true;
                     video.className = "w-full h-full object-cover rounded-xl";
                     video.id = `slide-media-${index}`;
                     
-                    if (index === 0) {
-                        video.autoplay = true;
-                    }
+                    // Tenta iniciar a reprodução imediata do trailer
+                    setTimeout(() => {
+                        video.play().catch(e => console.log('Autoplay do vídeo:', e));
+                    }, 100);
                     
                     video.onplay = () => {
                         if (autoPlayInterval) {
@@ -677,12 +683,24 @@ gtag('config', 'AW-18202657831');
                             autoPlayInterval = null;
                         }
                     };
+
+                    // Botão de atalho para desmutar o áudio com 1 clique
+                    const soundBtn = document.createElement('button');
+                    soundBtn.type = 'button';
+                    soundBtn.className = 'absolute top-4 right-4 bg-slate-950/80 hover:bg-slate-900 text-white text-[10px] font-orbitron font-bold tracking-wider px-3 py-1.5 rounded-lg border border-slate-700/80 backdrop-blur-md shadow-lg transition-all z-30 cursor-pointer flex items-center gap-1.5';
+                    soundBtn.innerHTML = '<span>🔊 ATIVAR SOM</span>';
+                    soundBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        video.muted = !video.muted;
+                        soundBtn.innerHTML = video.muted ? '<span>🔊 ATIVAR SOM</span>' : '<span>🔇 MUTAR SOM</span>';
+                    };
+
                     wrapper.appendChild(video);
+                    wrapper.appendChild(soundBtn);
                 } else if (type === 'youtube') {
                     const ytId = getYoutubeId(mediaSrc);
                     const iframe = document.createElement('iframe');
-                    const autoplayParams = index === 0 ? '&autoplay=1' : '';
-                    iframe.src = `https://www.youtube.com/embed/${ytId}?enablejsapi=1&rel=0${autoplayParams}`;
+                    iframe.src = `https://www.youtube.com/embed/${ytId}?enablejsapi=1&rel=0&autoplay=1&mute=1&loop=1&playlist=${ytId}`;
                     iframe.className = "w-full h-full border-0 rounded-xl";
                     iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
                     iframe.allowFullscreen = true;
