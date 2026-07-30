@@ -594,7 +594,8 @@ gtag('config', 'AW-18202657831');
 
         function getMediaType(url) {
             if (!url) return 'image';
-            if (url.startsWith('data:video/') || url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.ogg')) {
+            const cleanUrl = url.split('?')[0].toLowerCase();
+            if (url.startsWith('data:video/') || cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.webm') || cleanUrl.endsWith('.ogg') || url.includes('video.akamai.steamstatic.com') || url.includes('store_trailers')) {
                 return 'video';
             }
             if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('youtube-nocookie.com')) {

@@ -905,8 +905,8 @@ async function initDB() {
         // Executa a migracao de imagens Base64 antigas em segundo plano
         migrateExistingBase64Images().catch(e => console.error("Erro ao migrar imagens antigas no initDB:", e));
         
-        // Inicia a sincronizacao de dados de jogos via Steam em segundo plano apos 10 segundos
-        setTimeout(syncAllProductsSteamInfo, 10000);
+        // Inicia a sincronização imediata de dados e vídeos de gameplay de jogos via Steam (após 2 segundos)
+        setTimeout(syncAllProductsSteamInfo, 2000);
         // Agenda sincronização periódica a cada 30 minutos
         setInterval(syncAllProductsSteamInfo, 30 * 60 * 1000);
     } catch(err) {
