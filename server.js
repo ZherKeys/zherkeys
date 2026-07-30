@@ -1242,8 +1242,8 @@ async function initDB() {
         if (prodCount === 0) {
             for (let p of defaultProducts) {
                 await pool.query(
-                    'INSERT INTO products (title, description, price, image, category, activation_key) VALUES ($1, $2, $3, $4, $5, $6)',
-                    [p.title, p.description, p.price, p.image, p.category, p.activation_key]
+                    'INSERT INTO products (title, description, price, image, category, activation_key, gallery) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+                    [p.title, p.description, p.price, p.image, p.category, p.activation_key, p.gallery || '[]']
                 );
             }
             console.log('✅ Produtos padrão inseridos no Banco de Dados (Banco estava vazio).');

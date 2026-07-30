@@ -7,7 +7,8 @@
     "category": "STEAM KEY",
     "activation_key": "ABCD-1234-EFGH-5678",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=2r1p8Wd_1e0\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/477160/299e16818eb89c82e7829e9a0ca6b611756bbcfa/ss_299e16818eb89c82e7829e9a0ca6b611756bbcfa.1920x1080.jpg?t=1784801515\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/477160/3b3caabfc7f64ce487c2e1bde5714190804b7d42/ss_3b3caabfc7f64ce487c2e1bde5714190804b7d42.1920x1080.jpg?t=1784801515\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/477160/2a2d0adbca68043d7a51c2f7308d2acf4259c92a/ss_2a2d0adbca68043d7a51c2f7308d2acf4259c92a.1920x1080.jpg?t=1784801515\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/477160/c5fae1d22ddaac40ebfad8fbaa36e30ccb6e9b6b/ss_c5fae1d22ddaac40ebfad8fbaa36e30ccb6e9b6b.1920x1080.jpg?t=1784801515\"]"
   },
   {
     "title": "Batman: Arkham Origins",
@@ -17,7 +18,8 @@
     "category": "STEAM KEY",
     "activation_key": "WXYZ-9876-QWER-TYUI",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=9pnK8akbd2M\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/209000/ss_41f68844251c4acbf5d8b68899b212705c6afc0e.1920x1080.jpg?t=1746562474\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/209000/ss_1f444402878ebdef6d54386d2a0cdfacbc7b4ee4.1920x1080.jpg?t=1746562474\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/209000/ss_462c48dd9fa9e76d1f3f8159eeadea3da6b0e43e.1920x1080.jpg?t=1746562474\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/209000/ss_c627d2ffac1be5b846af610342ea99a0d2891434.1920x1080.jpg?t=1746562474\"]"
   },
   {
     "title": "LEGO The Incredibles",
@@ -27,7 +29,8 @@
     "category": "STEAM KEY",
     "activation_key": "LKJH-GFDS-MNBV-CXZA",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=0h5U3x_y9OQ\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/818320/ss_053ebf5e4c780418377b26dced6ba5711c45884b.1920x1080.jpg?t=1780600400\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/818320/ss_43e7785d9cbdb81875670fd610a3ab609ab7b465.1920x1080.jpg?t=1780600400\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/818320/ss_b048cb6a4538fccf09fb8f9aebd9a55fb18e0b15.1920x1080.jpg?t=1780600400\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/818320/ss_8aba9cf5bfd53631001e70d42b3490c6ed65f60a.1920x1080.jpg?t=1780600400\"]"
   },
   {
     "title": "LEGO Marvel Super Heroes 2",
@@ -37,7 +40,8 @@
     "category": "STEAM KEY",
     "activation_key": "MARV-EL22-LEGO-KEY1",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=zJ-L_cE56w0\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/647830/ss_9643cb4bed727e60160d7193c1581c85abface75.1920x1080.jpg?t=1780599093\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/647830/ss_7fa270d2fe28d0e869fc1f94ae9a94555c739f75.1920x1080.jpg?t=1780599093\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/647830/ss_424c2077ab25da3f706237e47a2c3e3a719f857a.1920x1080.jpg?t=1780599093\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/647830/ss_96279452f7dcdea1299fcf55ccdb60b9a2bfbad6.1920x1080.jpg?t=1780599093\"]"
   },
   {
     "title": "LEGO DC Super-Villains Deluxe",
@@ -47,7 +51,8 @@
     "category": "STEAM KEY",
     "activation_key": "POIU-YTRE-WQAS-DFGH",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=4L_V32K40n0\"]"
   },
   {
     "title": "Middle-earth: Shadow of War Definitive",
@@ -57,11 +62,12 @@
     "category": "STEAM KEY",
     "activation_key": "MKOI-JNBH-UYGV-CFTX",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=-_UJfX2728k\"]"
   },
   {
     "title": "The LEGO Movie 2 Videogame",
-    "price": 9.90,
+    "price": 9.9,
     "old_price": 129.99,
     "image": "/lego_movie_2.jpg",
     "description": "Os monstros alienígenas invasores deixaram Bricksburg em ruínas! Junte-se a Emmet e a um grupo de heróis para ir além do seu mundo e salvar seus amigos dos habitantes do Sistema Systar em The LEGO Movie 2 Videogame. Ativação via Steam.",
@@ -69,7 +75,8 @@
     "activation_key": "LEGO-MOV2-STEAM-KEY1",
     "in_stock": true,
     "is_global": true,
-    "genres": "Ação, Aventura, LEGO"
+    "genres": "Ação, Aventura, LEGO",
+    "gallery": "[\"https://www.youtube.com/watch?v=6vB-d_KkEWE\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/881320/ss_16f1cf586fce1df79c05617d85b2f6c4ffcc367c.1920x1080.jpg?t=1780600225\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/881320/ss_5d6a27f8062b53925363af4bbcb2abf67194f145.1920x1080.jpg?t=1780600225\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/881320/ss_9564f80f833052dac001e9e64d63dafd16f1d08d.1920x1080.jpg?t=1780600225\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/881320/ss_47715fcc5944c83d3197e58ebe55616ce41497dd.1920x1080.jpg?t=1780600225\"]"
   },
   {
     "title": "Forza DLC #1",
@@ -79,7 +86,8 @@
     "category": "DLC",
     "activation_key": "FORZ-ADLC-1111-KEY1",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=5z3n6v0d4Ew\"]"
   },
   {
     "title": "Forza DLC #2",
@@ -89,7 +97,8 @@
     "category": "DLC",
     "activation_key": "FORZ-ADLC-2222-KEY2",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=5z3n6v0d4Ew\"]"
   },
   {
     "title": "Forza DLC #3",
@@ -99,7 +108,8 @@
     "category": "DLC",
     "activation_key": "FORZ-ADLC-3333-KEY3",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=5z3n6v0d4Ew\"]"
   },
   {
     "title": "Mad Max (PC Steam Key Global)",
@@ -109,7 +119,8 @@
     "category": "STEAM KEY",
     "activation_key": "MADM-AXX1-STEAM-KEY",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=vVbhO_4f3D8\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/234140/ss_b8abff49c2bb74a12ca6659d991df6d8bd8ce9e1.1920x1080.jpg?t=1780595138\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/234140/ss_4695195fc9ac64c6b8d1e88607e31de7824ba81b.1920x1080.jpg?t=1780595138\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/234140/ss_5bdfbd80ed9e413c544fb3cfb5531c40dc2b42dc.1920x1080.jpg?t=1780595138\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/234140/ss_94c69f2b292e09efbd209567005606f16dce22e4.1920x1080.jpg?t=1780595138\"]"
   },
   {
     "title": "Minecraft Legends (Windows Store Key Global)",
@@ -119,7 +130,8 @@
     "category": "WINDOWS STORE",
     "activation_key": "MINE-LEG1-WIN-KEY",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=1JSbhvq_E5E\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1928870/ss_65720eb73a2dd8fc993172cfbfcdc8fe40ec44c2.1920x1080.jpg?t=1746133966\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1928870/ss_87b5f26fd65475c2605013fae8f17c5085cbd024.1920x1080.jpg?t=1746133966\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1928870/ss_4dba4e59eabcf5c3631e5c28b52ffcae46d3bad8.1920x1080.jpg?t=1746133966\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1928870/ss_edc777c7f4d3e0ecfdf26d0cd975017a0f98cb8f.1920x1080.jpg?t=1746133966\"]"
   },
   {
     "title": "The Forest (PC Steam Account)",
@@ -129,7 +141,8 @@
     "category": "STEAM ACCOUNT",
     "activation_key": "FORE-ST01-ACC-PASS",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=42_lIMlSbeU\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/242760/ss_8ccb821c4df3fafdf4161d77f38635441a8157f2.1920x1080.jpg?t=1699381053\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/242760/ss_53c615d49c4777144ed7359e4bf7c9eb6838cc8e.1920x1080.jpg?t=1699381053\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/242760/ss_772eebf0ce7bdb51546055a36185e8ee46e8acac.1920x1080.jpg?t=1699381053\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/242760/ss_d03a261fecab226a0ecac5746225c2a50d65c670.1920x1080.jpg?t=1699381053\"]"
   },
   {
     "title": "Back 4 Blood",
@@ -139,7 +152,8 @@
     "category": "STEAM KEY",
     "activation_key": "B4BL-OOD1-STEAM-KEY",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=C3s_J3_v7_E\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/924970/ss_3329126d46bfd0cd32069508a1d37e40a1f4d92e.1920x1080.jpg?t=1780594976\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/924970/ss_61ba5c1e5ff0992738255a3c6679fdbc2cd659de.1920x1080.jpg?t=1780594976\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/924970/ss_01d625277a7dc76a67f78de3a3ed1e633d205ddd.1920x1080.jpg?t=1780594976\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/924970/ss_cb8d4bd7139ce8f80df16e5c7c4be906222f050b.1920x1080.jpg?t=1780594976\"]"
   },
   {
     "title": "Borderlands 2 (PC Steam Account)",
@@ -149,7 +163,8 @@
     "category": "STEAM ACCOUNT",
     "activation_key": "BORD-ERL2-ACC-PASS",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=kKVsfTCv1N0\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/49520/ss_6734eaa79dcd0fe53971fbd50d20b5d0d45f4809.1920x1080.jpg?t=1751931279\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/49520/ss_2f27a18562fbf4a91943c3968b35db5ac1caf5ad.1920x1080.jpg?t=1751931279\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/49520/ss_c20610ab476bfe99172df77fe84f579d91e45a2b.1920x1080.jpg?t=1751931279\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/49520/ss_da8b3279d4ff979b99b3a417d21a097600729266.1920x1080.jpg?t=1751931279\"]"
   },
   {
     "title": "Metro 2033 Redux (PC Steam Account)",
@@ -159,7 +174,8 @@
     "category": "STEAM ACCOUNT",
     "activation_key": "METR-O203-ACC-PASS",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=r3Z9x8k0_70\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/286690/ss_b31b38d3d8208f30f49d94c84c73ae558006fbcd.1920x1080.jpg?t=1741110084\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/286690/ss_b369b06515dee04938b54808a6bfa2cd634d33c3.1920x1080.jpg?t=1741110084\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/286690/ss_6f2b3f3a7409bd649208924a5815e908731432bd.1920x1080.jpg?t=1741110084\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/286690/ss_6eb84a35c0f34841b5b1eef9be7d172c9bced5eb.1920x1080.jpg?t=1741110084\"]"
   },
   {
     "title": "Bully: Scholarship Edition (PC Steam Account)",
@@ -169,7 +185,8 @@
     "category": "STEAM ACCOUNT",
     "activation_key": "BULL-YSE1-ACC-PASS",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=r2wK2z8X7X8\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/12200/0000006051.1920x1080.jpg?t=1741118085\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/12200/0000006052.1920x1080.jpg?t=1741118085\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/12200/0000006066.1920x1080.jpg?t=1741118085\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/12200/0000006055.1920x1080.jpg?t=1741118085\"]"
   },
   {
     "title": "ARK: Survival Evolved (PC Steam Account)",
@@ -179,7 +196,8 @@
     "category": "STEAM ACCOUNT",
     "activation_key": "ARKS-URV1-ACC-PASS",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=FW9vsrPWujI\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/346110/ss_2fd997a2f7151cb2187043a1f41589cc6a9ebf3a.1920x1080.jpg?t=1765677889\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/346110/ss_01cbef83fe28d64ee5a3d39a86043fb1e49abd31.1920x1080.jpg?t=1765677889\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/346110/ss_164a92a53f9bcbb728b391fc0719f9769c2e1249.1920x1080.jpg?t=1765677889\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/346110/ss_46778c08a1a5ac5bdbaf8a5bf844fa666f66a14b.1920x1080.jpg?t=1765677889\"]"
   },
   {
     "title": "F.E.A.R. 2: Project Origin (PC Steam CD Key)",
@@ -189,7 +207,8 @@
     "category": "STEAM KEY",
     "activation_key": "FEAR-2PRO-KEY-KEY1",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=3Kk7s9k1X0w\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/16450/0000006955.1920x1080.jpg?t=1780595030\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/16450/0000006956.1920x1080.jpg?t=1780595030\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/16450/0000006957.1920x1080.jpg?t=1780595030\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/16450/0000006958.1920x1080.jpg?t=1780595030\"]"
   },
   {
     "title": "Suicide Squad: Kill the Justice League",
@@ -200,7 +219,8 @@
     "category": "STEAM KEY",
     "activation_key": "SUIC-IDES-QUAD-KEY1",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=2EVW2-q46K0\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/315210/ss_6cf9f98dcf74e2c228b1cdae3bbd38ca754398d3.1920x1080.jpg?t=1777940046\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/315210/ss_fed60f765e3b5facf915d0b70b7a05105aa3525b.1920x1080.jpg?t=1777940046\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/315210/ss_5f5bc65c181fa8458891c9b66f99f5586b6cc866.1920x1080.jpg?t=1777940046\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/315210/ss_2a0efefd5449c4048f5eca03f62d38069236e85f.1920x1080.jpg?t=1777940046\"]"
   },
   {
     "title": "The Incredible Adventures of Van Helsing II",
@@ -211,7 +231,8 @@
     "category": "STEAM KEY",
     "activation_key": "VANH-ELSI-NG02-KEY2",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=6vB-d_KkEWE\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/272470/ss_e58dbd77a8da29b173918d9c0328602a0b7a8b28.1920x1080.jpg?t=1573827671\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/272470/ss_14835b4506049ab2d3eae1426bddc14dc4816fca.1920x1080.jpg?t=1573827671\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/272470/ss_fa591ced0e2a31165be32cda19c67f97560f3e27.1920x1080.jpg?t=1573827671\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/272470/ss_18e43c57d92b2cc18054e8cc3c667c648addca94.1920x1080.jpg?t=1573827671\"]"
   },
   {
     "title": "Metal Slug Tactics",
@@ -222,7 +243,8 @@
     "category": "STEAM KEY",
     "activation_key": "META-LSLU-GTAC-KEY1",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=8K-4_Y5_w40\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1590760/ss_cd8c2ee59083568f7c3ece55334fa0a48360fb35.1920x1080.jpg?t=1763548713\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1590760/ss_8831a90d23b6d1c7bf782db2520a687d9c1646ad.1920x1080.jpg?t=1763548713\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1590760/ss_f0d2af4840d254b6b7520f539ee6db382c841ec5.1920x1080.jpg?t=1763548713\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1590760/ss_98d2f118fc73603e0339adbeb3f8050d4da7e68b.1920x1080.jpg?t=1763548713\"]"
   },
   {
     "title": "Going Under",
@@ -233,7 +255,8 @@
     "category": "STEAM KEY",
     "activation_key": "GOIN-GUND-ER01-KEY1",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=48_lIMlSbeU\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1154810/ss_8f0a8f20fc5b04639f5b7d95c879298eb17202d2.1920x1080.jpg?t=1780479870\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1154810/ss_dbdad08719ba5c5506c9bc198c776ba1a6a75b29.1920x1080.jpg?t=1780479870\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1154810/ss_44c45c7d011aa70f34bb7cdcbd925311fc9069d2.1920x1080.jpg?t=1780479870\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1154810/ss_4b6196508d0e93c0bfdf171fd5da8acebf91f5e6.1920x1080.jpg?t=1780479870\"]"
   },
   {
     "title": "Fallout 76",
@@ -244,7 +267,8 @@
     "category": "STEAM KEY",
     "activation_key": "FALL-OUT7-6KEY-KEY1",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=M9FGaan35s0\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1151340/0d9b8b403d3c5ffebf054d293ea46607b8e249ab/ss_0d9b8b403d3c5ffebf054d293ea46607b8e249ab.1920x1080.jpg?t=1780927266\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1151340/943155b933edb9fedb4c221185e885c98e7d03fe/ss_943155b933edb9fedb4c221185e885c98e7d03fe.1920x1080.jpg?t=1780927266\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1151340/5165184416a48a0f4e2739f16b25a597a096c221/ss_5165184416a48a0f4e2739f16b25a597a096c221.1920x1080.jpg?t=1780927266\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1151340/9c317dc153b2905648f0b78301cde36f17001327/ss_9c317dc153b2905648f0b78301cde36f17001327.1920x1080.jpg?t=1780927266\"]"
   },
   {
     "title": "Injustice: Gods Among Us (Ultimate Edition) (PC) Steam Key GLOBAL",
@@ -255,11 +279,12 @@
     "category": "STEAM KEY",
     "activation_key": "INJU-STIC-EULT-KEY1",
     "in_stock": true,
-    "is_global": true
+    "is_global": true,
+    "gallery": "[\"https://www.youtube.com/watch?v=hM-m9x_v8x0\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/242700/ss_7384337f4885916ed88f4260ca259fdd0718e72c.1920x1080.jpg?t=1780595192\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/242700/ss_7c0dbb126a7098f43d716df45e214a86c6cab6ae.1920x1080.jpg?t=1780595192\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/242700/ss_0015f0630ed74f9520f134ee43fb3df3b49c7d13.1920x1080.jpg?t=1780595192\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/242700/ss_cbc852f97ab877f12d6f55357b3b9afec3a5155f.1920x1080.jpg?t=1780595192\"]"
   },
   {
     "title": "POSTAL 2",
-    "price": 6.90,
+    "price": 6.9,
     "old_price": 32.99,
     "image": "/postal_2.jpg",
     "description": "Viva uma semana na vida de 'Postal Dude', um homem comum tentando apenas cumprir suas tarefas diárias de forma totalmente politicamente incorreta e insana em POSTAL 2. Ativação via Steam.",
@@ -267,11 +292,12 @@
     "activation_key": "POST-AL02-STEAM-KEY1",
     "in_stock": true,
     "is_global": true,
-    "genres": "Ação, Tiro, Comédia, FPS"
+    "genres": "Ação, Tiro, Comédia, FPS",
+    "gallery": "[\"https://www.youtube.com/watch?v=4K_V32K40n0\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/223470/ss_13e460aa2915fb31bdbd723365e7965c9accf117.1920x1080.jpg?t=1782946265\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/223470/ss_9d4e64b002c7142fa9ddb6ea868c9d54e7a1798b.1920x1080.jpg?t=1782946265\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/223470/ss_92337c91044cd4ad767c856469db49d31841bf6b.1920x1080.jpg?t=1782946265\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/223470/ss_389ccbcd731e6adf1a596a19aafc03102806ebc1.1920x1080.jpg?t=1782946265\"]"
   },
   {
     "title": "Amnesia: The Bunker",
-    "price": 18.90,
+    "price": 18.9,
     "old_price": 73.99,
     "image": "/amnesia_the_bunker.jpg",
     "description": "Amnesia: The Bunker é um jogo de terror em primeira pessoa ambientado em um bunker desolado da Primeira Guerra Mundial. Enfrente os terrores na escuridão e mantenha as luzes acesas a qualquer custo para sobreviver. Ativação via Steam.",
@@ -279,6 +305,7 @@
     "activation_key": "AMNE-SIA0-BUNK-ER01",
     "in_stock": true,
     "is_global": true,
-    "genres": "Terror, Sobrevivência, Ação"
+    "genres": "Terror, Sobrevivência, Ação",
+    "gallery": "[\"https://www.youtube.com/watch?v=6vB-d_KkEWE\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1944430/ss_aefa02b00622834d9dc4dc63e63c34f60fcb8521.1920x1080.jpg?t=1779201973\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1944430/ss_9b76a5884a33d51e67a4b46ff1037dab6e49b354.1920x1080.jpg?t=1779201973\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1944430/ss_ca819d1e17bdff120bfe48994e5b2f42e95530ee.1920x1080.jpg?t=1779201973\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1944430/ss_8c58ab8d9364ba43b2ca9991d430dd927479a795.1920x1080.jpg?t=1779201973\"]"
   }
 ]
