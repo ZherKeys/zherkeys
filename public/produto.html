@@ -193,8 +193,8 @@ gtag('config', 'AW-18202657831');
             <div class="lg:col-span-5 relative group">
                 <div class="relative overflow-hidden rounded-2xl border border-slate-800/85 bg-slate-950/80 p-2 shadow-2xl transition-all duration-300 hover:border-slate-700 shadow-cyber/20">
                     <!-- Slides Container -->
-                    <div id="product-slides-container" class="relative w-full aspect-[4/5] sm:aspect-[3/4] md:aspect-square overflow-hidden rounded-xl bg-slate-950">
-                        <img src="{{PRODUCT_IMAGE}}" alt="{{PRODUCT_TITLE}}" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out opacity-100 z-10">
+                    <div id="product-slides-container" class="relative w-full aspect-video max-h-[380px] overflow-hidden rounded-xl bg-slate-950 shadow-2xl">
+                        <img src="{{PRODUCT_IMAGE}}" alt="{{PRODUCT_TITLE}}" class="absolute inset-0 w-full h-full object-contain bg-slate-950 transition-opacity duration-700 ease-in-out opacity-100 z-10">
                     </div>
                     
                     <!-- Gradiente de sombra no rodape da imagem -->
@@ -669,7 +669,7 @@ gtag('config', 'AW-18202657831');
                     video.setAttribute('playsinline', '');
                     video.setAttribute('autoplay', '');
                     video.autoplay = true;
-                    video.className = "w-full h-full object-cover rounded-xl";
+                    video.className = "w-full h-full object-contain bg-slate-950 rounded-xl";
                     video.id = `slide-media-${index}`;
                     
                     // Tenta iniciar a reprodução imediata com som
@@ -722,7 +722,7 @@ gtag('config', 'AW-18202657831');
                     const ytId = getYoutubeId(mediaSrc);
                     const iframe = document.createElement('iframe');
                     iframe.src = `https://www.youtube.com/embed/${ytId}?enablejsapi=1&rel=0&autoplay=1&loop=1&playlist=${ytId}`;
-                    iframe.className = "w-full h-full border-0 rounded-xl";
+                    iframe.className = "w-full h-full border-0 rounded-xl bg-slate-950";
                     iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
                     iframe.allowFullscreen = true;
                     iframe.id = `slide-media-${index}`;
@@ -732,7 +732,7 @@ gtag('config', 'AW-18202657831');
                     const img = document.createElement('img');
                     img.src = mediaSrc;
                     img.alt = window.currentProduct.title;
-                    img.className = "w-full h-full object-cover rounded-xl";
+                    img.className = "w-full h-full object-contain bg-slate-950 rounded-xl";
                     img.id = `slide-media-${index}`;
                     wrapper.appendChild(img);
                 }
