@@ -1104,6 +1104,15 @@ async function initDB() {
                 description: "Going Under é um jogo de exploração de masmorras satírico sobre explorar as ruínas amaldiçoadas de startups de tecnologia que faliram. Como um estagiário não remunerado na cidade distópica de Neo-Cascadia, você empunhará lixo de escritório como armas. Ativação via Steam.",
                 category: "STEAM KEY",
                 activation_key: "GOIN-GUND-ER01-KEY1"
+            },
+            {
+                title: "Fallout 76",
+                price: 19.90,
+                old_price: 155.00,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1151340/header.jpg",
+                description: "Bethesda Game Studios apresenta Fallout 76. Vinte e cinco anos após as bombas caírem, você e seus companheiros habitantes do Refúgio emergem na América pós-nuclear para explorar, construir e triunfar contra as maiores ameaças do deserto. Ativação via Steam.",
+                category: "STEAM KEY",
+                activation_key: "FALL-OUT7-6KEY-KEY1"
             }
         ];
 
