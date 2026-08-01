@@ -307,5 +307,21 @@
     "is_global": true,
     "genres": "Terror, Sobrevivência, Ação",
     "gallery": "[\"https://www.youtube.com/watch?v=vD81W6vQ-78\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1944430/ss_aefa02b00622834d9dc4dc63e63c34f60fcb8521.1920x1080.jpg?t=1779201973\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1944430/ss_9b76a5884a33d51e67a4b46ff1037dab6e49b354.1920x1080.jpg?t=1779201973\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1944430/ss_ca819d1e17bdff120bfe48994e5b2f42e95530ee.1920x1080.jpg?t=1779201973\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1944430/ss_8c58ab8d9364ba43b2ca9991d430dd927479a795.1920x1080.jpg?t=1779201973\"]"
+  },
+  {
+    "id": 28,
+    "title": "Devil May Cry 5 + Vergil",
+    "price": 24.9,
+    "old_price": 99.9,
+    "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/601150/header.jpg",
+    "description": "O derradeiro caçador de demônios está de volta em grande estilo! Devil May Cry 5 + Vergil inclui o jogo completo vencedor de prêmios e a expansão que adiciona Vergil como personagem jogável em todas as missões, no Palácio Sangrento e no modo de treino. Enfrente hordas infernais com combates insanos a 60 FPS, gráficos ultra-realistas alimentados pela RE Engine e uma trilha sonora eletrizante. Ativação via Steam.",
+    "category": "STEAM KEY",
+    "activation_key": "DMC5-VRGL-STEAM-KEY1",
+    "in_stock": true,
+    "is_global": true,
+    "restricted_countries": "",
+    "genres": "Ação, Hack and Slash, Terror, Multiplayer, Co-op",
+    "gameflip_listing_id": "",
+    "gallery": "[\"https://www.youtube.com/watch?v=K9l_5J_161U\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/601150/ss_8cf90a18eb5ecb8abf20ab0ee12f0e0c0a96f131.1920x1080.jpg\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/601150/ss_593a2072f447cf08a983b63297a76c0e86a03014.1920x1080.jpg\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/601150/ss_37a1c3272d7f8d6ea87a224a9ddba6ff0ee31ad4.1920x1080.jpg\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/601150/ss_8a7605d8f635f6067b5e408caebc9b2f29fa756a.1920x1080.jpg\"]"
   }
 ]

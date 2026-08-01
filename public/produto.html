@@ -707,6 +707,15 @@ gtag('config', 'AW-18202657831');
                             clearInterval(autoPlayInterval);
                             autoPlayInterval = null;
                         }
+                        if (window.pauseBgMusic) window.pauseBgMusic();
+                    };
+
+                    video.onpause = () => {
+                        if (window.resumeBgMusic) window.resumeBgMusic();
+                    };
+
+                    video.onended = () => {
+                        if (window.resumeBgMusic) window.resumeBgMusic();
                     };
 
                     // Botão de atalho para alternar o som
@@ -759,6 +768,8 @@ gtag('config', 'AW-18202657831');
                 const firstType = getMediaType(allImages[0]);
                 if (firstType !== 'video' && firstType !== 'youtube') {
                     startAutoPlay();
+                } else {
+                    if (window.pauseBgMusic) window.pauseBgMusic();
                 }
             }
         }
@@ -815,6 +826,7 @@ gtag('config', 'AW-18202657831');
                     clearInterval(autoPlayInterval);
                     autoPlayInterval = null;
                 }
+                if (window.pauseBgMusic) window.pauseBgMusic();
                 if (nextType === 'video' && nextMedia) {
                     nextMedia.muted = false; // Com som!
                     nextMedia.play().catch(e => console.log("Autoplay de video local bloqueado pelo navegador"));
@@ -826,6 +838,7 @@ gtag('config', 'AW-18202657831');
                     nextMedia.src = `${cleanSrc}${separator}autoplay=1`;
                 }
             } else {
+                if (window.resumeBgMusic) window.resumeBgMusic();
                 startAutoPlay();
             }
         }
@@ -904,5 +917,6 @@ gtag('config', 'AW-18202657831');
         // Init badge
         updateCartBadge();
     </script>
+    <script src="/bg-player.js" defer></script>
 </body>
 </html>

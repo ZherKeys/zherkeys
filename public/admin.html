@@ -79,6 +79,7 @@ gtag('config', 'AW-18202657831');
                 <button onclick="switchTab('carteiras')" id="tab-btn-carteiras" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all shrink-0">CARTEIRAS</button>
                 <button onclick="switchTab('streaming')" id="tab-btn-streaming" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all shrink-0">ZHER PLAY (STREAMING)</button>
                 <button onclick="switchTab('reading')" id="tab-btn-reading" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all shrink-0">ZHER READ (EBOOKS/MANGA)</button>
+                <button onclick="switchTab('musica')" id="tab-btn-musica" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all shrink-0">🎵 MÚSICA DE FUNDO</button>
             </div>
             
             <div class="flex items-center gap-4">
@@ -135,18 +136,42 @@ gtag('config', 'AW-18202657831');
                     </div>
                     
                     <div>
-                        <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">IMAGEM DO PRODUTO (Link ou Upload)</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="prod-image" placeholder="https://..." required class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-toxicgreen transition-all">
-                            <label class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-3 rounded-lg cursor-pointer flex items-center justify-center transition-colors border border-slate-700 hover:border-slate-500" title="Fazer Upload de Imagem">
-                                <i data-lucide="upload" class="w-5 h-5"></i>
-                                <input type="file" id="prod-image-file" accept="image/*" class="hidden">
-                            </label>
-                            <button type="button" id="btn-remove-upload" onclick="removeUpload()" class="hidden bg-slate-800 hover:bg-rose-900 text-rose-500 hover:text-rose-400 px-4 py-3 rounded-lg flex items-center justify-center transition-colors border border-slate-700 hover:border-rose-500" title="Remover Upload">
-                                <i data-lucide="trash-2" class="w-5 h-5"></i>
-                            </button>
+                        <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">THUMBNAIL DO PRODUTO (Capa Principal)</label>
+                        
+                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-3">
+                            <!-- Preview Visual da Thumbnail -->
+                            <div class="flex items-center gap-3">
+                                <div class="relative w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-slate-800 bg-slate-900 flex-shrink-0 flex items-center justify-center group shadow-md">
+                                    <img id="thumb-preview-img" src="" alt="Thumbnail Preview" class="w-full h-full object-cover hidden">
+                                    <div id="thumb-preview-placeholder" class="text-center text-slate-600 p-1">
+                                        <i data-lucide="image" class="w-7 h-7 mx-auto mb-0.5 opacity-50 text-slate-500"></i>
+                                        <span class="text-[8px] font-orbitron block tracking-wider">SEM THUMB</span>
+                                    </div>
+                                    <span class="absolute top-1 left-1 bg-toxicgreen/90 text-obsidian text-[8px] font-orbitron font-bold px-1.5 py-0.5 rounded shadow">CAPA</span>
+                                </div>
+                                
+                                <div class="flex-grow min-w-0 space-y-2">
+                                    <p class="text-[10px] text-slate-400 font-inter leading-tight">Escolha a imagem que será exibida nas vitrines e buscas.</p>
+                                    <div class="flex flex-wrap sm:flex-nowrap gap-2">
+                                        <label class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-lg cursor-pointer flex items-center justify-center transition-colors border border-slate-700 hover:border-slate-500 text-xs font-orbitron tracking-wider gap-1.5 flex-1" title="Fazer Upload de Imagem para Thumb">
+                                            <i data-lucide="upload" class="w-4 h-4 text-toxicgreen"></i> <span>TROCAR THUMB</span>
+                                            <input type="file" id="prod-image-file" accept="image/*" class="hidden">
+                                        </label>
+                                        <button type="button" id="btn-remove-upload" onclick="removeUpload()" class="hidden bg-slate-800 hover:bg-rose-900/50 text-rose-400 hover:text-rose-300 px-3 py-2 rounded-lg flex items-center justify-center transition-colors border border-slate-700 hover:border-rose-500 text-xs font-orbitron tracking-wider gap-1" title="Remover Thumbnail">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i> <span>REMOVER</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Input de Link da Imagem -->
+                            <div>
+                                <div class="flex gap-2">
+                                    <input type="text" id="prod-image" placeholder="URL da Thumbnail (https://...)" required class="flex-grow bg-slate-900 border border-slate-800 rounded-lg px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-toxicgreen transition-all" oninput="updateThumbPreview()">
+                                </div>
+                                <p id="upload-status" class="text-[9px] text-toxicgreen mt-1 hidden"></p>
+                            </div>
                         </div>
-                        <p id="upload-status" class="text-[9px] text-toxicgreen mt-1 hidden"></p>
                     </div>
 
                     <!-- Galeria de Midia (Upload de Slides / Videos / YouTube) -->
@@ -164,7 +189,10 @@ gtag('config', 'AW-18202657831');
                                 </button>
                             </div>
                         </div>
-                        <div id="gallery-preview-container" class="grid grid-cols-4 sm:grid-cols-6 gap-2 mt-3"></div>
+                        <p class="text-[10px] text-electricblue mt-2 flex items-center gap-1 font-inter">
+                            <i data-lucide="move" class="w-3.5 h-3.5 inline text-electricblue"></i> <span>Arraste os slides para reordenar (o <b>#1</b> será o primeiro exibido no produto).</span>
+                        </p>
+                        <div id="gallery-preview-container" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 mt-3"></div>
                     </div>
 
                     <div>
@@ -685,6 +713,85 @@ gtag('config', 'AW-18202657831');
                     </div>
                 </div>
             </div>
+        <!-- ABA: MÚSICA DE FUNDO (BACKGROUND PLAYBACK) -->
+        <div id="section-musica" class="hidden max-w-4xl mx-auto space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+                <h3 class="font-orbitron font-bold text-white tracking-widest mb-6 border-b border-slate-800 pb-4 flex items-center justify-between">
+                    <span class="flex items-center gap-2"><i data-lucide="music" class="w-5 h-5 text-electricblue"></i> PLAYLIST E MÚSICA DE FUNDO DO SITE</span>
+                    <span class="text-xs text-slate-400 font-inter">Tocador Contínuo de Playback</span>
+                </h3>
+
+                <!-- Configurações de Estado -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-950 p-4 rounded-xl border border-slate-800 mb-6">
+                    <div class="flex items-center justify-between bg-slate-900/60 p-3 rounded-lg border border-slate-800">
+                        <div>
+                            <span class="block text-xs font-orbitron font-bold text-white tracking-wider">MÚSICA DE FUNDO ATIVADA</span>
+                            <span class="text-[10px] text-slate-400">Toca áudio de fundo para os visitantes.</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="music-enabled-toggle" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-toxicgreen"></div>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center justify-between bg-slate-900/60 p-3 rounded-lg border border-slate-800">
+                        <div>
+                            <span class="block text-xs font-orbitron font-bold text-white tracking-wider">MODO ALEATÓRIO (SHUFFLE)</span>
+                            <span class="text-[10px] text-slate-400">Não repete faixas até tocar a playlist toda.</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="music-shuffle-toggle" checked class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-electricblue"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Formulário para Adicionar Faixa -->
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4 mb-6">
+                    <h4 class="text-xs font-orbitron font-bold text-slate-300 tracking-wider flex items-center gap-1.5">
+                        <i data-lucide="plus-circle" class="w-4 h-4 text-toxicgreen"></i> ADICIONAR NOVA FAIXA À PLAYLIST
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-orbitron text-slate-400 mb-1">NOME DA MÚSICA</label>
+                            <input type="text" id="music-track-title" placeholder="Ex: Synthwave Cyberpunk Theme" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-toxicgreen">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-orbitron text-slate-400 mb-1">URL DO ÁUDIO (MP3, WAV) OU UPLOAD</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="music-track-url" placeholder="https://.../musica.mp3" class="flex-grow bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-toxicgreen">
+                                <label class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-lg cursor-pointer flex items-center justify-center border border-slate-700 transition-colors text-xs font-orbitron" title="Fazer upload de arquivo MP3 local">
+                                    <i data-lucide="upload" class="w-4 h-4 text-electricblue"></i>
+                                    <input type="file" id="music-track-file" accept="audio/*" class="hidden">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" onclick="addTrackToPlaylist()" class="w-full bg-slate-800 hover:bg-slate-700 text-electricblue border border-electricblue/30 font-orbitron font-bold text-xs tracking-wider py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer">
+                        <i data-lucide="plus" class="w-4 h-4"></i> ADICIONAR À PLAYLIST
+                    </button>
+                </div>
+
+                <!-- Lista da Playlist com Drag and Drop -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-xs font-orbitron tracking-widest text-slate-300 font-bold">FAIXAS DA PLAYLIST</label>
+                        <span class="text-[10px] text-electricblue font-inter">💡 Arraste os cards para reordenar a sequência de reprodução.</span>
+                    </div>
+                    
+                    <div id="music-playlist-container" class="space-y-2 min-h-[100px] max-h-[350px] overflow-y-auto bg-slate-950 p-3 rounded-xl border border-slate-800">
+                        <!-- Injetado via JS -->
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <button type="button" onclick="saveMusicSettings()" class="w-full bg-toxicgreen hover:bg-emerald-500 text-obsidian font-orbitron font-bold tracking-widest py-3.5 rounded-xl transition-colors shadow-lg shadow-toxicgreen/10 flex items-center justify-center gap-2 text-sm cursor-pointer">
+                        <i data-lucide="save" class="w-5 h-5"></i> SALVAR PLAYLIST E CONFIGURAÇÕES
+                    </button>
+                </div>
+            </div>
         </div>
 
     </main>
@@ -733,12 +840,14 @@ gtag('config', 'AW-18202657831');
             document.getElementById('section-carteiras').classList.add('hidden');
             document.getElementById('section-streaming').classList.add('hidden');
             document.getElementById('section-reading').classList.add('hidden');
+            document.getElementById('section-musica').classList.add('hidden');
             document.getElementById('tab-btn-produtos').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
             document.getElementById('tab-btn-vendas').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
             document.getElementById('tab-btn-suporte').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
             document.getElementById('tab-btn-carteiras').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
             document.getElementById('tab-btn-streaming').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
             document.getElementById('tab-btn-reading').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
+            document.getElementById('tab-btn-musica').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
 
             if(tab === 'produtos') {
                 document.getElementById('section-produtos').classList.remove('hidden');
@@ -764,8 +873,233 @@ gtag('config', 'AW-18202657831');
                 document.getElementById('section-reading').classList.remove('hidden');
                 document.getElementById('tab-btn-reading').className = "text-white border-b-2 border-amber-500 pb-1 transition-all";
                 loadReadingCatalog();
+            } else if(tab === 'musica') {
+                document.getElementById('section-musica').classList.remove('hidden');
+                document.getElementById('tab-btn-musica').className = "text-white border-b-2 border-electricblue pb-1 transition-all";
+                loadMusicAdminSettings();
             }
         }
+
+        // --- BACKGROUND MUSIC ADMIN LOGIC ---
+        let adminMusicPlaylist = [];
+        let draggedMusicIndex = null;
+        let testAudioElement = null;
+        let currentlyPlayingTrackId = null;
+
+        async function loadMusicAdminSettings() {
+            try {
+                const res = await fetch('/api/admin/music');
+                if (!res.ok) return;
+                const data = await res.json();
+                
+                document.getElementById('music-enabled-toggle').checked = (data.enabled === true);
+                document.getElementById('music-shuffle-toggle').checked = (data.shuffle !== false);
+                adminMusicPlaylist = Array.isArray(data.playlist) ? data.playlist : [];
+                renderAdminPlaylist();
+            } catch(e) {
+                console.error("Erro ao carregar configurações de música:", e);
+            }
+        }
+
+        window.renderAdminPlaylist = () => {
+            const container = document.getElementById('music-playlist-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (adminMusicPlaylist.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-500 py-8 text-xs font-orbitron">Nenhuma música na playlist. Adicione uma faixa acima!</div>`;
+                return;
+            }
+
+            adminMusicPlaylist.forEach((track, idx) => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-lg cursor-move hover:border-slate-700 transition-all select-none group";
+                div.setAttribute('draggable', 'true');
+                div.dataset.index = idx;
+
+                // Drag and Drop
+                div.ondragstart = (e) => {
+                    draggedMusicIndex = idx;
+                    e.dataTransfer.effectAllowed = 'move';
+                    div.classList.add('opacity-40', 'border-electricblue');
+                };
+
+                div.ondragover = (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    div.classList.add('border-toxicgreen', 'bg-slate-850');
+                };
+
+                div.ondragleave = () => {
+                    div.classList.remove('border-toxicgreen', 'bg-slate-850');
+                };
+
+                div.ondrop = (e) => {
+                    e.preventDefault();
+                    div.classList.remove('border-toxicgreen', 'bg-slate-850');
+                    const targetIdx = parseInt(div.dataset.index, 10);
+                    if (draggedMusicIndex !== null && draggedMusicIndex !== targetIdx) {
+                        const item = adminMusicPlaylist.splice(draggedMusicIndex, 1)[0];
+                        adminMusicPlaylist.splice(targetIdx, 0, item);
+                        renderAdminPlaylist();
+                    }
+                    draggedMusicIndex = null;
+                };
+
+                div.ondragend = () => {
+                    div.classList.remove('opacity-40', 'border-electricblue', 'border-toxicgreen', 'bg-slate-850');
+                    draggedMusicIndex = null;
+                };
+
+                const isTesting = currentlyPlayingTrackId === (track.id || track.url);
+
+                div.innerHTML = `
+                    <div class="flex items-center gap-3 min-w-0 flex-1">
+                        <span class="cursor-grab text-slate-600 hover:text-slate-400"><i data-lucide="grip-vertical" class="w-4 h-4"></i></span>
+                        <span class="text-[10px] font-orbitron ${idx === 0 ? 'bg-electricblue text-white font-bold' : 'bg-slate-800 text-slate-400'} px-2 py-0.5 rounded border border-slate-700">
+                            ${idx === 0 ? '#1 (1ª Música)' : '#' + (idx + 1)}
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <span class="font-orbitron font-bold text-xs text-white block truncate">${track.title || 'Sem Título'}</span>
+                            <span class="text-[9px] text-slate-500 truncate block">${track.url}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="testPlayTrack('${track.url}', '${track.id || track.url}')" class="px-2.5 py-1.5 ${isTesting ? 'bg-rose-600 text-white' : 'bg-slate-800 text-electricblue'} hover:bg-slate-700 rounded text-xs font-orbitron flex items-center gap-1 transition-colors" title="Testar Áudio">
+                            ${isTesting ? '⏹ Pausar' : '▶ Testar'}
+                        </button>
+                        ${idx > 0 ? `<button type="button" onclick="moveTrackItem(${idx}, ${idx - 1})" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs" title="Mover para Cima">◀</button>` : ''}
+                        ${idx < adminMusicPlaylist.length - 1 ? `<button type="button" onclick="moveTrackItem(${idx}, ${idx + 1})" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs" title="Mover para Baixo">▶</button>` : ''}
+                        <button type="button" onclick="removeTrackFromPlaylist(${idx})" class="p-1.5 bg-slate-800 hover:bg-rose-900/50 text-rose-400 hover:text-rose-300 rounded text-xs transition-colors" title="Remover Faixa">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+            if (window.lucide) window.lucide.createIcons();
+        };
+
+        window.moveTrackItem = (fromIdx, toIdx) => {
+            if (fromIdx < 0 || fromIdx >= adminMusicPlaylist.length || toIdx < 0 || toIdx >= adminMusicPlaylist.length) return;
+            const item = adminMusicPlaylist.splice(fromIdx, 1)[0];
+            adminMusicPlaylist.splice(toIdx, 0, item);
+            renderAdminPlaylist();
+        };
+
+        window.removeTrackFromPlaylist = (idx) => {
+            adminMusicPlaylist.splice(idx, 1);
+            renderAdminPlaylist();
+        };
+
+        window.testPlayTrack = (url, trackId) => {
+            if (testAudioElement && currentlyPlayingTrackId === trackId) {
+                testAudioElement.pause();
+                testAudioElement = null;
+                currentlyPlayingTrackId = null;
+                renderAdminPlaylist();
+                return;
+            }
+
+            if (testAudioElement) {
+                testAudioElement.pause();
+            }
+
+            testAudioElement = new Audio(url);
+            currentlyPlayingTrackId = trackId;
+            testAudioElement.play().catch(e => alert("Não foi possível tocar a música de teste. Verifique a URL do áudio."));
+            testAudioElement.onended = () => {
+                testAudioElement = null;
+                currentlyPlayingTrackId = null;
+                renderAdminPlaylist();
+            };
+            renderAdminPlaylist();
+        };
+
+        window.addTrackToPlaylist = () => {
+            const titleInput = document.getElementById('music-track-title');
+            const urlInput = document.getElementById('music-track-url');
+            
+            const title = titleInput ? titleInput.value.trim() : '';
+            const url = urlInput ? urlInput.value.trim() : '';
+
+            if (!title) {
+                alert("Por favor, digite o nome da música.");
+                return;
+            }
+            if (!url) {
+                alert("Por favor, informe a URL do áudio ou faça o upload de um arquivo.");
+                return;
+            }
+
+            adminMusicPlaylist.push({
+                id: 'track_' + Date.now(),
+                title: title,
+                url: url
+            });
+
+            titleInput.value = '';
+            urlInput.value = '';
+            renderAdminPlaylist();
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const fileInput = document.getElementById('music-track-file');
+            if (fileInput) {
+                fileInput.addEventListener('change', async function(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    try {
+                        const res = await fetch('/api/admin/streaming/upload', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        if (res.ok) {
+                            const data = await res.json();
+                            document.getElementById('music-track-url').value = data.url;
+                            if (!document.getElementById('music-track-title').value) {
+                                document.getElementById('music-track-title').value = file.name.replace(/\.[^/.]+$/, "");
+                            }
+                        } else {
+                            alert("Erro ao fazer upload do arquivo de áudio.");
+                        }
+                    } catch(err) {
+                        alert("Erro de conexão ao enviar arquivo de áudio.");
+                    }
+                });
+            }
+        });
+
+        window.saveMusicSettings = async () => {
+            const enabled = document.getElementById('music-enabled-toggle').checked;
+            const shuffle = document.getElementById('music-shuffle-toggle').checked;
+
+            try {
+                const res = await fetch('/api/admin/music', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        enabled: enabled,
+                        shuffle: shuffle,
+                        playlist: adminMusicPlaylist
+                    })
+                });
+
+                if (res.ok) {
+                    alert("Playlist e configurações de música de fundo salvas com sucesso!");
+                } else {
+                    alert("Erro ao salvar configurações de música.");
+                }
+            } catch(e) {
+                alert("Erro de conexão ao salvar música.");
+            }
+        };
 
         // --- CARTEIRA DE CLIENTES LOGIC ---
         async function loadAdminUsers() {
@@ -911,7 +1245,14 @@ gtag('config', 'AW-18202657831');
 
                     html += `
                         <div class="flex flex-col sm:flex-row items-center gap-6 bg-slate-950 p-4 rounded-xl border border-slate-800">
-                            <img src="${p.image}" class="w-24 h-24 object-cover rounded-lg shadow-lg">
+                            <div class="relative group/thumb w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden border border-slate-800 shadow-lg bg-slate-900">
+                                <img src="${p.image || '/logo.png'}" class="w-full h-full object-cover">
+                                <label class="absolute inset-0 bg-slate-950/85 text-white opacity-0 group-hover/thumb:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer p-1 text-center" title="Trocar Thumbnail deste produto">
+                                    <i data-lucide="camera" class="w-5 h-5 text-toxicgreen mb-1"></i>
+                                    <span class="text-[8px] font-orbitron font-bold leading-tight text-toxicgreen">TROCAR THUMB</span>
+                                    <input type="file" accept="image/*" class="hidden" onchange="quickChangeProductThumb(this, ${p.id})">
+                                </label>
+                            </div>
                             <div class="flex-grow text-center sm:text-left min-w-0 flex-1">
                                 <span class="bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[10px] px-2 py-0.5 rounded-full uppercase">${p.category}</span>
                                 <h4 class="text-white font-orbitron font-bold text-lg mt-1 truncate w-full">${p.title}</h4>
@@ -922,10 +1263,13 @@ gtag('config', 'AW-18202657831');
                                 ${regionTag}
                             </div>
                             <div class="flex items-center gap-2">
-                                <button onclick="editProduct(${p.id})" class="p-2 bg-slate-800 text-electricblue rounded hover:bg-slate-700 transition" title="Editar">
+                                <button onclick="quickSelectThumb(${p.id})" class="px-2.5 py-2 bg-slate-800 hover:bg-slate-700 text-toxicgreen border border-slate-700 rounded-lg transition flex items-center gap-1.5 text-xs font-orbitron" title="Trocar Thumbnail">
+                                    <i data-lucide="image" class="w-4 h-4"></i> <span class="hidden sm:inline text-[10px]">THUMB</span>
+                                </button>
+                                <button onclick="editProduct(${p.id})" class="p-2 bg-slate-800 text-electricblue rounded-lg hover:bg-slate-700 transition" title="Editar">
                                     <i data-lucide="edit" class="w-4 h-4"></i>
                                 </button>
-                                <button onclick="deleteProduct(${p.id})" class="p-2 bg-slate-800 text-cyberrose rounded hover:bg-slate-700 transition" title="Excluir">
+                                <button onclick="deleteProduct(${p.id})" class="p-2 bg-slate-800 text-cyberrose rounded-lg hover:bg-slate-700 transition" title="Excluir">
                                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                                 </button>
                             </div>
@@ -1170,7 +1514,8 @@ gtag('config', 'AW-18202657831');
             }
             document.getElementById('prod-price').value = formatNumberToMask(p.price);
             document.getElementById('prod-old-price').value = p.old_price ? formatNumberToMask(p.old_price) : '';
-            document.getElementById('prod-image').value = p.image;
+            document.getElementById('prod-image').value = p.image || '';
+            updateThumbPreview();
             document.getElementById('prod-desc').value = (p.description || '').split('<!-- STEAM_METADATA_START -->')[0].trim();
             try {
                 productGallery = JSON.parse(p.gallery || '[]');
@@ -1219,6 +1564,88 @@ gtag('config', 'AW-18202657831');
             window.scrollTo(0,0);
         };
 
+        window.updateThumbPreview = () => {
+            const prodImgInput = document.getElementById('prod-image');
+            if (!prodImgInput) return;
+            const val = prodImgInput.value.trim();
+            const previewImg = document.getElementById('thumb-preview-img');
+            const placeholder = document.getElementById('thumb-preview-placeholder');
+            const btnRemove = document.getElementById('btn-remove-upload');
+            
+            if (val) {
+                if (previewImg) {
+                    previewImg.src = val;
+                    previewImg.classList.remove('hidden');
+                }
+                if (placeholder) placeholder.classList.add('hidden');
+                if (btnRemove) btnRemove.classList.remove('hidden');
+            } else {
+                if (previewImg) {
+                    previewImg.src = '';
+                    previewImg.classList.add('hidden');
+                }
+                if (placeholder) placeholder.classList.remove('hidden');
+                if (btnRemove) btnRemove.classList.add('hidden');
+            }
+        };
+
+        window.setGalleryImageAsThumb = (src) => {
+            const input = document.getElementById('prod-image');
+            if (input) {
+                input.value = src;
+                updateThumbPreview();
+                const status = document.getElementById('upload-status');
+                if (status) {
+                    status.innerText = "Imagem da galeria definida como Thumbnail!";
+                    status.classList.remove('hidden');
+                }
+            }
+        };
+
+        window.quickChangeProductThumb = async (input, productId) => {
+            const file = input.files[0];
+            if (!file) return;
+            if (file.size > 2 * 1024 * 1024) {
+                alert('Por favor, envie uma imagem menor que 2MB para a thumbnail.');
+                input.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                const newImageData = evt.target.result;
+                try {
+                    const res = await fetch(`/api/admin/products/${productId}/thumb`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ image: newImageData })
+                    });
+                    if (res.ok) {
+                        const currentEditId = document.getElementById('prod-id').value;
+                        if (currentEditId == productId) {
+                            document.getElementById('prod-image').value = newImageData;
+                            updateThumbPreview();
+                        }
+                        loadProducts();
+                    } else {
+                        const err = await res.json().catch(() => ({}));
+                        alert(err.error || "Erro ao atualizar a thumbnail.");
+                    }
+                } catch(e) {
+                    alert("Erro de conexão ao atualizar a thumbnail.");
+                }
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.quickSelectThumb = (productId) => {
+            const tempInput = document.createElement('input');
+            tempInput.type = 'file';
+            tempInput.accept = 'image/*';
+            tempInput.onchange = () => quickChangeProductThumb(tempInput, productId);
+            tempInput.click();
+        };
+
         window.resetForm = () => {
             document.getElementById('product-form').reset();
             document.getElementById('prod-id').value = '';
@@ -1233,6 +1660,8 @@ gtag('config', 'AW-18202657831');
             document.getElementById('upload-status').classList.add('hidden');
             document.getElementById('btn-remove-upload').classList.add('hidden');
             document.getElementById('prod-image-file').value = '';
+            document.getElementById('prod-image').value = '';
+            updateThumbPreview();
             productGallery = [];
             renderGalleryPreview();
             document.getElementById('prod-gallery-files').value = '';
@@ -1267,7 +1696,6 @@ gtag('config', 'AW-18202657831');
         document.getElementById('prod-image-file').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if(file) {
-                // Check size (max 2MB to avoid giant DB payload)
                 if(file.size > 2 * 1024 * 1024) {
                     alert('Por favor, envie uma imagem menor que 2MB.');
                     this.value = '';
@@ -1277,9 +1705,9 @@ gtag('config', 'AW-18202657831');
                 reader.onload = function(evt) {
                     document.getElementById('prod-image').value = evt.target.result;
                     const status = document.getElementById('upload-status');
-                    status.innerText = `Imagem local carregada: ${file.name}`;
+                    status.innerText = `Thumbnail alterada: ${file.name}`;
                     status.classList.remove('hidden');
-                    document.getElementById('btn-remove-upload').classList.remove('hidden');
+                    updateThumbPreview();
                 };
                 reader.readAsDataURL(file);
             }
@@ -1289,7 +1717,7 @@ gtag('config', 'AW-18202657831');
             document.getElementById('prod-image').value = '';
             document.getElementById('prod-image-file').value = '';
             document.getElementById('upload-status').classList.add('hidden');
-            document.getElementById('btn-remove-upload').classList.add('hidden');
+            updateThumbPreview();
         };
 
         // Logica para Galeria de Midia (Fotos, Videos locais e YouTube)
@@ -1300,7 +1728,7 @@ gtag('config', 'AW-18202657831');
             const promises = files.map(file => {
                 return new Promise((resolve) => {
                     const isVideo = file.type.startsWith('video/');
-                    const maxSize = isVideo ? 15 * 1024 * 1024 : 2 * 1024 * 1024; // 15MB para videos, 2MB para imagens
+                    const maxSize = isVideo ? 15 * 1024 * 1024 : 2 * 1024 * 1024;
                     const maxText = isVideo ? "15MB" : "2MB";
                     
                     if (file.size > maxSize) {
@@ -1323,7 +1751,7 @@ gtag('config', 'AW-18202657831');
             const validMedia = results.filter(item => item !== null);
             productGallery = productGallery.concat(validMedia);
             renderGalleryPreview();
-            this.value = ''; // Reseta o input para permitir selecionar o mesmo arquivo se necessario
+            this.value = '';
         });
 
         window.addYoutubeVideo = () => {
@@ -1345,6 +1773,8 @@ gtag('config', 'AW-18202657831');
             urlInput.value = '';
         };
 
+        let draggedGalleryIndex = null;
+
         window.renderGalleryPreview = () => {
             const container = document.getElementById('gallery-preview-container');
             if (!container) return;
@@ -1352,16 +1782,53 @@ gtag('config', 'AW-18202657831');
             
             productGallery.forEach((mediaSrc, idx) => {
                 const wrapper = document.createElement('div');
-                wrapper.className = "relative group aspect-square rounded-lg overflow-hidden border border-slate-800 bg-slate-950/50 flex items-center justify-center";
+                wrapper.className = "relative group aspect-square rounded-lg overflow-hidden border border-slate-800 bg-slate-950/50 flex items-center justify-center cursor-move transition-all select-none shadow-md hover:border-slate-600";
+                wrapper.setAttribute('draggable', 'true');
+                wrapper.dataset.index = idx;
+                
+                // Drag and Drop Events
+                wrapper.ondragstart = (e) => {
+                    draggedGalleryIndex = idx;
+                    e.dataTransfer.effectAllowed = 'move';
+                    wrapper.classList.add('opacity-40', 'border-toxicgreen');
+                };
+
+                wrapper.ondragover = (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    wrapper.classList.add('border-electricblue', 'scale-105');
+                };
+
+                wrapper.ondragleave = () => {
+                    wrapper.classList.remove('border-electricblue', 'scale-105');
+                };
+
+                wrapper.ondrop = (e) => {
+                    e.preventDefault();
+                    wrapper.classList.remove('border-electricblue', 'scale-105');
+                    const targetIdx = parseInt(wrapper.dataset.index, 10);
+                    if (draggedGalleryIndex !== null && draggedGalleryIndex !== targetIdx) {
+                        const item = productGallery.splice(draggedGalleryIndex, 1)[0];
+                        productGallery.splice(targetIdx, 0, item);
+                        renderGalleryPreview();
+                    }
+                    draggedGalleryIndex = null;
+                };
+
+                wrapper.ondragend = () => {
+                    wrapper.classList.remove('opacity-40', 'border-toxicgreen', 'border-electricblue', 'scale-105');
+                    draggedGalleryIndex = null;
+                };
                 
                 // Detecta o tipo de midia
                 let mediaElement;
+                let isImage = false;
                 if (mediaSrc.startsWith('data:video/') || mediaSrc.endsWith('.mp4') || mediaSrc.endsWith('.webm') || mediaSrc.endsWith('.ogg')) {
                     mediaElement = document.createElement('video');
                     mediaElement.src = mediaSrc;
                     mediaElement.muted = true;
                     mediaElement.playsInline = true;
-                    mediaElement.className = "object-cover w-full h-full";
+                    mediaElement.className = "object-cover w-full h-full pointer-events-none";
                     
                     wrapper.onmouseenter = () => mediaElement.play();
                     wrapper.onmouseleave = () => {
@@ -1379,7 +1846,7 @@ gtag('config', 'AW-18202657831');
                     }
                     
                     mediaElement = document.createElement('div');
-                    mediaElement.className = "w-full h-full relative bg-slate-950 flex items-center justify-center";
+                    mediaElement.className = "w-full h-full relative bg-slate-950 flex items-center justify-center pointer-events-none";
                     
                     if (ytId) {
                         const img = document.createElement('img');
@@ -1393,24 +1860,84 @@ gtag('config', 'AW-18202657831');
                     playIcon.innerHTML = `<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
                     mediaElement.appendChild(playIcon);
                 } else {
+                    isImage = true;
                     mediaElement = document.createElement('img');
                     mediaElement.src = mediaSrc;
-                    mediaElement.className = "object-cover w-full h-full";
+                    mediaElement.className = "object-cover w-full h-full pointer-events-none";
                 }
                 
+                // Badge de Ordem (#1, #2, etc.)
+                const orderBadge = document.createElement('span');
+                orderBadge.className = `absolute top-1 left-1 ${idx === 0 ? 'bg-electricblue text-white font-bold' : 'bg-slate-900/90 text-slate-300'} text-[8px] font-orbitron px-1.5 py-0.5 rounded shadow border border-slate-700/60 z-10`;
+                orderBadge.innerText = idx === 0 ? `#1 (1º Slide)` : `#${idx + 1}`;
+
+                // Controles de Ação (Mover Esquerda, Mover Direita, Remover)
+                const controlsContainer = document.createElement('div');
+                controlsContainer.className = "absolute top-1 right-1 flex items-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity z-10";
+
+                if (idx > 0) {
+                    const moveLeftBtn = document.createElement('button');
+                    moveLeftBtn.type = "button";
+                    moveLeftBtn.className = "bg-slate-800 hover:bg-slate-700 text-white rounded p-1 shadow-lg cursor-pointer flex items-center justify-center";
+                    moveLeftBtn.title = "Mover Slide para Esquerda";
+                    moveLeftBtn.innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>`;
+                    moveLeftBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        moveGalleryItem(idx, idx - 1);
+                    };
+                    controlsContainer.appendChild(moveLeftBtn);
+                }
+
+                if (idx < productGallery.length - 1) {
+                    const moveRightBtn = document.createElement('button');
+                    moveRightBtn.type = "button";
+                    moveRightBtn.className = "bg-slate-800 hover:bg-slate-700 text-white rounded p-1 shadow-lg cursor-pointer flex items-center justify-center";
+                    moveRightBtn.title = "Mover Slide para Direita";
+                    moveRightBtn.innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>`;
+                    moveRightBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        moveGalleryItem(idx, idx + 1);
+                    };
+                    controlsContainer.appendChild(moveRightBtn);
+                }
+
                 const removeBtn = document.createElement('button');
                 removeBtn.type = "button";
-                removeBtn.className = "absolute top-1 right-1 bg-rose-600 hover:bg-rose-700 text-white rounded p-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer flex items-center justify-center z-10";
-                removeBtn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>`;
+                removeBtn.className = "bg-rose-600 hover:bg-rose-700 text-white rounded p-1 shadow-lg cursor-pointer flex items-center justify-center";
+                removeBtn.title = "Remover Slide";
+                removeBtn.innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>`;
                 removeBtn.onclick = (e) => {
                     e.stopPropagation();
                     removeGalleryImage(idx);
                 };
+                controlsContainer.appendChild(removeBtn);
                 
                 wrapper.appendChild(mediaElement);
-                wrapper.appendChild(removeBtn);
+                wrapper.appendChild(orderBadge);
+                wrapper.appendChild(controlsContainer);
+
+                if (isImage) {
+                    const setThumbBtn = document.createElement('button');
+                    setThumbBtn.type = "button";
+                    setThumbBtn.className = "absolute bottom-1 left-1 bg-toxicgreen hover:bg-emerald-400 text-obsidian text-[8px] font-orbitron font-bold px-1.5 py-0.5 rounded shadow opacity-90 sm:opacity-0 group-hover:opacity-100 transition-all cursor-pointer flex items-center gap-1 z-10 border border-toxicgreen/50";
+                    setThumbBtn.title = "Definir esta foto como Thumbnail principal do produto";
+                    setThumbBtn.innerHTML = `<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> USAR THUMB`;
+                    setThumbBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        setGalleryImageAsThumb(mediaSrc);
+                    };
+                    wrapper.appendChild(setThumbBtn);
+                }
+
                 container.appendChild(wrapper);
             });
+        };
+
+        window.moveGalleryItem = (fromIdx, toIdx) => {
+            if (fromIdx < 0 || fromIdx >= productGallery.length || toIdx < 0 || toIdx >= productGallery.length) return;
+            const item = productGallery.splice(fromIdx, 1)[0];
+            productGallery.splice(toIdx, 0, item);
+            renderGalleryPreview();
         };
 
         window.removeGalleryImage = (idx) => {
@@ -2889,5 +3416,6 @@ gtag('config', 'AW-18202657831');
             </button>
         </div>
     </div>
+    <script src="/bg-player.js" defer></script>
 </body>
 </html>

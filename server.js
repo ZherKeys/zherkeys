@@ -928,6 +928,13 @@ async function initDB() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
+            CREATE TABLE IF NOT EXISTS site_music_settings (
+                id INTEGER PRIMARY KEY DEFAULT 1,
+                enabled BOOLEAN DEFAULT false,
+                shuffle BOOLEAN DEFAULT true,
+                playlist TEXT DEFAULT '[]'
+            );
+
             CREATE TABLE IF NOT EXISTS support_tickets (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -1096,6 +1103,25 @@ async function initDB() {
                 category: "STEAM KEY",
                 activation_key: "MADM-AXX1-STEAM-KEY",
                 gallery: JSON.stringify(["https://www.youtube.com/watch?v=vVbhO_4f3D8"])
+            },
+            {
+                title: "Devil May Cry 5 + Vergil",
+                price: 24.90,
+                old_price: 99.90,
+                image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/601150/header.jpg",
+                description: "O derradeiro caçador de demônios está de volta em grande estilo! Devil May Cry 5 + Vergil inclui o jogo completo vencedor de prêmios e a expansão que adiciona Vergil como personagem jogável em todas as missões, no Palácio Sangrento e no modo de treino. Enfrente hordas infernais com combates insanos a 60 FPS, gráficos ultra-realistas alimentados pela RE Engine e uma trilha sonora eletrizante. Ativação via Steam.",
+                category: "STEAM KEY",
+                activation_key: "DMC5-VRGL-STEAM-KEY1",
+                in_stock: true,
+                is_global: true,
+                genres: "Ação, Hack and Slash, Terror, Multiplayer, Co-op",
+                gallery: JSON.stringify([
+                    "https://www.youtube.com/watch?v=K9l_5J_161U",
+                    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/601150/ss_8cf90a18eb5ecb8abf20ab0ee12f0e0c0a96f131.1920x1080.jpg",
+                    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/601150/ss_593a2072f447cf08a983b63297a76c0e86a03014.1920x1080.jpg",
+                    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/601150/ss_37a1c3272d7f8d6ea87a224a9ddba6ff0ee31ad4.1920x1080.jpg",
+                    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/601150/ss_8a7605d8f635f6067b5e408caebc9b2f29fa756a.1920x1080.jpg"
+                ])
             },
             {
                 title: "Minecraft Legends (Windows Store Key Global)",
@@ -1776,6 +1802,23 @@ app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
     } catch(e) {
         console.error("Erro ao atualizar produto:", e);
         res.status(400).json({ error: e.message || 'Erro ao atualizar' });
+    }
+});
+
+// Atualizar apenas a Thumbnail do produto (Admin)
+app.patch('/api/admin/products/:id/thumb', requireAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { image } = req.body;
+    try {
+        if (!image) return res.status(400).json({ error: 'Nenhuma imagem fornecida' });
+        const savedImage = saveBase64Image(image, `product_${id}`);
+        await pool.query('UPDATE products SET image=$1 WHERE id=$2', [savedImage, id]);
+        productsCache = null;
+        syncFullDatabaseBackup().catch(e => console.error("Erro no backup de thumbnail:", e));
+        res.json({ message: 'Thumbnail atualizada com sucesso', image: savedImage });
+    } catch(e) {
+        console.error("Erro ao atualizar thumbnail:", e);
+        res.status(500).json({ error: 'Erro ao atualizar a thumbnail do produto.' });
     }
 });
 
@@ -5707,6 +5750,96 @@ app.delete('/api/admin/streaming/episode/:id', requireAdmin, async (req, res) =>
         res.json({ success: true, message: 'Episódio excluído.' });
     } catch (e) {
         res.status(500).json({ error: 'Erro ao excluir.' });
+    }
+});
+
+// ==========================================
+// SEÇÃO DE MÚSICA DE FUNDO DO SITE (BACKGROUND PLAYBACK)
+// ==========================================
+
+function getMusicSettingsFromBackup() {
+    try {
+        const p = path.join(__dirname, 'data', 'music_settings_backup.json');
+        if (fs.existsSync(p)) {
+            return JSON.parse(fs.readFileSync(p, 'utf-8'));
+        }
+    } catch(e) {}
+    return { enabled: false, shuffle: true, playlist: [] };
+}
+
+function saveMusicSettingsToBackup(settings) {
+    try {
+        const dir = path.join(__dirname, 'data');
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        const p = path.join(dir, 'music_settings_backup.json');
+        fs.writeFileSync(p, JSON.stringify(settings, null, 2), 'utf-8');
+    } catch(e) {}
+}
+
+app.get('/api/site/music', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT enabled, shuffle, playlist FROM site_music_settings WHERE id = 1');
+        if (result.rows && result.rows.length > 0) {
+            const row = result.rows[0];
+            let playlist = [];
+            try { playlist = JSON.parse(row.playlist || '[]'); } catch(e){}
+            return res.json({
+                enabled: row.enabled === true,
+                shuffle: row.shuffle !== false,
+                playlist: playlist
+            });
+        }
+    } catch(e) {}
+    
+    const backup = getMusicSettingsFromBackup();
+    res.json(backup);
+});
+
+app.get('/api/admin/music', requireAdmin, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT enabled, shuffle, playlist FROM site_music_settings WHERE id = 1');
+        if (result.rows && result.rows.length > 0) {
+            const row = result.rows[0];
+            let playlist = [];
+            try { playlist = JSON.parse(row.playlist || '[]'); } catch(e){}
+            return res.json({
+                enabled: row.enabled === true,
+                shuffle: row.shuffle !== false,
+                playlist: playlist
+            });
+        }
+    } catch(e) {}
+    
+    const backup = getMusicSettingsFromBackup();
+    res.json(backup);
+});
+
+app.put('/api/admin/music', requireAdmin, async (req, res) => {
+    const { enabled, shuffle, playlist } = req.body;
+    const playlistArr = Array.isArray(playlist) ? playlist : [];
+    const playlistJson = JSON.stringify(playlistArr);
+    const isEnabled = enabled === true;
+    const isShuffle = shuffle !== false;
+    
+    const settings = {
+        enabled: isEnabled,
+        shuffle: isShuffle,
+        playlist: playlistArr
+    };
+    
+    saveMusicSettingsToBackup(settings);
+    
+    try {
+        await pool.query(
+            `INSERT INTO site_music_settings (id, enabled, shuffle, playlist)
+             VALUES (1, $1, $2, $3)
+             ON CONFLICT (id) DO UPDATE SET enabled = $1, shuffle = $2, playlist = $3`,
+            [isEnabled, isShuffle, playlistJson]
+        );
+        res.json({ success: true, message: 'Configurações de música salvas com sucesso!' });
+    } catch(e) {
+        console.error("Erro ao salvar música no banco:", e);
+        res.json({ success: true, message: 'Configurações salvas no backup local!' });
     }
 });
 
