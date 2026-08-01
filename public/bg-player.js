@@ -8,10 +8,23 @@
     let currentTrackIndex = 0;
     let playedHistory = [];
     let audio = null;
+    let ytPlayer = null;
+    let isYtReady = false;
     let playerContainer = null;
     let isMinimized = false;
-
     let pausedByVideo = false;
+
+    function isYoutubeUrl(url) {
+        if (!url) return false;
+        return url.includes('youtube.com') || url.includes('youtu.be');
+    }
+
+    function getYoutubeId(url) {
+        if (!url) return '';
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : '';
+    }
 
     // Load persisted state from sessionStorage
     try {
@@ -24,14 +37,17 @@
     } catch(e) {}
 
     window.pauseBgMusic = function() {
+        pausedByVideo = true;
         if (audio && !audio.paused) {
-            pausedByVideo = true;
             audio.pause();
+        }
+        if (ytPlayer && isYtReady && typeof ytPlayer.pauseVideo === 'function') {
+            try { ytPlayer.pauseVideo(); } catch(e){}
         }
     };
 
     window.resumeBgMusic = function() {
-        if (audio && (pausedByVideo || audio.paused)) {
+        if (pausedByVideo) {
             pausedByVideo = false;
             attemptPlay();
         }
@@ -49,10 +65,10 @@
 
             if (!isEnabled || playlist.length === 0) return;
 
-            // Ensure currentTrackIndex is valid
             if (currentTrackIndex >= playlist.length) currentTrackIndex = 0;
 
             setupAudioElement();
+            initYoutubeAPI();
             createPlayerUI();
             startPlayback();
         } catch(e) {
@@ -85,11 +101,88 @@
         });
     }
 
+    function initYoutubeAPI() {
+        let ytContainer = document.getElementById('bg-yt-container');
+        if (!ytContainer) {
+            ytContainer = document.createElement('div');
+            ytContainer.id = 'bg-yt-container';
+            ytContainer.style.cssText = 'position: fixed; width: 1px; height: 1px; left: -9999px; top: -9999px; pointer-events: none; opacity: 0; z-index: -1;';
+            ytContainer.innerHTML = '<div id="bg-yt-player"></div>';
+            document.body.appendChild(ytContainer);
+        }
+
+        const existingReady = window.onYouTubeIframeAPIReady;
+        window.onYouTubeIframeAPIReady = function() {
+            if (typeof existingReady === 'function') existingReady();
+            createYtPlayerInstance();
+        };
+
+        if (window.YT && window.YT.Player) {
+            createYtPlayerInstance();
+        } else {
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            if (firstScriptTag && firstScriptTag.parentNode) {
+                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            } else if (document.head) {
+                document.head.appendChild(tag);
+            }
+        }
+    }
+
+    function createYtPlayerInstance() {
+        if (ytPlayer || !window.YT) return;
+        try {
+            ytPlayer = new window.YT.Player('bg-yt-player', {
+                height: '1',
+                width: '1',
+                playerVars: {
+                    autoplay: 0,
+                    controls: 0,
+                    disablekb: 1,
+                    fs: 0,
+                    modestbranding: 1,
+                    playsinline: 1
+                },
+                events: {
+                    onReady: () => {
+                        isYtReady = true;
+                        const track = playlist[currentTrackIndex];
+                        if (track && isYoutubeUrl(track.url)) {
+                            const ytId = getYoutubeId(track.url);
+                            if (ytId && ytPlayer && typeof ytPlayer.cueVideoById === 'function') {
+                                ytPlayer.cueVideoById(ytId);
+                            }
+                        }
+                    },
+                    onStateChange: (event) => {
+                        // YT.PlayerState.ENDED = 0
+                        if (event.data === 0) {
+                            playNextTrack();
+                        }
+                        // YT.PlayerState.PLAYING = 1
+                        else if (event.data === 1) {
+                            sessionStorage.setItem('bg_music_playing', 'true');
+                            updateUIState(true);
+                        }
+                        // YT.PlayerState.PAUSED = 2
+                        else if (event.data === 2) {
+                            sessionStorage.setItem('bg_music_playing', 'false');
+                            updateUIState(false);
+                        }
+                    }
+                }
+            });
+        } catch(e) {
+            console.error("Erro ao instanciar YouTube Player:", e);
+        }
+    }
+
     function getNextTrackIndex() {
         if (playlist.length <= 1) return 0;
 
         if (isShuffle) {
-            // Find unplayed track indices
             let unplayed = [];
             for (let i = 0; i < playlist.length; i++) {
                 if (!playedHistory.includes(i) && i !== currentTrackIndex) {
@@ -97,7 +190,6 @@
                 }
             }
 
-            // If all tracks have been played, reset history cycle
             if (unplayed.length === 0) {
                 playedHistory = [currentTrackIndex];
                 unplayed = [];
@@ -112,7 +204,6 @@
             sessionStorage.setItem('bg_music_played_history', JSON.stringify(playedHistory));
             return nextIdx;
         } else {
-            // Sequential playback
             return (currentTrackIndex + 1) % playlist.length;
         }
     }
@@ -123,9 +214,24 @@
         sessionStorage.setItem('bg_music_track_index', index.toString());
 
         const track = playlist[index];
-        audio.src = track.url;
-        if (startTime > 0) {
-            audio.currentTime = startTime;
+        const isYt = isYoutubeUrl(track.url);
+
+        if (isYt) {
+            if (audio && !audio.paused) audio.pause();
+            const ytId = getYoutubeId(track.url);
+            if (ytPlayer && isYtReady && ytId) {
+                try {
+                    ytPlayer.loadVideoById({ videoId: ytId, startSeconds: startTime });
+                } catch(e){}
+            }
+        } else {
+            if (ytPlayer && isYtReady && typeof ytPlayer.pauseVideo === 'function') {
+                try { ytPlayer.pauseVideo(); } catch(e){}
+            }
+            audio.src = track.url;
+            if (startTime > 0) {
+                audio.currentTime = startTime;
+            }
         }
         updateTrackInfoUI();
     }
@@ -140,11 +246,8 @@
             attemptPlay();
         }
 
-        // Global interaction fallback for browser autoplay restriction
         const enableOnInteraction = () => {
-            if (audio && audio.paused) {
-                attemptPlay();
-            }
+            attemptPlay();
             document.removeEventListener('click', enableOnInteraction);
             document.removeEventListener('keydown', enableOnInteraction);
             document.removeEventListener('touchstart', enableOnInteraction);
@@ -156,15 +259,31 @@
     }
 
     function attemptPlay() {
-        if (!audio || !audio.src) return;
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-            playPromise.then(() => {
-                updateUIState(true);
-            }).catch(() => {
-                // Autoplay blocked by browser policy - update UI state to prompt user
-                updateUIState(false, true);
-            });
+        const track = playlist[currentTrackIndex];
+        if (!track) return;
+
+        if (isYoutubeUrl(track.url)) {
+            const ytId = getYoutubeId(track.url);
+            if (ytPlayer && isYtReady) {
+                try {
+                    ytPlayer.playVideo();
+                    updateUIState(true);
+                } catch(e) {
+                    updateUIState(false, true);
+                }
+            } else {
+                setTimeout(attemptPlay, 500);
+            }
+        } else {
+            if (!audio || !audio.src) return;
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    updateUIState(true);
+                }).catch(() => {
+                    updateUIState(false, true);
+                });
+            }
         }
     }
 
@@ -176,20 +295,49 @@
     }
 
     function togglePlayPause() {
-        if (!audio) return;
-        if (audio.paused) {
-            attemptPlay();
+        const track = playlist[currentTrackIndex];
+        if (!track) return;
+
+        if (isYoutubeUrl(track.url)) {
+            if (ytPlayer && isYtReady && typeof ytPlayer.getPlayerState === 'function') {
+                const state = ytPlayer.getPlayerState();
+                if (state === 1) {
+                    ytPlayer.pauseVideo();
+                } else {
+                    ytPlayer.playVideo();
+                }
+            } else {
+                attemptPlay();
+            }
         } else {
-            audio.pause();
+            if (!audio) return;
+            if (audio.paused) {
+                attemptPlay();
+            } else {
+                audio.pause();
+            }
         }
     }
 
     function toggleMute() {
-        if (!audio) return;
-        audio.muted = !audio.muted;
+        const track = playlist[currentTrackIndex];
+        let isMuted = false;
+        if (track && isYoutubeUrl(track.url) && ytPlayer && isYtReady) {
+            if (ytPlayer.isMuted()) {
+                ytPlayer.unMute();
+                isMuted = false;
+            } else {
+                ytPlayer.mute();
+                isMuted = true;
+            }
+        } else if (audio) {
+            audio.muted = !audio.muted;
+            isMuted = audio.muted;
+        }
+
         const muteBtn = document.getElementById('bg-music-mute-btn');
         if (muteBtn) {
-            muteBtn.innerHTML = audio.muted ? '🔇' : '🔊';
+            muteBtn.innerHTML = isMuted ? '🔇' : '🔊';
         }
     }
 
@@ -257,7 +405,6 @@
 
         document.body.appendChild(playerContainer);
 
-        // Bind events
         document.getElementById('bg-music-play-btn').onclick = togglePlayPause;
         document.getElementById('bg-music-next-btn').onclick = playNextTrack;
         document.getElementById('bg-music-mute-btn').onclick = toggleMute;
@@ -270,7 +417,8 @@
         if (!titleEl) return;
         const track = playlist[currentTrackIndex];
         if (track) {
-            titleEl.innerText = track.title || `Faixa ${currentTrackIndex + 1}`;
+            const isYt = isYoutubeUrl(track.url);
+            titleEl.innerText = (isYt ? '▶ YT: ' : '') + (track.title || `Faixa ${currentTrackIndex + 1}`);
             subtitleEl.innerText = `${isShuffle ? '🔀 Aleatório' : '🔁 Sequencial'} (${currentTrackIndex + 1}/${playlist.length})`;
         }
     }
@@ -280,15 +428,15 @@
         if (!playBtn) return;
         if (isBlocked) {
             playBtn.innerText = '▶';
-            playBtn.style.background = '#e11d48'; // Alert color prompting user click
+            playBtn.style.background = '#e11d48';
             playBtn.title = 'Clique para ativar a música de fundo';
         } else if (isPlaying) {
             playBtn.innerText = '❚❚';
-            playBtn.style.background = '#10b981'; // Green active playing state
+            playBtn.style.background = '#10b981';
             playBtn.title = 'Pausar Músicas';
         } else {
             playBtn.innerText = '▶';
-            playBtn.style.background = '#3b82f6'; // Blue paused state
+            playBtn.style.background = '#3b82f6';
             playBtn.title = 'Tocar Músicas';
         }
     }
