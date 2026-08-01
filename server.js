@@ -5846,20 +5846,29 @@ app.put('/api/admin/music', requireAdmin, async (req, res) => {
 // Endpoint de Importação / Auto-preenchimento via Steam URL ou AppID
 app.post('/api/admin/scrape-steam', requireAdmin, async (req, res) => {
     const { url } = req.body;
-    if (!url) return res.status(400).json({ error: 'URL da Steam ou AppID não fornecido.' });
+    if (!url || typeof url !== 'string') {
+        return res.status(400).json({ error: 'Cole uma URL da Steam válida ou o nome/AppID do jogo.' });
+    }
+
+    const cleanInput = url.trim();
 
     try {
         let appid = null;
-        const match = url.match(/\/app\/(\d+)/);
+        const match = cleanInput.match(/\/app\/(\d+)/);
         if (match) {
             appid = match[1];
-        } else if (/^\d+$/.test(url.trim())) {
-            appid = url.trim();
+        } else if (/^\d+$/.test(cleanInput)) {
+            appid = cleanInput;
         }
 
+        const steamHeaders = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7'
+        };
+
         if (!appid) {
-            const searchUrl = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(url)}&l=portuguese&cc=BR`;
-            const searchRes = await fetch(searchUrl);
+            const searchUrl = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(cleanInput)}&l=portuguese&cc=BR`;
+            const searchRes = await fetch(searchUrl, { headers: steamHeaders });
             if (searchRes.ok) {
                 const searchData = await searchRes.json();
                 if (searchData.items && searchData.items.length > 0) {
@@ -5869,16 +5878,32 @@ app.post('/api/admin/scrape-steam', requireAdmin, async (req, res) => {
         }
 
         if (!appid) {
+            // Fallback para fetchSteamGameInfo interno
+            const fallbackInfo = await fetchSteamGameInfo(cleanInput);
+            if (fallbackInfo) {
+                return res.json({
+                    success: true,
+                    title: cleanInput,
+                    price: 0,
+                    old_price: fallbackInfo.originalPrice || 0,
+                    description: 'Jogo disponível na Steam.',
+                    genres: 'Ação, Aventura',
+                    image: fallbackInfo.headerImage || fallbackInfo.libraryImage || '',
+                    gallery: [...(fallbackInfo.movies || []), ...(fallbackInfo.screenshots || [])]
+                });
+            }
             return res.status(404).json({ error: 'Jogo não encontrado na Steam com este link ou termo.' });
         }
 
         const detailsUrl = `https://store.steampowered.com/api/appdetails?appids=${appid}&l=portuguese&cc=BR`;
-        const detailsRes = await fetch(detailsUrl);
-        if (!detailsRes.ok) return res.status(500).json({ error: 'Falha ao se conectar com a API da Steam.' });
+        const detailsRes = await fetch(detailsUrl, { headers: steamHeaders });
+        if (!detailsRes.ok) {
+            return res.status(500).json({ error: 'Não foi possível se conectar aos servidores da Steam no momento.' });
+        }
 
         const detailsData = await detailsRes.json();
-        if (!detailsData[appid] || !detailsData[appid].success) {
-            return res.status(404).json({ error: 'Não foi possível carregar os detalhes do jogo na Steam.' });
+        if (!detailsData[appid] || !detailsData[appid].success || !detailsData[appid].data) {
+            return res.status(404).json({ error: 'A Steam não retornou detalhes públicos para este jogo.' });
         }
 
         const game = detailsData[appid].data;
@@ -5910,7 +5935,7 @@ app.post('/api/admin/scrape-steam', requireAdmin, async (req, res) => {
         let description = game.short_description || game.about_the_game || game.detailed_description || '';
         description = description.replace(/<[^>]*>?/gm, '').replace(/&quot;/g, '"').replace(/&amp;/g, '&').trim();
 
-        res.json({
+        return res.json({
             success: true,
             title: game.name || '',
             price: price,

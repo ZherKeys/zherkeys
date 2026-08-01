@@ -1209,7 +1209,8 @@ gtag('config', 'AW-18202657831');
                     alert(data.error || "Não foi possível encontrar informações do jogo na Steam.");
                 }
             } catch(e) {
-                alert("Erro de conexão ao buscar dados da Steam.");
+                console.error("Erro no autoFillFromSteam:", e);
+                alert("Erro ao importar dados da Steam: " + (e.message || "Erro de resposta"));
             } finally {
                 if (btn) {
                     btn.innerHTML = originalText;

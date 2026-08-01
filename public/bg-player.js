@@ -14,6 +14,28 @@
     let isMinimized = false;
     let pausedByVideo = false;
 
+    // Track user mouse/pointer/keyboard activity immediately from script load time
+    let hasUserInteracted = false;
+
+    function recordUserActivity() {
+        hasUserInteracted = true;
+        if (window.__unmuteBgMusic) {
+            window.__unmuteBgMusic();
+        }
+    }
+
+    // Attach listeners IMMEDIATELY as script executes (capturing mouse movement before/during page load)
+    window.addEventListener('mousemove', recordUserActivity, { capture: true, passive: true });
+    window.addEventListener('pointermove', recordUserActivity, { capture: true, passive: true });
+    window.addEventListener('mouseover', recordUserActivity, { capture: true, passive: true });
+    window.addEventListener('mouseenter', recordUserActivity, { capture: true, passive: true });
+    window.addEventListener('scroll', recordUserActivity, { capture: true, passive: true });
+    window.addEventListener('wheel', recordUserActivity, { capture: true, passive: true });
+    window.addEventListener('click', recordUserActivity, { capture: true, passive: true });
+    window.addEventListener('touchstart', recordUserActivity, { capture: true, passive: true });
+    window.addEventListener('keydown', recordUserActivity, { capture: true, passive: true });
+    window.addEventListener('focus', recordUserActivity, { capture: true, passive: true });
+
     // Master volume (persisted in localStorage)
     let masterVolume = 0.8;
     try {
@@ -57,6 +79,28 @@
         if (pausedByVideo) {
             pausedByVideo = false;
             attemptPlay();
+        }
+    };
+
+    window.__unmuteBgMusic = function() {
+        if (pausedByVideo) return;
+
+        if (audio) {
+            if (audio.muted) audio.muted = false;
+            applyEffectiveVolume();
+            if (audio.paused) {
+                audio.play().then(() => updateUIState(true)).catch(() => {});
+            } else {
+                updateUIState(true);
+            }
+        }
+        if (ytPlayer && isYtReady) {
+            try {
+                if (typeof ytPlayer.unMute === 'function') ytPlayer.unMute();
+                applyEffectiveVolume();
+                ytPlayer.playVideo();
+                updateUIState(true);
+            } catch(e){}
         }
     };
 
@@ -180,6 +224,9 @@
                                 ytPlayer.cueVideoById(ytId);
                             }
                         }
+                        if (hasUserInteracted) {
+                            window.__unmuteBgMusic();
+                        }
                     },
                     onStateChange: (event) => {
                         // YT.PlayerState.ENDED = 0
@@ -265,43 +312,13 @@
 
     function startPlayback() {
         const savedTime = parseFloat(sessionStorage.getItem('bg_music_time') || '0');
-        const wasPlaying = sessionStorage.getItem('bg_music_playing') !== 'false';
-
         loadTrack(currentTrackIndex, savedTime);
 
-        // Immediate play attempt on entry
         attemptPlay();
 
-        // Ultra-sensitive listeners to unmute/start instant sound at the slightest mouse movement or scroll
-        const instantStartOnActivity = () => {
-            if (audio) {
-                if (audio.muted) audio.muted = false;
-                applyEffectiveVolume();
-                if (audio.paused) {
-                    audio.play().then(() => updateUIState(true)).catch(() => {});
-                } else {
-                    updateUIState(true);
-                }
-            }
-            if (ytPlayer && isYtReady) {
-                try {
-                    if (typeof ytPlayer.unMute === 'function') ytPlayer.unMute();
-                    applyEffectiveVolume();
-                    ytPlayer.playVideo();
-                    updateUIState(true);
-                } catch(e){}
-            }
-        };
-
-        document.addEventListener('mousemove', instantStartOnActivity, { once: true });
-        document.addEventListener('pointermove', instantStartOnActivity, { once: true });
-        document.addEventListener('mouseover', instantStartOnActivity, { once: true });
-        document.addEventListener('mouseenter', instantStartOnActivity, { once: true });
-        document.addEventListener('scroll', instantStartOnActivity, { once: true });
-        document.addEventListener('click', instantStartOnActivity, { once: true });
-        document.addEventListener('keydown', instantStartOnActivity, { once: true });
-        document.addEventListener('touchstart', instantStartOnActivity, { once: true });
-        window.addEventListener('focus', instantStartOnActivity, { once: true });
+        if (hasUserInteracted) {
+            window.__unmuteBgMusic();
+        }
     }
 
     function attemptPlay() {
@@ -329,7 +346,6 @@
                 playPromise.then(() => {
                     updateUIState(true);
                 }).catch(() => {
-                    // If unmuted play is blocked, attempt muted play so it starts immediately
                     audio.muted = true;
                     audio.play().then(() => {
                         updateUIState(true);
@@ -475,7 +491,6 @@
         document.getElementById('bg-music-mute-btn').onclick = toggleMute;
         document.getElementById('bg-music-toggle-min').onclick = toggleMinimize;
 
-        // Hover Volume Slide Sound Popup
         const muteWrapper = document.getElementById('bg-music-mute-wrapper');
         const popover = document.getElementById('bg-music-volume-popover');
         const volSlider = document.getElementById('bg-music-master-vol-slider');
