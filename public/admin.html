@@ -996,27 +996,108 @@ gtag('config', 'AW-18202657831');
             renderAdminPlaylist();
         };
 
+        let testYtPlayer = null;
+
+        function isYoutubeUrl(url) {
+            if (!url) return false;
+            return url.includes('youtube.com') || url.includes('youtu.be');
+        }
+
+        function getYoutubeId(url) {
+            if (!url) return '';
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : '';
+        }
+
         window.testPlayTrack = (url, trackId) => {
-            if (testAudioElement && currentlyPlayingTrackId === trackId) {
+            // Parar áudio prévio
+            if (testAudioElement) {
                 testAudioElement.pause();
                 testAudioElement = null;
+            }
+
+            // Alternar se for a mesma música
+            if (currentlyPlayingTrackId === trackId) {
+                if (testYtPlayer && typeof testYtPlayer.pauseVideo === 'function') {
+                    try { testYtPlayer.pauseVideo(); } catch(e){}
+                }
                 currentlyPlayingTrackId = null;
                 renderAdminPlaylist();
                 return;
             }
 
-            if (testAudioElement) {
-                testAudioElement.pause();
-            }
-
-            testAudioElement = new Audio(url);
             currentlyPlayingTrackId = trackId;
-            testAudioElement.play().catch(e => alert("Não foi possível tocar a música de teste. Verifique a URL do áudio."));
-            testAudioElement.onended = () => {
-                testAudioElement = null;
-                currentlyPlayingTrackId = null;
-                renderAdminPlaylist();
-            };
+
+            if (isYoutubeUrl(url)) {
+                const ytId = getYoutubeId(url);
+                if (!ytId) {
+                    alert("URL do YouTube inválida. Verifique o link fornecido.");
+                    currentlyPlayingTrackId = null;
+                    renderAdminPlaylist();
+                    return;
+                }
+
+                let container = document.getElementById('admin-yt-test-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'admin-yt-test-container';
+                    container.style.cssText = 'position: fixed; width: 1px; height: 1px; left: -9999px; top: -9999px; pointer-events: none; opacity: 0;';
+                    container.innerHTML = '<div id="admin-yt-test-player"></div>';
+                    document.body.appendChild(container);
+                }
+
+                if (window.YT && window.YT.Player) {
+                    if (!testYtPlayer) {
+                        try {
+                            testYtPlayer = new window.YT.Player('admin-yt-test-player', {
+                                height: '1',
+                                width: '1',
+                                events: {
+                                    onReady: () => {
+                                        testYtPlayer.loadVideoById(ytId);
+                                    },
+                                    onStateChange: (ev) => {
+                                        if (ev.data === 0) {
+                                            currentlyPlayingTrackId = null;
+                                            renderAdminPlaylist();
+                                        }
+                                    }
+                                }
+                            });
+                        } catch(e) {
+                            window.open(url, '_blank');
+                        }
+                    } else {
+                        try {
+                            testYtPlayer.loadVideoById(ytId);
+                        } catch(e) {
+                            window.open(url, '_blank');
+                        }
+                    }
+                } else {
+                    // Carrega API do YouTube sob demanda
+                    const tag = document.createElement('script');
+                    tag.src = "https://www.youtube.com/iframe_api";
+                    document.head.appendChild(tag);
+                    window.open(url, '_blank');
+                }
+            } else {
+                if (testYtPlayer && typeof testYtPlayer.pauseVideo === 'function') {
+                    try { testYtPlayer.pauseVideo(); } catch(e){}
+                }
+                testAudioElement = new Audio(url);
+                testAudioElement.play().catch(e => {
+                    alert("Não foi possível tocar a música de teste. Verifique a URL do arquivo de áudio.");
+                    currentlyPlayingTrackId = null;
+                    renderAdminPlaylist();
+                });
+                testAudioElement.onended = () => {
+                    testAudioElement = null;
+                    currentlyPlayingTrackId = null;
+                    renderAdminPlaylist();
+                };
+            }
             renderAdminPlaylist();
         };
 
