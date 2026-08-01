@@ -5843,6 +5843,90 @@ app.put('/api/admin/music', requireAdmin, async (req, res) => {
     }
 });
 
+// Endpoint de Importação / Auto-preenchimento via Steam URL ou AppID
+app.post('/api/admin/scrape-steam', requireAdmin, async (req, res) => {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ error: 'URL da Steam ou AppID não fornecido.' });
+
+    try {
+        let appid = null;
+        const match = url.match(/\/app\/(\d+)/);
+        if (match) {
+            appid = match[1];
+        } else if (/^\d+$/.test(url.trim())) {
+            appid = url.trim();
+        }
+
+        if (!appid) {
+            const searchUrl = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(url)}&l=portuguese&cc=BR`;
+            const searchRes = await fetch(searchUrl);
+            if (searchRes.ok) {
+                const searchData = await searchRes.json();
+                if (searchData.items && searchData.items.length > 0) {
+                    appid = searchData.items[0].id;
+                }
+            }
+        }
+
+        if (!appid) {
+            return res.status(404).json({ error: 'Jogo não encontrado na Steam com este link ou termo.' });
+        }
+
+        const detailsUrl = `https://store.steampowered.com/api/appdetails?appids=${appid}&l=portuguese&cc=BR`;
+        const detailsRes = await fetch(detailsUrl);
+        if (!detailsRes.ok) return res.status(500).json({ error: 'Falha ao se conectar com a API da Steam.' });
+
+        const detailsData = await detailsRes.json();
+        if (!detailsData[appid] || !detailsData[appid].success) {
+            return res.status(404).json({ error: 'Não foi possível carregar os detalhes do jogo na Steam.' });
+        }
+
+        const game = detailsData[appid].data;
+
+        let price = 0;
+        let oldPrice = 0;
+        if (game.price_overview) {
+            price = (game.price_overview.final / 100) || 0;
+            oldPrice = (game.price_overview.initial / 100) || 0;
+            if (oldPrice <= price) oldPrice = 0;
+        }
+
+        const genres = (game.genres || []).map(g => g.description).join(', ');
+        const headerImage = game.header_image || `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appid}/header.jpg`;
+        const screenshots = (game.screenshots || []).map(s => s.path_full).slice(0, 5);
+
+        let movies = [];
+        if (game.movies && game.movies.length > 0) {
+            game.movies.forEach(m => {
+                const mp4Url = m.mp4 ? (m.mp4.max || m.mp4['480']) : null;
+                const webmUrl = m.webm ? (m.webm.max || m.webm['480']) : null;
+                if (mp4Url) movies.push(mp4Url);
+                else if (webmUrl) movies.push(webmUrl);
+            });
+        }
+
+        const gallery = [...movies, ...screenshots];
+
+        let description = game.short_description || game.about_the_game || game.detailed_description || '';
+        description = description.replace(/<[^>]*>?/gm, '').replace(/&quot;/g, '"').replace(/&amp;/g, '&').trim();
+
+        res.json({
+            success: true,
+            title: game.name || '',
+            price: price,
+            old_price: oldPrice,
+            description: description,
+            genres: genres,
+            image: headerImage,
+            gallery: gallery,
+            appid: appid
+        });
+    } catch(e) {
+        console.error("Erro ao importar dados da Steam:", e);
+        res.status(500).json({ error: 'Erro ao conectar com a API da Steam.' });
+    }
+});
+
 // ==========================================
 // SEÇÃO DE LEITURA (ZHER READ - EBOOKS & MANGAS)
 // ==========================================

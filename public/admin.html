@@ -107,6 +107,20 @@ gtag('config', 'AW-18202657831');
                 
                 <form id="product-form" class="space-y-4">
                     <input type="hidden" id="prod-id">
+
+                    <!-- Bloco de Auto-Preenchimento via URL da Steam -->
+                    <div class="bg-slate-950 p-3.5 rounded-xl border border-electricblue/50 shadow-lg mb-4">
+                        <label class="block text-[11px] font-orbitron font-bold text-electricblue tracking-wider mb-1 flex items-center justify-between">
+                            <span class="flex items-center gap-1.5"><i data-lucide="sparkles" class="w-3.5 h-3.5 text-electricblue"></i> IMPORTAR DA STEAM</span>
+                            <span class="text-[9px] text-slate-400 font-inter">Cole o link da loja Steam</span>
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="text" id="prod-steam-url-input" placeholder="https://store.steampowered.com/app/601150/..." class="flex-grow bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-electricblue">
+                            <button type="button" onclick="autoFillFromSteam()" id="btn-steam-autofill" class="bg-electricblue hover:bg-blue-500 text-white font-orbitron font-bold text-[10px] px-3 py-2 rounded-lg transition-all shrink-0 flex items-center gap-1 cursor-pointer shadow-md">
+                                ⚡ PREENCHER
+                            </button>
+                        </div>
+                    </div>
                     
                     <div>
                         <label class="block text-xs font-orbitron tracking-widest text-slate-400 mb-1">TÍTULO (Ex: Zher Key Basic)</label>
@@ -1151,6 +1165,57 @@ gtag('config', 'AW-18202657831');
             titleInput.value = '';
             urlInput.value = '';
             renderAdminPlaylist();
+        };
+
+        window.autoFillFromSteam = async function() {
+            const urlInput = document.getElementById('prod-steam-url-input');
+            const url = urlInput ? urlInput.value.trim() : '';
+            if (!url) {
+                alert("Por favor, cole a URL do jogo na Steam (ex: https://store.steampowered.com/app/601150/Devil_May_Cry_5/)");
+                return;
+            }
+
+            const btn = document.getElementById('btn-steam-autofill');
+            const originalText = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = `⌛ Buscando...`;
+                btn.disabled = true;
+            }
+
+            try {
+                const res = await fetch('/api/admin/scrape-steam', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                });
+                const data = await res.json();
+                
+                if (res.ok && data.success) {
+                    if (data.title) document.getElementById('prod-title').value = data.title;
+                    if (data.price) document.getElementById('prod-price').value = data.price;
+                    if (data.old_price) document.getElementById('prod-old-price').value = data.old_price;
+                    if (data.description) document.getElementById('prod-description').value = data.description;
+                    if (data.genres) document.getElementById('prod-genres').value = data.genres;
+                    if (data.image) {
+                        document.getElementById('prod-image').value = data.image;
+                        if (window.updateThumbPreview) updateThumbPreview(data.image);
+                    }
+                    if (Array.isArray(data.gallery) && data.gallery.length > 0) {
+                        productGallery = data.gallery;
+                        if (window.renderGalleryPreview) renderGalleryPreview();
+                    }
+                    alert(`✅ Sucesso! Dados do jogo "${data.title}" importados e preenchidos automaticamente.`);
+                } else {
+                    alert(data.error || "Não foi possível encontrar informações do jogo na Steam.");
+                }
+            } catch(e) {
+                alert("Erro de conexão ao buscar dados da Steam.");
+            } finally {
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
         };
 
         document.addEventListener('DOMContentLoaded', () => {

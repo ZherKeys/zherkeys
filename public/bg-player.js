@@ -272,23 +272,36 @@
         // Immediate play attempt on entry
         attemptPlay();
 
-        // Ultra-sensitive listeners to unmute/start instant playback at the slightest mouse move or scroll
+        // Ultra-sensitive listeners to unmute/start instant sound at the slightest mouse movement or scroll
         const instantStartOnActivity = () => {
-            attemptPlay();
-            document.removeEventListener('mousemove', instantStartOnActivity);
-            document.removeEventListener('pointermove', instantStartOnActivity);
-            document.removeEventListener('scroll', instantStartOnActivity);
-            document.removeEventListener('click', instantStartOnActivity);
-            document.removeEventListener('keydown', instantStartOnActivity);
-            document.removeEventListener('touchstart', instantStartOnActivity);
+            if (audio) {
+                if (audio.muted) audio.muted = false;
+                applyEffectiveVolume();
+                if (audio.paused) {
+                    audio.play().then(() => updateUIState(true)).catch(() => {});
+                } else {
+                    updateUIState(true);
+                }
+            }
+            if (ytPlayer && isYtReady) {
+                try {
+                    if (typeof ytPlayer.unMute === 'function') ytPlayer.unMute();
+                    applyEffectiveVolume();
+                    ytPlayer.playVideo();
+                    updateUIState(true);
+                } catch(e){}
+            }
         };
 
-        document.addEventListener('mousemove', instantStartOnActivity);
-        document.addEventListener('pointermove', instantStartOnActivity);
-        document.addEventListener('scroll', instantStartOnActivity);
-        document.addEventListener('click', instantStartOnActivity);
-        document.addEventListener('keydown', instantStartOnActivity);
-        document.addEventListener('touchstart', instantStartOnActivity);
+        document.addEventListener('mousemove', instantStartOnActivity, { once: true });
+        document.addEventListener('pointermove', instantStartOnActivity, { once: true });
+        document.addEventListener('mouseover', instantStartOnActivity, { once: true });
+        document.addEventListener('mouseenter', instantStartOnActivity, { once: true });
+        document.addEventListener('scroll', instantStartOnActivity, { once: true });
+        document.addEventListener('click', instantStartOnActivity, { once: true });
+        document.addEventListener('keydown', instantStartOnActivity, { once: true });
+        document.addEventListener('touchstart', instantStartOnActivity, { once: true });
+        window.addEventListener('focus', instantStartOnActivity, { once: true });
     }
 
     function attemptPlay() {
