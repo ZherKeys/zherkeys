@@ -14,6 +14,13 @@
     let isMinimized = false;
     let pausedByVideo = false;
 
+    // Master volume (persisted in localStorage)
+    let masterVolume = 0.8;
+    try {
+        const savedMasterVol = localStorage.getItem('bg_music_master_vol');
+        if (savedMasterVol !== null) masterVolume = parseFloat(savedMasterVol);
+    } catch(e) {}
+
     function isYoutubeUrl(url) {
         if (!url) return false;
         return url.includes('youtube.com') || url.includes('youtu.be');
@@ -53,6 +60,22 @@
         }
     };
 
+    function getEffectiveVolume() {
+        const track = playlist[currentTrackIndex];
+        const trackBaseVol = (track && track.volume !== undefined && track.volume !== null) ? parseFloat(track.volume) : 1.0;
+        return Math.max(0, Math.min(1, trackBaseVol * masterVolume));
+    }
+
+    function applyEffectiveVolume() {
+        const effVol = getEffectiveVolume();
+        if (audio) {
+            audio.volume = effVol;
+        }
+        if (ytPlayer && isYtReady && typeof ytPlayer.setVolume === 'function') {
+            try { ytPlayer.setVolume(Math.round(effVol * 100)); } catch(e){}
+        }
+    }
+
     async function init() {
         try {
             const res = await fetch('/api/site/music');
@@ -79,6 +102,7 @@
     function setupAudioElement() {
         audio = new Audio();
         audio.preload = 'auto';
+        audio.volume = getEffectiveVolume();
 
         audio.addEventListener('ended', () => {
             playNextTrack();
@@ -148,6 +172,7 @@
                 events: {
                     onReady: () => {
                         isYtReady = true;
+                        applyEffectiveVolume();
                         const track = playlist[currentTrackIndex];
                         if (track && isYoutubeUrl(track.url)) {
                             const ytId = getYoutubeId(track.url);
@@ -222,6 +247,7 @@
             if (ytPlayer && isYtReady && ytId) {
                 try {
                     ytPlayer.loadVideoById({ videoId: ytId, startSeconds: startTime });
+                    applyEffectiveVolume();
                 } catch(e){}
             }
         } else {
@@ -229,6 +255,7 @@
                 try { ytPlayer.pauseVideo(); } catch(e){}
             }
             audio.src = track.url;
+            applyEffectiveVolume();
             if (startTime > 0) {
                 audio.currentTime = startTime;
             }
@@ -242,25 +269,33 @@
 
         loadTrack(currentTrackIndex, savedTime);
 
-        if (wasPlaying) {
-            attemptPlay();
-        }
+        // Immediate play attempt on entry
+        attemptPlay();
 
-        const enableOnInteraction = () => {
+        // Ultra-sensitive listeners to unmute/start instant playback at the slightest mouse move or scroll
+        const instantStartOnActivity = () => {
             attemptPlay();
-            document.removeEventListener('click', enableOnInteraction);
-            document.removeEventListener('keydown', enableOnInteraction);
-            document.removeEventListener('touchstart', enableOnInteraction);
+            document.removeEventListener('mousemove', instantStartOnActivity);
+            document.removeEventListener('pointermove', instantStartOnActivity);
+            document.removeEventListener('scroll', instantStartOnActivity);
+            document.removeEventListener('click', instantStartOnActivity);
+            document.removeEventListener('keydown', instantStartOnActivity);
+            document.removeEventListener('touchstart', instantStartOnActivity);
         };
 
-        document.addEventListener('click', enableOnInteraction);
-        document.addEventListener('keydown', enableOnInteraction);
-        document.addEventListener('touchstart', enableOnInteraction);
+        document.addEventListener('mousemove', instantStartOnActivity);
+        document.addEventListener('pointermove', instantStartOnActivity);
+        document.addEventListener('scroll', instantStartOnActivity);
+        document.addEventListener('click', instantStartOnActivity);
+        document.addEventListener('keydown', instantStartOnActivity);
+        document.addEventListener('touchstart', instantStartOnActivity);
     }
 
     function attemptPlay() {
         const track = playlist[currentTrackIndex];
         if (!track) return;
+
+        applyEffectiveVolume();
 
         if (isYoutubeUrl(track.url)) {
             const ytId = getYoutubeId(track.url);
@@ -272,7 +307,7 @@
                     updateUIState(false, true);
                 }
             } else {
-                setTimeout(attemptPlay, 500);
+                setTimeout(attemptPlay, 300);
             }
         } else {
             if (!audio || !audio.src) return;
@@ -281,7 +316,13 @@
                 playPromise.then(() => {
                     updateUIState(true);
                 }).catch(() => {
-                    updateUIState(false, true);
+                    // If unmuted play is blocked, attempt muted play so it starts immediately
+                    audio.muted = true;
+                    audio.play().then(() => {
+                        updateUIState(true);
+                    }).catch(() => {
+                        updateUIState(false, true);
+                    });
                 });
             }
         }
@@ -312,6 +353,7 @@
         } else {
             if (!audio) return;
             if (audio.paused) {
+                if (audio.muted) audio.muted = false;
                 attemptPlay();
             } else {
                 audio.pause();
@@ -394,9 +436,19 @@
                 <button id="bg-music-next-btn" style="background: rgba(30,41,59,0.8); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center;" title="Próxima Música">
                     ⏭
                 </button>
-                <button id="bg-music-mute-btn" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 12px; padding: 2px;" title="Mudar Volume">
-                    🔊
-                </button>
+                
+                <!-- Wrapper do botão Mute com Popup de Volume Slide -->
+                <div id="bg-music-mute-wrapper" style="position: relative; display: flex; align-items: center;">
+                    <button id="bg-music-mute-btn" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 12px; padding: 2px;" title="Mudar Volume / Mute">
+                        🔊
+                    </button>
+                    
+                    <!-- Popover do Slide Sound (Barra de Volume para cima) -->
+                    <div id="bg-music-volume-popover" style="position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(59, 130, 246, 0.5); backdrop-filter: blur(10px); padding: 10px 8px; border-radius: 12px; display: none; flex-direction: column; align-items: center; gap: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.8); z-index: 1000000; width: 34px;">
+                        <span id="bg-music-vol-val-text" style="font-size: 9px; font-weight: bold; color: #38bdf8;">${Math.round(masterVolume * 100)}%</span>
+                        <input type="range" id="bg-music-master-vol-slider" min="0" max="1" step="0.01" value="${masterVolume}" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 80px; accent-color: #3b82f6; cursor: pointer;">
+                    </div>
+                </div>
             </div>
             <button id="bg-music-toggle-min" style="background: rgba(30,41,59,0.8); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; margin-left: 2px;" title="Minimizar / Expandir">
                 ${isMinimized ? '🎵' : '✖'}
@@ -409,6 +461,46 @@
         document.getElementById('bg-music-next-btn').onclick = playNextTrack;
         document.getElementById('bg-music-mute-btn').onclick = toggleMute;
         document.getElementById('bg-music-toggle-min').onclick = toggleMinimize;
+
+        // Hover Volume Slide Sound Popup
+        const muteWrapper = document.getElementById('bg-music-mute-wrapper');
+        const popover = document.getElementById('bg-music-volume-popover');
+        const volSlider = document.getElementById('bg-music-master-vol-slider');
+        const volText = document.getElementById('bg-music-vol-val-text');
+
+        let popoverHideTimeout = null;
+
+        if (muteWrapper && popover) {
+            muteWrapper.onmouseenter = () => {
+                if (popoverHideTimeout) clearTimeout(popoverHideTimeout);
+                popover.style.display = 'flex';
+            };
+            muteWrapper.onmouseleave = () => {
+                popoverHideTimeout = setTimeout(() => {
+                    popover.style.display = 'none';
+                }, 300);
+            };
+            popover.onmouseenter = () => {
+                if (popoverHideTimeout) clearTimeout(popoverHideTimeout);
+                popover.style.display = 'flex';
+            };
+            popover.onmouseleave = () => {
+                popoverHideTimeout = setTimeout(() => {
+                    popover.style.display = 'none';
+                }, 300);
+            };
+        }
+
+        if (volSlider) {
+            volSlider.oninput = (e) => {
+                masterVolume = parseFloat(e.target.value);
+                localStorage.setItem('bg_music_master_vol', masterVolume.toString());
+                if (volText) volText.innerText = Math.round(masterVolume * 100) + '%';
+                applyEffectiveVolume();
+                const muteBtn = document.getElementById('bg-music-mute-btn');
+                if (muteBtn) muteBtn.innerHTML = masterVolume === 0 ? '🔇' : '🔊';
+            };
+        }
     }
 
     function updateTrackInfoUI() {

@@ -954,6 +954,7 @@ gtag('config', 'AW-18202657831');
                 };
 
                 const isTesting = currentlyPlayingTrackId === (track.id || track.url);
+                const trackVol = track.volume !== undefined ? parseFloat(track.volume) : 1.0;
 
                 div.innerHTML = `
                     <div class="flex items-center gap-3 min-w-0 flex-1">
@@ -968,6 +969,13 @@ gtag('config', 'AW-18202657831');
                     </div>
 
                     <div class="flex items-center gap-2">
+                        <!-- Slider de Volume Individual por Música -->
+                        <div class="flex items-center gap-1.5 bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-800" title="Ajustar Volume Individual desta Música">
+                            <span class="text-xs">🔊</span>
+                            <input type="range" min="0" max="1" step="0.05" value="${trackVol}" oninput="updateTrackVolume(${idx}, this.value)" class="w-16 h-1 bg-slate-800 accent-electricblue rounded cursor-pointer">
+                            <span class="text-[9px] font-orbitron font-bold text-electricblue w-7 text-right" id="track-vol-label-${idx}">${Math.round(trackVol * 100)}%</span>
+                        </div>
+
                         <button type="button" onclick="testPlayTrack('${track.url}', '${track.id || track.url}')" class="px-2.5 py-1.5 ${isTesting ? 'bg-rose-600 text-white' : 'bg-slate-800 text-electricblue'} hover:bg-slate-700 rounded text-xs font-orbitron flex items-center gap-1 transition-colors" title="Testar Áudio">
                             ${isTesting ? '⏹ Pausar' : '▶ Testar'}
                         </button>
@@ -982,6 +990,22 @@ gtag('config', 'AW-18202657831');
             });
 
             if (window.lucide) window.lucide.createIcons();
+        };
+
+        window.updateTrackVolume = (idx, val) => {
+            const num = parseFloat(val);
+            if (adminMusicPlaylist[idx]) {
+                adminMusicPlaylist[idx].volume = num;
+                const label = document.getElementById(`track-vol-label-${idx}`);
+                if (label) label.innerText = Math.round(num * 100) + '%';
+
+                if (currentlyPlayingTrackId === (adminMusicPlaylist[idx].id || adminMusicPlaylist[idx].url)) {
+                    if (testAudioElement) testAudioElement.volume = num;
+                    if (testYtPlayer && typeof testYtPlayer.setVolume === 'function') {
+                        try { testYtPlayer.setVolume(Math.round(num * 100)); } catch(e){}
+                    }
+                }
+            }
         };
 
         window.moveTrackItem = (fromIdx, toIdx) => {
@@ -1120,7 +1144,8 @@ gtag('config', 'AW-18202657831');
             adminMusicPlaylist.push({
                 id: 'track_' + Date.now(),
                 title: title,
-                url: url
+                url: url,
+                volume: 1.0
             });
 
             titleInput.value = '';
