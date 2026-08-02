@@ -901,6 +901,7 @@ gtag('config', 'AW-18202657831');
         let draggedMusicIndex = null;
         let testAudioElement = null;
         let currentlyPlayingTrackId = null;
+        let musicSettingsLoaded = false;
 
         async function loadMusicAdminSettings() {
             try {
@@ -908,9 +909,13 @@ gtag('config', 'AW-18202657831');
                 if (!res.ok) return;
                 const data = await res.json();
                 
-                document.getElementById('music-enabled-toggle').checked = (data.enabled === true);
-                document.getElementById('music-shuffle-toggle').checked = (data.shuffle !== false);
+                const enabledToggle = document.getElementById('music-enabled-toggle');
+                const shuffleToggle = document.getElementById('music-shuffle-toggle');
+                if (enabledToggle) enabledToggle.checked = (data.enabled === true);
+                if (shuffleToggle) shuffleToggle.checked = (data.shuffle !== false);
+
                 adminMusicPlaylist = Array.isArray(data.playlist) ? data.playlist : [];
+                musicSettingsLoaded = true;
                 renderAdminPlaylist();
             } catch(e) {
                 console.error("Erro ao carregar configurações de música:", e);
@@ -1322,8 +1327,15 @@ gtag('config', 'AW-18202657831');
         });
 
         window.saveMusicSettings = async (silent = false) => {
-            const enabled = document.getElementById('music-enabled-toggle').checked;
-            const shuffle = document.getElementById('music-shuffle-toggle').checked;
+            const enabledToggle = document.getElementById('music-enabled-toggle');
+            const shuffleToggle = document.getElementById('music-shuffle-toggle');
+            const enabled = enabledToggle ? enabledToggle.checked : false;
+            const shuffle = shuffleToggle ? shuffleToggle.checked : true;
+
+            if (!musicSettingsLoaded && silent) {
+                console.warn("Ignorando salvamento automático de música pois as configurações ainda não foram carregadas do servidor.");
+                return;
+            }
 
             try {
                 const res = await fetch('/api/admin/music', {
@@ -1337,6 +1349,7 @@ gtag('config', 'AW-18202657831');
                 });
 
                 if (res.ok) {
+                    musicSettingsLoaded = true;
                     if (!silent) alert("Playlist e configurações de música de fundo salvas com sucesso!");
                 } else {
                     if (!silent) alert("Erro ao salvar configurações de música.");
