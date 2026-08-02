@@ -104,13 +104,13 @@
         if (pausedByVideo) {
             if (resumeTimeout) clearTimeout(resumeTimeout);
             resumeTimeout = setTimeout(() => {
-                if (pausedByVideo && !isAnyPageVideoPlaying()) {
+                if (!isAnyPageVideoPlaying()) {
+                    userPaused = false;
                     pausedByVideo = false;
-                    if (!userPaused) {
-                        attemptPlay();
-                    }
+                    attemptPlay();
+                    window.__unmuteBgMusic();
                 }
-            }, 6000);
+            }, 5000);
         }
     };
 
@@ -453,16 +453,15 @@
             return;
         }
 
-        attemptPlay();
-
-        // Delay de 6 segundos ao entrar ou trocar de página antes de ativar o som desmutado
+        // Delay de 5 segundos ao entrar ou trocar de página antes de despausar e dar play com som
         setTimeout(() => {
-            if (!pausedByVideo && !isAnyPageVideoPlaying()) {
-                if (hasUserInteracted && !userPaused) {
-                    window.__unmuteBgMusic();
-                }
+            if (!isAnyPageVideoPlaying()) {
+                userPaused = false;
+                pausedByVideo = false;
+                attemptPlay();
+                window.__unmuteBgMusic();
             }
-        }, 6000);
+        }, 5000);
     }
 
     function attemptPlay() {
