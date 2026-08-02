@@ -18,16 +18,23 @@
 
     // Track user mouse/pointer/keyboard activity immediately from script load time
     let hasUserInteracted = false;
+    let isUnmutedAndPlaying = false;
 
     const activityEvents = ['mousemove', 'pointermove', 'mouseover', 'mouseenter', 'scroll', 'wheel', 'click', 'touchstart', 'keydown', 'focus'];
 
     function recordUserActivity() {
-        if (hasUserInteracted) return;
         hasUserInteracted = true;
-        removeActivityListeners();
 
         if (!userPaused && !pausedByVideo) {
             window.__unmuteBgMusic();
+        }
+
+        const isAudioActive = audio && !audio.paused && !audio.muted;
+        const isYtActive = ytPlayer && isYtReady && typeof ytPlayer.isMuted === 'function' && !ytPlayer.isMuted();
+
+        if (isAudioActive || isYtActive) {
+            isUnmutedAndPlaying = true;
+            removeActivityListeners();
         }
     }
 
@@ -101,9 +108,20 @@
             if (!userMuted) audio.muted = false;
             applyEffectiveVolume();
             if (audio.paused && !userPaused) {
-                audio.play().then(() => updateUIState(true)).catch(() => {});
+                audio.play().then(() => {
+                    isUnmutedAndPlaying = true;
+                    removeActivityListeners();
+                    updateUIState(true);
+                }).catch(() => {
+                    if (!userMuted) audio.muted = true;
+                    audio.play().then(() => updateUIState(true)).catch(() => {});
+                });
             } else {
                 updateUIState(!audio.paused);
+                if (!audio.muted) {
+                    isUnmutedAndPlaying = true;
+                    removeActivityListeners();
+                }
             }
         }
         if (ytPlayer && isYtReady) {
@@ -112,6 +130,8 @@
                 applyEffectiveVolume();
                 if (!userPaused) {
                     ytPlayer.playVideo();
+                    isUnmutedAndPlaying = true;
+                    removeActivityListeners();
                     updateUIState(true);
                 }
             } catch(e){}
