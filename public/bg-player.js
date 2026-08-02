@@ -107,7 +107,7 @@
                         attemptPlay();
                     }
                 }
-            }, 3000);
+            }, 6000);
         }
     };
 
@@ -396,11 +396,19 @@
 
     function isAnyPageVideoPlaying() {
         try {
-            // Se estiver na página de produto ou se houver trailer ativo no container de slides
-            const isProductPage = window.location.pathname.includes('produto.html');
+            // Se estiver na página do produto (qualquer formato de URL ou presença do container de slides)
+            const isProductPage = window.location.href.includes('produto') || document.getElementById('product-slides-container') !== null;
             if (isProductPage) {
-                const activeSlideTrailer = document.querySelector('#product-slides-container .z-10 iframe, #product-slides-container .z-10 video, #product-slides-container iframe, #product-slides-container video');
+                const activeSlideTrailer = document.querySelector('#product-slides-container iframe, #product-slides-container video, .z-10 iframe, .z-10 video');
                 if (activeSlideTrailer) return true;
+            }
+
+            // Verifica qualquer iframe de trailer do YouTube fora do player de fundo
+            const ytIframes = document.querySelectorAll('iframe[src*="youtube.com"], iframe[src*="youtu.be"]');
+            for (let iframe of ytIframes) {
+                if (!iframe.closest('#bg-yt-container')) {
+                    return true;
+                }
             }
 
             // Verifica elementos <video> ativos na página (fora do widget de música)
@@ -411,7 +419,7 @@
                 }
             }
 
-            const modalTrailer = document.querySelector('.modal iframe[src*="youtube"], .modal video');
+            const modalTrailer = document.querySelector('.modal iframe, .modal video');
             if (modalTrailer) return true;
         } catch(e){}
         return false;
@@ -427,7 +435,7 @@
             return;
         }
 
-        // Delay de 3 segundos ao entrar ou trocar de página antes de retomar a reprodução
+        // Delay de 6 segundos ao entrar ou trocar de página antes de retomar a reprodução
         setTimeout(() => {
             if (!pausedByVideo && !isAnyPageVideoPlaying()) {
                 attemptPlay();
@@ -436,7 +444,7 @@
                     window.__unmuteBgMusic();
                 }
             }
-        }, 3000);
+        }, 6000);
     }
 
     function attemptPlay() {
