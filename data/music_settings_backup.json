@@ -1,5 +1,30 @@
 {
-  "enabled": false,
+  "enabled": true,
   "shuffle": true,
-  "playlist": []
+  "playlist": [
+    {
+      "id": "track_1722590001",
+      "title": "DVRST - Close Eyes",
+      "url": "/uploads/audio/DVRST - Close Eyes - DVRST (youtube).mp3",
+      "volume": 1
+    },
+    {
+      "id": "track_1722590002",
+      "title": "Dxrk ダーク - RAVE",
+      "url": "/uploads/audio/Dxrk ダーク - RAVE (Official Audio) - Dxrk ダーク (youtube).mp3",
+      "volume": 1
+    },
+    {
+      "id": "track_1722590003",
+      "title": "MoonDeity - NEON BLADE",
+      "url": "/uploads/audio/MoonDeity - NEON BLADE - The Vibe Guide (youtube).mp3",
+      "volume": 1
+    },
+    {
+      "id": "track_1722590004",
+      "title": "Spiritus in Lapide",
+      "url": "/uploads/audio/Spiritus_in_Lapide.mp3",
+      "volume": 1
+    }
+  ]
 }

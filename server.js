@@ -1036,18 +1036,45 @@ async function initDB() {
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_reading_subscription BOOLEAN DEFAULT false;
         `);
 
-        // Seed das configurações de Música de Fundo se estiverem salvas no arquivo local
+        // Seed e Auto-scanner das configurações de Música de Fundo
         try {
-            const backup = getMusicSettingsFromBackup();
-            if (backup) {
-                const pList = Array.isArray(backup.playlist) ? backup.playlist : [];
-                await pool.query(
-                    `INSERT INTO site_music_settings (id, enabled, shuffle, playlist)
-                     VALUES (1, $1, $2, $3)
-                     ON CONFLICT (id) DO UPDATE SET enabled = EXCLUDED.enabled, shuffle = EXCLUDED.shuffle, playlist = EXCLUDED.playlist`,
-                    [backup.enabled === true, backup.shuffle !== false, JSON.stringify(pList)]
-                );
+            const audioFolder = path.join(__dirname, 'public', 'uploads', 'audio');
+            let backup = getMusicSettingsFromBackup();
+            let pList = (backup && Array.isArray(backup.playlist)) ? backup.playlist : [];
+
+            if (fs.existsSync(audioFolder)) {
+                const files = fs.readdirSync(audioFolder);
+                for (let file of files) {
+                    if (/\.(mp3|wav|ogg|m4a|flac)$/i.test(file)) {
+                        const fileUrl = `/uploads/audio/${file}`;
+                        const exists = pList.some(track => track.url === fileUrl);
+                        if (!exists) {
+                            const trackTitle = file.replace(/\.[^/.]+$/, "");
+                            pList.push({
+                                id: 'track_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+                                title: trackTitle,
+                                url: fileUrl,
+                                volume: 1.0
+                            });
+                        }
+                    }
+                }
             }
+
+            const updatedSettings = {
+                enabled: backup ? (backup.enabled === true) : true,
+                shuffle: backup ? (backup.shuffle !== false) : true,
+                playlist: pList
+            };
+
+            saveMusicSettingsToBackup(updatedSettings);
+
+            await pool.query(
+                `INSERT INTO site_music_settings (id, enabled, shuffle, playlist)
+                 VALUES (1, $1, $2, $3)
+                 ON CONFLICT (id) DO UPDATE SET enabled = EXCLUDED.enabled, shuffle = EXCLUDED.shuffle, playlist = EXCLUDED.playlist`,
+                [updatedSettings.enabled, updatedSettings.shuffle, JSON.stringify(pList)]
+            );
         } catch(e) {
             console.error("Erro ao inicializar site_music_settings:", e);
         }
