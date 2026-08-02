@@ -91,6 +91,12 @@
         return (match && match[2].length === 11) ? match[2] : '';
     }
 
+    function getYoutubePlaylistId(url) {
+        if (!url) return '';
+        const match = url.match(/[?&]list=([^#\&\?]+)/);
+        return match ? match[1] : '';
+    }
+
     // Load persisted state from sessionStorage
     try {
         const savedIndex = sessionStorage.getItem('bg_music_track_index');
@@ -271,11 +277,15 @@
                     onReady: () => {
                         isYtReady = true;
                         applyEffectiveVolume();
+                        const savedTime = parseFloat(sessionStorage.getItem('bg_music_time') || '0');
                         const track = playlist[currentTrackIndex];
                         if (track && isYoutubeUrl(track.url)) {
                             const ytId = getYoutubeId(track.url);
-                            if (ytId && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
-                                ytPlayer.loadVideoById({ videoId: ytId, startSeconds: 0 });
+                            const ytListId = getYoutubePlaylistId(track.url);
+                            if (ytListId && ytPlayer && typeof ytPlayer.loadPlaylist === 'function') {
+                                ytPlayer.loadPlaylist({ list: ytListId, listType: 'playlist', index: 0, startSeconds: savedTime });
+                            } else if (ytId && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
+                                ytPlayer.loadVideoById({ videoId: ytId, startSeconds: savedTime });
                             }
                         }
                         if (hasUserInteracted && !userPaused && !pausedByVideo) {
@@ -298,8 +308,16 @@
                             updateUIState(false);
                         }
                     }
+            setInterval(() => {
+                if (ytPlayer && isYtReady && typeof ytPlayer.getCurrentTime === 'function') {
+                    try {
+                        const curTime = ytPlayer.getCurrentTime();
+                        if (curTime > 0) {
+                            sessionStorage.setItem('bg_music_time', curTime.toString());
+                        }
+                    } catch(e){}
                 }
-            });
+            }, 1000);
         } catch(e) {
             console.error("Erro ao instanciar YouTube Player:", e);
         }
@@ -357,10 +375,15 @@
         }
 
         if (isYt) {
+            const ytListId = getYoutubePlaylistId(track.url);
             const ytId = getYoutubeId(track.url);
-            if (ytPlayer && isYtReady && ytId) {
+            if (ytPlayer && isYtReady) {
                 try {
-                    ytPlayer.loadVideoById({ videoId: ytId, startSeconds: startTime });
+                    if (ytListId && typeof ytPlayer.loadPlaylist === 'function') {
+                        ytPlayer.loadPlaylist({ list: ytListId, listType: 'playlist', index: 0, startSeconds: startTime });
+                    } else if (ytId && typeof ytPlayer.loadVideoById === 'function') {
+                        ytPlayer.loadVideoById({ videoId: ytId, startSeconds: startTime });
+                    }
                     applyEffectiveVolume();
                 } catch(e){}
             }
@@ -368,28 +391,56 @@
             audio.src = track.url;
             applyEffectiveVolume();
             if (startTime > 0) {
-                audio.currentTime = startTime;
+                const setStartTime = () => {
+                    try {
+                        audio.currentTime = startTime;
+                    } catch(e){}
+                };
+                if (audio.readyState >= 1) {
+                    setStartTime();
+                } else {
+                    audio.addEventListener('loadedmetadata', setStartTime, { once: true });
+                }
             }
         }
         updateTrackInfoUI();
+    }
+
+    function isAnyPageVideoPlaying() {
+        try {
+            // Verifica elementos <video> ativos na página (fora do widget de música)
+            const videos = document.querySelectorAll('video');
+            for (let v of videos) {
+                if (!v.closest('#bg-music-widget') && !v.paused && !v.ended) {
+                    return true;
+                }
+            }
+            // Verifica se o slide visível do produto é um trailer de vídeo ou YouTube
+            const activeTrailer = document.querySelector('#product-slides-container .z-10 iframe, #product-slides-container .z-10 video, .modal iframe, .modal video');
+            if (activeTrailer) return true;
+        } catch(e){}
+        return false;
     }
 
     function startPlayback() {
         const savedTime = parseFloat(sessionStorage.getItem('bg_music_time') || '0');
         loadTrack(currentTrackIndex, savedTime);
 
-        // Delay de 4 segundos antes de disparar a reprodução ao entrar no site
-        setTimeout(() => {
-            attemptPlay();
+        if (isAnyPageVideoPlaying()) {
+            pausedByVideo = true;
+            updateUIState(false);
+            return;
+        }
 
-            if (hasUserInteracted && !userPaused && !pausedByVideo) {
-                window.__unmuteBgMusic();
-            }
-        }, 4000);
+        attemptPlay();
+
+        if (hasUserInteracted && !userPaused && !pausedByVideo) {
+            window.__unmuteBgMusic();
+        }
     }
 
     function attemptPlay() {
-        if (userPaused || pausedByVideo) return;
+        if (userPaused || pausedByVideo || isAnyPageVideoPlaying()) return;
         const track = playlist[currentTrackIndex];
         if (!track) return;
 
@@ -401,12 +452,18 @@
                 audio.removeAttribute('src');
                 audio.load();
             }
+            const ytListId = getYoutubePlaylistId(track.url);
             const ytId = getYoutubeId(track.url);
             if (ytPlayer && isYtReady) {
                 try {
                     if (userMuted && typeof ytPlayer.mute === 'function') ytPlayer.mute();
                     else if (!userMuted && typeof ytPlayer.unMute === 'function') ytPlayer.unMute();
-                    ytPlayer.playVideo();
+                    
+                    if (ytListId && typeof ytPlayer.loadPlaylist === 'function') {
+                        ytPlayer.loadPlaylist({ list: ytListId, listType: 'playlist', index: 0 });
+                    } else if (ytId && typeof ytPlayer.playVideo === 'function') {
+                        ytPlayer.playVideo();
+                    }
                     updateUIState(true);
                 } catch(e) {
                     updateUIState(false, true);

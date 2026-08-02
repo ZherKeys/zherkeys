@@ -1181,12 +1181,40 @@ gtag('config', 'AW-18202657831');
             const title = titleInput ? titleInput.value.trim() : '';
             const url = urlInput ? urlInput.value.trim() : '';
 
-            if (!title) {
-                alert("Por favor, digite o nome da música.");
-                return;
-            }
             if (!url) {
                 alert("Por favor, informe a URL do áudio ou faça o upload de um arquivo.");
+                return;
+            }
+
+            // Detecta se é um link de Playlist do YouTube (ex: playlist?list=... ou watch?v=...&list=...)
+            if (url.includes('list=')) {
+                if (confirm("Identificamos um link de PLAYLIST do YouTube! Deseja importar automaticamente todas as músicas desta playlist para o seu site?")) {
+                    try {
+                        const res = await fetch('/api/admin/parse-yt-playlist', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ url: url })
+                        });
+                        const data = await res.json();
+                        if (data.success && Array.isArray(data.tracks) && data.tracks.length > 0) {
+                            adminMusicPlaylist.push(...data.tracks);
+                            if (titleInput) titleInput.value = '';
+                            if (urlInput) urlInput.value = '';
+                            renderAdminPlaylist();
+                            await window.saveMusicSettings(true);
+                            alert(`🎉 ${data.tracks.length} músicas importadas da playlist do YouTube com sucesso!`);
+                            return;
+                        } else {
+                            alert(data.error || "Não foi possível extrair faixas automaticamente. A URL será salva como link direto.");
+                        }
+                    } catch(err) {
+                        console.error("Erro ao extrair playlist do YouTube:", err);
+                    }
+                }
+            }
+
+            if (!title) {
+                alert("Por favor, digite o nome da música.");
                 return;
             }
 
@@ -1197,8 +1225,8 @@ gtag('config', 'AW-18202657831');
                 volume: 1.0
             });
 
-            titleInput.value = '';
-            urlInput.value = '';
+            if (titleInput) titleInput.value = '';
+            if (urlInput) urlInput.value = '';
             renderAdminPlaylist();
             await window.saveMusicSettings(true);
         };

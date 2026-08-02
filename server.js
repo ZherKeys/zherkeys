@@ -5966,11 +5966,55 @@ app.post('/api/admin/streaming/upload', requireAdmin, uploadGeneric.single('file
                 return res.json({ url: `/uploads/${subfolder}/${req.file.filename}`, converted: false, warning: 'Falha na transcodificação' });
             }
         }
-
         res.json({ url: `/uploads/${subfolder}/${req.file.filename}` });
     } catch (err) {
         console.error("Erro ao mover arquivo de upload:", err);
         res.status(500).json({ error: 'Erro ao salvar o arquivo no servidor.' });
+    }
+});
+
+// Endpoint para extrair faixas de uma Playlist do YouTube
+app.post('/api/admin/parse-yt-playlist', requireAdmin, async (req, res) => {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ error: 'URL da playlist não informada.' });
+    
+    try {
+        const match = url.match(/[?&]list=([^#\&\?]+)/);
+        if (!match) return res.status(400).json({ error: 'URL de playlist do YouTube inválida. O link deve conter list=...' });
+        const listId = match[1];
+
+        const feedUrl = `https://www.youtube.com/feeds/videos.xml?playlist_id=${listId}`;
+        const response = await fetch(feedUrl);
+        if (!response.ok) {
+            return res.status(400).json({ error: 'Não foi possível carregar a playlist do YouTube. Verifique se a playlist é pública.' });
+        }
+        
+        const xmlText = await response.text();
+        const tracks = [];
+        
+        const entryRegex = /<entry>[\s\S]*?<title>(.*?)<\/title>[\s\S]*?<yt:videoId>(.*?)<\/yt:videoId>[\s\S]*?<\/entry>/g;
+        let entryMatch;
+        while ((entryMatch = entryRegex.exec(xmlText)) !== null) {
+            const rawTitle = entryMatch[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1').trim();
+            const videoId = entryMatch[2].trim();
+            if (videoId) {
+                tracks.push({
+                    id: 'track_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+                    title: rawTitle || `Vídeo ${videoId}`,
+                    url: `https://www.youtube.com/watch?v=${videoId}`,
+                    volume: 1.0
+                });
+            }
+        }
+        
+        if (tracks.length === 0) {
+            return res.status(404).json({ error: 'Nenhuma faixa encontrada na playlist do YouTube. Verifique se a playlist é pública.' });
+        }
+        
+        res.json({ success: true, count: tracks.length, tracks: tracks });
+    } catch(e) {
+        console.error("Erro ao extrair playlist do YouTube:", e);
+        res.status(500).json({ error: 'Erro ao processar a playlist do YouTube.' });
     }
 });
 
