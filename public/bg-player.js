@@ -416,6 +416,13 @@
 
     function isAnyPageVideoPlaying() {
         try {
+            // Se estiver na página de produto ou se houver trailer ativo no container de slides
+            const isProductPage = window.location.pathname.includes('produto.html');
+            if (isProductPage) {
+                const activeSlideTrailer = document.querySelector('#product-slides-container .z-10 iframe, #product-slides-container .z-10 video, #product-slides-container iframe, #product-slides-container video');
+                if (activeSlideTrailer) return true;
+            }
+
             // Verifica elementos <video> ativos na página (fora do widget de música)
             const videos = document.querySelectorAll('video');
             for (let v of videos) {
@@ -423,9 +430,9 @@
                     return true;
                 }
             }
-            // Verifica se o slide visível do produto é um trailer de vídeo ou YouTube
-            const activeTrailer = document.querySelector('#product-slides-container .z-10 iframe, #product-slides-container .z-10 video, .modal iframe, .modal video');
-            if (activeTrailer) return true;
+
+            const modalTrailer = document.querySelector('.modal iframe[src*="youtube"], .modal video');
+            if (modalTrailer) return true;
         } catch(e){}
         return false;
     }
@@ -733,21 +740,41 @@
     function updateUIState(isPlaying, isBlocked = false) {
         const playBtn = document.getElementById('bg-music-play-btn');
         if (!playBtn) return;
-        const isActuallyPlayingWithSound = isPlaying && audio && !audio.muted;
-        const isYtActive = isPlaying && ytPlayer && isYtReady;
 
-        if (isBlocked || (audio && audio.muted && !userMuted)) {
-            playBtn.innerText = '▶';
-            playBtn.style.background = '#e11d48';
-            playBtn.title = 'Clique para ativar a música de fundo';
-        } else if (isActuallyPlayingWithSound || isYtActive) {
-            playBtn.innerText = '❚❚';
-            playBtn.style.background = '#10b981';
-            playBtn.title = 'Pausar Músicas';
+        const currentTrack = playlist[currentTrackIndex];
+        const isYtTrack = currentTrack ? isYoutubeUrl(currentTrack.url) : false;
+
+        if (isYtTrack) {
+            if (isBlocked) {
+                playBtn.innerText = '▶';
+                playBtn.style.background = '#e11d48';
+                playBtn.title = 'Clique para ativar a música de fundo';
+            } else if (isPlaying && !userPaused && !pausedByVideo) {
+                playBtn.innerText = '❚❚';
+                playBtn.style.background = '#10b981';
+                playBtn.title = 'Pausar Músicas';
+            } else {
+                playBtn.innerText = '▶';
+                playBtn.style.background = '#3b82f6';
+                playBtn.title = 'Tocar Músicas';
+            }
         } else {
-            playBtn.innerText = '▶';
-            playBtn.style.background = '#3b82f6';
-            playBtn.title = 'Tocar Músicas';
+            const isPlayingWithSound = isPlaying && audio && !audio.paused && !audio.muted;
+            const isMutedByBrowser = audio && audio.muted && !userMuted && !audio.paused;
+
+            if (isBlocked || isMutedByBrowser) {
+                playBtn.innerText = '▶';
+                playBtn.style.background = '#e11d48';
+                playBtn.title = 'Clique para ativar a música de fundo';
+            } else if (isPlayingWithSound) {
+                playBtn.innerText = '❚❚';
+                playBtn.style.background = '#10b981';
+                playBtn.title = 'Pausar Músicas';
+            } else {
+                playBtn.innerText = '▶';
+                playBtn.style.background = '#3b82f6';
+                playBtn.title = 'Tocar Músicas';
+            }
         }
     }
 
