@@ -396,17 +396,20 @@
 
     function isAnyPageVideoPlaying() {
         try {
+            const bgYtContainer = document.getElementById('bg-yt-container');
+            const bgYtIframe = bgYtContainer ? bgYtContainer.querySelector('iframe') : null;
+
             // Se estiver na página do produto (qualquer formato de URL ou presença do container de slides)
             const isProductPage = window.location.href.includes('produto') || document.getElementById('product-slides-container') !== null;
             if (isProductPage) {
-                const activeSlideTrailer = document.querySelector('#product-slides-container iframe, #product-slides-container video, .z-10 iframe, .z-10 video');
-                if (activeSlideTrailer) return true;
+                const activeSlideTrailer = document.querySelector('#product-slides-container iframe, #product-slides-container video');
+                if (activeSlideTrailer && activeSlideTrailer !== bgYtIframe) return true;
             }
 
             // Verifica qualquer iframe de trailer do YouTube fora do player de fundo
             const ytIframes = document.querySelectorAll('iframe[src*="youtube.com"], iframe[src*="youtu.be"]');
             for (let iframe of ytIframes) {
-                if (!iframe.closest('#bg-yt-container')) {
+                if (iframe !== bgYtIframe && iframe.id !== 'bg-yt-player' && (!bgYtContainer || !bgYtContainer.contains(iframe))) {
                     return true;
                 }
             }
@@ -435,12 +438,12 @@
             return;
         }
 
-        // Delay de 6 segundos ao entrar ou trocar de página antes de retomar a reprodução
+        attemptPlay();
+
+        // Delay de 6 segundos ao entrar ou trocar de página antes de ativar o som desmutado
         setTimeout(() => {
             if (!pausedByVideo && !isAnyPageVideoPlaying()) {
-                attemptPlay();
-
-                if (hasUserInteracted && !userPaused && !pausedByVideo) {
+                if (hasUserInteracted && !userPaused) {
                     window.__unmuteBgMusic();
                 }
             }
