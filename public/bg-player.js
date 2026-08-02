@@ -274,8 +274,8 @@
                         const track = playlist[currentTrackIndex];
                         if (track && isYoutubeUrl(track.url)) {
                             const ytId = getYoutubeId(track.url);
-                            if (ytId && ytPlayer && typeof ytPlayer.cueVideoById === 'function') {
-                                ytPlayer.cueVideoById(ytId);
+                            if (ytId && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
+                                ytPlayer.loadVideoById({ videoId: ytId, startSeconds: 0 });
                             }
                         }
                         if (hasUserInteracted && !userPaused && !pausedByVideo) {
@@ -378,11 +378,14 @@
         const savedTime = parseFloat(sessionStorage.getItem('bg_music_time') || '0');
         loadTrack(currentTrackIndex, savedTime);
 
-        attemptPlay();
+        // Delay de 4 segundos antes de disparar a reprodução ao entrar no site
+        setTimeout(() => {
+            attemptPlay();
 
-        if (hasUserInteracted && !userPaused && !pausedByVideo) {
-            window.__unmuteBgMusic();
-        }
+            if (hasUserInteracted && !userPaused && !pausedByVideo) {
+                window.__unmuteBgMusic();
+            }
+        }, 4000);
     }
 
     function attemptPlay() {
@@ -741,6 +744,13 @@
 
         window.addEventListener('message', (event) => {
             try {
+                // Ignorar mensagens vindas do próprio player de música do YouTube do site
+                const bgYtContainer = document.getElementById('bg-yt-container');
+                const bgYtIframe = bgYtContainer ? bgYtContainer.querySelector('iframe') : null;
+                if (bgYtIframe && bgYtIframe.contentWindow === event.source) {
+                    return;
+                }
+
                 let data = event.data;
                 if (typeof data === 'string') {
                     try { data = JSON.parse(data); } catch(err) {}
