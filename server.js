@@ -5913,11 +5913,30 @@ app.delete('/api/admin/streaming/episode/:id', requireAdmin, async (req, res) =>
 // SEÇÃO DE MÚSICA DE FUNDO DO SITE (BACKGROUND PLAYBACK)
 // ==========================================
 
+function parsePlaylist(raw) {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === 'string') {
+        try {
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch(e) {
+            return [];
+        }
+    }
+    return [];
+}
+
 function getMusicSettingsFromBackup() {
     try {
         const p = path.join(__dirname, 'data', 'music_settings_backup.json');
         if (fs.existsSync(p)) {
-            return JSON.parse(fs.readFileSync(p, 'utf-8'));
+            const data = JSON.parse(fs.readFileSync(p, 'utf-8'));
+            return {
+                enabled: data.enabled === true,
+                shuffle: data.shuffle !== false,
+                playlist: parsePlaylist(data.playlist)
+            };
         }
     } catch(e) {}
     return { enabled: false, shuffle: true, playlist: [] };
@@ -5928,7 +5947,12 @@ function saveMusicSettingsToBackup(settings) {
         const dir = path.join(__dirname, 'data');
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
         const p = path.join(dir, 'music_settings_backup.json');
-        fs.writeFileSync(p, JSON.stringify(settings, null, 2), 'utf-8');
+        const dataToSave = {
+            enabled: settings.enabled === true,
+            shuffle: settings.shuffle !== false,
+            playlist: parsePlaylist(settings.playlist)
+        };
+        fs.writeFileSync(p, JSON.stringify(dataToSave, null, 2), 'utf-8');
     } catch(e) {}
 }
 
@@ -5937,15 +5961,15 @@ app.get('/api/site/music', async (req, res) => {
         const result = await pool.query('SELECT enabled, shuffle, playlist FROM site_music_settings WHERE id = 1');
         if (result.rows && result.rows.length > 0) {
             const row = result.rows[0];
-            let playlist = [];
-            try { playlist = JSON.parse(row.playlist || '[]'); } catch(e){}
             return res.json({
                 enabled: row.enabled === true,
                 shuffle: row.shuffle !== false,
-                playlist: playlist
+                playlist: parsePlaylist(row.playlist)
             });
         }
-    } catch(e) {}
+    } catch(e) {
+        console.error("Erro ao buscar música do site no banco:", e);
+    }
     
     const backup = getMusicSettingsFromBackup();
     res.json(backup);
@@ -5956,15 +5980,15 @@ app.get('/api/admin/music', requireAdmin, async (req, res) => {
         const result = await pool.query('SELECT enabled, shuffle, playlist FROM site_music_settings WHERE id = 1');
         if (result.rows && result.rows.length > 0) {
             const row = result.rows[0];
-            let playlist = [];
-            try { playlist = JSON.parse(row.playlist || '[]'); } catch(e){}
             return res.json({
                 enabled: row.enabled === true,
                 shuffle: row.shuffle !== false,
-                playlist: playlist
+                playlist: parsePlaylist(row.playlist)
             });
         }
-    } catch(e) {}
+    } catch(e) {
+        console.error("Erro ao buscar música do admin no banco:", e);
+    }
     
     const backup = getMusicSettingsFromBackup();
     res.json(backup);
@@ -5972,7 +5996,7 @@ app.get('/api/admin/music', requireAdmin, async (req, res) => {
 
 app.put('/api/admin/music', requireAdmin, async (req, res) => {
     const { enabled, shuffle, playlist } = req.body;
-    const playlistArr = Array.isArray(playlist) ? playlist : [];
+    const playlistArr = parsePlaylist(playlist);
     const playlistJson = JSON.stringify(playlistArr);
     const isEnabled = enabled === true;
     const isShuffle = shuffle !== false;
