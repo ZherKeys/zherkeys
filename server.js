@@ -149,51 +149,68 @@ async function syncFullDatabaseBackup() {
         }
 
         // 1. Backup de Produtos
-        await syncProductsBackup();
+        try {
+            await syncProductsBackup();
+        } catch(e) {
+            console.error("Erro no backup de produtos:", e.message || e);
+        }
 
         // 2. Backup de Usuários
-        const usersRes = await pool.query('SELECT id, email, password_hash, is_verified, balance, points, game_nickname, google_id, facebook_id, steam_id, avatar, is_admin, subscription_expires_at, reading_subscription_expires_at, created_at FROM users ORDER BY id ASC');
-        if (usersRes.rows) {
-            fs.writeFileSync(path.join(dataDir, 'users_backup.json'), JSON.stringify(usersRes.rows, null, 2), 'utf-8');
-            console.log(`💾 Backup de ${usersRes.rows.length} usuários salvo em data/users_backup.json`);
+        try {
+            const usersRes = await pool.query('SELECT * FROM users ORDER BY id ASC');
+            if (usersRes.rows) {
+                fs.writeFileSync(path.join(dataDir, 'users_backup.json'), JSON.stringify(usersRes.rows, null, 2), 'utf-8');
+                console.log(`💾 Backup de ${usersRes.rows.length} usuários salvo em data/users_backup.json`);
+            }
+        } catch(e) {
+            console.error("Erro no backup de usuários:", e.message || e);
         }
 
         // 3. Backup de Pedidos e Chaves Entregues
-        const ordersRes = await pool.query('SELECT * FROM orders ORDER BY id ASC');
-        const orderItemsRes = await pool.query('SELECT * FROM order_items ORDER BY id ASC');
-        const ordersBackup = {
-            orders: ordersRes.rows || [],
-            order_items: orderItemsRes.rows || []
-        };
-        fs.writeFileSync(path.join(dataDir, 'orders_backup.json'), JSON.stringify(ordersBackup, null, 2), 'utf-8');
-        console.log(`💾 Backup de ${ordersRes.rows.length} pedidos e ${orderItemsRes.rows.length} itens/chaves entregues salvo em data/orders_backup.json`);
+        try {
+            const ordersRes = await pool.query('SELECT * FROM orders ORDER BY id ASC');
+            const orderItemsRes = await pool.query('SELECT * FROM order_items ORDER BY id ASC');
+            const ordersBackup = {
+                orders: ordersRes.rows || [],
+                order_items: orderItemsRes.rows || []
+            };
+            fs.writeFileSync(path.join(dataDir, 'orders_backup.json'), JSON.stringify(ordersBackup, null, 2), 'utf-8');
+            console.log(`💾 Backup de ${ordersRes.rows.length} pedidos e ${orderItemsRes.rows.length} itens/chaves entregues salvo em data/orders_backup.json`);
+        } catch(e) {
+            console.error("Erro no backup de pedidos:", e.message || e);
+        }
 
         // 4. Backup de Tickets de Suporte
-        const ticketsRes = await pool.query('SELECT * FROM support_tickets ORDER BY id ASC');
-        const ticketMsgsRes = await pool.query('SELECT * FROM support_ticket_messages ORDER BY id ASC');
-        const ticketsBackup = {
-            tickets: ticketsRes.rows || [],
-            messages: ticketMsgsRes.rows || []
-        };
-        fs.writeFileSync(path.join(dataDir, 'tickets_backup.json'), JSON.stringify(ticketsBackup, null, 2), 'utf-8');
-        console.log(`💾 Backup de ${ticketsRes.rows.length} tickets de suporte salvo em data/tickets_backup.json`);
+        try {
+            const ticketsRes = await pool.query('SELECT * FROM support_tickets ORDER BY id ASC');
+            const ticketMsgsRes = await pool.query('SELECT * FROM support_ticket_messages ORDER BY id ASC');
+            const ticketsBackup = {
+                tickets: ticketsRes.rows || [],
+                messages: ticketMsgsRes.rows || []
+            };
+            fs.writeFileSync(path.join(dataDir, 'tickets_backup.json'), JSON.stringify(ticketsBackup, null, 2), 'utf-8');
+            console.log(`💾 Backup de ${ticketsRes.rows.length} tickets de suporte salvo em data/tickets_backup.json`);
+        } catch(e) {
+            console.error("Erro no backup de tickets:", e.message || e);
+        }
 
         // 5. Backup de Música de Fundo
         try {
             const musicRes = await pool.query('SELECT enabled, shuffle, playlist FROM site_music_settings WHERE id = 1');
             if (musicRes.rows && musicRes.rows.length > 0) {
                 const row = musicRes.rows[0];
-                let playlist = [];
-                try { playlist = typeof row.playlist === 'string' ? JSON.parse(row.playlist || '[]') : (row.playlist || []); } catch(e){}
+                const playlist = parsePlaylist(row.playlist);
                 const musicBackup = {
                     enabled: row.enabled === true,
                     shuffle: row.shuffle !== false,
                     playlist: playlist
                 };
                 fs.writeFileSync(path.join(dataDir, 'music_settings_backup.json'), JSON.stringify(musicBackup, null, 2), 'utf-8');
-                console.log(`💾 Backup de música de fundo salvo em data/music_settings_backup.json`);
+                console.log(`💾 Backup de música de fundo salvo em data/music_settings_backup.json (${playlist.length} faixas)`);
             }
-        } catch(e) {}
+        } catch(e) {
+            console.error("Erro no backup de música de fundo:", e.message || e);
+        }
 
     } catch (err) {
         console.error('Erro ao salvar backup completo do banco de dados:', err && err.message ? err.message : err);
@@ -1008,6 +1025,7 @@ async function initDB() {
             ALTER TABLE users ADD COLUMN IF NOT EXISTS facebook_id TEXT;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS steam_id TEXT;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin INTEGER DEFAULT 0;
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_deposit BOOLEAN DEFAULT false;
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS pix_qr_code TEXT;
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS pix_qr_code_base64 TEXT;
