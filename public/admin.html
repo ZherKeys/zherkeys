@@ -1191,19 +1191,46 @@ gtag('config', 'AW-18202657831');
                 const data = await res.json();
                 
                 if (res.ok && data.success) {
-                    if (data.title) document.getElementById('prod-title').value = data.title;
-                    if (data.price) document.getElementById('prod-price').value = data.price;
-                    if (data.old_price) document.getElementById('prod-old-price').value = data.old_price;
-                    if (data.description) document.getElementById('prod-description').value = data.description;
-                    if (data.genres) document.getElementById('prod-genres').value = data.genres;
-                    if (data.image) {
-                        document.getElementById('prod-image').value = data.image;
-                        if (window.updateThumbPreview) updateThumbPreview(data.image);
+                    const titleEl = document.getElementById('prod-title');
+                    if (data.title && titleEl) titleEl.value = data.title;
+
+                    const priceEl = document.getElementById('prod-price');
+                    if (priceEl && data.price !== undefined && data.price !== null) {
+                        priceEl.value = typeof formatNumberToMask === 'function' ? formatNumberToMask(data.price) : data.price;
                     }
+
+                    const oldPriceEl = document.getElementById('prod-old-price');
+                    if (oldPriceEl) {
+                        oldPriceEl.value = data.old_price && typeof formatNumberToMask === 'function' ? formatNumberToMask(data.old_price) : (data.old_price || '');
+                    }
+
+                    const descEl = document.getElementById('prod-desc') || document.getElementById('prod-description');
+                    if (data.description && descEl) descEl.value = data.description;
+
+                    if (data.genres) {
+                        const genresEl = document.getElementById('prod-genres');
+                        if (genresEl) {
+                            genresEl.value = data.genres;
+                        } else {
+                            const steamGenresList = (data.genres || '').split(',').map(s => s.trim().toLowerCase());
+                            document.querySelectorAll('.genre-checkbox').forEach(cb => {
+                                const valLower = cb.value.toLowerCase();
+                                cb.checked = steamGenresList.some(g => valLower.includes(g) || g.includes(valLower));
+                            });
+                        }
+                    }
+
+                    const imgEl = document.getElementById('prod-image');
+                    if (data.image && imgEl) {
+                        imgEl.value = data.image;
+                        if (typeof updateThumbPreview === 'function') updateThumbPreview(data.image);
+                    }
+
                     if (Array.isArray(data.gallery) && data.gallery.length > 0) {
                         productGallery = data.gallery;
-                        if (window.renderGalleryPreview) renderGalleryPreview();
+                        if (typeof renderGalleryPreview === 'function') renderGalleryPreview(data.gallery);
                     }
+
                     alert(`✅ Sucesso! Dados do jogo "${data.title}" importados e preenchidos automaticamente.`);
                 } else {
                     alert(data.error || "Não foi possível encontrar informações do jogo na Steam.");

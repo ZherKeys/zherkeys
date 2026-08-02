@@ -13,28 +13,38 @@
     let playerContainer = null;
     let isMinimized = false;
     let pausedByVideo = false;
+    let userPaused = false;
+    let userMuted = false;
 
     // Track user mouse/pointer/keyboard activity immediately from script load time
     let hasUserInteracted = false;
 
+    const activityEvents = ['mousemove', 'pointermove', 'mouseover', 'mouseenter', 'scroll', 'wheel', 'click', 'touchstart', 'keydown', 'focus'];
+
     function recordUserActivity() {
+        if (hasUserInteracted) return;
         hasUserInteracted = true;
-        if (window.__unmuteBgMusic) {
+        removeActivityListeners();
+
+        if (!userPaused && !pausedByVideo) {
             window.__unmuteBgMusic();
         }
     }
 
+    function addActivityListeners() {
+        activityEvents.forEach(evt => {
+            window.addEventListener(evt, recordUserActivity, { capture: true, passive: true });
+        });
+    }
+
+    function removeActivityListeners() {
+        activityEvents.forEach(evt => {
+            window.removeEventListener(evt, recordUserActivity, { capture: true, passive: true });
+        });
+    }
+
     // Attach listeners IMMEDIATELY as script executes (capturing mouse movement before/during page load)
-    window.addEventListener('mousemove', recordUserActivity, { capture: true, passive: true });
-    window.addEventListener('pointermove', recordUserActivity, { capture: true, passive: true });
-    window.addEventListener('mouseover', recordUserActivity, { capture: true, passive: true });
-    window.addEventListener('mouseenter', recordUserActivity, { capture: true, passive: true });
-    window.addEventListener('scroll', recordUserActivity, { capture: true, passive: true });
-    window.addEventListener('wheel', recordUserActivity, { capture: true, passive: true });
-    window.addEventListener('click', recordUserActivity, { capture: true, passive: true });
-    window.addEventListener('touchstart', recordUserActivity, { capture: true, passive: true });
-    window.addEventListener('keydown', recordUserActivity, { capture: true, passive: true });
-    window.addEventListener('focus', recordUserActivity, { capture: true, passive: true });
+    addActivityListeners();
 
     // Master volume (persisted in localStorage)
     let masterVolume = 0.8;
@@ -78,28 +88,32 @@
     window.resumeBgMusic = function() {
         if (pausedByVideo) {
             pausedByVideo = false;
-            attemptPlay();
+            if (!userPaused) {
+                attemptPlay();
+            }
         }
     };
 
     window.__unmuteBgMusic = function() {
-        if (pausedByVideo) return;
+        if (pausedByVideo || userPaused) return;
 
         if (audio) {
-            if (audio.muted) audio.muted = false;
+            if (!userMuted) audio.muted = false;
             applyEffectiveVolume();
-            if (audio.paused) {
+            if (audio.paused && !userPaused) {
                 audio.play().then(() => updateUIState(true)).catch(() => {});
             } else {
-                updateUIState(true);
+                updateUIState(!audio.paused);
             }
         }
         if (ytPlayer && isYtReady) {
             try {
-                if (typeof ytPlayer.unMute === 'function') ytPlayer.unMute();
+                if (!userMuted && typeof ytPlayer.unMute === 'function') ytPlayer.unMute();
                 applyEffectiveVolume();
-                ytPlayer.playVideo();
-                updateUIState(true);
+                if (!userPaused) {
+                    ytPlayer.playVideo();
+                    updateUIState(true);
+                }
             } catch(e){}
         }
     };
@@ -224,7 +238,7 @@
                                 ytPlayer.cueVideoById(ytId);
                             }
                         }
-                        if (hasUserInteracted) {
+                        if (hasUserInteracted && !userPaused && !pausedByVideo) {
                             window.__unmuteBgMusic();
                         }
                     },
@@ -316,12 +330,13 @@
 
         attemptPlay();
 
-        if (hasUserInteracted) {
+        if (hasUserInteracted && !userPaused && !pausedByVideo) {
             window.__unmuteBgMusic();
         }
     }
 
     function attemptPlay() {
+        if (userPaused || pausedByVideo) return;
         const track = playlist[currentTrackIndex];
         if (!track) return;
 
@@ -331,6 +346,8 @@
             const ytId = getYoutubeId(track.url);
             if (ytPlayer && isYtReady) {
                 try {
+                    if (userMuted && typeof ytPlayer.mute === 'function') ytPlayer.mute();
+                    else if (!userMuted && typeof ytPlayer.unMute === 'function') ytPlayer.unMute();
                     ytPlayer.playVideo();
                     updateUIState(true);
                 } catch(e) {
@@ -341,12 +358,13 @@
             }
         } else {
             if (!audio || !audio.src) return;
+            audio.muted = userMuted;
             const playPromise = audio.play();
             if (playPromise !== undefined) {
                 playPromise.then(() => {
                     updateUIState(true);
                 }).catch(() => {
-                    audio.muted = true;
+                    if (!userMuted) audio.muted = true;
                     audio.play().then(() => {
                         updateUIState(true);
                     }).catch(() => {
@@ -372,43 +390,54 @@
             if (ytPlayer && isYtReady && typeof ytPlayer.getPlayerState === 'function') {
                 const state = ytPlayer.getPlayerState();
                 if (state === 1) {
+                    userPaused = true;
                     ytPlayer.pauseVideo();
+                    sessionStorage.setItem('bg_music_playing', 'false');
+                    updateUIState(false);
                 } else {
-                    ytPlayer.playVideo();
+                    userPaused = false;
+                    attemptPlay();
                 }
             } else {
-                attemptPlay();
+                userPaused = !userPaused;
+                if (userPaused) {
+                    updateUIState(false);
+                } else {
+                    attemptPlay();
+                }
             }
         } else {
             if (!audio) return;
             if (audio.paused) {
-                if (audio.muted) audio.muted = false;
+                userPaused = false;
+                if (!userMuted) audio.muted = false;
                 attemptPlay();
             } else {
+                userPaused = true;
                 audio.pause();
+                sessionStorage.setItem('bg_music_playing', 'false');
+                updateUIState(false);
             }
         }
     }
 
     function toggleMute() {
         const track = playlist[currentTrackIndex];
-        let isMuted = false;
+        userMuted = !userMuted;
+
         if (track && isYoutubeUrl(track.url) && ytPlayer && isYtReady) {
-            if (ytPlayer.isMuted()) {
-                ytPlayer.unMute();
-                isMuted = false;
+            if (userMuted) {
+                if (typeof ytPlayer.mute === 'function') ytPlayer.mute();
             } else {
-                ytPlayer.mute();
-                isMuted = true;
+                if (typeof ytPlayer.unMute === 'function') ytPlayer.unMute();
             }
         } else if (audio) {
-            audio.muted = !audio.muted;
-            isMuted = audio.muted;
+            audio.muted = userMuted;
         }
 
         const muteBtn = document.getElementById('bg-music-mute-btn');
         if (muteBtn) {
-            muteBtn.innerHTML = isMuted ? '🔇' : '🔊';
+            muteBtn.innerHTML = userMuted ? '🔇' : '🔊';
         }
     }
 
@@ -471,7 +500,7 @@
                 <!-- Wrapper do botão Mute com Popup de Volume Slide -->
                 <div id="bg-music-mute-wrapper" style="position: relative; display: flex; align-items: center; shrink: 0;">
                     <button id="bg-music-mute-btn" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 11px; padding: 2px;" title="Mudar Volume / Mute">
-                        🔊
+                        ${userMuted || masterVolume === 0 ? '🔇' : '🔊'}
                     </button>
                     
                     <!-- Popover do Slide Sound (Barra de Volume para cima) -->
@@ -526,9 +555,14 @@
                 masterVolume = parseFloat(e.target.value);
                 localStorage.setItem('bg_music_master_vol', masterVolume.toString());
                 if (volText) volText.innerText = Math.round(masterVolume * 100) + '%';
+                if (masterVolume === 0) {
+                    userMuted = true;
+                } else if (userMuted && masterVolume > 0) {
+                    userMuted = false;
+                }
                 applyEffectiveVolume();
                 const muteBtn = document.getElementById('bg-music-mute-btn');
-                if (muteBtn) muteBtn.innerHTML = masterVolume === 0 ? '🔇' : '🔊';
+                if (muteBtn) muteBtn.innerHTML = (userMuted || masterVolume === 0) ? '🔇' : '🔊';
             };
         }
     }
