@@ -178,6 +178,23 @@ async function syncFullDatabaseBackup() {
         fs.writeFileSync(path.join(dataDir, 'tickets_backup.json'), JSON.stringify(ticketsBackup, null, 2), 'utf-8');
         console.log(`💾 Backup de ${ticketsRes.rows.length} tickets de suporte salvo em data/tickets_backup.json`);
 
+        // 5. Backup de Música de Fundo
+        try {
+            const musicRes = await pool.query('SELECT enabled, shuffle, playlist FROM site_music_settings WHERE id = 1');
+            if (musicRes.rows && musicRes.rows.length > 0) {
+                const row = musicRes.rows[0];
+                let playlist = [];
+                try { playlist = typeof row.playlist === 'string' ? JSON.parse(row.playlist || '[]') : (row.playlist || []); } catch(e){}
+                const musicBackup = {
+                    enabled: row.enabled === true,
+                    shuffle: row.shuffle !== false,
+                    playlist: playlist
+                };
+                fs.writeFileSync(path.join(dataDir, 'music_settings_backup.json'), JSON.stringify(musicBackup, null, 2), 'utf-8');
+                console.log(`💾 Backup de música de fundo salvo em data/music_settings_backup.json`);
+            }
+        } catch(e) {}
+
     } catch (err) {
         console.error('Erro ao salvar backup completo do banco de dados:', err && err.message ? err.message : err);
     }
@@ -345,6 +362,25 @@ async function restoreFullDatabaseFromBackup() {
                 }
             }
             console.log(`✅ Tickets de suporte restaurados a partir de data/tickets_backup.json`);
+        }
+
+        // Restaura Configurações de Música de Fundo
+        const musicBackupPath = path.join(dataDir, 'music_settings_backup.json');
+        if (fs.existsSync(musicBackupPath)) {
+            try {
+                const musicData = JSON.parse(fs.readFileSync(musicBackupPath, 'utf-8'));
+                if (musicData) {
+                    await pool.query(
+                        `INSERT INTO site_music_settings (id, enabled, shuffle, playlist)
+                         VALUES (1, $1, $2, $3)
+                         ON CONFLICT (id) DO UPDATE SET enabled = $1, shuffle = $2, playlist = $3`,
+                        [musicData.enabled === true, musicData.shuffle !== false, JSON.stringify(musicData.playlist || [])]
+                    );
+                    console.log(`✅ Configurações de música restauradas a partir de data/music_settings_backup.json`);
+                }
+            } catch(e) {
+                console.error("Erro ao restaurar música do backup:", e);
+            }
         }
 
         await fixPostgresSequences();
@@ -980,6 +1016,21 @@ async function initDB() {
             ALTER TABLE users ADD COLUMN IF NOT EXISTS reading_subscription_expires_at TIMESTAMP DEFAULT NULL;
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_reading_subscription BOOLEAN DEFAULT false;
         `);
+
+        // Seed das configurações de Música de Fundo se estiverem salvas no arquivo local
+        try {
+            const backup = getMusicSettingsFromBackup();
+            if (backup && (backup.enabled !== false || (backup.playlist && backup.playlist.length > 0))) {
+                await pool.query(
+                    `INSERT INTO site_music_settings (id, enabled, shuffle, playlist)
+                     VALUES (1, $1, $2, $3)
+                     ON CONFLICT (id) DO UPDATE SET enabled = $1, shuffle = $2, playlist = $3`,
+                    [backup.enabled === true, backup.shuffle !== false, JSON.stringify(backup.playlist || [])]
+                );
+            }
+        } catch(e) {
+            console.error("Erro ao inicializar site_music_settings:", e);
+        }
 
         // Popular gêneros antigos automaticamente
         pool.query("UPDATE products SET genres = 'Multiplayer, Ação, FPS' WHERE (title ILIKE '%CS:GO%' OR title ILIKE '%Counter%' OR title ILIKE '%Valorant%') AND genres IS NULL").catch(()=>{});
@@ -5587,16 +5638,17 @@ app.post('/api/admin/streaming/upload', requireAdmin, uploadGeneric.single('file
     const mime = req.file.mimetype;
     let subfolder = 'subtitles';
     
+    const audioExts = ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac', '.opus', '.wma', '.mp4a'];
     if (ext === '.vtt' || ext === '.srt') {
         subfolder = 'subtitles';
     } else if (ext === '.pdf') {
         subfolder = 'books';
+    } else if (audioExts.includes(ext) || mime.startsWith('audio/')) {
+        subfolder = 'audio';
     } else if (mime.startsWith('image/')) {
         subfolder = 'thumbnails';
     } else if (mime.startsWith('video/')) {
         subfolder = 'videos';
-    } else if (mime.startsWith('audio/')) {
-        subfolder = 'audio';
     }
     
     const destDir = path.join(__dirname, 'public', 'uploads', subfolder);

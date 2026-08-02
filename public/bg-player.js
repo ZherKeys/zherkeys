@@ -428,58 +428,60 @@
         playerContainer.id = 'bg-music-widget';
         playerContainer.style.cssText = `
             position: fixed;
-            bottom: 16px;
-            right: 16px;
+            bottom: 12px;
+            right: 12px;
             z-index: 999999;
             font-family: 'Orbitron', system-ui, -apple-system, sans-serif;
-            background: rgba(2, 6, 23, 0.94);
+            background: rgba(2, 6, 23, 0.95);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(59, 130, 246, 0.4);
             border-radius: 9999px;
-            padding: 6px 14px;
+            padding: 5px 10px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.8), 0 0 15px rgba(59, 130, 246, 0.25);
             color: #ffffff;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             user-select: none;
+            max-width: calc(100vw - 24px);
+            box-sizing: border-box;
         `;
 
         playerContainer.innerHTML = `
-            <div id="bg-music-body" style="display: ${isMinimized ? 'none' : 'flex'}; align-items: center; gap: 10px;">
-                <div style="display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; background: rgba(59,130,246,0.15); border-radius: 50%; color: #38bdf8; font-size: 13px;">
+            <div id="bg-music-body" style="display: ${isMinimized ? 'none' : 'flex'}; align-items: center; gap: 8px; min-width: 0;">
+                <div style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: rgba(59,130,246,0.15); border-radius: 50%; color: #38bdf8; font-size: 12px; shrink: 0;">
                     🎵
                 </div>
-                <div style="max-width: 140px; overflow: hidden; white-space: nowrap;">
-                    <div id="bg-music-title" style="font-size: 11px; font-weight: 600; color: #f8fafc; text-overflow: ellipsis; overflow: hidden;">
+                <div style="max-width: clamp(75px, 22vw, 130px); overflow: hidden; white-space: nowrap; shrink: 1;">
+                    <div id="bg-music-title" style="font-size: 10px; font-weight: 600; color: #f8fafc; text-overflow: ellipsis; overflow: hidden;">
                         Carregando...
                     </div>
-                    <div id="bg-music-subtitle" style="font-size: 9px; color: #94a3b8;">
+                    <div id="bg-music-subtitle" style="font-size: 8px; color: #94a3b8;">
                         ${isShuffle ? '🔀 Aleatório' : '🔁 Sequencial'}
                     </div>
                 </div>
-                <button id="bg-music-play-btn" style="background: #3b82f6; border: none; color: white; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; transition: transform 0.15s;" title="Play / Pause">
+                <button id="bg-music-play-btn" style="background: #3b82f6; border: none; color: white; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; transition: transform 0.15s; shrink: 0;" title="Play / Pause">
                     ▶
                 </button>
-                <button id="bg-music-next-btn" style="background: rgba(30,41,59,0.8); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center;" title="Próxima Música">
+                <button id="bg-music-next-btn" style="background: rgba(30,41,59,0.8); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: 9px; display: flex; align-items: center; justify-content: center; shrink: 0;" title="Próxima Música">
                     ⏭
                 </button>
                 
                 <!-- Wrapper do botão Mute com Popup de Volume Slide -->
-                <div id="bg-music-mute-wrapper" style="position: relative; display: flex; align-items: center;">
-                    <button id="bg-music-mute-btn" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 12px; padding: 2px;" title="Mudar Volume / Mute">
+                <div id="bg-music-mute-wrapper" style="position: relative; display: flex; align-items: center; shrink: 0;">
+                    <button id="bg-music-mute-btn" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 11px; padding: 2px;" title="Mudar Volume / Mute">
                         🔊
                     </button>
                     
                     <!-- Popover do Slide Sound (Barra de Volume para cima) -->
-                    <div id="bg-music-volume-popover" style="position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(59, 130, 246, 0.5); backdrop-filter: blur(10px); padding: 10px 8px; border-radius: 12px; display: none; flex-direction: column; align-items: center; gap: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.8); z-index: 1000000; width: 34px;">
-                        <span id="bg-music-vol-val-text" style="font-size: 9px; font-weight: bold; color: #38bdf8;">${Math.round(masterVolume * 100)}%</span>
-                        <input type="range" id="bg-music-master-vol-slider" min="0" max="1" step="0.01" value="${masterVolume}" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 80px; accent-color: #3b82f6; cursor: pointer;">
+                    <div id="bg-music-volume-popover" style="position: absolute; bottom: 32px; right: 0; background: rgba(15, 23, 42, 0.96); border: 1px solid rgba(59, 130, 246, 0.5); backdrop-filter: blur(10px); padding: 8px 6px; border-radius: 10px; display: none; flex-direction: column; align-items: center; gap: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.9); z-index: 1000000; width: 32px;">
+                        <span id="bg-music-vol-val-text" style="font-size: 8px; font-weight: bold; color: #38bdf8;">${Math.round(masterVolume * 100)}%</span>
+                        <input type="range" id="bg-music-master-vol-slider" min="0" max="1" step="0.01" value="${masterVolume}" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 6px; height: 70px; accent-color: #3b82f6; cursor: pointer;">
                     </div>
                 </div>
             </div>
-            <button id="bg-music-toggle-min" style="background: rgba(30,41,59,0.8); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; margin-left: 2px;" title="Minimizar / Expandir">
+            <button id="bg-music-toggle-min" style="background: rgba(30,41,59,0.8); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: 9px; display: flex; align-items: center; justify-content: center; margin-left: 2px; shrink: 0;" title="Minimizar / Expandir">
                 ${isMinimized ? '🎵' : '✖'}
             </button>
         `;

@@ -929,7 +929,7 @@ gtag('config', 'AW-18202657831');
 
             adminMusicPlaylist.forEach((track, idx) => {
                 const div = document.createElement('div');
-                div.className = "flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-lg cursor-move hover:border-slate-700 transition-all select-none group";
+                div.className = "flex flex-col sm:flex-row sm:items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-lg cursor-move hover:border-slate-700 transition-all select-none group gap-3";
                 div.setAttribute('draggable', 'true');
                 div.dataset.index = idx;
 
@@ -972,8 +972,8 @@ gtag('config', 'AW-18202657831');
 
                 div.innerHTML = `
                     <div class="flex items-center gap-3 min-w-0 flex-1">
-                        <span class="cursor-grab text-slate-600 hover:text-slate-400"><i data-lucide="grip-vertical" class="w-4 h-4"></i></span>
-                        <span class="text-[10px] font-orbitron ${idx === 0 ? 'bg-electricblue text-white font-bold' : 'bg-slate-800 text-slate-400'} px-2 py-0.5 rounded border border-slate-700">
+                        <span class="cursor-grab text-slate-600 hover:text-slate-400 shrink-0"><i data-lucide="grip-vertical" class="w-4 h-4"></i></span>
+                        <span class="text-[10px] font-orbitron ${idx === 0 ? 'bg-electricblue text-white font-bold' : 'bg-slate-800 text-slate-400'} px-2 py-0.5 rounded border border-slate-700 shrink-0">
                             ${idx === 0 ? '#1 (1ª Música)' : '#' + (idx + 1)}
                         </span>
                         <div class="min-w-0 flex-1">
@@ -982,20 +982,20 @@ gtag('config', 'AW-18202657831');
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-2 shrink-0">
                         <!-- Slider de Volume Individual por Música -->
-                        <div class="flex items-center gap-1.5 bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-800" title="Ajustar Volume Individual desta Música">
+                        <div class="flex items-center gap-1.5 bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-800 shrink-0" title="Ajustar Volume Individual desta Música">
                             <span class="text-xs">🔊</span>
                             <input type="range" min="0" max="1" step="0.05" value="${trackVol}" oninput="updateTrackVolume(${idx}, this.value)" class="w-16 h-1 bg-slate-800 accent-electricblue rounded cursor-pointer">
                             <span class="text-[9px] font-orbitron font-bold text-electricblue w-7 text-right" id="track-vol-label-${idx}">${Math.round(trackVol * 100)}%</span>
                         </div>
 
-                        <button type="button" onclick="testPlayTrack('${track.url}', '${track.id || track.url}')" class="px-2.5 py-1.5 ${isTesting ? 'bg-rose-600 text-white' : 'bg-slate-800 text-electricblue'} hover:bg-slate-700 rounded text-xs font-orbitron flex items-center gap-1 transition-colors" title="Testar Áudio">
+                        <button type="button" onclick="testPlayTrack('${track.url}', '${track.id || track.url}')" class="px-2.5 py-1.5 ${isTesting ? 'bg-rose-600 text-white' : 'bg-slate-800 text-electricblue'} hover:bg-slate-700 rounded text-xs font-orbitron flex items-center gap-1 transition-colors shrink-0" title="Testar Áudio">
                             ${isTesting ? '⏹ Pausar' : '▶ Testar'}
                         </button>
-                        ${idx > 0 ? `<button type="button" onclick="moveTrackItem(${idx}, ${idx - 1})" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs" title="Mover para Cima">◀</button>` : ''}
-                        ${idx < adminMusicPlaylist.length - 1 ? `<button type="button" onclick="moveTrackItem(${idx}, ${idx + 1})" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs" title="Mover para Baixo">▶</button>` : ''}
-                        <button type="button" onclick="removeTrackFromPlaylist(${idx})" class="p-1.5 bg-slate-800 hover:bg-rose-900/50 text-rose-400 hover:text-rose-300 rounded text-xs transition-colors" title="Remover Faixa">
+                        ${idx > 0 ? `<button type="button" onclick="moveTrackItem(${idx}, ${idx - 1})" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs shrink-0" title="Mover para Cima">◀</button>` : ''}
+                        ${idx < adminMusicPlaylist.length - 1 ? `<button type="button" onclick="moveTrackItem(${idx}, ${idx + 1})" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs shrink-0" title="Mover para Baixo">▶</button>` : ''}
+                        <button type="button" onclick="removeTrackFromPlaylist(${idx})" class="p-1.5 bg-slate-800 hover:bg-rose-900/50 text-rose-400 hover:text-rose-300 rounded text-xs transition-colors shrink-0" title="Remover Faixa">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -1220,6 +1220,7 @@ gtag('config', 'AW-18202657831');
         };
 
         document.addEventListener('DOMContentLoaded', () => {
+            loadMusicAdminSettings();
             const fileInput = document.getElementById('music-track-file');
             if (fileInput) {
                 fileInput.addEventListener('change', async function(e) {
@@ -1236,10 +1237,22 @@ gtag('config', 'AW-18202657831');
                         });
                         if (res.ok) {
                             const data = await res.json();
-                            document.getElementById('music-track-url').value = data.url;
-                            if (!document.getElementById('music-track-title').value) {
-                                document.getElementById('music-track-title').value = file.name.replace(/\.[^/.]+$/, "");
-                            }
+                            const titleInput = document.getElementById('music-track-title');
+                            const trackTitle = (titleInput && titleInput.value.trim()) || file.name.replace(/\.[^/.]+$/, "");
+
+                            adminMusicPlaylist.push({
+                                id: 'track_' + Date.now(),
+                                title: trackTitle,
+                                url: data.url,
+                                volume: 1.0
+                            });
+
+                            if (titleInput) titleInput.value = '';
+                            document.getElementById('music-track-url').value = '';
+                            renderAdminPlaylist();
+
+                            await window.saveMusicSettings(true);
+                            alert(`✅ Música "${trackTitle}" enviada e salva permanentemente na playlist!`);
                         } else {
                             alert("Erro ao fazer upload do arquivo de áudio.");
                         }
@@ -1250,7 +1263,7 @@ gtag('config', 'AW-18202657831');
             }
         });
 
-        window.saveMusicSettings = async () => {
+        window.saveMusicSettings = async (silent = false) => {
             const enabled = document.getElementById('music-enabled-toggle').checked;
             const shuffle = document.getElementById('music-shuffle-toggle').checked;
 
@@ -1266,12 +1279,12 @@ gtag('config', 'AW-18202657831');
                 });
 
                 if (res.ok) {
-                    alert("Playlist e configurações de música de fundo salvas com sucesso!");
+                    if (!silent) alert("Playlist e configurações de música de fundo salvas com sucesso!");
                 } else {
-                    alert("Erro ao salvar configurações de música.");
+                    if (!silent) alert("Erro ao salvar configurações de música.");
                 }
             } catch(e) {
-                alert("Erro de conexão ao salvar música.");
+                if (!silent) alert("Erro de conexão ao salvar música.");
             }
         };
 
