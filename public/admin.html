@@ -1027,11 +1027,13 @@ gtag('config', 'AW-18202657831');
             const item = adminMusicPlaylist.splice(fromIdx, 1)[0];
             adminMusicPlaylist.splice(toIdx, 0, item);
             renderAdminPlaylist();
+            window.saveMusicSettings(true);
         };
 
         window.removeTrackFromPlaylist = (idx) => {
             adminMusicPlaylist.splice(idx, 1);
             renderAdminPlaylist();
+            window.saveMusicSettings(true);
         };
 
         let testYtPlayer = null;
@@ -1139,7 +1141,7 @@ gtag('config', 'AW-18202657831');
             renderAdminPlaylist();
         };
 
-        window.addTrackToPlaylist = () => {
+        window.addTrackToPlaylist = async () => {
             const titleInput = document.getElementById('music-track-title');
             const urlInput = document.getElementById('music-track-url');
             
@@ -1165,6 +1167,7 @@ gtag('config', 'AW-18202657831');
             titleInput.value = '';
             urlInput.value = '';
             renderAdminPlaylist();
+            await window.saveMusicSettings(true);
         };
 
         window.autoFillFromSteam = async function() {

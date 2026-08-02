@@ -370,13 +370,14 @@ async function restoreFullDatabaseFromBackup() {
             try {
                 const musicData = JSON.parse(fs.readFileSync(musicBackupPath, 'utf-8'));
                 if (musicData) {
+                    const pList = Array.isArray(musicData.playlist) ? musicData.playlist : [];
                     await pool.query(
                         `INSERT INTO site_music_settings (id, enabled, shuffle, playlist)
                          VALUES (1, $1, $2, $3)
-                         ON CONFLICT (id) DO UPDATE SET enabled = $1, shuffle = $2, playlist = $3`,
-                        [musicData.enabled === true, musicData.shuffle !== false, JSON.stringify(musicData.playlist || [])]
+                         ON CONFLICT (id) DO UPDATE SET enabled = EXCLUDED.enabled, shuffle = EXCLUDED.shuffle, playlist = EXCLUDED.playlist`,
+                        [musicData.enabled === true, musicData.shuffle !== false, JSON.stringify(pList)]
                     );
-                    console.log(`✅ Configurações de música restauradas a partir de data/music_settings_backup.json`);
+                    console.log(`✅ Configurações de música restauradas a partir de data/music_settings_backup.json (${pList.length} faixas)`);
                 }
             } catch(e) {
                 console.error("Erro ao restaurar música do backup:", e);
@@ -1020,12 +1021,13 @@ async function initDB() {
         // Seed das configurações de Música de Fundo se estiverem salvas no arquivo local
         try {
             const backup = getMusicSettingsFromBackup();
-            if (backup && (backup.enabled !== false || (backup.playlist && backup.playlist.length > 0))) {
+            if (backup) {
+                const pList = Array.isArray(backup.playlist) ? backup.playlist : [];
                 await pool.query(
                     `INSERT INTO site_music_settings (id, enabled, shuffle, playlist)
                      VALUES (1, $1, $2, $3)
-                     ON CONFLICT (id) DO UPDATE SET enabled = $1, shuffle = $2, playlist = $3`,
-                    [backup.enabled === true, backup.shuffle !== false, JSON.stringify(backup.playlist || [])]
+                     ON CONFLICT (id) DO UPDATE SET enabled = EXCLUDED.enabled, shuffle = EXCLUDED.shuffle, playlist = EXCLUDED.playlist`,
+                    [backup.enabled === true, backup.shuffle !== false, JSON.stringify(pList)]
                 );
             }
         } catch(e) {
@@ -5987,7 +5989,7 @@ app.put('/api/admin/music', requireAdmin, async (req, res) => {
         await pool.query(
             `INSERT INTO site_music_settings (id, enabled, shuffle, playlist)
              VALUES (1, $1, $2, $3)
-             ON CONFLICT (id) DO UPDATE SET enabled = $1, shuffle = $2, playlist = $3`,
+             ON CONFLICT (id) DO UPDATE SET enabled = EXCLUDED.enabled, shuffle = EXCLUDED.shuffle, playlist = EXCLUDED.playlist`,
             [isEnabled, isShuffle, playlistJson]
         );
         res.json({ success: true, message: 'Configurações de música salvas com sucesso!' });
