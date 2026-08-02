@@ -281,10 +281,15 @@
 
         const btn = document.getElementById('zher-welcome-continue-btn');
         if (btn) {
-            btn.onclick = () => {
+            btn.onclick = (e) => {
                 sessionStorage.setItem('zher_welcome_seen', 'true');
                 hasUserInteracted = true;
                 
+                const rect = btn.getBoundingClientRect();
+                const originX = rect.left + rect.width / 2;
+                const originY = rect.top + rect.height / 2;
+                trigger32BitPixelExplosion(originX, originY);
+
                 modalDiv.style.opacity = '0';
                 modalDiv.style.transform = 'scale(0.95)';
                 setTimeout(() => {
@@ -299,6 +304,90 @@
                 }
             };
         }
+    }
+
+    function trigger32BitPixelExplosion(originX, originY) {
+        try {
+            const canvas = document.createElement('canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            canvas.style.cssText = 'position: fixed; inset: 0; z-index: 10000001; pointer-events: none;';
+            document.body.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+
+            const colors = ['#10b981', '#34d399', '#fbbf24', '#f59e0b', '#38bdf8', '#f43f5e', '#ffffff'];
+            const particles = [];
+
+            for (let i = 0; i < 55; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 14 + 5;
+                const size = Math.floor(Math.random() * 10) + 6;
+                particles.push({
+                    x: originX,
+                    y: originY,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - (Math.random() * 4),
+                    size: size,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    alpha: 1,
+                    gravity: 0.4
+                });
+            }
+
+            let animationFrame;
+            const startTime = performance.now();
+
+            function render() {
+                const elapsed = performance.now() - startTime;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                let aliveCount = 0;
+                for (let p of particles) {
+                    if (p.alpha <= 0) continue;
+                    aliveCount++;
+
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += p.gravity;
+                    p.alpha -= 0.025;
+
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0, p.alpha);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(Math.round(p.x - p.size / 2), Math.round(p.y - p.size / 2), p.size, p.size);
+                    ctx.restore();
+                }
+
+                if (aliveCount > 0 && elapsed < 1200) {
+                    animationFrame = requestAnimationFrame(render);
+                } else {
+                    cancelAnimationFrame(animationFrame);
+                    if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+                }
+            }
+
+            render();
+
+            // Efeito sonoro synth 32-bit gamer retro
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(280, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(35, audioCtx.currentTime + 0.35);
+
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.35);
+        } catch(e){}
     }
 
     function setupAudioElement() {
