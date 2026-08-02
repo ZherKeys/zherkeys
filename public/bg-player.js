@@ -597,6 +597,85 @@
         }
     }
 
+    // Auto-pausar música de fundo se algum vídeo de trailer/gameplay estiver rodando na página
+    let activePlayingVideos = new Set();
+
+    function updateVideoPauseState() {
+        if (activePlayingVideos.size > 0) {
+            if (typeof window.pauseBgMusic === 'function') {
+                window.pauseBgMusic();
+            }
+        } else {
+            if (typeof window.resumeBgMusic === 'function') {
+                window.resumeBgMusic();
+            }
+        }
+    }
+
+    function setupGlobalVideoListeners() {
+        document.addEventListener('play', (e) => {
+            const target = e.target;
+            if (target && target.tagName === 'VIDEO' && !target.closest('#bg-music-widget') && !target.closest('#bg-yt-container') && !target.closest('#admin-yt-test-container')) {
+                activePlayingVideos.add(target);
+                updateVideoPauseState();
+            }
+        }, true);
+
+        document.addEventListener('pause', (e) => {
+            const target = e.target;
+            if (target && target.tagName === 'VIDEO' && !target.closest('#bg-music-widget') && !target.closest('#bg-yt-container') && !target.closest('#admin-yt-test-container')) {
+                activePlayingVideos.delete(target);
+                updateVideoPauseState();
+            }
+        }, true);
+
+        document.addEventListener('ended', (e) => {
+            const target = e.target;
+            if (target && target.tagName === 'VIDEO' && !target.closest('#bg-music-widget') && !target.closest('#bg-yt-container') && !target.closest('#admin-yt-test-container')) {
+                activePlayingVideos.delete(target);
+                updateVideoPauseState();
+            }
+        }, true);
+
+        const observer = new MutationObserver(() => {
+            let changed = false;
+            for (let v of activePlayingVideos) {
+                if (typeof v === 'object' && v && v.tagName === 'VIDEO') {
+                    if (!document.body.contains(v) || v.paused) {
+                        activePlayingVideos.delete(v);
+                        changed = true;
+                    }
+                }
+            }
+            if (changed) updateVideoPauseState();
+        });
+        if (document.body) {
+            observer.observe(document.body, { childList: true, subtree: true });
+        }
+
+        window.addEventListener('message', (event) => {
+            try {
+                let data = event.data;
+                if (typeof data === 'string') {
+                    try { data = JSON.parse(data); } catch(err) {}
+                }
+                if (data && data.event === 'infoDelivery' && data.info) {
+                    const state = data.info.playerState;
+                    const source = event.source;
+                    if (state === 1) { // PLAYING
+                        activePlayingVideos.add(source);
+                        updateVideoPauseState();
+                    } else if (state === 2 || state === 0 || state === -1) { // PAUSED, ENDED, UNSTARTED
+                        activePlayingVideos.delete(source);
+                        updateVideoPauseState();
+                    }
+                }
+            } catch(err) {}
+        });
+    }
+
+    setupGlobalVideoListeners();
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
