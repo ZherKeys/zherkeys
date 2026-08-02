@@ -107,21 +107,22 @@
         if (audio) {
             if (!userMuted) audio.muted = false;
             applyEffectiveVolume();
-            if (audio.paused && !userPaused) {
-                audio.play().then(() => {
-                    isUnmutedAndPlaying = true;
-                    removeActivityListeners();
-                    updateUIState(true);
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    if (!audio.muted) {
+                        isUnmutedAndPlaying = true;
+                        removeActivityListeners();
+                    }
+                    updateUIState(!audio.paused && !audio.muted);
                 }).catch(() => {
-                    if (!userMuted) audio.muted = true;
-                    audio.play().then(() => updateUIState(true)).catch(() => {});
+                    audio.muted = true;
+                    audio.play().then(() => {
+                        updateUIState(false, true);
+                    }).catch(() => {
+                        updateUIState(false, true);
+                    });
                 });
-            } else {
-                updateUIState(!audio.paused);
-                if (!audio.muted) {
-                    isUnmutedAndPlaying = true;
-                    removeActivityListeners();
-                }
             }
         }
         if (ytPlayer && isYtReady) {
@@ -382,11 +383,15 @@
             const playPromise = audio.play();
             if (playPromise !== undefined) {
                 playPromise.then(() => {
-                    updateUIState(true);
+                    if (!audio.muted) {
+                        isUnmutedAndPlaying = true;
+                        removeActivityListeners();
+                    }
+                    updateUIState(!audio.paused && !audio.muted);
                 }).catch(() => {
-                    if (!userMuted) audio.muted = true;
+                    audio.muted = true;
                     audio.play().then(() => {
-                        updateUIState(true);
+                        updateUIState(false, true);
                     }).catch(() => {
                         updateUIState(false, true);
                     });
@@ -428,10 +433,19 @@
             }
         } else {
             if (!audio) return;
-            if (audio.paused) {
+            if (audio.paused || audio.muted) {
                 userPaused = false;
-                if (!userMuted) audio.muted = false;
-                attemptPlay();
+                userMuted = false;
+                audio.muted = false;
+                applyEffectiveVolume();
+                const p = audio.play();
+                if (p !== undefined) {
+                    p.then(() => {
+                        isUnmutedAndPlaying = true;
+                        removeActivityListeners();
+                        updateUIState(true);
+                    }).catch(() => {});
+                }
             } else {
                 userPaused = true;
                 audio.pause();
@@ -453,6 +467,9 @@
             }
         } else if (audio) {
             audio.muted = userMuted;
+            if (!userMuted && audio.paused && !userPaused) {
+                audio.play().then(() => updateUIState(true)).catch(() => {});
+            }
         }
 
         const muteBtn = document.getElementById('bg-music-mute-btn');
@@ -602,11 +619,14 @@
     function updateUIState(isPlaying, isBlocked = false) {
         const playBtn = document.getElementById('bg-music-play-btn');
         if (!playBtn) return;
-        if (isBlocked) {
+        const isActuallyPlayingWithSound = isPlaying && audio && !audio.muted;
+        const isYtActive = isPlaying && ytPlayer && isYtReady;
+
+        if (isBlocked || (audio && audio.muted && !userMuted)) {
             playBtn.innerText = '▶';
             playBtn.style.background = '#e11d48';
             playBtn.title = 'Clique para ativar a música de fundo';
-        } else if (isPlaying) {
+        } else if (isActuallyPlayingWithSound || isYtActive) {
             playBtn.innerText = '❚❚';
             playBtn.style.background = '#10b981';
             playBtn.title = 'Pausar Músicas';
