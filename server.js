@@ -381,20 +381,24 @@ async function restoreFullDatabaseFromBackup() {
             console.log(`✅ Tickets de suporte restaurados a partir de data/tickets_backup.json`);
         }
 
-        // Restaura Configurações de Música de Fundo
+        // Restaura Configurações de Música de Fundo apenas se o banco estiver vazio
         const musicBackupPath = path.join(dataDir, 'music_settings_backup.json');
         if (fs.existsSync(musicBackupPath)) {
             try {
-                const musicData = JSON.parse(fs.readFileSync(musicBackupPath, 'utf-8'));
-                if (musicData) {
-                    const pList = Array.isArray(musicData.playlist) ? musicData.playlist : [];
-                    await pool.query(
-                        `INSERT INTO site_music_settings (id, enabled, shuffle, playlist)
-                         VALUES (1, $1, $2, $3)
-                         ON CONFLICT (id) DO UPDATE SET enabled = EXCLUDED.enabled, shuffle = EXCLUDED.shuffle, playlist = EXCLUDED.playlist`,
-                        [musicData.enabled === true, musicData.shuffle !== false, JSON.stringify(pList)]
-                    );
-                    console.log(`✅ Configurações de música restauradas a partir de data/music_settings_backup.json (${pList.length} faixas)`);
+                const checkDb = await pool.query('SELECT COUNT(*) FROM site_music_settings WHERE id = 1');
+                const hasDbRow = checkDb.rows && checkDb.rows[0] && parseInt(checkDb.rows[0].count, 10) > 0;
+                if (!hasDbRow) {
+                    const musicData = JSON.parse(fs.readFileSync(musicBackupPath, 'utf-8'));
+                    if (musicData) {
+                        const pList = parsePlaylist(musicData.playlist);
+                        await pool.query(
+                            `INSERT INTO site_music_settings (id, enabled, shuffle, playlist)
+                             VALUES (1, $1, $2, $3)
+                             ON CONFLICT (id) DO UPDATE SET enabled = EXCLUDED.enabled, shuffle = EXCLUDED.shuffle, playlist = EXCLUDED.playlist`,
+                            [musicData.enabled === true, musicData.shuffle !== false, JSON.stringify(pList)]
+                        );
+                        console.log(`✅ Configurações de música restauradas a partir de data/music_settings_backup.json (${pList.length} faixas)`);
+                    }
                 }
             } catch(e) {
                 console.error("Erro ao restaurar música do backup:", e);
@@ -1038,16 +1042,39 @@ async function initDB() {
 
         // Seed e Auto-scanner das configurações de Música de Fundo
         try {
-            const audioFolder = path.join(__dirname, 'public', 'uploads', 'audio');
-            let backup = getMusicSettingsFromBackup();
-            let pList = (backup && Array.isArray(backup.playlist)) ? backup.playlist : [];
+            let isEnabled = true;
+            let isShuffle = true;
+            let pList = [];
+            let foundInDb = false;
 
+            try {
+                const dbRes = await pool.query('SELECT enabled, shuffle, playlist FROM site_music_settings WHERE id = 1');
+                if (dbRes.rows && dbRes.rows.length > 0) {
+                    const row = dbRes.rows[0];
+                    pList = parsePlaylist(row.playlist);
+                    isEnabled = row.enabled === true;
+                    isShuffle = row.shuffle !== false;
+                    foundInDb = true;
+                }
+            } catch(dbErr) {}
+
+            if (!foundInDb) {
+                const backup = getMusicSettingsFromBackup();
+                if (backup) {
+                    pList = parsePlaylist(backup.playlist);
+                    isEnabled = backup.enabled === true;
+                    isShuffle = backup.shuffle !== false;
+                }
+            }
+
+            const audioFolder = path.join(__dirname, 'public', 'uploads', 'audio');
             if (fs.existsSync(audioFolder)) {
                 const files = fs.readdirSync(audioFolder);
                 for (let file of files) {
                     if (/\.(mp3|wav|ogg|m4a|flac)$/i.test(file)) {
                         const fileUrl = `/uploads/audio/${file}`;
-                        const exists = pList.some(track => track.url === fileUrl);
+                        const decodedUrl = decodeURIComponent(fileUrl);
+                        const exists = pList.some(track => track.url === fileUrl || decodeURIComponent(track.url) === decodedUrl);
                         if (!exists) {
                             const trackTitle = file.replace(/\.[^/.]+$/, "");
                             pList.push({
@@ -1061,19 +1088,19 @@ async function initDB() {
                 }
             }
 
-            const updatedSettings = {
-                enabled: backup ? (backup.enabled === true) : true,
-                shuffle: backup ? (backup.shuffle !== false) : true,
+            const finalSettings = {
+                enabled: isEnabled,
+                shuffle: isShuffle,
                 playlist: pList
             };
 
-            saveMusicSettingsToBackup(updatedSettings);
+            saveMusicSettingsToBackup(finalSettings);
 
             await pool.query(
                 `INSERT INTO site_music_settings (id, enabled, shuffle, playlist)
                  VALUES (1, $1, $2, $3)
                  ON CONFLICT (id) DO UPDATE SET enabled = EXCLUDED.enabled, shuffle = EXCLUDED.shuffle, playlist = EXCLUDED.playlist`,
-                [updatedSettings.enabled, updatedSettings.shuffle, JSON.stringify(pList)]
+                [isEnabled, isShuffle, JSON.stringify(pList)]
             );
         } catch(e) {
             console.error("Erro ao inicializar site_music_settings:", e);
