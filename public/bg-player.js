@@ -192,9 +192,112 @@
             setupAudioElement();
             initYoutubeAPI();
             createPlayerUI();
+            createWelcomeModalUI();
             startPlayback();
         } catch(e) {
             console.error("Erro ao carregar player de música de fundo:", e);
+        }
+    }
+
+    function createWelcomeModalUI() {
+        if (sessionStorage.getItem('zher_welcome_seen')) return;
+        if (document.getElementById('zher-welcome-modal')) return;
+
+        const modalDiv = document.createElement('div');
+        modalDiv.id = 'zher-welcome-modal';
+        modalDiv.style.cssText = `
+            position: fixed;
+            inset: 0;
+            z-index: 10000000;
+            background: rgba(2, 6, 23, 0.92);
+            backdrop-filter: blur(16px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 1;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            box-sizing: border-box;
+        `;
+
+        modalDiv.innerHTML = `
+            <div style="
+                background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(2, 6, 23, 0.99) 100%);
+                border: 1px solid rgba(16, 185, 129, 0.5);
+                box-shadow: 0 0 50px rgba(16, 185, 129, 0.25), 0 20px 40px rgba(0, 0, 0, 0.9);
+                border-radius: 24px;
+                padding: 32px 28px;
+                max-width: 440px;
+                width: 100%;
+                text-align: center;
+                position: relative;
+                font-family: 'Orbitron', system-ui, -apple-system, sans-serif;
+                color: #ffffff;
+                box-sizing: border-box;
+            ">
+                <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); padding: 5px 14px; border-radius: 9999px; margin-bottom: 18px;">
+                    <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981;"></span>
+                    <span style="font-size: 9px; font-weight: 700; color: #34d399; letter-spacing: 0.15em; text-transform: uppercase;">// LOJA OFICIAL ZHER KEYS</span>
+                </div>
+
+                <h3 style="font-size: 22px; font-weight: 900; color: #ffffff; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: -0.02em;">
+                    BEM-VINDO À <span style="background: linear-gradient(90deg, #34d399, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ZHER KEYS</span> 🚀
+                </h3>
+
+                <p style="font-family: 'Inter', system-ui, sans-serif; font-size: 13.5px; color: #cbd5e1; font-weight: 300; line-height: 1.6; margin: 0 0 24px 0;">
+                    Sua loja definitiva de <strong>Keys Globais, Contas High-End</strong> e o maior <strong>Sorteio Semanal de 10 Milhões de Z-Coins</strong>!
+                </p>
+
+                <button id="zher-welcome-continue-btn" style="
+                    width: 100%;
+                    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                    border: 1px solid rgba(52, 211, 153, 0.6);
+                    color: #ffffff;
+                    font-family: 'Orbitron', system-ui, sans-serif;
+                    font-size: 11px;
+                    font-weight: 800;
+                    letter-spacing: 0.1em;
+                    padding: 16px 20px;
+                    border-radius: 14px;
+                    cursor: pointer;
+                    text-transform: uppercase;
+                    box-shadow: 0 0 25px rgba(16, 185, 129, 0.4);
+                    transition: transform 0.2s, box-shadow 0.2s;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                ">
+                    <span>🟢 CONTINUAR E NAVEGAR NO SITE</span>
+                </button>
+
+                <div style="font-size: 9.5px; color: #64748b; margin-top: 14px; font-family: 'Inter', system-ui, sans-serif;">
+                    🎵 Som de fundo ativo para a melhor experiência
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modalDiv);
+
+        const btn = document.getElementById('zher-welcome-continue-btn');
+        if (btn) {
+            btn.onclick = () => {
+                sessionStorage.setItem('zher_welcome_seen', 'true');
+                hasUserInteracted = true;
+                
+                modalDiv.style.opacity = '0';
+                modalDiv.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    if (modalDiv.parentNode) modalDiv.parentNode.removeChild(modalDiv);
+                }, 400);
+
+                if (!isAnyPageVideoPlaying()) {
+                    userPaused = false;
+                    pausedByVideo = false;
+                    attemptPlay();
+                    window.__unmuteBgMusic();
+                }
+            };
         }
     }
 
