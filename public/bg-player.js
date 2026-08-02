@@ -273,14 +273,11 @@
                         if (track && isYoutubeUrl(track.url)) {
                             const ytId = getYoutubeId(track.url);
                             const ytListId = getYoutubePlaylistId(track.url);
-                            if (ytListId && ytPlayer && typeof ytPlayer.loadPlaylist === 'function') {
-                                ytPlayer.loadPlaylist({ list: ytListId, listType: 'playlist', index: 0, startSeconds: savedTime });
-                            } else if (ytId && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
-                                ytPlayer.loadVideoById({ videoId: ytId, startSeconds: savedTime });
+                            if (ytListId && ytPlayer && typeof ytPlayer.cuePlaylist === 'function') {
+                                ytPlayer.cuePlaylist({ list: ytListId, listType: 'playlist', index: 0, startSeconds: savedTime });
+                            } else if (ytId && ytPlayer && typeof ytPlayer.cueVideoById === 'function') {
+                                ytPlayer.cueVideoById({ videoId: ytId, startSeconds: savedTime });
                             }
-                        }
-                        if (hasUserInteracted && !userPaused && !pausedByVideo) {
-                            window.__unmuteBgMusic();
                         }
                     },
                     onStateChange: (event) => {
@@ -373,10 +370,10 @@
             const ytId = getYoutubeId(track.url);
             if (ytPlayer && isYtReady) {
                 try {
-                    if (ytListId && typeof ytPlayer.loadPlaylist === 'function') {
-                        ytPlayer.loadPlaylist({ list: ytListId, listType: 'playlist', index: 0, startSeconds: startTime });
-                    } else if (ytId && typeof ytPlayer.loadVideoById === 'function') {
-                        ytPlayer.loadVideoById({ videoId: ytId, startSeconds: startTime });
+                    if (ytListId && typeof ytPlayer.cuePlaylist === 'function') {
+                        ytPlayer.cuePlaylist({ list: ytListId, listType: 'playlist', index: 0, startSeconds: startTime });
+                    } else if (ytId && typeof ytPlayer.cueVideoById === 'function') {
+                        ytPlayer.cueVideoById({ videoId: ytId, startSeconds: startTime });
                     }
                     applyEffectiveVolume();
                 } catch(e){}
@@ -475,9 +472,7 @@
                     if (userMuted && typeof ytPlayer.mute === 'function') ytPlayer.mute();
                     else if (!userMuted && typeof ytPlayer.unMute === 'function') ytPlayer.unMute();
                     
-                    if (ytListId && typeof ytPlayer.loadPlaylist === 'function') {
-                        ytPlayer.loadPlaylist({ list: ytListId, listType: 'playlist', index: 0 });
-                    } else if (ytId && typeof ytPlayer.playVideo === 'function') {
+                    if (typeof ytPlayer.playVideo === 'function') {
                         ytPlayer.playVideo();
                     }
                     updateUIState(true);
