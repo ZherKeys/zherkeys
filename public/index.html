@@ -131,12 +131,11 @@ gtag('config', 'AW-18202657831');
 </head>
 <body class="text-slate-200 antialiased mesh-bg scanline">
 
-    <!-- NAVBAR -->
     <nav class="fixed top-0 left-0 w-full z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/60 transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2 sm:gap-3 group cursor-pointer shrink-0" onclick="window.location.href='/'">
-                <img src="logo.png" alt="Zher Keys Logo" class="w-8 h-8 sm:w-10 sm:h-10 object-contain rounded-lg shadow-cyber border border-slate-700/50 bg-slate-950/40 p-1 group-hover:scale-105 transition-transform duration-300">
-                <span class="font-orbitron font-black text-sm sm:text-xl tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400 whitespace-nowrap">ZHER <span class="text-electricblue">KEYS</span></span>
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-1.5 sm:gap-2">
+            <div class="flex items-center gap-1.5 sm:gap-3 group cursor-pointer shrink-0" onclick="window.location.href='/'">
+                <img src="logo.png" alt="Zher Keys Logo" class="w-7 h-7 sm:w-10 sm:h-10 object-contain rounded-lg shadow-cyber border border-slate-700/50 bg-slate-950/40 p-1 group-hover:scale-105 transition-transform duration-300">
+                <span class="font-orbitron font-black text-xs sm:text-xl tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400 whitespace-nowrap">ZHER <span class="text-electricblue">KEYS</span></span>
             </div>
             
             <div class="hidden lg:flex items-center gap-6 font-orbitron text-xs tracking-widest text-slate-400">
@@ -158,10 +157,10 @@ gtag('config', 'AW-18202657831');
                 </a>
             </div>
 
-            <div class="flex items-center gap-1 sm:gap-2.5 shrink-0">
+            <div class="flex items-center gap-1 sm:gap-2.5 shrink-0 pr-1 sm:pr-0">
                 <!-- Seletor de Moedas -->
                 <div class="relative">
-                    <select id="currency-select" onchange="changeCurrency(this.value)" class="bg-slate-950 border border-slate-800 text-slate-300 rounded-lg px-1 sm:px-2.5 py-1 sm:py-1.5 text-[9.5px] sm:text-xs font-orbitron tracking-wider focus:outline-none focus:border-electricblue transition-all cursor-pointer">
+                    <select id="currency-select" onchange="changeCurrency(this.value)" class="bg-slate-950 border border-slate-800 text-slate-300 rounded-lg px-1 sm:px-2.5 py-1 sm:py-1.5 text-[9px] sm:text-xs font-orbitron tracking-wider focus:outline-none focus:border-electricblue transition-all cursor-pointer">
                         <option value="BRL">🇧🇷 BRL</option>
                         <option value="USD">🇺🇸 USD</option>
                         <option value="EUR">🇪🇺 EUR</option>
@@ -205,9 +204,8 @@ gtag('config', 'AW-18202657831');
                     <i data-lucide="terminal" class="w-4 h-4 text-electricblue"></i> <span data-i18n="nav_access">ACCESS TERMINAL</span>
                 </a>
                 <!-- Mobile menu toggle -->
-                <button id="mobile-menu-toggle" class="lg:hidden inline-flex items-center justify-center p-1.5 sm:p-2 rounded-md text-slate-300 hover:text-white hover:bg-slate-800" aria-expanded="false" onclick="toggleMobileMenu()">
+                <button id="mobile-menu-toggle" class="lg:hidden inline-flex items-center justify-center p-1 sm:p-2 rounded-md text-slate-300 hover:text-white hover:bg-slate-800" aria-expanded="false" onclick="toggleMobileMenu()">
                     <svg class="h-5 w-5 sm:h-6 sm:w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                </button>
             </div>
         </div>
     </nav>
