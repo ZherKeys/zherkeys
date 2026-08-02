@@ -983,11 +983,14 @@ gtag('config', 'AW-18202657831');
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2 shrink-0">
-                        <!-- Slider de Volume Individual por Música -->
-                        <div class="flex items-center gap-1.5 bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-800 shrink-0" title="Ajustar Volume Individual desta Música">
+                        <!-- Slider e Entrada Numérica de Volume Individual por Música -->
+                        <div class="flex items-center gap-1.5 bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-800 shrink-0" title="Ajustar Volume Individual desta Música (deslize ou digite a porcentagem)">
                             <span class="text-xs">🔊</span>
-                            <input type="range" min="0" max="1" step="0.05" value="${trackVol}" oninput="updateTrackVolume(${idx}, this.value)" class="w-16 h-1 bg-slate-800 accent-electricblue rounded cursor-pointer">
-                            <span class="text-[9px] font-orbitron font-bold text-electricblue w-7 text-right" id="track-vol-label-${idx}">${Math.round(trackVol * 100)}%</span>
+                            <input type="range" id="track-vol-slider-${idx}" min="0" max="1" step="0.01" value="${trackVol}" oninput="updateTrackVolume(${idx}, this.value)" onchange="saveMusicSettings(true)" class="w-14 sm:w-16 h-1 bg-slate-800 accent-electricblue rounded cursor-pointer">
+                            <div class="flex items-center shrink-0">
+                                <input type="number" id="track-vol-input-${idx}" min="0" max="100" step="1" value="${Math.round(trackVol * 100)}" oninput="updateTrackVolumePercent(${idx}, this.value)" onchange="saveMusicSettings(true)" class="w-9 bg-slate-900 border border-slate-800 hover:border-slate-700 focus:border-electricblue rounded text-[10px] font-orbitron font-bold text-electricblue text-center focus:outline-none px-0.5 py-0.5 transition-colors" title="Clique para digitar a porcentagem (0 a 100%)">
+                                <span class="text-[9px] font-orbitron font-bold text-electricblue ml-0.5">%</span>
+                            </div>
                         </div>
 
                         <button type="button" onclick="testPlayTrack('${track.url}', '${track.id || track.url}')" class="px-2.5 py-1.5 ${isTesting ? 'bg-rose-600 text-white' : 'bg-slate-800 text-electricblue'} hover:bg-slate-700 rounded text-xs font-orbitron flex items-center gap-1 transition-colors shrink-0" title="Testar Áudio">
@@ -1007,11 +1010,36 @@ gtag('config', 'AW-18202657831');
         };
 
         window.updateTrackVolume = (idx, val) => {
-            const num = parseFloat(val);
+            let num = parseFloat(val);
+            if (isNaN(num)) num = 1.0;
+            num = Math.max(0, Math.min(1, num));
+
             if (adminMusicPlaylist[idx]) {
                 adminMusicPlaylist[idx].volume = num;
-                const label = document.getElementById(`track-vol-label-${idx}`);
-                if (label) label.innerText = Math.round(num * 100) + '%';
+                const input = document.getElementById(`track-vol-input-${idx}`);
+                if (input && document.activeElement !== input) {
+                    input.value = Math.round(num * 100);
+                }
+
+                if (currentlyPlayingTrackId === (adminMusicPlaylist[idx].id || adminMusicPlaylist[idx].url)) {
+                    if (testAudioElement) testAudioElement.volume = num;
+                    if (testYtPlayer && typeof testYtPlayer.setVolume === 'function') {
+                        try { testYtPlayer.setVolume(Math.round(num * 100)); } catch(e){}
+                    }
+                }
+            }
+        };
+
+        window.updateTrackVolumePercent = (idx, percentVal) => {
+            let p = parseInt(percentVal, 10);
+            if (isNaN(p)) p = 0;
+            p = Math.max(0, Math.min(100, p));
+            const num = p / 100;
+
+            if (adminMusicPlaylist[idx]) {
+                adminMusicPlaylist[idx].volume = num;
+                const slider = document.getElementById(`track-vol-slider-${idx}`);
+                if (slider) slider.value = num;
 
                 if (currentlyPlayingTrackId === (adminMusicPlaylist[idx].id || adminMusicPlaylist[idx].url)) {
                     if (testAudioElement) testAudioElement.volume = num;
