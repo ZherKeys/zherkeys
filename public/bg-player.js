@@ -30,7 +30,10 @@
 
         hasUserInteracted = true;
 
-        if (!userPaused && !pausedByVideo && !isAnyPageVideoPlaying()) {
+        if (e && e.target && e.target.id === 'bg-music-play-btn') return;
+
+        if (!isAnyPageVideoPlaying()) {
+            pausedByVideo = false;
             window.__unmuteBgMusic();
         }
     }
@@ -112,15 +115,34 @@
     };
 
     window.__unmuteBgMusic = function() {
-        if (pausedByVideo || userPaused || isAnyPageVideoPlaying()) return;
+        if (isAnyPageVideoPlaying()) return;
 
-        if (audio) {
+        const currentTrack = playlist[currentTrackIndex];
+        const isYt = currentTrack ? isYoutubeUrl(currentTrack.url) : false;
+
+        if (isYt) {
+            if (ytPlayer && isYtReady) {
+                try {
+                    if (!userMuted && typeof ytPlayer.unMute === 'function') ytPlayer.unMute();
+                    applyEffectiveVolume();
+                    if (typeof ytPlayer.playVideo === 'function') {
+                        ytPlayer.playVideo();
+                    }
+                    isUnmutedAndPlaying = true;
+                    removeActivityListeners();
+                    updateUIState(true);
+                } catch(e){}
+            }
+        } else if (audio) {
+            if (!audio.src && currentTrack) {
+                audio.src = currentTrack.url;
+            }
             if (!userMuted) audio.muted = false;
             applyEffectiveVolume();
             const playPromise = audio.play();
             if (playPromise !== undefined) {
                 playPromise.then(() => {
-                    if (!audio.muted) {
+                    if (!audio.muted && !audio.paused) {
                         isUnmutedAndPlaying = true;
                         removeActivityListeners();
                     }
@@ -134,18 +156,6 @@
                     });
                 });
             }
-        }
-        if (ytPlayer && isYtReady) {
-            try {
-                if (!userMuted && typeof ytPlayer.unMute === 'function') ytPlayer.unMute();
-                applyEffectiveVolume();
-                if (!userPaused) {
-                    ytPlayer.playVideo();
-                    isUnmutedAndPlaying = true;
-                    removeActivityListeners();
-                    updateUIState(true);
-                }
-            } catch(e){}
         }
     };
 
