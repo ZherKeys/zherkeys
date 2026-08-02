@@ -803,7 +803,7 @@ gtag('config', 'AW-18202657831');
                 </div>
 
                 <div class="mt-6">
-                    <button type="button" onclick="saveMusicSettings()" class="w-full bg-toxicgreen hover:bg-emerald-500 text-obsidian font-orbitron font-bold tracking-widest py-3.5 rounded-xl transition-colors shadow-lg shadow-toxicgreen/10 flex items-center justify-center gap-2 text-sm cursor-pointer">
+                    <button type="button" id="btn-save-music-settings" onclick="saveMusicSettings()" class="w-full bg-toxicgreen hover:bg-emerald-500 text-obsidian font-orbitron font-bold tracking-widest py-3.5 rounded-xl transition-colors shadow-lg shadow-toxicgreen/10 flex items-center justify-center gap-2 text-sm cursor-pointer">
                         <i data-lucide="save" class="w-5 h-5"></i> SALVAR PLAYLIST E CONFIGURAÇÕES
                     </button>
                 </div>
@@ -1337,6 +1337,14 @@ gtag('config', 'AW-18202657831');
                 return;
             }
 
+            const btn = document.getElementById('btn-save-music-settings');
+            const origHtml = btn ? btn.innerHTML : '';
+            if (!silent && btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> SALVANDO...`;
+                if (window.lucide) window.lucide.createIcons();
+            }
+
             try {
                 const res = await fetch('/api/admin/music', {
                     method: 'PUT',
@@ -1350,12 +1358,18 @@ gtag('config', 'AW-18202657831');
 
                 if (res.ok) {
                     musicSettingsLoaded = true;
-                    if (!silent) alert("Playlist e configurações de música de fundo salvas com sucesso!");
+                    if (!silent) alert("✅ Playlist e configurações de música de fundo salvas com sucesso!");
                 } else {
-                    if (!silent) alert("Erro ao salvar configurações de música.");
+                    if (!silent) alert("❌ Erro ao salvar configurações de música.");
                 }
             } catch(e) {
-                if (!silent) alert("Erro de conexão ao salvar música.");
+                if (!silent) alert("❌ Erro de conexão ao salvar música.");
+            } finally {
+                if (!silent && btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = origHtml;
+                    if (window.lucide) window.lucide.createIcons();
+                }
             }
         };
 
