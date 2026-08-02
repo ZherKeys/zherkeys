@@ -993,6 +993,13 @@ async function initDB() {
                 playlist TEXT DEFAULT '[]'
             );
 
+            CREATE TABLE IF NOT EXISTS uploaded_files (
+                id SERIAL PRIMARY KEY,
+                filepath TEXT UNIQUE NOT NULL,
+                filedata TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
             CREATE TABLE IF NOT EXISTS support_tickets (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -1039,6 +1046,13 @@ async function initDB() {
             ALTER TABLE users ADD COLUMN IF NOT EXISTS reading_subscription_expires_at TIMESTAMP DEFAULT NULL;
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_reading_subscription BOOLEAN DEFAULT false;
         `);
+
+        // Restaura arquivos de upload (MP3/mídias) do banco para o disco se o container do servidor tiver sido reiniciado
+        try {
+            await restoreUploadedFilesFromDatabase();
+        } catch(e) {
+            console.error("Erro ao restaurar arquivos de upload do banco:", e);
+        }
 
         // Seed e Auto-scanner das configurações de Música de Fundo
         try {
@@ -5806,6 +5820,51 @@ app.get('/api/streaming/translate-subtitle', async (req, res) => {
 // PAINEL ADMINISTRATIVO DO STREAMING (UPLOADS)
 // ==========================================
 
+async function saveUploadedFileToDatabase(relativeUrl, diskPath) {
+    try {
+        if (fs.existsSync(diskPath)) {
+            const fileBuffer = fs.readFileSync(diskPath);
+            const base64Data = fileBuffer.toString('base64');
+            await pool.query(
+                `INSERT INTO uploaded_files (filepath, filedata)
+                 VALUES ($1, $2)
+                 ON CONFLICT (filepath) DO UPDATE SET filedata = EXCLUDED.filedata`,
+                [relativeUrl, base64Data]
+            );
+            console.log(`💾 Arquivo de upload (${relativeUrl}) salvo permanentemente no Banco de Dados!`);
+        }
+    } catch(e) {
+        console.error("Erro ao salvar arquivo enviado no Banco de Dados:", e);
+    }
+}
+
+async function restoreUploadedFilesFromDatabase() {
+    try {
+        const res = await pool.query('SELECT filepath, filedata FROM uploaded_files');
+        if (res.rows && res.rows.length > 0) {
+            let count = 0;
+            for (let row of res.rows) {
+                if (!row.filepath || !row.filedata) continue;
+                const cleanRelPath = row.filepath.startsWith('/') ? row.filepath.slice(1) : row.filepath;
+                const fullDiskPath = path.join(__dirname, 'public', cleanRelPath);
+                
+                if (!fs.existsSync(fullDiskPath)) {
+                    const dir = path.dirname(fullDiskPath);
+                    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+                    const buffer = Buffer.from(row.filedata, 'base64');
+                    fs.writeFileSync(fullDiskPath, buffer);
+                    count++;
+                }
+            }
+            if (count > 0) {
+                console.log(`✅ ${count} arquivos de upload (MP3/mídias) restaurados do Banco de Dados para o disco local!`);
+            }
+        }
+    } catch(e) {
+        console.error("Erro ao restaurar arquivos de upload do banco:", e);
+    }
+}
+
 // Endpoint Genérico de Upload de Arquivos (Admin)
 app.post('/api/admin/streaming/upload', requireAdmin, uploadGeneric.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
@@ -5835,6 +5894,8 @@ app.post('/api/admin/streaming/upload', requireAdmin, uploadGeneric.single('file
     const newPath = path.join(destDir, req.file.filename);
     try {
         fs.renameSync(req.file.path, newPath);
+        const finalUrl = `/uploads/${subfolder}/${req.file.filename}`;
+        saveUploadedFileToDatabase(finalUrl, newPath);
 
         // If uploaded a video in a non-MP4 container, transcode to MP4 (H.264 + AAC)
         if (mime.startsWith('video/') && ext !== '.mp4') {
