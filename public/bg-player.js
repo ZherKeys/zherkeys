@@ -23,18 +23,9 @@
     const activityEvents = ['click', 'touchstart', 'touchend', 'pointerdown', 'mousedown', 'keydown', 'scroll', 'wheel', 'mousemove', 'focus'];
 
     function recordUserActivity(e) {
+        hasUserInteracted = true;
         if (isUnmutedAndPlaying) {
             removeActivityListeners();
-            return;
-        }
-
-        hasUserInteracted = true;
-
-        if (e && e.target && e.target.id === 'bg-music-play-btn') return;
-
-        if (!isAnyPageVideoPlaying()) {
-            pausedByVideo = false;
-            window.__unmuteBgMusic();
         }
     }
 
