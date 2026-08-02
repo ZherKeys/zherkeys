@@ -20,9 +20,14 @@
     let hasUserInteracted = false;
     let isUnmutedAndPlaying = false;
 
-    const activityEvents = ['click', 'touchstart', 'pointerdown', 'keydown', 'scroll', 'wheel', 'mousemove', 'focus'];
+    const activityEvents = ['click', 'touchstart', 'touchend', 'pointerdown', 'mousedown', 'keydown', 'scroll', 'wheel', 'mousemove', 'focus'];
 
     function recordUserActivity(e) {
+        if (isUnmutedAndPlaying) {
+            removeActivityListeners();
+            return;
+        }
+
         hasUserInteracted = true;
 
         if (!userPaused && !pausedByVideo) {
@@ -38,7 +43,7 @@
                             removeActivityListeners();
                         }
                     }).catch(() => {
-                        // Navegador bloqueou evento passivo (ex: mousemove); mantêm escuta para clique/toque
+                        // Navegador bloqueou evento passivo (ex: mousemove); mantém escuta para clique/toque
                     });
                 }
             }
