@@ -616,40 +616,40 @@
             backdrop-filter: blur(12px);
             border: 1px solid rgba(59, 130, 246, 0.4);
             border-radius: 9999px;
-            padding: 5px 10px;
+            padding: 4px 8px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.8), 0 0 15px rgba(59, 130, 246, 0.25);
             color: #ffffff;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             user-select: none;
-            max-width: calc(100vw - 24px);
+            max-width: calc(100vw - 16px);
             box-sizing: border-box;
         `;
 
         playerContainer.innerHTML = `
-            <div id="bg-music-body" style="display: ${isMinimized ? 'none' : 'flex'}; align-items: center; gap: 8px; min-width: 0;">
-                <div style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: rgba(59,130,246,0.15); border-radius: 50%; color: #38bdf8; font-size: 12px; shrink: 0;">
+            <div id="bg-music-body" style="display: ${isMinimized ? 'none' : 'flex'}; align-items: center; gap: 5px; min-width: 0;">
+                <div style="display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: rgba(59,130,246,0.15); border-radius: 50%; color: #38bdf8; font-size: 11px; flex-shrink: 0;">
                     🎵
                 </div>
-                <div style="max-width: clamp(75px, 22vw, 130px); overflow: hidden; white-space: nowrap; shrink: 1;">
-                    <div id="bg-music-title" style="font-size: 10px; font-weight: 600; color: #f8fafc; text-overflow: ellipsis; overflow: hidden;">
+                <div style="max-width: clamp(55px, 18vw, 110px); overflow: hidden; white-space: nowrap; flex-shrink: 1;">
+                    <div id="bg-music-title" style="font-size: 9px; font-weight: 600; color: #f8fafc; text-overflow: ellipsis; overflow: hidden;">
                         Carregando...
                     </div>
-                    <div id="bg-music-subtitle" style="font-size: 8px; color: #94a3b8;">
+                    <div id="bg-music-subtitle" style="font-size: 7px; color: #94a3b8;">
                         ${isShuffle ? '🔀 Aleatório' : '🔁 Sequencial'}
                     </div>
                 </div>
-                <button id="bg-music-play-btn" style="background: #3b82f6; border: none; color: white; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; transition: transform 0.15s; shrink: 0;" title="Play / Pause">
+                <button id="bg-music-play-btn" style="background: #3b82f6; border: none; color: white; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; transition: transform 0.15s; flex-shrink: 0;" title="Play / Pause">
                     ▶
                 </button>
-                <button id="bg-music-next-btn" style="background: rgba(30,41,59,0.8); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: 9px; display: flex; align-items: center; justify-content: center; shrink: 0;" title="Próxima Música">
+                <button id="bg-music-next-btn" style="background: rgba(30,41,59,0.8); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" title="Próxima Música">
                     ⏭
                 </button>
                 
                 <!-- Wrapper do botão Mute com Popup de Volume Slide -->
-                <div id="bg-music-mute-wrapper" style="position: relative; display: flex; align-items: center; shrink: 0;">
+                <div id="bg-music-mute-wrapper" style="position: relative; display: flex; align-items: center; flex-shrink: 0;">
                     <button id="bg-music-mute-btn" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 11px; padding: 2px;" title="Mudar Volume / Mute">
                         ${userMuted || masterVolume === 0 ? '🔇' : '🔊'}
                     </button>
