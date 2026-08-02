@@ -161,7 +161,7 @@ gtag('config', 'AW-18202657831');
             <div class="flex items-center gap-1 sm:gap-2.5 shrink-0">
                 <!-- Seletor de Moedas -->
                 <div class="relative">
-                    <select id="currency-select" onchange="changeCurrency(this.value)" class="bg-slate-950 border border-slate-800 text-slate-300 rounded-lg px-1.5 sm:px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-orbitron tracking-wider focus:outline-none focus:border-electricblue transition-all cursor-pointer">
+                    <select id="currency-select" onchange="changeCurrency(this.value)" class="bg-slate-950 border border-slate-800 text-slate-300 rounded-lg px-1 sm:px-2.5 py-1 sm:py-1.5 text-[9.5px] sm:text-xs font-orbitron tracking-wider focus:outline-none focus:border-electricblue transition-all cursor-pointer">
                         <option value="BRL">🇧🇷 BRL</option>
                         <option value="USD">🇺🇸 USD</option>
                         <option value="EUR">🇪🇺 EUR</option>
@@ -175,7 +175,7 @@ gtag('config', 'AW-18202657831');
                     <i data-lucide="shopping-cart" class="w-4 h-4 sm:w-5 sm:h-5 text-slate-300 group-hover:text-white"></i>
                     <span id="cart-badge" class="absolute -top-1 -right-1 flex items-center justify-center w-3.5 h-3.5 sm:w-4 sm:h-4 bg-cyberrose text-white text-[8px] sm:text-[9px] font-bold rounded-full hidden">0</span>
                 </a>
-                <a href="#" onclick="openSupportModal(event)" class="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-blue-500 hover:bg-slate-700 transition-all group" title="Suporte ao Cliente">
+                <a href="#" onclick="openSupportModal(event)" class="hidden sm:flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-blue-500 hover:bg-slate-700 transition-all group" title="Suporte ao Cliente">
                     <i data-lucide="headset" class="w-4 h-4 sm:w-5 sm:h-5 text-slate-300 group-hover:text-white"></i>
                 </a>
 
@@ -197,7 +197,8 @@ gtag('config', 'AW-18202657831');
                         </div>
                     </div>
                 </div>
-                <a href="/account.html" class="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-electricblue hover:bg-slate-700 transition-all group" title="Minha Conta">
+
+                <a href="/account.html" class="hidden sm:flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-electricblue hover:bg-slate-700 transition-all group" title="Minha Conta">
                     <i data-lucide="user" class="w-4 h-4 sm:w-5 sm:h-5 text-slate-300 group-hover:text-white"></i>
                 </a>
                 <a href="#vitrine" class="hidden lg:inline-flex magnetic-button items-center gap-2 bg-slate-900 border border-slate-700/80 hover:border-electricblue text-white px-4 py-2 rounded-lg font-orbitron text-xs tracking-widest transition-all duration-300 shadow-lg shadow-black/40">
@@ -211,23 +212,14 @@ gtag('config', 'AW-18202657831');
         </div>
     </nav>
 
-                <!-- ZherChat button next to support -->
-                <!-- Inserted in navbar area so it appears near support icon -->
-                
-
-    <!-- Mobile menu (hidden on md+) -->
-    <div id="mobile-menu" class="md:hidden hidden bg-slate-950/95 border-t border-slate-800/60 fixed top-20 left-0 right-0 z-40 backdrop-blur-sm">
-        <div class="px-4 py-3 space-y-2">
-            <a href="#catalogo" class="block text-white py-2">CATÁLOGO</a>
-            <a href="#vantagens" class="block text-white py-2">RECURSOS</a>
-            <a href="#suporte" class="block text-white py-2">SUPORTE</a>
-
-            <a href="/minigames.html" class="block text-emerald-400 py-2">🕹️ JOGUE E GANHE</a>
-            <!--
-            <a href="/streaming.html" class="block text-rose-500 py-2">🎬 ZHER PLAY</a>
-            <a href="/reading.html" class="block text-purple-400 py-2">📚 ZHER READ</a>
-            -->
-            <a href="/account.html" class="block text-slate-300 py-2">Minha Conta</a>
+    <!-- Mobile menu (hidden on lg+) -->
+    <div id="mobile-menu" class="lg:hidden hidden bg-slate-950/98 border-t border-slate-800/80 fixed top-16 sm:top-20 left-0 right-0 z-40 backdrop-blur-md shadow-2xl">
+        <div class="px-5 py-4 space-y-3 font-orbitron text-xs tracking-wider">
+            <a href="#catalogo" class="block text-white hover:text-electricblue py-2 border-b border-slate-900">📦 CATÁLOGO DE JOGOS</a>
+            <a href="#vantagens" class="block text-white hover:text-electricblue py-2 border-b border-slate-900">⚡ RECURSOS DA LOJA</a>
+            <a href="/account.html" class="block text-electricblue hover:text-white py-2 border-b border-slate-900 font-bold">👤 MINHA CONTA / LOGIN</a>
+            <a href="#" onclick="openSupportModal(event)" class="block text-blue-400 hover:text-white py-2 border-b border-slate-900 font-bold">🎧 SUPORTE AO CLIENTE</a>
+            <a href="/minigames.html" class="block text-emerald-400 hover:text-emerald-300 py-2 font-bold">🕹️ JOGUE E GANHE (MINIGAMES)</a>
         </div>
     </div>
 
