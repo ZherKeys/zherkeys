@@ -308,6 +308,9 @@
                             updateUIState(false);
                         }
                     }
+                }
+            });
+
             setInterval(() => {
                 if (ytPlayer && isYtReady && typeof ytPlayer.getCurrentTime === 'function') {
                     try {
