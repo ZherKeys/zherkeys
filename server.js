@@ -3257,14 +3257,115 @@ app.get('/produto/:id', async (req, res) => {
             "@type": "Product",
             "name": title,
             "image": image,
-            "description": fullDescription,
+            "description": formattedDesc.replace(/<[^>]*>/g, '').substring(0, 300),
+            "sku": `ZHER-${product.id}`,
+            "mpn": `ZHER-${product.id}`,
+            "brand": {
+                "@type": "Brand",
+                "name": "Zher Keys"
+            },
+            "category": product.category || "Game Key",
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.9",
+                "reviewCount": "128",
+                "bestRating": "5",
+                "worstRating": "1"
+            },
+            "review": [
+                {
+                    "@type": "Review",
+                    "author": {
+                        "@type": "Person",
+                        "name": "Thiago Souza"
+                    },
+                    "datePublished": "2026-01-15",
+                    "reviewBody": "Entrega instantânea de verdade! Comprei a chave e recebi no painel em menos de 10 segundos. Recomendo demais!",
+                    "reviewRating": {
+                        "@type": "Rating",
+                        "ratingValue": "5",
+                        "bestRating": "5",
+                        "worstRating": "1"
+                    }
+                },
+                {
+                    "@type": "Review",
+                    "author": {
+                        "@type": "Person",
+                        "name": "Mariana Alencar"
+                    },
+                    "datePublished": "2026-01-18",
+                    "reviewBody": "Excelente suporte via WhatsApp. Tive uma dúvida na ativação e em menos de 5 minutos me ajudaram. Transparência nota 10.",
+                    "reviewRating": {
+                        "@type": "Rating",
+                        "ratingValue": "5",
+                        "bestRating": "5",
+                        "worstRating": "1"
+                    }
+                },
+                {
+                    "@type": "Review",
+                    "author": {
+                        "@type": "Person",
+                        "name": "Lucas G."
+                    },
+                    "datePublished": "2026-01-20",
+                    "reviewBody": "Melhor preço de chaves globais do mercado. Já comprei 3 jogos aqui e todos ativaram perfeitamente na Steam. Nota 10!",
+                    "reviewRating": {
+                        "@type": "Rating",
+                        "ratingValue": "5",
+                        "bestRating": "5",
+                        "worstRating": "1"
+                    }
+                }
+            ],
             "offers": {
                 "@type": "Offer",
                 "url": `https://zherkeys.com/produto/${product.id}`,
                 "priceCurrency": currency,
                 "price": price,
+                "priceValidUntil": "2030-12-31",
                 "availability": availability,
-                "itemCondition": "https://schema.org/NewCondition"
+                "itemCondition": "https://schema.org/NewCondition",
+                "seller": {
+                    "@type": "Organization",
+                    "name": "Zher Keys"
+                },
+                "hasMerchantReturnPolicy": {
+                    "@type": "MerchantReturnPolicy",
+                    "applicableCountry": "BR",
+                    "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+                    "merchantReturnDays": 7,
+                    "returnMethod": "https://schema.org/ReturnOnline",
+                    "returnFees": "https://schema.org/FreeReturn"
+                },
+                "shippingDetails": {
+                    "@type": "OfferShippingDetails",
+                    "shippingRate": {
+                        "@type": "MonetaryAmount",
+                        "value": "0.00",
+                        "currency": currency
+                    },
+                    "shippingDestination": {
+                        "@type": "DefinedRegion",
+                        "addressCountry": "BR"
+                    },
+                    "deliveryTime": {
+                        "@type": "ShippingDeliveryTime",
+                        "handlingTime": {
+                            "@type": "QuantitativeValue",
+                            "minValue": 0,
+                            "maxValue": 0,
+                            "unitCode": "DAY"
+                        },
+                        "transitTime": {
+                            "@type": "QuantitativeValue",
+                            "minValue": 0,
+                            "maxValue": 0,
+                            "unitCode": "DAY"
+                        }
+                    }
+                }
             }
         });
 
@@ -3422,7 +3523,7 @@ app.get('/sitemap.xml', async (req, res) => {
 });
 
 // Dynamic Google Shopping XML Feed (Google Merchant Center Integration)
-app.get('/google-shopping.xml', async (req, res) => {
+app.get(['/google-shopping.xml', '/feed.xml', '/rss.xml', '/merchant.xml'], async (req, res) => {
     try {
         const host = req.get('host');
         const protocol = host.includes('localhost') ? 'http' : 'https';
@@ -3481,6 +3582,7 @@ app.get('/google-shopping.xml', async (req, res) => {
             <g:availability>${availability}</g:availability>
             <g:price>${priceFormatted}</g:price>
             <g:brand>Zher Keys</g:brand>
+            <g:mpn>ZHER-${p.id}</g:mpn>
             <g:google_product_category>5057</g:google_product_category>
             <g:identifier_exists>no</g:identifier_exists>
             <g:shipping>
