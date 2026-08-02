@@ -30,35 +30,8 @@
 
         hasUserInteracted = true;
 
-        if (!userPaused && !pausedByVideo) {
-            if (audio) {
-                if (!userMuted) audio.muted = false;
-                applyEffectiveVolume();
-                const p = audio.play();
-                if (p !== undefined) {
-                    p.then(() => {
-                        if (!audio.muted && !audio.paused) {
-                            isUnmutedAndPlaying = true;
-                            updateUIState(true);
-                            removeActivityListeners();
-                        }
-                    }).catch(() => {
-                        // Navegador bloqueou evento passivo (ex: mousemove); mantém escuta para clique/toque
-                    });
-                }
-            }
-            if (ytPlayer && isYtReady) {
-                try {
-                    if (!userMuted && typeof ytPlayer.unMute === 'function') ytPlayer.unMute();
-                    applyEffectiveVolume();
-                    if (!userPaused) {
-                        ytPlayer.playVideo();
-                        isUnmutedAndPlaying = true;
-                        updateUIState(true);
-                        removeActivityListeners();
-                    }
-                } catch(err){}
-            }
+        if (!userPaused && !pausedByVideo && !isAnyPageVideoPlaying()) {
+            window.__unmuteBgMusic();
         }
     }
 
@@ -122,17 +95,24 @@
         }
     };
 
+    let resumeTimeout = null;
+
     window.resumeBgMusic = function() {
         if (pausedByVideo) {
-            pausedByVideo = false;
-            if (!userPaused) {
-                attemptPlay();
-            }
+            if (resumeTimeout) clearTimeout(resumeTimeout);
+            resumeTimeout = setTimeout(() => {
+                if (pausedByVideo && !isAnyPageVideoPlaying()) {
+                    pausedByVideo = false;
+                    if (!userPaused) {
+                        attemptPlay();
+                    }
+                }
+            }, 3000);
         }
     };
 
     window.__unmuteBgMusic = function() {
-        if (pausedByVideo || userPaused) return;
+        if (pausedByVideo || userPaused || isAnyPageVideoPlaying()) return;
 
         if (audio) {
             if (!userMuted) audio.muted = false;
@@ -447,11 +427,16 @@
             return;
         }
 
-        attemptPlay();
+        // Delay de 3 segundos ao entrar ou trocar de página antes de retomar a reprodução
+        setTimeout(() => {
+            if (!pausedByVideo && !isAnyPageVideoPlaying()) {
+                attemptPlay();
 
-        if (hasUserInteracted && !userPaused && !pausedByVideo) {
-            window.__unmuteBgMusic();
-        }
+                if (hasUserInteracted && !userPaused && !pausedByVideo) {
+                    window.__unmuteBgMusic();
+                }
+            }
+        }, 3000);
     }
 
     function attemptPlay() {
