@@ -755,13 +755,22 @@
                 if (typeof data === 'string') {
                     try { data = JSON.parse(data); } catch(err) {}
                 }
-                if (data && data.event === 'infoDelivery' && data.info) {
-                    const state = data.info.playerState;
+
+                if (data && typeof data === 'object') {
+                    let state = undefined;
+                    if (data.event === 'infoDelivery' && data.info && data.info.playerState !== undefined) {
+                        state = data.info.playerState;
+                    } else if (data.event === 'onStateChange' && data.info !== undefined) {
+                        state = data.info;
+                    } else if (data.info && data.info.playerState !== undefined) {
+                        state = data.info.playerState;
+                    }
+
                     const source = event.source;
-                    if (state === 1) { // PLAYING
+                    if (state === 1) { // PLAYING (1)
                         activePlayingVideos.add(source);
                         updateVideoPauseState();
-                    } else if (state === 2 || state === 0 || state === -1) { // PAUSED, ENDED, UNSTARTED
+                    } else if (state === 2 || state === 0 || state === -1) { // PAUSED (2), ENDED (0), UNSTARTED (-1)
                         activePlayingVideos.delete(source);
                         updateVideoPauseState();
                     }
