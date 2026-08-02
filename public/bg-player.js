@@ -261,6 +261,11 @@
                 events: {
                     onReady: () => {
                         isYtReady = true;
+                        try {
+                            const bgYtContainer = document.getElementById('bg-yt-container');
+                            const iframe = bgYtContainer ? bgYtContainer.querySelector('iframe') : document.getElementById('bg-yt-player');
+                            if (iframe) window.__bgYtWindow = iframe.contentWindow;
+                        } catch(e){}
                         applyEffectiveVolume();
                         const savedTime = parseFloat(sessionStorage.getItem('bg_music_time') || '0');
                         const track = playlist[currentTrackIndex];
@@ -835,7 +840,13 @@
                 // Ignorar mensagens vindas do próprio player de música do YouTube do site
                 const bgYtContainer = document.getElementById('bg-yt-container');
                 const bgYtIframe = bgYtContainer ? bgYtContainer.querySelector('iframe') : null;
-                if (bgYtIframe && bgYtIframe.contentWindow === event.source) {
+                const bgYtElement = document.getElementById('bg-yt-player');
+
+                if (
+                    (window.__bgYtWindow && event.source === window.__bgYtWindow) ||
+                    (bgYtIframe && bgYtIframe.contentWindow === event.source) ||
+                    (bgYtElement && bgYtElement.contentWindow === event.source)
+                ) {
                     return;
                 }
 
