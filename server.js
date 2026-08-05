@@ -44,9 +44,13 @@ app.use(session({
 }));
 
 // Setup Database (PostgreSQL)
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+const poolConfig = process.env.DATABASE_URL
+    ? { connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } }
+    : { host: 'localhost', port: 5432, user: 'postgres', database: 'zherkeys' };
+
+const pool = new Pool(poolConfig);
+pool.on('error', (err) => {
+    console.warn('[POSTGRES-POOL] Aviso de conexão no banco:', err && err.message ? err.message : err);
 });
 
 // Sistema de Backup de Segurança de Produtos em Arquivo JSON Local (Gravado no Git/GitHub)
@@ -83,56 +87,32 @@ async function restoreProductsFromBackup() {
             const fileData = fs.readFileSync(backupPath, 'utf-8');
             const backupProducts = JSON.parse(fileData);
             if (Array.isArray(backupProducts) && backupProducts.length > 0) {
-                const countRes = await pool.query('SELECT COUNT(*) FROM products');
-                const count = parseInt(countRes.rows[0].count, 10);
-                if (count === 0) {
-                    for (let p of backupProducts) {
-                        if (p.id) {
-                            await pool.query(
-                                `INSERT INTO products (id, title, description, price, old_price, image, category, activation_key, in_stock, is_global, restricted_countries, genres, gameflip_listing_id, gallery) 
-                                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-                                 ON CONFLICT (id) DO NOTHING`,
-                                [
-                                    p.id,
-                                    p.title,
-                                    p.description || '',
-                                    parseFloat(p.price) || 0,
-                                    p.old_price ? parseFloat(p.old_price) : null,
-                                    p.image || '',
-                                    p.category || 'STEAM KEY',
-                                    p.activation_key || '',
-                                    p.in_stock !== false,
-                                    p.is_global !== false,
-                                    p.restricted_countries || '',
-                                    p.genres || '',
-                                    p.gameflip_listing_id || '',
-                                    typeof p.gallery === 'string' ? p.gallery : JSON.stringify(p.gallery || [])
-                                ]
-                            );
-                        } else {
-                            await pool.query(
-                                `INSERT INTO products (title, description, price, old_price, image, category, activation_key, in_stock, is_global, restricted_countries, genres, gameflip_listing_id, gallery) 
-                                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
-                                [
-                                    p.title,
-                                    p.description || '',
-                                    parseFloat(p.price) || 0,
-                                    p.old_price ? parseFloat(p.old_price) : null,
-                                    p.image || '',
-                                    p.category || 'STEAM KEY',
-                                    p.activation_key || '',
-                                    p.in_stock !== false,
-                                    p.is_global !== false,
-                                    p.restricted_countries || '',
-                                    p.genres || '',
-                                    p.gameflip_listing_id || '',
-                                    typeof p.gallery === 'string' ? p.gallery : JSON.stringify(p.gallery || [])
-                                ]
-                            );
-                        }
+                for (let p of backupProducts) {
+                    const check = await pool.query('SELECT id FROM products WHERE title = $1', [p.title]);
+                    if (check.rows.length === 0) {
+                        await pool.query(
+                            `INSERT INTO products (title, description, price, old_price, image, category, activation_key, in_stock, is_global, restricted_countries, genres, gameflip_listing_id, gallery) 
+                             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+                            [
+                                p.title,
+                                p.description || '',
+                                parseFloat(p.price) || 0,
+                                p.old_price ? parseFloat(p.old_price) : null,
+                                p.image || '',
+                                p.category || 'STEAM KEY',
+                                p.activation_key || '',
+                                p.in_stock !== false,
+                                p.is_global !== false,
+                                typeof p.restricted_countries === 'string' ? p.restricted_countries : JSON.stringify(p.restricted_countries || []),
+                                typeof p.genres === 'string' ? p.genres : JSON.stringify(p.genres || []),
+                                p.gameflip_listing_id || '',
+                                typeof p.gallery === 'string' ? p.gallery : JSON.stringify(p.gallery || [])
+                            ]
+                        );
                     }
-                    console.log(`✅ ${backupProducts.length} produtos restaurados do arquivo data/products_backup.json (Banco estava vazio)`);
                 }
+                productsCache = null;
+                console.log(`💾 Restauração/Sincronização de produtos concluída (${backupProducts.length} itens no catálogo)!`);
             }
         }
     } catch (err) {
@@ -1792,8 +1772,7 @@ app.get('/api/products', async (req, res) => {
         return res.json(productsCache);
     }
     try {
-        // Limpa pedidos pendentes expirados e restaura o estoque antes de carregar o catálogo de produtos!
-        await cleanupExpiredOrders();
+        await cleanupExpiredOrders().catch(e => null);
 
         const result = await pool.query('SELECT id, title, description, price, old_price, image, category, in_stock, is_global, restricted_countries, genres, display_order, gallery FROM products ORDER BY COALESCE(display_order, 0) ASC, id ASC');
         productsCache = result.rows.map(row => ({
@@ -1803,7 +1782,30 @@ app.get('/api/products', async (req, res) => {
         productsCacheTime = now;
         res.json(productsCache);
     } catch(e) {
-        console.error("Erro ao buscar produtos e limpar expirados:", e);
+        console.error("Aviso ao buscar produtos no banco. Carregando catálogo de backup local:", e && e.message ? e.message : e);
+        const backupPath = path.join(__dirname, 'data', 'products_backup.json');
+        if (fs.existsSync(backupPath)) {
+            try {
+                const fileData = fs.readFileSync(backupPath, 'utf-8');
+                const backupProducts = JSON.parse(fileData);
+                productsCache = backupProducts.map((row, index) => ({
+                    id: row.id || (index + 1),
+                    title: row.title,
+                    description: formatProductDescription(row.description, row.is_global, row.restricted_countries),
+                    price: row.price,
+                    old_price: row.old_price || null,
+                    image: row.image,
+                    category: row.category || 'STEAM KEY',
+                    in_stock: row.in_stock !== false,
+                    is_global: row.is_global !== false,
+                    restricted_countries: row.restricted_countries || '[]',
+                    genres: row.genres || '[]',
+                    gallery: row.gallery || '[]'
+                }));
+                productsCacheTime = now;
+                return res.json(productsCache);
+            } catch (err) {}
+        }
         res.status(500).json({ error: 'Erro ao buscar produtos' });
     }
 });
