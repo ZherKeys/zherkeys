@@ -1633,6 +1633,53 @@ const requireAdmin = async (req, res, next) => {
 // API DE PRODUTOS E ADMIN
 // ========================
 
+// ==========================================
+// ENEBA B2B AUTO-FULFILLMENT ENGINE
+// (Suporta tanto API Oficial quanto Robô de Navegador Puppeteer!)
+// ==========================================
+async function autoPurchaseEnebaKeys(productTitle, quantity = 1) {
+    const enebaApiKey = process.env.ENEBA_API_KEY;
+    const enebaApiSecret = process.env.ENEBA_API_SECRET;
+    
+    // 1. Tenta primeiro via API Oficial B2B (Se as chaves de API existirem)
+    if (enebaApiKey && enebaApiSecret) {
+        try {
+            console.log(`[ENEBA-AUTOBUY] Solicitando ${quantity} chave(s) para "${productTitle}" via API Eneba...`);
+            const response = await fetch('https://api.eneba.com/v1/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${enebaApiKey}`,
+                    'X-Eneba-Secret': enebaApiSecret
+                },
+                body: JSON.stringify({ productName: productTitle, quantity: quantity })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data && Array.isArray(data.keys)) return data.keys;
+                if (data && data.key) return [data.key];
+            }
+        } catch (err) {
+            console.error("[ENEBA-AUTOBUY] Falha na API Eneba. Alternando para o Robô Web...", err.message || err);
+        }
+    }
+
+    // 2. Fallback: Robô de Navegação Web Automática em Segundo Plano (Puppeteer)
+    try {
+        const { autoBuyEnebaKeyWeb } = require('./eneba_web_bot');
+        console.log(`[ENEBA-AUTOBUY] Executando Robô Web Automático para "${productTitle}"...`);
+        const webKeys = await autoBuyEnebaKeyWeb(productTitle, quantity);
+        if (webKeys && webKeys.length > 0) {
+            return webKeys;
+        }
+    } catch (err) {
+        console.error("[ENEBA-AUTOBUY] Erro ao carregar o Robô Web Eneba:", err.message || err);
+    }
+
+    return [];
+}
+
 // Ajudante para limpar pedidos pendentes expirados e restaurar seus estoques de chaves com segurança
 async function assignKeysToOrder(client, orderId) {
     const itemsRes = await client.query('SELECT product_id, quantity FROM order_items WHERE order_id = $1', [orderId]);
@@ -1644,8 +1691,18 @@ async function assignKeysToOrder(client, orderId) {
         if (prodRes.rows.length === 0) continue;
         
         const prod = prodRes.rows[0];
-        const allKeys = (prod.activation_key || '').split('\n').map(k => k.trim()).filter(Boolean);
+        let allKeys = (prod.activation_key || '').split('\n').map(k => k.trim()).filter(Boolean);
         
+        // Se o estoque local de chaves for insuficiente, tenta comprar automaticamente na Eneba via API!
+        if (allKeys.length < qty) {
+            const neededQty = qty - allKeys.length;
+            console.log(`[KEYS-ASSIGN] Estoque local insuficiente para "${prod.title}". Buscando ${neededQty} chave(s) via API Eneba...`);
+            const enebaFetchedKeys = await autoPurchaseEnebaKeys(prod.title, neededQty);
+            if (enebaFetchedKeys && enebaFetchedKeys.length > 0) {
+                allKeys = allKeys.concat(enebaFetchedKeys);
+            }
+        }
+
         const soldKeys = allKeys.slice(0, qty);
         const remainingKeys = allKeys.slice(qty);
         
@@ -1657,7 +1714,7 @@ async function assignKeysToOrder(client, orderId) {
             [soldKeysStr, orderId, productId]
         );
         
-        const inStock = remainingKeys.length > 0;
+        const inStock = remainingKeys.length > 0 || soldKeys.length > 0;
         await client.query(
             'UPDATE products SET activation_key = $1, in_stock = $2 WHERE id = $3',
             [remainingKeysStr, inStock, productId]

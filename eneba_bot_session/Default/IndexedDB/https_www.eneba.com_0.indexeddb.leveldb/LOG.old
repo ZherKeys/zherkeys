@@ -1,0 +1,33 @@
+2026/08/05-15:41:27.705 5d0 Reusing MANIFEST C:\Users\convidado 1\Documents\zherkeysite\eneba_bot_session\Default\IndexedDB\https_www.eneba.com_0.indexeddb.leveldb/MANIFEST-000001
+2026/08/05-15:41:27.706 5d0 Recovering log #3
+2026/08/05-15:41:27.706 5d0 Reusing old log C:\Users\convidado 1\Documents\zherkeysite\eneba_bot_session\Default\IndexedDB\https_www.eneba.com_0.indexeddb.leveldb/000003.log 
+2026/08/05-15:41:28.235 25b4 Level-0 table #5: started
+2026/08/05-15:41:28.251 25b4 Level-0 table #5: 6786 bytes OK
+2026/08/05-15:41:28.269 25b4 Delete type=0 #3
+2026/08/05-15:41:28.269 25b4 Manual compaction at level-0 from '\x00\x15\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x16\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/08/05-15:41:28.277 5d0 Level-0 table #7: started
+2026/08/05-15:41:28.288 5d0 Level-0 table #7: 501 bytes OK
+2026/08/05-15:41:28.296 5d0 Delete type=0 #4
+2026/08/05-15:41:28.296 5d0 Manual compaction at level-0 from '\x00\x16\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x17\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/08/05-15:41:28.296 5d0 Manual compaction at level-1 from '\x00\x16\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x17\x00\x00\x00' @ 0 : 0; will stop at '\x00\x16\x00\x00\x05' @ 492 : 0
+2026/08/05-15:41:28.296 5d0 Compacting 1@1 + 1@2 files
+2026/08/05-15:41:28.302 5d0 Generated table #8@1: 41 keys, 846 bytes
+2026/08/05-15:41:28.302 5d0 Compacted 1@1 + 1@2 files => 846 bytes
+2026/08/05-15:41:28.310 5d0 compacted to: files[ 0 0 1 0 0 0 0 ]
+2026/08/05-15:41:28.310 5d0 Delete type=2 #7
+2026/08/05-15:41:28.311 5d0 Manual compaction at level-1 from '\x00\x16\x00\x00\x05' @ 492 : 0 .. '\x00\x17\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/08/05-15:41:42.494 25b4 Level-0 table #10: started
+2026/08/05-15:41:42.511 25b4 Level-0 table #10: 534 bytes OK
+2026/08/05-15:41:42.534 25b4 Delete type=2 #5
+2026/08/05-15:41:42.534 25b4 Delete type=0 #6
+2026/08/05-15:41:42.535 25b4 Manual compaction at level-0 from '\x00\x17\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x18\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/08/05-15:41:42.543 5d0 Level-0 table #12: started
+2026/08/05-15:41:42.553 5d0 Level-0 table #12: 542 bytes OK
+2026/08/05-15:41:42.561 5d0 Delete type=0 #9
+2026/08/05-15:41:42.561 5d0 Manual compaction at level-0 from '\x00\x18\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x19\x00\x00\x00' @ 0 : 0; will stop at '\x00\x18\x00\x00\x05' @ 515 : 1
+2026/08/05-15:41:42.561 5d0 Compacting 1@0 + 1@1 files
+2026/08/05-15:41:42.569 5d0 Generated table #13@0: 14 keys, 559 bytes
+2026/08/05-15:41:42.569 5d0 Compacted 1@0 + 1@1 files => 559 bytes
+2026/08/05-15:41:42.577 5d0 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/08/05-15:41:42.577 5d0 Delete type=2 #12
+2026/08/05-15:41:42.578 5d0 Manual compaction at level-0 from '\x00\x18\x00\x00\x05' @ 515 : 1 .. '\x00\x19\x00\x00\x00' @ 0 : 0; will stop at (end)
