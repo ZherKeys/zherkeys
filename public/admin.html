@@ -212,15 +212,39 @@ gtag('config', 'AW-18202657831');
                         <div id="gallery-preview-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-3"></div>
                     </div>
 
+                    <!-- SEÇÃO DE ESTOQUE AUTOMÁTICO (ENEBA / NUUVEM) -->
+                    <div class="mb-4 bg-slate-950/80 border border-slate-800 p-3.5 rounded-xl space-y-2">
+                        <label class="block text-xs font-orbitron tracking-widest text-cyan-400 font-bold flex items-center gap-1.5">
+                            <i data-lucide="bot" class="w-4 h-4 text-cyan-400"></i> FORNECEDOR DE ESTOQUE AUTOMÁTICO (SEM KEY MANUAL)
+                        </label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                            <label class="flex items-center gap-2 bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 p-2.5 rounded-lg cursor-pointer transition-colors">
+                                <input type="checkbox" id="prod-stock-eneba" value="eneba" checked class="w-4 h-4 accent-cyan-500 rounded cursor-pointer">
+                                <span class="text-white font-medium flex items-center gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-cyan-400"></span> Estoque Eneba (Auto Bot)
+                                </span>
+                            </label>
+                            <label class="flex items-center gap-2 bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 p-2.5 rounded-lg cursor-pointer transition-colors">
+                                <input type="checkbox" id="prod-stock-nuuvem" value="nuuvem" class="w-4 h-4 accent-amber-500 rounded cursor-pointer">
+                                <span class="text-white font-medium flex items-center gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-amber-400"></span> Estoque Nuuvem (B2B)
+                                </span>
+                            </label>
+                        </div>
+                        <p class="text-[10px] text-slate-400 leading-relaxed font-inter">
+                            ✨ Quando uma das caixinhas está marcada, <b>não é necessário digitar chaves manuais</b>. O robô comprará a chave automaticamente no fornecedor selecionado assim que o pedido for pago!
+                        </p>
+                    </div>
+
                     <div>
-                        <label class="block text-xs font-orbitron tracking-widest text-emerald-400 font-bold mb-1"><i data-lucide="key" class="w-3 h-3 inline"></i> CHAVES DE ATIVAÇÃO OCULTAS</label>
+                        <label class="block text-xs font-orbitron tracking-widest text-emerald-400 font-bold mb-1"><i data-lucide="key" class="w-3 h-3 inline"></i> CHAVES DE ATIVAÇÃO OCULTAS (Opcional se usar Estoque Auto)</label>
                         <div id="keys-list-container" class="space-y-2 max-h-48 overflow-y-auto p-2 border border-slate-800 bg-slate-950 rounded-lg">
                             <!-- Injetado dinamicamente -->
                         </div>
                         <button type="button" onclick="addKeyInput('')" class="mt-2 text-[10px] font-orbitron tracking-widest bg-slate-900 hover:bg-emerald-950/40 text-emerald-400 border border-emerald-900/30 hover:border-emerald-900/60 px-3.5 py-2 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer">
-                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> ADICIONAR KEY
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> ADICIONAR KEY MANUAL
                         </button>
-                        <p class="text-[9px] text-slate-500 mt-1.5">Essas chaves serão reveladas individualmente aos compradores à medida que os pagamentos forem aprovados.</p>
+                        <p class="text-[9px] text-slate-500 mt-1.5">Essas chaves manuais serão usadas com prioridade. Se esgotarem, o robô usará o estoque automático.</p>
                     </div>
 
                     <div>
@@ -1849,6 +1873,7 @@ gtag('config', 'AW-18202657831');
                     .filter(val => val !== '')
                     .join('\n'),
                 gameflip_listing_id: document.getElementById('prod-gameflip').value,
+                auto_stock_provider: document.getElementById('prod-stock-nuuvem').checked ? 'nuuvem' : (document.getElementById('prod-stock-eneba').checked ? 'eneba' : 'none'),
                 is_global: document.getElementById('prod-global').checked,
                 restricted_countries: checkedCountries,
                 genres: Array.from(document.querySelectorAll('.genre-checkbox:checked')).map(cb => cb.value).join(', '),
@@ -1928,6 +1953,9 @@ gtag('config', 'AW-18202657831');
                 }
             }
             document.getElementById('prod-gameflip').value = p.gameflip_listing_id || '';
+            const stockProv = p.auto_stock_provider || 'eneba';
+            document.getElementById('prod-stock-eneba').checked = (stockProv === 'eneba');
+            document.getElementById('prod-stock-nuuvem').checked = (stockProv === 'nuuvem');
             
             const genresListStr = (p.genres || '').split(',').map(s => s.trim());
             document.querySelectorAll('.genre-checkbox').forEach(cb => {

@@ -1039,6 +1039,7 @@ async function initDB() {
             ALTER TABLE products ADD COLUMN IF NOT EXISTS gameflip_listing_id TEXT;
             ALTER TABLE products ADD COLUMN IF NOT EXISTS gallery TEXT DEFAULT '[]';
             ALTER TABLE products ADD COLUMN IF NOT EXISTS display_order INTEGER DEFAULT 0;
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS auto_stock_provider TEXT DEFAULT 'eneba';
             
             ALTER TABLE users ADD COLUMN IF NOT EXISTS balance NUMERIC(10, 2) DEFAULT 0.00;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS points INTEGER DEFAULT 0;
@@ -1862,7 +1863,7 @@ app.get('/api/admin/products/templates', requireAdmin, async (req, res) => {
 
 // Criar produto (Admin)
 app.post('/api/admin/products', requireAdmin, async (req, res) => {
-    const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id, gallery } = req.body;
+    const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id, gallery, auto_stock_provider } = req.body;
     try {
         // Validacao de chaves duplicadas
         await checkDuplicateKeysAndNotify(activation_key, title);
@@ -1882,10 +1883,11 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
             }
         }
         
-        const hasKeys = activation_key && activation_key.trim() !== '';
+        const stockProvider = auto_stock_provider || 'eneba';
+        const hasKeys = (activation_key && activation_key.trim() !== '') || stockProvider === 'eneba' || stockProvider === 'nuuvem';
         const insertRes = await pool.query(
-            'INSERT INTO products (title, description, price, old_price, image, category, activation_key, in_stock, is_global, restricted_countries, genres, gameflip_listing_id, gallery) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id',
-            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, savedImage, category, activation_key || '', hasKeys, is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '', savedGallery]
+            'INSERT INTO products (title, description, price, old_price, image, category, activation_key, in_stock, is_global, restricted_countries, genres, gameflip_listing_id, gallery, auto_stock_provider) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id',
+            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, savedImage, category, activation_key || '', hasKeys, is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '', savedGallery, stockProvider]
         );
         const productId = insertRes.rows[0].id;
         
@@ -2025,7 +2027,7 @@ app.post('/api/admin/products/bulk', requireAdmin, async (req, res) => {
 // Editar produto (Admin)
 app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
-    const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id, gallery } = req.body;
+    const { title, description, price, old_price, image, category, activation_key, is_global, restricted_countries, genres, gameflip_listing_id, gallery, auto_stock_provider } = req.body;
     try {
         // Validacao de chaves duplicadas (exclui o proprio produto)
         await checkDuplicateKeysAndNotify(activation_key, title, id);
@@ -2045,10 +2047,11 @@ app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
             }
         }
         
-        const hasKeys = activation_key && activation_key.trim() !== '';
+        const stockProvider = auto_stock_provider || 'eneba';
+        const hasKeys = (activation_key && activation_key.trim() !== '') || stockProvider === 'eneba' || stockProvider === 'nuuvem';
         await pool.query(
-            'UPDATE products SET title=$1, description=$2, price=$3, old_price=$4, image=$5, category=$6, activation_key=$7, in_stock=$8, is_global=$9, restricted_countries=$10, genres=$11, gameflip_listing_id=$12, gallery=$13 WHERE id=$14',
-            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, savedImage, category, activation_key || '', hasKeys, is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '', savedGallery, id]
+            'UPDATE products SET title=$1, description=$2, price=$3, old_price=$4, image=$5, category=$6, activation_key=$7, in_stock=$8, is_global=$9, restricted_countries=$10, genres=$11, gameflip_listing_id=$12, gallery=$13, auto_stock_provider=$14 WHERE id=$15',
+            [title, description, parseFloat(price), old_price ? parseFloat(old_price) : null, savedImage, category, activation_key || '', hasKeys, is_global === false ? false : true, restricted_countries || '', genres || '', gameflip_listing_id || '', savedGallery, stockProvider, id]
         );
         
         // Atualiza/Sincroniza metadados do Steam em segundo plano (apos 2 segundos)
