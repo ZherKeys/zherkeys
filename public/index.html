@@ -462,6 +462,8 @@ gtag('config', 'AW-18202657831');
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
 
     <!-- STEAM-STYLE FEATURED CAROUSEL (Destaques Estilo Steam) -->
     <section id="steam-hero-slider" class="py-12 px-4 max-w-7xl mx-auto scroll-mt-20">
@@ -1317,9 +1319,11 @@ gtag('config', 'AW-18202657831');
                 const res = await fetch('/api/products');
                 if(!res.ok) throw new Error("Falha ao buscar produtos");
                 produtos = await res.json();
+                window.produtos = produtos;
                 populateCategoryFilter();
                 populateGenreFilter();
                 renderGrid();
+                if (typeof initSteamSlider === 'function') initSteamSlider();
             } catch(e) {
                 console.error("Erro ao carregar produtos:", e);
                 document.getElementById('product-grid').innerHTML = '<div class="col-span-full text-center text-slate-400">Nenhum produto disponível no momento.</div>';
@@ -3489,11 +3493,11 @@ gtag('config', 'AW-18202657831');
             });
         }
 
-        function selectSteamSlide(index) {
+        window.selectSteamSlide = function(index) {
             clearInterval(steamSlideTimer);
             updateSteamSlide(index);
             startSteamSlideTimer();
-        }
+        };
 
         function startSteamSlideTimer() {
             clearInterval(steamSlideTimer);
@@ -3505,12 +3509,7 @@ gtag('config', 'AW-18202657831');
             }, 5000);
         }
 
-        // Trigger slider init when products are loaded
-        const originalRenderGrid = renderGrid;
-        window.renderGrid = function() {
-            if (typeof originalRenderGrid === 'function') originalRenderGrid();
-            initSteamSlider();
-        };
+        window.initSteamSlider = initSteamSlider;
     </script>
 
     <script src="/bg-player.js" defer></script>
