@@ -711,9 +711,9 @@ gtag('config', 'AW-18202657831');
                     <p class="font-inter text-slate-400 text-xs sm:text-sm leading-relaxed mb-4 font-light">
                         Ativar uma chave de jogo (CD-Key) original é um processo simples, rápido e 100% seguro. Após concluir sua compra na Zher Keys, você recebe um código alfanumérico único. Basta abrir o cliente oficial da plataforma (como Steam, Epic Games Launcher, PlayStation Network ou Xbox Live), navegar até a opção "Resgatar um Código" ou "Ativar um Produto", e colar o código fornecido. O jogo é adicionado permanentemente à sua biblioteca pessoal para download ilimitado.
                     </p>
-                    <a href="/contact.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-electricblue hover:text-white transition-colors">
+                    <button onclick="openActivationGuideModal()" type="button" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-electricblue hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0">
                         LEIA O GUIA COMPLETO DE ATIVAÇÃO <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-                    </a>
+                    </button>
                 </article>
 
                 <!-- Guia 2 -->
@@ -730,9 +730,9 @@ gtag('config', 'AW-18202657831');
                     <p class="font-inter text-slate-400 text-xs sm:text-sm leading-relaxed mb-4 font-light">
                         As distribuidoras digitais utilizam travas regionais para adequar os preços dos jogos a diferentes moedas e mercados locais. Uma <strong>Global Key</strong> (Chave Global) é uma licença universal que pode ser ativada e jogada em qualquer país do mundo sem restrições de IP ou localização. Na Zher Keys, indicamos com clareza no rótulo de cada produto a sua compatibilidade regional (Global, América Latina ou Brasil) para garantir transparência total e ativação perfeita.
                     </p>
-                    <a href="/contact.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-cyberrose hover:text-white transition-colors">
+                    <button onclick="openRegionGuideModal()" type="button" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-cyberrose hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0">
                         ENTENDA SOBRE REGIÕES E REGRAS <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-                    </a>
+                    </button>
                 </article>
 
                 <!-- Guia 3 -->
@@ -2960,6 +2960,154 @@ gtag('config', 'AW-18202657831');
         </div>
     </div>
 
+    <!-- MODAL GUIA COMPLETO DE ATIVAÇÃO -->
+    <div id="activation-guide-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 sm:p-6 transition-all duration-300">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onclick="closeActivationGuideModal()"></div>
+        <div class="relative w-full max-w-3xl bg-slate-950 border-2 border-electricblue/60 rounded-2xl shadow-[0_0_50px_rgba(59,130,246,0.25)] overflow-hidden p-6 sm:p-8 text-left transition-all duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <button onclick="closeActivationGuideModal()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white hover:border-electricblue transition-all z-20">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Header -->
+            <div class="mb-6 border-b border-slate-800 pb-4">
+                <div class="inline-flex items-center gap-2 bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[10px] tracking-widest px-3 py-1 rounded-full uppercase font-bold mb-2">
+                    🔑 PASSO A PASSO ILUSTRADO
+                </div>
+                <h3 class="font-orbitron font-black text-xl sm:text-2xl text-white uppercase tracking-tight">
+                    GUIA COMPLETO DE ATIVAÇÃO DE CHAVES
+                </h3>
+                <p class="text-slate-400 text-xs mt-1 font-inter">
+                    Selecione sua plataforma abaixo para ver as instruções completas de resgate do seu código.
+                </p>
+            </div>
+
+            <!-- Content Body / Steps by Platform -->
+            <div class="space-y-6 font-inter">
+                <!-- Steam -->
+                <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl space-y-3">
+                    <div class="flex items-center gap-2 text-electricblue font-orbitron font-bold text-sm uppercase">
+                        <i data-lucide="gamepad-2" class="w-5 h-5"></i> 1. COMO ATIVAR NA STEAM (PC / MAC)
+                    </div>
+                    <ol class="list-decimal pl-5 space-y-2 text-xs sm:text-sm text-slate-300">
+                        <li>Abra o aplicativo <strong>Steam</strong> instalado no seu computador e faça login na sua conta.</li>
+                        <li>No menu superior esquerdo, clique na opção <strong>"Jogos"</strong> e depois selecione <strong>"Ativar um código de produto no Steam..."</strong>.</li>
+                        <li>Clique em <strong>"Avançar"</strong>, concorde com os Termos de Serviço e digite ou cole a sua <strong>CD-Key</strong> recebida na Zher Keys.</li>
+                        <li>Pronto! O jogo será adicionado instantaneamente à sua biblioteca para download imediato.</li>
+                    </ol>
+                </div>
+
+                <!-- Epic Games -->
+                <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl space-y-3">
+                    <div class="flex items-center gap-2 text-cyberrose font-orbitron font-bold text-sm uppercase">
+                        <i data-lucide="zap" class="w-5 h-5"></i> 2. COMO ATIVAR NA EPIC GAMES LAUNCHER
+                    </div>
+                    <ol class="list-decimal pl-5 space-y-2 text-xs sm:text-sm text-slate-300">
+                        <li>Abra o aplicativo <strong>Epic Games Launcher</strong> ou acesse o site oficial em <a href="https://store.epicgames.com/redeem" target="_blank" rel="noopener noreferrer" class="text-electricblue underline">store.epicgames.com/redeem</a>.</li>
+                        <li>Clique no ícone do seu perfil no canto superior direito e escolha <strong>"Resgatar Código"</strong>.</li>
+                        <li>Cole sua chave de ativação alfanumérica de 20 dígitos e clique em <strong>"Resgatar"</strong>.</li>
+                        <li>O jogo aparecerá imediatamente na sua biblioteca da Epic Games.</li>
+                    </ol>
+                </div>
+
+                <!-- PlayStation & Xbox -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl space-y-2">
+                        <div class="text-blue-400 font-orbitron font-bold text-xs uppercase flex items-center gap-2">
+                            <i data-lucide="tv" class="w-4 h-4"></i> PLAYSTATION (PS4 / PS5)
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Acesse a <strong>PlayStation Store</strong> no console, clique no menu de três pontos (...) no topo da tela, escolha <strong>Resgatar Código</strong> e insira os 12 dígitos.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl space-y-2">
+                        <div class="text-emerald-400 font-orbitron font-bold text-xs uppercase flex items-center gap-2">
+                            <i data-lucide="box" class="w-4 h-4"></i> XBOX / MICROSOFT STORE
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Pressione o botão Xbox no controle, abra a <strong>Microsoft Store</strong>, acesse a aba lateral e selecione <strong>Resgatar</strong> para inserir a chave de 25 caracteres.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- YouTube Video Link CTA -->
+            <div class="mt-6 pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <span class="text-xs text-slate-400">Prefere assistir ao tutorial em vídeo?</span>
+                <a href="https://youtu.be/PVaMg9RHPng?si=SsZrrNQcPwlM0vmB" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto py-2.5 px-5 bg-red-600 hover:bg-red-500 text-white font-orbitron text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all uppercase">
+                    <i data-lucide="youtube" class="w-4 h-4"></i> ASSISTIR VÍDEO TUTORIAL
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GUIA DE REGIÕES E REGRAS DE LICENÇA -->
+    <div id="region-guide-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 sm:p-6 transition-all duration-300">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onclick="closeRegionGuideModal()"></div>
+        <div class="relative w-full max-w-3xl bg-slate-950 border-2 border-cyberrose/60 rounded-2xl shadow-[0_0_50px_rgba(244,63,94,0.25)] overflow-hidden p-6 sm:p-8 text-left transition-all duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <button onclick="closeRegionGuideModal()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white hover:border-cyberrose transition-all z-20">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Header -->
+            <div class="mb-6 border-b border-slate-800 pb-4">
+                <div class="inline-flex items-center gap-2 bg-cyberrose/10 border border-cyberrose/30 text-cyberrose font-orbitron text-[10px] tracking-widest px-3 py-1 rounded-full uppercase font-bold mb-2">
+                    🌐 COMPATIBILIDADE REGIONAL
+                </div>
+                <h3 class="font-orbitron font-black text-xl sm:text-2xl text-white uppercase tracking-tight">
+                    ENTENDA AS REGIÕES E REGRAS DE LICENCIAMENTO
+                </h3>
+                <p class="text-slate-400 text-xs mt-1 font-inter">
+                    Saiba como funcionam as restrições territoriais para garantir que sua chave ative perfeitamente no seu país.
+                </p>
+            </div>
+
+            <!-- Content Body -->
+            <div class="space-y-5 font-inter text-xs sm:text-sm">
+                
+                <!-- Card 1: Chaves Globais -->
+                <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl space-y-2">
+                    <div class="flex items-center gap-2 text-electricblue font-orbitron font-bold text-sm uppercase">
+                        <i data-lucide="globe" class="w-5 h-5"></i> 1. O QUE SÃO CHAVES GLOBAIS (GLOBAL KEYS)?
+                    </div>
+                    <p class="text-slate-300 leading-relaxed">
+                        Chaves marcadas com a tag <strong>GLOBAL</strong> no catálogo da Zher Keys são licenças universais sem qualquer trava territorial. Elas podem ser resgatadas e jogadas em qualquer país do mundo (Brasil, Portugal, Estados Unidos, Europa, etc.) sem necessidade de alterar a região da conta ou usar VPN.
+                    </p>
+                </div>
+
+                <!-- Card 2: Chaves Regionais -->
+                <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl space-y-2">
+                    <div class="flex items-center gap-2 text-cyberrose font-orbitron font-bold text-sm uppercase">
+                        <i data-lucide="lock" class="w-5 h-5"></i> 2. O QUE SÃO CHAVES REGIONAIS (LATAM / BRASIL)?
+                    </div>
+                    <p class="text-slate-300 leading-relaxed">
+                        Algumas distribuidoras emitem licenças específicas com valores reduzidos para mercados locais (como América Latina ou Brasil). Produtos com a tag <strong>REGIONAL</strong> exigem que a conta cadastrada na plataforma (ex: conta Steam cadastrada no Brasil) corresponda à região indicada.
+                    </p>
+                </div>
+
+                <!-- Card 3: Como identificar no site -->
+                <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl space-y-2">
+                    <div class="flex items-center gap-2 text-emerald-400 font-orbitron font-bold text-sm uppercase">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i> 3. COMO VERIFICAR A COMPATIBILIDADE NA ZHER KEYS
+                    </div>
+                    <ul class="list-disc pl-5 space-y-1.5 text-slate-300">
+                        <li>Na vitrine e nos cards de cada produto, indicamos o selo <strong>GLOBAL</strong> ou <strong>REGIONAL</strong>.</li>
+                        <li>Ao abrir a página de um produto regional, nosso sistema exibe um aviso em destaque com a lista exata dos países onde a chave pode ser ativada.</li>
+                        <li>Garantimos 100% o funcionamento da chave desde que ativada no país/região compatível indicado.</li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <!-- Footer Action -->
+            <div class="mt-6 pt-4 border-t border-slate-800 text-center">
+                <button onclick="closeRegionGuideModal()" class="py-3 px-8 bg-gradient-to-r from-electricblue to-blue-600 hover:from-blue-500 hover:to-blue-600 text-white font-orbitron text-xs font-bold rounded-xl uppercase transition-all shadow-cyber">
+                    ENTENDI, VOLTAR AO SITE
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- MOBILE BOTTOM NAVIGATION DOCK (10/10 Mobile App UX) -->
     <nav class="sm:hidden fixed bottom-0 left-0 right-0 z-[90] bg-slate-950/90 backdrop-blur-2xl border-t border-slate-800/80 px-4 py-2.5 flex items-center justify-around shadow-[0_-10px_25px_rgba(0,0,0,0.5)]">
         <a href="/" class="flex flex-col items-center gap-1 text-electricblue transition-colors">
@@ -2988,7 +3136,8 @@ gtag('config', 'AW-18202657831');
     <script>
         window.openQuickViewModal = (e, productId) => {
             if (e) e.stopPropagation();
-            const p = products.find(prod => prod.id === productId);
+            const prodList = window.produtos || [];
+            const p = prodList.find(prod => prod.id === productId);
             if (!p) return;
 
             const modal = document.getElementById('quick-view-modal');
@@ -3052,6 +3201,42 @@ gtag('config', 'AW-18202657831');
 
         window.closeQuickViewModal = () => {
             const modal = document.getElementById('quick-view-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        };
+
+        // Modal de Guia Completo de Ativação
+        window.openActivationGuideModal = () => {
+            const modal = document.getElementById('activation-guide-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+            if (window.lucide) lucide.createIcons();
+        };
+
+        window.closeActivationGuideModal = () => {
+            const modal = document.getElementById('activation-guide-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        };
+
+        // Modal de Guia de Regras e Regiões
+        window.openRegionGuideModal = () => {
+            const modal = document.getElementById('region-guide-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+            if (window.lucide) lucide.createIcons();
+        };
+
+        window.closeRegionGuideModal = () => {
+            const modal = document.getElementById('region-guide-modal');
             if (modal) {
                 modal.classList.add('hidden');
                 document.body.style.overflow = '';
