@@ -784,6 +784,7 @@ gtag('config', 'AW-18202657831');
                     video.controls = true;
                     video.muted = false; // Tenta reproduzir com SOM por padrão!
                     video.loop = false;
+                    video.removeAttribute('loop');
                     video.playsInline = true;
                     video.setAttribute('playsinline', '');
                     video.setAttribute('autoplay', '');
@@ -855,7 +856,7 @@ gtag('config', 'AW-18202657831');
                 } else if (type === 'youtube') {
                     const ytId = getYoutubeId(mediaSrc);
                     const iframe = document.createElement('iframe');
-                    iframe.src = `https://www.youtube.com/embed/${ytId}?enablejsapi=1&rel=0&autoplay=1&loop=1&playlist=${ytId}`;
+                    iframe.src = `https://www.youtube.com/embed/${ytId}?enablejsapi=1&rel=0&autoplay=1`;
                     iframe.className = "w-full h-full border-0 rounded-xl bg-slate-950";
                     iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
                     iframe.allowFullscreen = true;
@@ -1005,6 +1006,24 @@ gtag('config', 'AW-18202657831');
                 startAutoPlay();
             }
         }
+
+        // Listener para detectar quando trailer do YouTube termina de tocar (PostMessage API)
+        window.addEventListener('message', (event) => {
+            try {
+                let data = event.data;
+                if (typeof data === 'string') {
+                    try { data = JSON.parse(data); } catch(e) {}
+                }
+                if (data && (data.event === 'infoDelivery' || data.event === 'onStateChange')) {
+                    const info = data.info;
+                    // Código 0 = Vídeo Finalizado (Ended) na API do YouTube
+                    if (info === 0 || (info && info.playerState === 0)) {
+                        if (window.resumeBgMusic) window.resumeBgMusic();
+                        showSlide(activeSlideIndex + 1, true);
+                    }
+                }
+            } catch(err) {}
+        });
 
         initSlider();
 
