@@ -951,16 +951,24 @@ gtag('config', 'AW-18202657831');
                 let html = '';
                 orders.forEach(o => {
                     const isApproved = o.status === 'approved';
-                    const statusColor = isApproved ? "bg-emerald-900/40 border-emerald-500 text-emerald-400" : "bg-slate-800 border-slate-600 text-slate-400";
-                    const statusIcon = isApproved ? "check-circle" : "clock";
-                    
+                    let statusColor = "bg-slate-800 border-slate-600 text-slate-400";
+                    let statusIcon = "clock";
                     let statusText = '';
+                    
                     if (isApproved) {
-                        statusText = dict.status_approved;
-                    } else if (o.status === 'rejected') {
-                        statusText = dict.status_cancelled;
+                        statusColor = "bg-emerald-900/40 border-emerald-500 text-emerald-400";
+                        statusIcon = "check-circle";
+                        statusText = dict.status_approved || 'APROVADO';
+                    } else if (o.status === 'processing') {
+                        statusColor = "bg-amber-900/40 border-amber-500 text-amber-400";
+                        statusIcon = "hourglass";
+                        statusText = 'EM LIBERAÇÃO';
+                    } else if (o.status === 'cancelled' || o.status === 'rejected') {
+                        statusColor = "bg-red-900/40 border-red-500 text-red-400";
+                        statusIcon = "x-circle";
+                        statusText = 'CANCELADO';
                     } else {
-                        statusText = dict.status_pending;
+                        statusText = dict.status_pending || 'PENDENTE';
                     }
 
                     let itemsHtml = '';
@@ -1000,8 +1008,8 @@ gtag('config', 'AW-18202657831');
                                         </div>
                                     </div>
                                 `;
-                            } else if (isApproved) {
-                                 keyBox = `<div class="mt-2 text-xs text-slate-500">${dict.key_releasing}...</div>`;
+                            } else if (o.status === 'processing') {
+                                 keyBox = `<div class="mt-2 text-xs font-bold text-amber-400 flex items-center gap-1.5 bg-amber-950/40 border border-amber-800/40 p-2 rounded-md"><i data-lucide="hourglass" class="w-3.5 h-3.5"></i> ${dict.key_releasing || 'Chave em liberação... (Prazo máx: 5 min)'}</div>`;
                             }
 
                             // Steam logo overlay if category is Steam Key
@@ -1015,9 +1023,9 @@ gtag('config', 'AW-18202657831');
                                 </div>
                             ` : '';
 
-                            // Bloco de Avaliação do Jogo (Avaliação de 1 a 5 Estrelas + Comentário)
+                            // Bloco de Avaliação do Jogo (Apenas se o pedido estiver 'approved' com a chave entregue)
                             let reviewBox = '';
-                            if (isApproved) {
+                            if (isApproved && item.activation_key && !item.activation_key.includes('liberação')) {
                                 const existingRev = window.userReviewsMap && window.userReviewsMap[item.product_id];
                                 const isEvaluated = !!existingRev;
                                 const currentRating = existingRev ? existingRev.rating : 0;
@@ -1083,14 +1091,13 @@ gtag('config', 'AW-18202657831');
 
                     html += `
                         <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden">
-                            ${isApproved ? '<div class="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>' : '<div class="absolute top-0 left-0 w-1 h-full bg-slate-600"></div>'}
+                            ${isApproved ? '<div class="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>' : (o.status === 'processing' ? '<div class="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>' : '<div class="absolute top-0 left-0 w-1 h-full bg-slate-600"></div>')}
                             
                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 pl-3">
                                 <div>
                                     <span class="font-orbitron font-bold text-white text-lg">${dict.order_id_lbl} - #${o.id}</span>
                                     <div class="text-sm font-bold text-cyberrose mt-1">${formatPrice(o.total_amount)}</div>
-                                    ${isApproved ? `<button onclick="showOrderDetails(${o.id})" class="text-[10px] text-slate-400 hover:text-emerald-400 underline block mt-1.5 transition-colors font-semibold">${dict.view_details}</button>` : ''}
-                                    ${o.status === 'pending' && o.pix_qr_code ? `<button onclick="showPendingPixDetails(${o.id})" class="text-[10px] text-slate-400 hover:text-emerald-400 underline block mt-1.5 transition-colors font-semibold">${dict.view_details}</button>` : ''}
+                                    <button onclick="showOrderDetails(${o.id})" class="text-[10px] text-slate-400 hover:text-emerald-400 underline block mt-1.5 transition-colors font-semibold">${dict.view_details || 'ver detalhes'}</button>
                                 </div>
                                 <div class="flex flex-col sm:items-end gap-2">
                                     <span class="flex items-center gap-2 font-orbitron text-[10px] tracking-widest px-3 py-1.5 rounded-full border ${statusColor}">
@@ -1150,35 +1157,44 @@ gtag('config', 'AW-18202657831');
         };
 
         // --- CHAT LOGIC ---
-        const modal = document.getElementById('chat-modal');
-        const modalContent = document.getElementById('chat-content');
-
         window.openChat = (orderId) => {
             currentChatOrderId = orderId;
-            document.getElementById('chat-modal-title').innerText = "PEDIDO #" + orderId;
+            const m = document.getElementById('chat-modal');
+            const mc = document.getElementById('chat-content');
+            const titleEl = document.getElementById('chat-modal-title');
+            if (titleEl) titleEl.innerText = "PEDIDO #" + orderId;
             
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0', 'pointer-events-none');
-                modalContent.classList.remove('scale-95');
-                modalContent.classList.add('scale-100');
-            }, 10);
+            if (m) {
+                m.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+                m.classList.add('flex');
+                if (mc) {
+                    mc.classList.remove('scale-95');
+                    mc.classList.add('scale-100');
+                }
+            }
             document.body.style.overflow = 'hidden';
             
             loadChatMessages();
-            chatInterval = setInterval(loadChatMessages, 3000); // Polling simple
+            if (window.chatInterval) clearInterval(window.chatInterval);
+            window.chatInterval = setInterval(loadChatMessages, 3000);
         };
 
         window.closeChat = () => {
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            modalContent.classList.remove('scale-100');
-            modalContent.classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                document.body.style.overflow = '';
-            }, 300);
-            
-            clearInterval(chatInterval);
+            const m = document.getElementById('chat-modal');
+            const mc = document.getElementById('chat-content');
+            if (m) {
+                m.classList.add('opacity-0', 'pointer-events-none');
+                if (mc) {
+                    mc.classList.remove('scale-100');
+                    mc.classList.add('scale-95');
+                }
+                setTimeout(() => {
+                    m.classList.add('hidden');
+                    m.classList.remove('flex');
+                    document.body.style.overflow = '';
+                }, 300);
+            }
+            if (window.chatInterval) clearInterval(window.chatInterval);
             currentChatOrderId = null;
         };
 
@@ -1189,6 +1205,7 @@ gtag('config', 'AW-18202657831');
                 const messages = await res.json();
                 
                 const container = document.getElementById('user-chat-messages');
+                if (!container) return;
                 container.innerHTML = '';
                 
                 if(messages.length === 0) {
@@ -1198,7 +1215,7 @@ gtag('config', 'AW-18202657831');
                             <p class="font-orbitron text-xs tracking-widest">ENVIE UMA MENSAGEM PARA INICIAR O SUPORTE</p>
                         </div>
                     `;
-                    lucide.createIcons();
+                    if (window.lucide) lucide.createIcons();
                     return;
                 }
 
@@ -1217,19 +1234,18 @@ gtag('config', 'AW-18202657831');
                         </div>
                     `;
                 });
-                // Auto scroll to bottom
                 container.scrollTop = container.scrollHeight;
             } catch(e) {
                 console.error(e);
             }
         }
 
-        document.getElementById('user-chat-form').addEventListener('submit', async (e) => {
+        document.getElementById('user-chat-form')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             if(!currentChatOrderId) return;
             
             const input = document.getElementById('user-chat-input');
-            const message = input.value.trim();
+            const message = input ? input.value.trim() : '';
             if(!message) return;
 
             input.value = '';
@@ -1251,59 +1267,66 @@ gtag('config', 'AW-18202657831');
 
         // --- RECEIPT MODAL LOGIC ---
         let currentDetailedOrder = null;
-        const receiptModal = document.getElementById('receipt-modal');
-        const receiptModalContent = document.getElementById('receipt-content');
 
         window.showOrderDetails = (orderId) => {
-            const o = allUserOrders.find(order => String(order.id) === String(orderId));
+            const o = (allUserOrders || []).find(order => String(order.id) === String(orderId));
             if (!o) return;
             currentDetailedOrder = o;
             
-            document.getElementById('receipt-order-id').innerText = "#PEDIDO-" + o.id;
+            const orderIdEl = document.getElementById('receipt-order-id');
+            if (orderIdEl) orderIdEl.innerText = "#PEDIDO-" + o.id;
             
             const dateStr = new Date(o.created_at).toLocaleString('pt-BR');
-            document.getElementById('receipt-date').innerText = dateStr;
-            document.getElementById('receipt-total').innerText = formatPrice(o.total_amount);
+            const dateEl = document.getElementById('receipt-date');
+            if (dateEl) dateEl.innerText = dateStr;
+            const totalEl = document.getElementById('receipt-total');
+            if (totalEl) totalEl.innerText = formatPrice(o.total_amount);
             
             const itemsContainer = document.getElementById('receipt-items-list');
-            itemsContainer.innerHTML = '';
-            
-            o.items.forEach(item => {
-                // Steam logo overlay if category is Steam Key
-                const isSteam = item.category === 'STEAM KEY';
-                const steamBadge = isSteam ? `
-                    <div class="absolute top-0.5 left-0.5 bg-black/75 border border-slate-700/80 px-1 py-0.5 rounded backdrop-blur-sm flex items-center gap-0.5 z-10 text-[5px] font-orbitron text-slate-200 tracking-widest uppercase">
-                        <svg class="w-1.5 h-1.5 text-slate-300" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-3.328 17.514c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189zm.065-2.923c-.767-.008-1.464.385-1.859 1.03l-2.45-.754c-.116-.036-.182-.16-.146-.276l.781-2.54c.036-.116.16-.182.276-.146l2.36.726c.45-.373 1.01-.58 1.595-.589.626-.008 1.222.215 1.688.625l3.29-2.285c.105-.072.247-.043.318.062l1.62 2.336c.072.104.043.247-.062.318l-3.23 2.244c-.218.66-.827 1.127-1.52 1.139-.026.001-.052.001-.078.001zm6.953-3.693c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189z"/>
-                        </svg>
-                        STEAM
-                    </div>
-                ` : '';
+            if (itemsContainer) {
+                itemsContainer.innerHTML = '';
+                if (o.items) {
+                    o.items.forEach(item => {
+                        const isSteam = item.category === 'STEAM KEY';
+                        const steamBadge = isSteam ? `
+                            <div class="absolute top-0.5 left-0.5 bg-black/75 border border-slate-700/80 px-1 py-0.5 rounded backdrop-blur-sm flex items-center gap-0.5 z-10 text-[5px] font-orbitron text-slate-200 tracking-widest uppercase">
+                                <svg class="w-1.5 h-1.5 text-slate-300" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-3.328 17.514c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189zm.065-2.923c-.767-.008-1.464.385-1.859 1.03l-2.45-.754c-.116-.036-.182-.16-.146-.276l.781-2.54c.036-.116.16-.182.276-.146l2.36.726c.45-.373 1.01-.58 1.595-.589.626-.008 1.222.215 1.688.625l3.29-2.285c.105-.072.247-.043.318.062l1.62 2.336c.072.104.043.247-.062.318l-3.23 2.244c-.218.66-.827 1.127-1.52 1.139-.026.001-.052.001-.078.001zm6.953-3.693c-.655 0-1.189-.533-1.189-1.189s.534-1.189 1.189-1.189 1.189.534 1.189 1.189-.533 1.189-1.189 1.189z"/>
+                                </svg>
+                                STEAM
+                            </div>
+                        ` : '';
 
-                itemsContainer.innerHTML += `
-                    <div class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg border border-slate-800">
-                        <div class="relative w-12 h-12 rounded overflow-hidden flex-shrink-0">
-                            ${steamBadge}
-                            <img src="${item.image}" class="w-full h-full object-cover">
-                        </div>
-                        <div class="flex-grow min-w-0">
-                            <span class="text-[8px] bg-electricblue/10 border border-electricblue/20 text-electricblue font-orbitron px-1.5 py-0.5 rounded uppercase font-bold">${item.category}</span>
-                            <h5 class="text-white text-xs font-bold truncate mt-1">${item.title} (x${item.quantity})</h5>
-                            <code class="text-[10px] text-emerald-400 font-bold block font-mono mt-0.5 select-all bg-emerald-950/20 px-1 py-0.5 rounded border border-emerald-900/30 w-fit">${item.activation_key || 'Chave em liberação'}</code>
-                        </div>
-                        <span class="text-xs font-bold text-slate-300 font-orbitron whitespace-nowrap">${formatPrice(item.price)}</span>
-                    </div>
-                `;
-            });
+                        itemsContainer.innerHTML += `
+                            <div class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg border border-slate-800">
+                                <div class="relative w-12 h-12 rounded overflow-hidden flex-shrink-0">
+                                    ${steamBadge}
+                                    <img src="${item.image}" class="w-full h-full object-cover">
+                                </div>
+                                <div class="flex-grow min-w-0">
+                                    <span class="text-[8px] bg-electricblue/10 border border-electricblue/20 text-electricblue font-orbitron px-1.5 py-0.5 rounded uppercase font-bold">${item.category}</span>
+                                    <h5 class="text-white text-xs font-bold truncate mt-1">${item.title} (x${item.quantity})</h5>
+                                    <code class="text-[10px] text-emerald-400 font-bold block font-mono mt-0.5 select-all bg-emerald-950/20 px-1 py-0.5 rounded border border-emerald-900/30 w-fit">${item.activation_key || 'Chave em liberação'}</code>
+                                </div>
+                                <span class="text-xs font-bold text-slate-300 font-orbitron whitespace-nowrap">${formatPrice(item.price)}</span>
+                            </div>
+                        `;
+                    });
+                }
+            }
             
-            receiptModal.classList.remove('hidden');
-            setTimeout(() => {
-                receiptModal.classList.remove('opacity-0', 'pointer-events-none');
-                receiptModalContent.classList.remove('scale-95');
-                receiptModalContent.classList.add('scale-100');
-            }, 10);
+            const rm = document.getElementById('receipt-modal');
+            const rmc = document.getElementById('receipt-content');
+            if (rm) {
+                rm.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+                rm.classList.add('flex');
+                if (rmc) {
+                    rmc.classList.remove('scale-95');
+                    rmc.classList.add('scale-100');
+                }
+            }
             
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
         };
 
         window.showPendingPixDetails = (orderId) => {
@@ -1322,12 +1345,19 @@ gtag('config', 'AW-18202657831');
         };
 
         window.closeReceiptModal = () => {
-            receiptModal.classList.add('opacity-0', 'pointer-events-none');
-            receiptModalContent.classList.remove('scale-100');
-            receiptModalContent.classList.add('scale-95');
-            setTimeout(() => {
-                receiptModal.classList.add('hidden');
-            }, 300);
+            const rm = document.getElementById('receipt-modal');
+            const rmc = document.getElementById('receipt-content');
+            if (rm) {
+                rm.classList.add('opacity-0', 'pointer-events-none');
+                if (rmc) {
+                    rmc.classList.remove('scale-100');
+                    rmc.classList.add('scale-95');
+                }
+                setTimeout(() => {
+                    rm.classList.add('hidden');
+                    rm.classList.remove('flex');
+                }, 300);
+            }
             currentDetailedOrder = null;
         };
 
