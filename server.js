@@ -1664,7 +1664,7 @@ async function autoPurchaseEnebaKeys(productTitle, quantity = 1) {
 // Função central para verificar e enviar e-mail de chaves liberadas APENAS quando a chave chegar com sucesso!
 async function checkAndSendOrderKeysEmail(clientOrPool, orderId) {
     try {
-        const orderRes = await clientOrPool.query('SELECT user_id, total, status FROM orders WHERE id = $1', [orderId]);
+        const orderRes = await clientOrPool.query('SELECT user_id, COALESCE(total_amount, 0) as total_amount, status FROM orders WHERE id = $1', [orderId]);
         if (orderRes.rows.length === 0) return;
         const order = orderRes.rows[0];
 
@@ -1706,7 +1706,7 @@ async function checkAndSendOrderKeysEmail(clientOrPool, orderId) {
                     <p style="color: #94a3b8; font-size: 14px; margin-top: 0; margin-bottom: 25px;">Pedido #${orderId}</p>
                     
                     <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6; margin-bottom: 25px; text-align: left;">
-                        Olá! Seu pagamento no valor de <strong>R$ ${parseFloat(order.total || 0).toFixed(2).replace('.', ',')}</strong> foi aprovado com sucesso. Suas chaves de ativação já foram liberadas abaixo:
+                        Olá! Seu pagamento no valor de <strong>R$ ${parseFloat(order.total_amount || 0).toFixed(2).replace('.', ',')}</strong> foi aprovado com sucesso. Suas chaves de ativação já foram liberadas abaixo:
                     </p>
                     
                     ${keysListHtml}
@@ -1773,7 +1773,11 @@ async function assignKeysToOrder(client, orderId) {
     }
 
     // Envia o e-mail de chaves APENAS se todas as chaves tiverem sido atribuídas com sucesso!
-    await checkAndSendOrderKeysEmail(client, orderId);
+    try {
+        await checkAndSendOrderKeysEmail(client, orderId);
+    } catch (e) {
+        console.error(`[KEYS-ASSIGN] Erro não-crítico ao enviar e-mail no assignKeysToOrder:`, e.message || e);
+    }
 }
 
 async function restoreKeysFromExpiredOrders(client, expiredIds) {
