@@ -1771,6 +1771,20 @@ async function assignKeysToOrder(client, orderId) {
         console.log(`[KEYS-ASSIGN] Atribuídas ${soldKeys.length} chaves para o Produto ID ${productId} no Pedido #${orderId}. Restantes no estoque: ${remainingKeys.length}`);
     }
 
+    // Atualiza o status do pedido: 'approved' se TODAS as chaves foram entregues, 'processing' se alguma continuar em liberação
+    const checkKeysRes = await client.query('SELECT activation_key FROM order_items WHERE order_id = $1', [orderId]);
+    let allKeysReady = checkKeysRes.rows.length > 0;
+    for (let row of checkKeysRes.rows) {
+        const k = (row.activation_key || '').trim();
+        if (!k || k.includes('Chave em liberação') || k.includes('Liberação em andamento')) {
+            allKeysReady = false;
+            break;
+        }
+    }
+    const finalStatus = allKeysReady ? 'approved' : 'processing';
+    await client.query("UPDATE orders SET status = $1 WHERE id = $2 AND status != 'cancelled'", [finalStatus, orderId]);
+    console.log(`[KEYS-ASSIGN] Status do Pedido #${orderId} atualizado para '${finalStatus}' (Chaves entregues: ${allKeysReady ? 'SIM' : 'NÃO - Em Liberação'}).`);
+
     // Envia o e-mail de chaves APENAS se todas as chaves tiverem sido atribuídas com sucesso!
     try {
         await checkAndSendOrderKeysEmail(client, orderId);
