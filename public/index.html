@@ -463,8 +463,50 @@ gtag('config', 'AW-18202657831');
                 </div>
             </div>
 
-        </div>   </div>
-           <!-- VITRINE DE PRODUTOS -->
+    <!-- STEAM-STYLE FEATURED CAROUSEL (Destaques Estilo Steam) -->
+    <section id="steam-hero-slider" class="py-12 px-4 max-w-7xl mx-auto scroll-mt-20">
+        <div class="text-center mb-8">
+            <span class="font-orbitron text-xs tracking-widest text-cyberrose font-bold block mb-2 uppercase">// DESTAQUES EM PROMOÇÃO EXCLUSIVA</span>
+            <h2 class="font-orbitron font-black text-2xl sm:text-4xl text-white uppercase tracking-tight flex items-center justify-center gap-3">
+                <i data-lucide="flame" class="w-7 h-7 text-cyberrose animate-pulse"></i> CARROSSEL DE DESTAQUES STEAM
+            </h2>
+        </div>
+
+        <div id="steam-slider-container" class="bg-slate-950/90 border-2 border-slate-800 rounded-3xl overflow-hidden shadow-2xl relative grid grid-cols-1 lg:grid-cols-12 min-h-[420px] lg:min-h-[480px]">
+            <!-- Main Featured Slide Container (Left Column - 8 Cols) -->
+            <div id="steam-slide-main" class="lg:col-span-8 relative overflow-hidden flex flex-col justify-end p-6 sm:p-10 group cursor-pointer">
+                <!-- Dynamic Image & Overlay background -->
+                <div id="steam-slide-bg" class="absolute inset-0 bg-cover bg-center transition-all duration-700 transform group-hover:scale-105"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent"></div>
+
+                <!-- Product Badge Overlay Top Left -->
+                <div class="absolute top-6 left-6 flex items-center gap-2 z-10">
+                    <span id="steam-slide-platform" class="bg-black/80 border border-slate-700/80 px-3 py-1 rounded-md text-[10px] font-orbitron text-electricblue tracking-widest uppercase font-bold backdrop-blur-md"></span>
+                    <span id="steam-slide-global" class="bg-emerald-950/80 border border-emerald-700/80 px-3 py-1 rounded-md text-[10px] font-orbitron text-emerald-400 tracking-widest uppercase font-bold backdrop-blur-md"></span>
+                </div>
+
+                <!-- Product Details Bottom Left -->
+                <div class="relative z-10 space-y-3">
+                    <h3 id="steam-slide-title" class="font-orbitron font-black text-2xl sm:text-4xl text-white uppercase tracking-wide leading-tight drop-shadow-md"></h3>
+                    <p id="steam-slide-desc" class="font-inter text-xs sm:text-sm text-slate-300 line-clamp-2 max-w-2xl font-light leading-relaxed"></p>
+                    
+                    <div class="flex flex-wrap items-center gap-4 pt-2">
+                        <div id="steam-slide-pricing" class="flex items-center gap-3 bg-black/80 border border-slate-800 px-4 py-2 rounded-xl backdrop-blur-md"></div>
+                        <button id="steam-slide-buy-btn" class="py-3 px-6 bg-gradient-to-r from-electricblue to-blue-600 hover:from-blue-500 hover:to-blue-600 text-white font-orbitron text-xs font-bold rounded-xl uppercase transition-all shadow-cyber flex items-center gap-2">
+                            <span>COMPRAR AGORA ⚡</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side Thumbnails Sidebar (Right Column - 4 Cols) -->
+            <div id="steam-slide-thumbs" class="lg:col-span-4 bg-slate-900/60 border-t lg:border-t-0 lg:border-l border-slate-800 p-4 flex flex-col justify-around gap-2.5 overflow-y-auto max-h-[480px]">
+                <!-- Dynamically Populated Thumbnails -->
+            </div>
+        </div>
+    </section>
+
+    <!-- VITRINE DE PRODUTOS -->
     <section id="vitrine" class="py-24 px-4 max-w-7xl mx-auto scroll-mt-20">
         <div class="text-center mb-16">
             <span data-i18n="catalog_subtitle" class="font-orbitron text-xs tracking-widest text-electricblue font-bold block mb-2 uppercase">// DESTAQUES DA LOJA</span>
@@ -2989,10 +3031,10 @@ gtag('config', 'AW-18202657831');
                         <i data-lucide="gamepad-2" class="w-5 h-5"></i> 1. COMO ATIVAR NA STEAM (PC / MAC)
                     </div>
                     <ol class="list-decimal pl-5 space-y-2 text-xs sm:text-sm text-slate-300">
-                        <li>Abra o aplicativo <strong>Steam</strong> instalado no seu computador e faça login na sua conta.</li>
-                        <li>No menu superior esquerdo, clique na opção <strong>"Jogos"</strong> e depois selecione <strong>"Ativar um código de produto no Steam..."</strong>.</li>
-                        <li>Clique em <strong>"Avançar"</strong>, concorde com os Termos de Serviço e digite ou cole a sua <strong>CD-Key</strong> recebida na Zher Keys.</li>
-                        <li>Pronto! O jogo será adicionado instantaneamente à sua biblioteca para download imediato.</li>
+                        <li>Abra o aplicativo <strong>Steam</strong> no PC ou acesse a página oficial de resgate em <a href="https://store.steampowered.com/account/registerkey" target="_blank" rel="noopener noreferrer" class="text-electricblue font-bold underline">store.steampowered.com/account/registerkey</a> (ou para saldo de carteira em <a href="https://store.steampowered.com/account/redeemwalletcode" target="_blank" rel="noopener noreferrer" class="text-electricblue font-bold underline">store.steampowered.com/account/redeemwalletcode</a>).</li>
+                        <li>No menu superior, clique em <strong>"Jogos"</strong> e selecione <strong>"Ativar um código de produto no Steam..."</strong>.</li>
+                        <li>Clique em <strong>"Avançar"</strong>, concorde com os Termos e digite ou cole a sua <strong>CD-Key</strong> recebida na Zher Keys.</li>
+                        <li>Pronto! O jogo será adicionado instantaneamente à sua biblioteca para download.</li>
                     </ol>
                 </div>
 
@@ -3002,30 +3044,39 @@ gtag('config', 'AW-18202657831');
                         <i data-lucide="zap" class="w-5 h-5"></i> 2. COMO ATIVAR NA EPIC GAMES LAUNCHER
                     </div>
                     <ol class="list-decimal pl-5 space-y-2 text-xs sm:text-sm text-slate-300">
-                        <li>Abra o aplicativo <strong>Epic Games Launcher</strong> ou acesse o site oficial em <a href="https://store.epicgames.com/redeem" target="_blank" rel="noopener noreferrer" class="text-electricblue underline">store.epicgames.com/redeem</a>.</li>
+                        <li>Abra o **Epic Games Launcher** ou acesse o site oficial em <a href="https://store.epicgames.com/redeem" target="_blank" rel="noopener noreferrer" class="text-electricblue font-bold underline">store.epicgames.com/redeem</a>.</li>
                         <li>Clique no ícone do seu perfil no canto superior direito e escolha <strong>"Resgatar Código"</strong>.</li>
                         <li>Cole sua chave de ativação alfanumérica de 20 dígitos e clique em <strong>"Resgatar"</strong>.</li>
                         <li>O jogo aparecerá imediatamente na sua biblioteca da Epic Games.</li>
                     </ol>
                 </div>
 
-                <!-- PlayStation & Xbox -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- PlayStation & Xbox & Nintendo -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl space-y-2">
                         <div class="text-blue-400 font-orbitron font-bold text-xs uppercase flex items-center gap-2">
-                            <i data-lucide="tv" class="w-4 h-4"></i> PLAYSTATION (PS4 / PS5)
+                            <i data-lucide="tv" class="w-4 h-4"></i> PLAYSTATION
                         </div>
                         <p class="text-xs text-slate-300 leading-relaxed">
-                            Acesse a <strong>PlayStation Store</strong> no console, clique no menu de três pontos (...) no topo da tela, escolha <strong>Resgatar Código</strong> e insira os 12 dígitos.
+                            Acesse a <strong>PlayStation Store</strong> no console ou no suporte oficial em <a href="https://www.playstation.com/pt-br/support/store/redeem-ps-store-voucher-code/" target="_blank" rel="noopener noreferrer" class="text-electricblue font-bold underline">playstation.com/redeem</a>, clique no perfil (...) e escolha <strong>Resgatar Código</strong> para inserir os 12 dígitos.
                         </p>
                     </div>
 
                     <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl space-y-2">
                         <div class="text-emerald-400 font-orbitron font-bold text-xs uppercase flex items-center gap-2">
-                            <i data-lucide="box" class="w-4 h-4"></i> XBOX / MICROSOFT STORE
+                            <i data-lucide="box" class="w-4 h-4"></i> XBOX / MS STORE
                         </div>
                         <p class="text-xs text-slate-300 leading-relaxed">
-                            Pressione o botão Xbox no controle, abra a <strong>Microsoft Store</strong>, acesse a aba lateral e selecione <strong>Resgatar</strong> para inserir a chave de 25 caracteres.
+                            Acesse no PC em <a href="https://account.microsoft.com/billing/redeem" target="_blank" rel="noopener noreferrer" class="text-electricblue font-bold underline">account.microsoft.com/billing/redeem</a> ou abra a Microsoft Store no console e insira a chave de 25 caracteres.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl space-y-2">
+                        <div class="text-red-400 font-orbitron font-bold text-xs uppercase flex items-center gap-2">
+                            <i data-lucide="gamepad-2" class="w-4 h-4"></i> NINTENDO SWITCH
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Abra a Nintendo eShop no Switch ou acesse <a href="https://ec.nintendo.com/redeem" target="_blank" rel="noopener noreferrer" class="text-electricblue font-bold underline">ec.nintendo.com/redeem</a>, selecione <strong>Resgatar Código</strong> e insira a chave de 16 caracteres.
                         </p>
                     </div>
                 </div>
@@ -3343,6 +3394,122 @@ gtag('config', 'AW-18202657831');
                 if (badge) badge.classList.add('hidden');
                 if (mobileBadge) mobileBadge.classList.add('hidden');
             }
+        };
+
+        // Steam-Style Featured Hero Slider Logic
+        let currentSteamSlideIndex = 0;
+        let steamSlideTimer = null;
+
+        function initSteamSlider() {
+            const featuredList = (window.produtos || []).filter(p => p.in_stock !== false).slice(0, 5);
+            if (featuredList.length === 0) return;
+
+            const thumbsContainer = document.getElementById('steam-slide-thumbs');
+            if (!thumbsContainer) return;
+
+            thumbsContainer.innerHTML = featuredList.map((p, idx) => `
+                <div onclick="selectSteamSlide(${idx})" class="steam-thumb-item p-3 rounded-xl border border-slate-800/80 bg-slate-950/80 hover:bg-slate-900 transition-all duration-300 cursor-pointer flex items-center gap-3 relative overflow-hidden group ${idx === 0 ? 'border-electricblue shadow-cyber bg-slate-900' : ''}" data-slide-index="${idx}">
+                    <img src="${p.image}" alt="${p.title}" class="w-14 h-14 object-cover rounded-lg shrink-0 border border-slate-800">
+                    <div class="flex-grow min-w-0">
+                        <h5 class="font-orbitron font-bold text-xs text-white uppercase truncate group-hover:text-electricblue transition-colors">${p.title}</h5>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-[9px] font-orbitron text-electricblue bg-electricblue/10 px-1.5 py-0.5 rounded uppercase font-bold">${p.category}</span>
+                            <span class="font-orbitron font-bold text-xs text-cyberrose">${formatPrice(parseFloat(p.price))}</span>
+                        </div>
+                    </div>
+                    <div class="steam-thumb-progress absolute bottom-0 left-0 h-[3px] bg-electricblue w-0 transition-all duration-300"></div>
+                </div>
+            `).join('');
+
+            updateSteamSlide(0);
+            startSteamSlideTimer();
+        }
+
+        function updateSteamSlide(index) {
+            const featuredList = (window.produtos || []).filter(p => p.in_stock !== false).slice(0, 5);
+            if (featuredList.length === 0 || !featuredList[index]) return;
+            currentSteamSlideIndex = index;
+
+            const p = featuredList[index];
+            const mainContainer = document.getElementById('steam-slide-main');
+            const bgEl = document.getElementById('steam-slide-bg');
+            const platformEl = document.getElementById('steam-slide-platform');
+            const globalEl = document.getElementById('steam-slide-global');
+            const titleEl = document.getElementById('steam-slide-title');
+            const descEl = document.getElementById('steam-slide-desc');
+            const pricingEl = document.getElementById('steam-slide-pricing');
+            const buyBtn = document.getElementById('steam-slide-buy-btn');
+
+            if (!mainContainer || !bgEl) return;
+
+            const slug = p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+            mainContainer.onclick = () => window.location.href = `/produto/${p.id}-${slug}`;
+
+            bgEl.style.backgroundImage = `url('${p.image}')`;
+            platformEl.innerText = p.category;
+            globalEl.innerText = p.is_global === false ? 'REGIONAL' : 'GLOBAL KEY';
+            titleEl.innerText = p.title;
+            descEl.innerText = p.description || 'Chave de ativação digital 100% original com envio automático e suporte garantido.';
+
+            const priceNum = parseFloat(p.price);
+            const oldPriceNum = p.old_price ? parseFloat(p.old_price) : (priceNum * 1.5);
+            const discountPct = Math.round(((oldPriceNum - priceNum) / oldPriceNum) * 100);
+
+            pricingEl.innerHTML = `
+                <span class="bg-cyberrose text-white text-xs font-orbitron font-black px-2.5 py-1 rounded-md uppercase tracking-wider">-${discountPct}% OFF</span>
+                <div class="flex flex-col">
+                    <del class="text-rose-500 text-[10px] font-orbitron opacity-80 -mb-1">${formatPrice(oldPriceNum)}</del>
+                    <span class="font-orbitron font-black text-xl text-emerald-400">${formatPrice(priceNum)}</span>
+                </div>
+            `;
+
+            buyBtn.onclick = (e) => {
+                e.stopPropagation();
+                window.location.href = `/produto/${p.id}-${slug}`;
+            };
+
+            // Update Active Thumbnail UI
+            document.querySelectorAll('.steam-thumb-item').forEach((item, idx) => {
+                const progBar = item.querySelector('.steam-thumb-progress');
+                if (idx === index) {
+                    item.classList.add('border-electricblue', 'bg-slate-900', 'shadow-cyber');
+                    item.classList.remove('border-slate-800/80', 'bg-slate-950/80');
+                    if (progBar) {
+                        progBar.style.transition = 'width 5000ms linear';
+                        progBar.style.width = '100%';
+                    }
+                } else {
+                    item.classList.remove('border-electricblue', 'bg-slate-900', 'shadow-cyber');
+                    item.classList.add('border-slate-800/80', 'bg-slate-950/80');
+                    if (progBar) {
+                        progBar.style.transition = 'none';
+                        progBar.style.width = '0%';
+                    }
+                }
+            });
+        }
+
+        function selectSteamSlide(index) {
+            clearInterval(steamSlideTimer);
+            updateSteamSlide(index);
+            startSteamSlideTimer();
+        }
+
+        function startSteamSlideTimer() {
+            clearInterval(steamSlideTimer);
+            steamSlideTimer = setInterval(() => {
+                const featuredList = (window.produtos || []).filter(p => p.in_stock !== false).slice(0, 5);
+                if (featuredList.length === 0) return;
+                const nextIdx = (currentSteamSlideIndex + 1) % featuredList.length;
+                updateSteamSlide(nextIdx);
+            }, 5000);
+        }
+
+        // Trigger slider init when products are loaded
+        const originalRenderGrid = renderGrid;
+        window.renderGrid = function() {
+            if (typeof originalRenderGrid === 'function') originalRenderGrid();
+            initSteamSlider();
         };
     </script>
 
