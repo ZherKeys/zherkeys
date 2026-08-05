@@ -65,8 +65,9 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
         await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: 60000 });
 
         // 2. Aguarda e clica no primeiro resultado relevante
-        await page.waitForSelector('a[href*="/item/"]', { timeout: 15000 }).catch(() => null);
-        const firstProductLink = await page.$('a[href*="/item/"]');
+        const itemSelector = 'a[href*="-key-"], a[href*="-code-"], a[href*="/item/"], a[href*="/steam-"], a[href*="/xbox-"], a[href*="/psn-"], a[data-qa*="product-card"]';
+        await page.waitForSelector(itemSelector, { timeout: 15000 }).catch(() => null);
+        const firstProductLink = await page.$(itemSelector);
 
         if (!firstProductLink) {
             console.error(`[BOT-ENEBA] ❌ Produto "${productTitle}" não encontrado na Eneba.`);
@@ -79,14 +80,23 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
         console.log(`[BOT-ENEBA] ACESSANDO PÁGINA DO PRODUTO: ${fullProductUrl}`);
         await page.goto(fullProductUrl, { waitUntil: 'networkidle2', timeout: 60000 });
 
-        // 3. Verifica botão de Compra / Buy Now
-        const buyButtonSelector = 'button[type="submit"], button:has-text("Comprar agora"), button:has-text("Buy now")';
-        await page.waitForSelector(buyButtonSelector, { timeout: 15000 }).catch(() => null);
+        // 3. Verifica e clica no botão de Compra / Buy Now
+        console.log(`[BOT-ENEBA] Procurando botão de compra para "${productTitle}"...`);
+        const buyBtnClicked = await page.evaluate(() => {
+            const buttons = Array.from(document.querySelectorAll('button, a'));
+            const targetBtn = buttons.find(b => {
+                const txt = (b.innerText || b.textContent || '').toLowerCase();
+                return txt.includes('comprar') || txt.includes('buy now') || txt.includes('adicionar');
+            });
+            if (targetBtn) {
+                targetBtn.click();
+                return true;
+            }
+            return false;
+        });
 
-        const buyBtn = await page.$(buyButtonSelector);
-        if (buyBtn) {
-            console.log(`[BOT-ENEBA] Clicando no botão de compra de "${productTitle}"...`);
-            await buyBtn.click();
+        if (buyBtnClicked) {
+            console.log(`[BOT-ENEBA] Clicou no botão de compra de "${productTitle}"!`);
             await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }).catch(() => null);
         }
 

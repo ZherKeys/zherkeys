@@ -1,3 +1,8 @@
-2026/08/05-15:41:24.682 1bbc Reusing MANIFEST C:\Users\convidado 1\Documents\zherkeysite\eneba_bot_session\Default\Local Storage\leveldb/MANIFEST-000001
-2026/08/05-15:41:24.696 1bbc Recovering log #3
-2026/08/05-15:41:24.698 1bbc Reusing old log C:\Users\convidado 1\Documents\zherkeysite\eneba_bot_session\Default\Local Storage\leveldb/000003.log 
+2026/08/05-16:11:31.342 1208 Reusing MANIFEST C:\Users\convidado 1\Documents\zherkeysite\eneba_bot_session\Default\Local Storage\leveldb/MANIFEST-000001
+2026/08/05-16:11:31.348 1208 Recovering log #3
+2026/08/05-16:11:31.349 1208 Level-0 table #3: started
+2026/08/05-16:11:31.843 1208 Level-0 table #3: 19366 bytes OK
+2026/08/05-16:11:31.843 1208 Recovering log #4
+2026/08/05-16:11:31.846 1208 Reusing old log C:\Users\convidado 1\Documents\zherkeysite\eneba_bot_session\Default\Local Storage\leveldb/000004.log 
+2026/08/05-16:11:31.868 1208 Delete type=0 #3
+2026/08/05-16:11:31.868 1208 Delete type=2 #5
