@@ -2456,6 +2456,14 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
                         
                         ${keysListHtml}
                         
+                        <div style="margin-top: 25px; margin-bottom: 25px; padding: 20px 18px; background-color: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; text-align: center;">
+                            <h3 style="color: #ffffff; font-size: 16px; margin: 0 0 8px 0; font-weight: bold;">📺 Veja o tutorial de como resgatar</h3>
+                            <p style="color: #94a3b8; font-size: 13px; margin: 0 0 16px 0; line-height: 1.5;">Dúvidas sobre como ativar sua chave? Assista ao nosso tutorial em vídeo passo a passo!</p>
+                            <a href="https://youtu.be/PVaMg9RHPng?si=SsZrrNQcPwlM0vmB" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%); color: #ffffff; text-decoration: none; font-weight: bold; font-size: 14px; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);">
+                                ▶️ Veja o tutorial de como resgatar
+                            </a>
+                        </div>
+
                         <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin-top: 30px;">
                             Você também pode visualizar suas keys a qualquer momento acessando a aba <strong>Minhas Compras</strong> no site da Zher Keys.
                         </p>
@@ -2606,6 +2614,14 @@ app.post('/create-checkout/paypal', requireAuth, async (req, res) => {
                     
                     ${keysListHtml}
                     
+                    <div style="margin-top: 25px; margin-bottom: 25px; padding: 20px 18px; background-color: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; text-align: center;">
+                        <h3 style="color: #ffffff; font-size: 16px; margin: 0 0 8px 0; font-weight: bold;">📺 Veja o tutorial de como resgatar</h3>
+                        <p style="color: #94a3b8; font-size: 13px; margin: 0 0 16px 0; line-height: 1.5;">Dúvidas sobre como ativar sua chave? Assista ao nosso tutorial em vídeo passo a passo!</p>
+                        <a href="https://youtu.be/PVaMg9RHPng?si=SsZrrNQcPwlM0vmB" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%); color: #ffffff; text-decoration: none; font-weight: bold; font-size: 14px; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);">
+                            ▶️ Veja o tutorial de como resgatar
+                        </a>
+                    </div>
+
                     <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin-top: 30px;">
                         Você também pode visualizar suas keys a qualquer momento acessando a aba <strong>Minhas Compras</strong> no site da Zher Keys.
                     </p>
@@ -3076,6 +3092,14 @@ async function approveOrderSecure(orderId, paymentId) {
                         
                         ${keysListHtml}
                         
+                        <div style="margin-top: 25px; margin-bottom: 25px; padding: 20px 18px; background-color: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; text-align: center;">
+                            <h3 style="color: #ffffff; font-size: 16px; margin: 0 0 8px 0; font-weight: bold;">📺 Veja o tutorial de como resgatar</h3>
+                            <p style="color: #94a3b8; font-size: 13px; margin: 0 0 16px 0; line-height: 1.5;">Dúvidas sobre como ativar sua chave? Assista ao nosso tutorial em vídeo passo a passo!</p>
+                            <a href="https://youtu.be/PVaMg9RHPng?si=SsZrrNQcPwlM0vmB" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%); color: #ffffff; text-decoration: none; font-weight: bold; font-size: 14px; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);">
+                                ▶️ Veja o tutorial de como resgatar
+                            </a>
+                        </div>
+
                         <div style="margin-top: 25px; margin-bottom: 25px; padding: 22px 18px; background-color: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; text-align: center;">
                             <h3 style="color: #ffffff; font-size: 16px; margin: 0 0 8px 0; font-weight: bold;">⭐ O que achou do seu jogo? Deixe sua Avaliação!</h3>
                             <p style="color: #94a3b8; font-size: 13px; margin: 0 0 16px 0; line-height: 1.5;">Sua opinião de 1 a 5 estrelas é fundamental para nós e ajuda outros jogadores na escolha dos melhores jogos.</p>
