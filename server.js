@@ -1668,7 +1668,7 @@ async function assignKeysToOrder(client, orderId) {
         const productId = item.product_id;
         const qty = item.quantity || 1;
         
-        const prodRes = await client.query('SELECT title, activation_key, in_stock FROM products WHERE id = $1 FOR UPDATE', [productId]);
+        const prodRes = await client.query('SELECT title, activation_key, in_stock, auto_stock_provider FROM products WHERE id = $1 FOR UPDATE', [productId]);
         if (prodRes.rows.length === 0) continue;
         
         const prod = prodRes.rows[0];
@@ -1695,7 +1695,8 @@ async function assignKeysToOrder(client, orderId) {
             [soldKeysStr, orderId, productId]
         );
         
-        const inStock = remainingKeys.length > 0 || soldKeys.length > 0;
+        const hasAutoStock = prod.auto_stock_provider === 'eneba' || prod.auto_stock_provider === 'nuuvem' || (prod.auto_stock_provider && prod.auto_stock_provider !== 'none');
+        const inStock = remainingKeys.length > 0 || hasAutoStock;
         await client.query(
             'UPDATE products SET activation_key = $1, in_stock = $2 WHERE id = $3',
             [remainingKeysStr, inStock, productId]
