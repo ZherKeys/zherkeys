@@ -4934,6 +4934,12 @@ app.post('/api/minigames/watch-ad-points', requireAuth, async (req, res) => {
             }
         }
 
+        const userRes = await client.query('SELECT points, balance FROM users WHERE id = $1 FOR UPDATE', [userId]);
+        if (userRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+
         const rewardPoints = 250;
         const currentPoints = parseInt(userRes.rows[0].points || 0);
         const newPoints = currentPoints + rewardPoints;
