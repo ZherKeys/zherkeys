@@ -64,18 +64,23 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
         console.log(`[BOT-ENEBA] NAVEGANDO ATÉ: ${searchUrl}`);
         await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: 60000 });
 
-        // 2. Aguarda e clica no primeiro resultado relevante
-        const itemSelector = 'a[href*="-key-"], a[href*="-code-"], a[href*="/item/"], a[href*="/steam-"], a[href*="/xbox-"], a[href*="/psn-"], a[data-qa*="product-card"]';
+        // 2. Aguarda e clica no primeiro resultado relevante do catálogo principal
+        const itemSelector = 'main a[href*="-key-"], main a[href*="-code-"], main a[href*="/item/"], main a[href*="-steam-"], main a[href*="-xbox-"], main a[data-qa*="product-card"]';
         await page.waitForSelector(itemSelector, { timeout: 15000 }).catch(() => null);
-        const firstProductLink = await page.$(itemSelector);
 
-        if (!firstProductLink) {
+        const productHref = await page.evaluate((title) => {
+            const cleanWord = title.toLowerCase().split(' ')[0];
+            const links = Array.from(document.querySelectorAll('main a[href*="-key-"], main a[href*="-code-"], main a[href*="/item/"], main a[href*="-steam-"], main a[href*="-xbox-"], main a[data-qa*="product-card"]'));
+            const matched = links.find(a => (a.getAttribute('href') || '').toLowerCase().includes(cleanWord)) || links[0];
+            return matched ? matched.getAttribute('href') : null;
+        }, productTitle);
+
+        if (!productHref) {
             console.error(`[BOT-ENEBA] ❌ Produto "${productTitle}" não encontrado na Eneba.`);
             await browser.close();
             return [];
         }
 
-        const productHref = await page.evaluate(el => el.getAttribute('href'), firstProductLink);
         const fullProductUrl = productHref.startsWith('http') ? productHref : `https://www.eneba.com${productHref}`;
         console.log(`[BOT-ENEBA] ACESSANDO PÁGINA DO PRODUTO: ${fullProductUrl}`);
         await page.goto(fullProductUrl, { waitUntil: 'networkidle2', timeout: 60000 });

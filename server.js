@@ -3160,53 +3160,80 @@ async function approveOrderSecure(orderId, paymentId) {
                     'SELECT p.title, oi.activation_key FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = $1',
                     [orderId]
                 );
+                let hasPendingKey = false;
                 let keysListHtml = '';
                 keysRes.rows.forEach(k => {
+                    const keyVal = (k.activation_key || '').trim();
+                    if (!keyVal || keyVal.includes('Chave em liberação')) {
+                        hasPendingKey = true;
+                    }
                     keysListHtml += `
                         <div style="background-color: #0b0f19; border: 1px solid #1e293b; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: left;">
                             <strong style="color: #ffffff; display: block; font-size: 14px; margin-bottom: 5px;">${k.title}</strong>
-                            <code style="font-family: monospace; font-size: 14px; color: #10B981; font-weight: bold;">${k.activation_key || 'Chave em liberação'}</code>
+                            <code style="font-family: monospace; font-size: 14px; color: ${hasPendingKey ? '#F59E0B' : '#10B981'}; font-weight: bold;">${keyVal || '⏳ Liberação em andamento pelo robô...'}</code>
                         </div>
                     `;
                 });
                 
-                sendEmailViaBrevo(
-                    email,
-                    `🎮 Suas Keys do Pedido #${orderId} foram Liberadas! - Zher Keys`,
-                    `Olá! Seu pagamento para o pedido #${orderId} foi aprovado!`,
-                    `<div style="background-color: #020617; color: #f8fafc; padding: 40px 20px; font-family: sans-serif; text-align: center; border: 1px solid #1e293b; border-radius: 16px; max-w: 600px; margin: 0 auto;">
-                        <h2 style="color: #10B981; font-size: 24px; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px;">PAGAMENTO APROVADO!</h2>
-                        <p style="color: #94a3b8; font-size: 14px; margin-top: 0; margin-bottom: 25px;">Pedido #${orderId}</p>
-                        
-                        <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6; margin-bottom: 25px; text-align: left;">
-                            Olá! Seu pagamento no valor de <strong>R$ ${parseFloat(order.total_amount).toFixed(2).replace('.', ',')}</strong> foi aprovado com sucesso. Suas chaves de ativação já foram liberadas abaixo:
-                        </p>
-                        
-                        ${keysListHtml}
-                        
-                        <div style="margin-top: 25px; margin-bottom: 25px; padding: 20px 18px; background-color: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; text-align: center;">
-                            <h3 style="color: #ffffff; font-size: 16px; margin: 0 0 8px 0; font-weight: bold;">📺 Veja o tutorial de como resgatar</h3>
-                            <p style="color: #94a3b8; font-size: 13px; margin: 0 0 16px 0; line-height: 1.5;">Dúvidas sobre como ativar sua chave? Assista ao nosso tutorial em vídeo passo a passo!</p>
-                            <a href="https://youtu.be/PVaMg9RHPng?si=SsZrrNQcPwlM0vmB" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%); color: #ffffff; text-decoration: none; font-weight: bold; font-size: 14px; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);">
-                                ▶️ Veja o tutorial de como resgatar
-                            </a>
-                        </div>
+                if (hasPendingKey) {
+                    sendEmailViaBrevo(
+                        email,
+                        `⏳ Pedido #${orderId} Aprovado! Processando Liberação da sua Key - Zher Keys`,
+                        `Olá! Seu pagamento para o pedido #${orderId} foi aprovado com sucesso! O robô da Zher Keys está efetuando a liberação da sua chave.`,
+                        `<div style="background-color: #020617; color: #f8fafc; padding: 40px 20px; font-family: sans-serif; text-align: center; border: 1px solid #1e293b; border-radius: 16px; max-w: 600px; margin: 0 auto;">
+                            <h2 style="color: #F59E0B; font-size: 24px; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px;">PAGAMENTO APROVADO!</h2>
+                            <p style="color: #94a3b8; font-size: 14px; margin-top: 0; margin-bottom: 25px;">Pedido #${orderId} - Em Processamento pelo Robô</p>
+                            
+                            <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6; margin-bottom: 25px; text-align: left;">
+                                Olá! Seu pagamento no valor de <strong>R$ ${parseFloat(order.total_amount).toFixed(2).replace('.', ',')}</strong> foi confirmado com sucesso. O robô da Zher Keys já foi acionado e está resgatando a sua chave de ativação agora mesmo.
+                            </p>
+                            
+                            ${keysListHtml}
+                            
+                            <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin-top: 20px;">
+                                Assim que o robô concluir a compra e anexar sua chave oficial, você receberá um novo e-mail automático com o seu código pronto para resgatar!
+                            </p>
+                        </div>`
+                    ).catch(err => console.error("Erro ao enviar e-mail de pedido em processamento:", err));
+                } else {
+                    sendEmailViaBrevo(
+                        email,
+                        `🎮 Suas Keys do Pedido #${orderId} foram Liberadas! - Zher Keys`,
+                        `Olá! Seu pagamento para o pedido #${orderId} foi aprovado!`,
+                        `<div style="background-color: #020617; color: #f8fafc; padding: 40px 20px; font-family: sans-serif; text-align: center; border: 1px solid #1e293b; border-radius: 16px; max-w: 600px; margin: 0 auto;">
+                            <h2 style="color: #10B981; font-size: 24px; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px;">PAGAMENTO APROVADO!</h2>
+                            <p style="color: #94a3b8; font-size: 14px; margin-top: 0; margin-bottom: 25px;">Pedido #${orderId}</p>
+                            
+                            <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6; margin-bottom: 25px; text-align: left;">
+                                Olá! Seu pagamento no valor de <strong>R$ ${parseFloat(order.total_amount).toFixed(2).replace('.', ',')}</strong> foi aprovado com sucesso. Suas chaves de ativação já foram liberadas abaixo:
+                            </p>
+                            
+                            ${keysListHtml}
+                            
+                            <div style="margin-top: 25px; margin-bottom: 25px; padding: 20px 18px; background-color: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; text-align: center;">
+                                <h3 style="color: #ffffff; font-size: 16px; margin: 0 0 8px 0; font-weight: bold;">📺 Veja o tutorial de como resgatar</h3>
+                                <p style="color: #94a3b8; font-size: 13px; margin: 0 0 16px 0; line-height: 1.5;">Dúvidas sobre como ativar sua chave? Assista ao nosso tutorial em vídeo passo a passo!</p>
+                                <a href="https://youtu.be/PVaMg9RHPng?si=SsZrrNQcPwlM0vmB" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%); color: #ffffff; text-decoration: none; font-weight: bold; font-size: 14px; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);">
+                                    ▶️ Veja o tutorial de como resgatar
+                                </a>
+                            </div>
 
-                        <div style="margin-top: 25px; margin-bottom: 25px; padding: 22px 18px; background-color: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; text-align: center;">
-                            <h3 style="color: #ffffff; font-size: 16px; margin: 0 0 8px 0; font-weight: bold;">⭐ O que achou do seu jogo? Deixe sua Avaliação!</h3>
-                            <p style="color: #94a3b8; font-size: 13px; margin: 0 0 16px 0; line-height: 1.5;">Sua opinião de 1 a 5 estrelas é fundamental para nós e ajuda outros jogadores na escolha dos melhores jogos.</p>
-                            <a href="${APP_URL}/account.html?tab=compras" style="display: inline-block; background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%); color: #ffffff; text-decoration: none; font-weight: bold; font-size: 14px; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);">
-                                ⭐ Avaliar Meu Jogo (1 a 5 Estrelas)
-                            </a>
-                        </div>
+                            <div style="margin-top: 25px; margin-bottom: 25px; padding: 22px 18px; background-color: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; text-align: center;">
+                                <h3 style="color: #ffffff; font-size: 16px; margin: 0 0 8px 0; font-weight: bold;">⭐ O que achou do seu jogo? Deixe sua Avaliação!</h3>
+                                <p style="color: #94a3b8; font-size: 13px; margin: 0 0 16px 0; line-height: 1.5;">Sua opinião de 1 a 5 estrelas é fundamental para nós e ajuda outros jogadores na escolha dos melhores jogos.</p>
+                                <a href="${APP_URL}/account.html?tab=compras" style="display: inline-block; background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%); color: #ffffff; text-decoration: none; font-weight: bold; font-size: 14px; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);">
+                                    ⭐ Avaliar Meu Jogo (1 a 5 Estrelas)
+                                </a>
+                            </div>
 
-                        <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin-top: 30px;">
-                            Você também pode visualizar suas keys a qualquer momento acessando a aba <strong>Minhas Compras</strong> no site da Zher Keys.
-                        </p>
-                        
-                        <p style="color: #64748b; font-size: 11px; margin-top: 30px;">Esta é uma transação criptografada e segura da loja Zher Keys. Não responda a este e-mail.</p>
-                    </div>`
-                ).catch(err => console.error("Erro ao enviar e-mail de aprovação:", err));
+                            <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin-top: 30px;">
+                                Você também pode visualizar suas keys a qualquer momento acessando a aba <strong>Minhas Compras</strong> no site da Zher Keys.
+                            </p>
+                            
+                            <p style="color: #64748b; font-size: 11px; margin-top: 30px;">Esta é uma transação criptografada e segura da loja Zher Keys. Não responda a este e-mail.</p>
+                        </div>`
+                    ).catch(err => console.error("Erro ao enviar e-mail de aprovação:", err));
+                }
             }
         }
         
