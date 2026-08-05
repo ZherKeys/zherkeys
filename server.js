@@ -1478,7 +1478,7 @@ async function initDB() {
         console.error('Error in initDB:', err);
     }
 }
-initDB();
+initDB().catch(e => console.warn('[INITDB] Modo Backup JSON Ativo:', e.message || e));
 
 // Setup Brevo API Key
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
