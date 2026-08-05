@@ -154,6 +154,43 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
         await saveStepScreenshot(page, '03_checkout_cart');
         writeLog('info', `[ETAPA 3/6] URL atual no checkout: ${page.url()}`);
 
+        // Remove todos os itens antigos acumulados do carrinho mantendo apenas a compra atual com Qty 1
+        const removedCount = await page.evaluate(async () => {
+            let count = 0;
+            const getRemoveBtns = () => Array.from(document.querySelectorAll('button')).filter(b => {
+                const aria = (b.getAttribute('aria-label') || '').toLowerCase();
+                return aria.includes('remove item from cart') || aria.includes('remover item');
+            });
+            
+            let btns = getRemoveBtns();
+            while (btns.length > 1) {
+                btns[0].click();
+                count++;
+                await new Promise(r => setTimeout(r, 1200));
+                btns = getRemoveBtns();
+            }
+
+            // Garante que a quantidade do único item restante no carrinho seja reduzida para 1
+            const minusBtns = Array.from(document.querySelectorAll('button')).filter(b => {
+                const aria = (b.getAttribute('aria-label') || '').toLowerCase();
+                const txt = (b.innerText || b.textContent || '').trim();
+                return txt === '-' || aria.includes('reduce');
+            });
+            for (let btn of minusBtns) {
+                for (let i = 0; i < 10; i++) {
+                    btn.click();
+                    await new Promise(r => setTimeout(r, 300));
+                }
+            }
+
+            return count;
+        });
+
+        if (removedCount > 0) {
+            writeLog('info', `🧹 Removidos ${removedCount} itens antigos acumulados do carrinho e quantidade reduzida para 1.`);
+            await new Promise(r => setTimeout(r, 2000));
+        }
+
         const botEmail = process.env.ENEBA_BOT_EMAIL || 'zherkeys@gmail.com';
         const emailField = await page.$('input[name="email"], input[type="email"]');
         if (emailField) {
