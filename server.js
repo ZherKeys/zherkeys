@@ -1018,6 +1018,36 @@ async function initDB() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
+            CREATE TABLE IF NOT EXISTS product_reviews (
+                id SERIAL PRIMARY KEY,
+                product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                order_id INTEGER REFERENCES orders(id) ON DELETE SET NULL,
+                rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+                comment TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS product_comments (
+                id SERIAL PRIMARY KEY,
+                product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                comment TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS product_questions (
+                id SERIAL PRIMARY KEY,
+                product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                question TEXT NOT NULL,
+                answer TEXT DEFAULT NULL,
+                answered_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                answered_at TIMESTAMP DEFAULT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
             ALTER TABLE products ADD COLUMN IF NOT EXISTS activation_key TEXT;
             ALTER TABLE order_items ADD COLUMN IF NOT EXISTS activation_key TEXT;
             ALTER TABLE order_items ADD COLUMN IF NOT EXISTS key_viewed BOOLEAN DEFAULT false;
@@ -3046,6 +3076,14 @@ async function approveOrderSecure(orderId, paymentId) {
                         
                         ${keysListHtml}
                         
+                        <div style="margin-top: 25px; margin-bottom: 25px; padding: 22px 18px; background-color: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; text-align: center;">
+                            <h3 style="color: #ffffff; font-size: 16px; margin: 0 0 8px 0; font-weight: bold;">⭐ O que achou do seu jogo? Deixe sua Avaliação!</h3>
+                            <p style="color: #94a3b8; font-size: 13px; margin: 0 0 16px 0; line-height: 1.5;">Sua opinião de 1 a 5 estrelas é fundamental para nós e ajuda outros jogadores na escolha dos melhores jogos.</p>
+                            <a href="${APP_URL}/account.html?tab=compras" style="display: inline-block; background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%); color: #ffffff; text-decoration: none; font-weight: bold; font-size: 14px; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);">
+                                ⭐ Avaliar Meu Jogo (1 a 5 Estrelas)
+                            </a>
+                        </div>
+
                         <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin-top: 30px;">
                             Você também pode visualizar suas keys a qualquer momento acessando a aba <strong>Minhas Compras</strong> no site da Zher Keys.
                         </p>
@@ -3250,6 +3288,231 @@ app.delete('/api/admin/orders/:id', requireAdmin, async (req, res) => {
     } catch(e) {
         console.error("[ADMIN-ORDER-DELETE] Erro ao excluir pedido:", e);
         res.status(500).json({ error: 'Erro ao excluir pedido' });
+    }
+});
+
+
+// ===================================
+// PRODUCT REVIEWS, COMMENTS & QUESTIONS
+// ===================================
+
+// Get reviews summary & list for a product
+app.get('/api/products/:id/reviews', async (req, res) => {
+    try {
+        const productId = parseInt(req.params.id, 10);
+        if (isNaN(productId)) return res.status(400).json({ error: 'ID inválido' });
+
+        const reviewsRes = await pool.query(`
+            SELECT r.id, r.product_id, r.user_id, r.order_id, r.rating, r.comment, r.created_at,
+                   COALESCE(u.game_nickname, SPLIT_PART(u.email, '@', 1)) as author_name,
+                   u.avatar
+            FROM product_reviews r
+            JOIN users u ON r.user_id = u.id
+            WHERE r.product_id = $1
+            ORDER BY r.created_at DESC
+        `, [productId]);
+
+        const reviews = reviewsRes.rows;
+        const total = reviews.length;
+        let sum = 0;
+        const dist = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+
+        reviews.forEach(r => {
+            sum += r.rating;
+            if (dist[r.rating] !== undefined) dist[r.rating]++;
+        });
+
+        const avg = total > 0 ? (sum / total).toFixed(1) : '5.0';
+
+        res.json({
+            averageRating: parseFloat(avg),
+            totalReviews: total,
+            distribution: dist,
+            reviews: reviews
+        });
+    } catch(e) {
+        console.error("Erro ao buscar avaliações do produto:", e);
+        res.status(500).json({ error: 'Erro no servidor' });
+    }
+});
+
+// Post or update review for a product (Require Auth)
+app.post('/api/products/:id/reviews', requireAuth, async (req, res) => {
+    try {
+        const productId = parseInt(req.params.id, 10);
+        const { rating, comment, order_id } = req.body;
+        const userId = req.session.userId;
+
+        const numRating = parseInt(rating, 10);
+        if (isNaN(numRating) || numRating < 1 || numRating > 5) {
+            return res.status(400).json({ error: 'A avaliação deve ser de 1 a 5 estrelas.' });
+        }
+
+        // Verifica se o usuário comprou este produto e o pedido está aprovado
+        const purchaseCheck = await pool.query(`
+            SELECT o.id FROM orders o
+            JOIN order_items oi ON o.id = oi.order_id
+            WHERE o.user_id = $1 AND oi.product_id = $2 AND o.status = 'approved'
+            ${order_id ? 'AND o.id = $3' : ''}
+            LIMIT 1
+        `, order_id ? [userId, productId, order_id] : [userId, productId]);
+
+        if (purchaseCheck.rows.length === 0) {
+            return res.status(403).json({ error: 'Você só pode avaliar jogos que comprou e teve o pagamento aprovado.' });
+        }
+
+        const validOrderId = purchaseCheck.rows[0].id;
+
+        // Upsert review (Insert or Update)
+        const existingReview = await pool.query(
+            'SELECT id FROM product_reviews WHERE user_id = $1 AND product_id = $2',
+            [userId, productId]
+        );
+
+        if (existingReview.rows.length > 0) {
+            await pool.query(`
+                UPDATE product_reviews
+                SET rating = $1, comment = $2, order_id = $3, updated_at = CURRENT_TIMESTAMP
+                WHERE user_id = $4 AND product_id = $5
+            `, [numRating, comment || '', validOrderId, userId, productId]);
+        } else {
+            await pool.query(`
+                INSERT INTO product_reviews (product_id, user_id, order_id, rating, comment)
+                VALUES ($1, $2, $3, $4, $5)
+            `, [productId, userId, validOrderId, numRating, comment || '']);
+        }
+
+        res.json({ success: true, message: 'Avaliação registrada com sucesso!' });
+    } catch(e) {
+        console.error("Erro ao registrar avaliação:", e);
+        res.status(500).json({ error: 'Erro no servidor ao salvar avaliação' });
+    }
+});
+
+// Get user's existing reviews
+app.get('/api/my-reviews', requireAuth, async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const resReviews = await pool.query(
+            'SELECT product_id, order_id, rating, comment, created_at FROM product_reviews WHERE user_id = $1',
+            [userId]
+        );
+        res.json(resReviews.rows);
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao buscar suas avaliações' });
+    }
+});
+
+// Get product comments
+app.get('/api/products/:id/comments', async (req, res) => {
+    try {
+        const productId = parseInt(req.params.id, 10);
+        if (isNaN(productId)) return res.status(400).json({ error: 'ID inválido' });
+
+        const commentsRes = await pool.query(`
+            SELECT c.id, c.product_id, c.comment, c.created_at,
+                   COALESCE(u.game_nickname, SPLIT_PART(u.email, '@', 1)) as author_name,
+                   u.avatar
+            FROM product_comments c
+            JOIN users u ON c.user_id = u.id
+            WHERE c.product_id = $1
+            ORDER BY c.created_at DESC
+        `, [productId]);
+
+        res.json(commentsRes.rows);
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao buscar comentários' });
+    }
+});
+
+// Post product comment (Require Auth)
+app.post('/api/products/:id/comments', requireAuth, async (req, res) => {
+    try {
+        const productId = parseInt(req.params.id, 10);
+        const { comment } = req.body;
+        const userId = req.session.userId;
+
+        if (!comment || comment.trim().length === 0) {
+            return res.status(400).json({ error: 'O comentário não pode ser vazio.' });
+        }
+
+        await pool.query(`
+            INSERT INTO product_comments (product_id, user_id, comment)
+            VALUES ($1, $2, $3)
+        `, [productId, userId, comment.trim()]);
+
+        res.json({ success: true, message: 'Comentário enviado com sucesso!' });
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao enviar comentário' });
+    }
+});
+
+// Get product questions
+app.get('/api/products/:id/questions', async (req, res) => {
+    try {
+        const productId = parseInt(req.params.id, 10);
+        if (isNaN(productId)) return res.status(400).json({ error: 'ID inválido' });
+
+        const questionsRes = await pool.query(`
+            SELECT q.id, q.product_id, q.question, q.answer, q.answered_at, q.created_at,
+                   COALESCE(u.game_nickname, SPLIT_PART(u.email, '@', 1)) as author_name,
+                   u.avatar,
+                   COALESCE(admin_u.game_nickname, 'Suporte Zher Keys') as admin_name
+            FROM product_questions q
+            JOIN users u ON q.user_id = u.id
+            LEFT JOIN users admin_u ON q.answered_by = admin_u.id
+            WHERE q.product_id = $1
+            ORDER BY q.created_at DESC
+        `, [productId]);
+
+        res.json(questionsRes.rows);
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao buscar perguntas' });
+    }
+});
+
+// Post product question (Require Auth)
+app.post('/api/products/:id/questions', requireAuth, async (req, res) => {
+    try {
+        const productId = parseInt(req.params.id, 10);
+        const { question } = req.body;
+        const userId = req.session.userId;
+
+        if (!question || question.trim().length === 0) {
+            return res.status(400).json({ error: 'A pergunta não pode ser vazia.' });
+        }
+
+        await pool.query(`
+            INSERT INTO product_questions (product_id, user_id, question)
+            VALUES ($1, $2, $3)
+        `, [productId, userId, question.trim()]);
+
+        res.json({ success: true, message: 'Pergunta enviada com sucesso!' });
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao enviar pergunta' });
+    }
+});
+
+// Admin Answer Question
+app.post('/api/admin/questions/:id/answer', requireAdmin, async (req, res) => {
+    try {
+        const questionId = parseInt(req.params.id, 10);
+        const { answer } = req.body;
+        const adminId = req.session.userId;
+
+        if (!answer || answer.trim().length === 0) {
+            return res.status(400).json({ error: 'A resposta não pode ser vazia.' });
+        }
+
+        await pool.query(`
+            UPDATE product_questions
+            SET answer = $1, answered_by = $2, answered_at = CURRENT_TIMESTAMP
+            WHERE id = $3
+        `, [answer.trim(), adminId, questionId]);
+
+        res.json({ success: true, message: 'Resposta registrada com sucesso!' });
+    } catch(e) {
+        res.status(500).json({ error: 'Erro ao responder pergunta' });
     }
 });
 

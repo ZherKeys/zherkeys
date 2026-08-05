@@ -830,10 +830,93 @@ gtag('config', 'AW-18202657831');
             }
         }
 
-        // --- MY ORDERS LOGIC ---
+        // --- MY ORDERS & REVIEWS LOGIC ---
         let allUserOrders = [];
+        window.userReviewsMap = {};
+
+        async function fetchMyReviews() {
+            try {
+                const res = await fetch('/api/my-reviews');
+                if (res.ok) {
+                    const data = await res.json();
+                    window.userReviewsMap = {};
+                    data.forEach(r => {
+                        window.userReviewsMap[r.product_id] = r;
+                    });
+                }
+            } catch(e) {
+                console.error("Erro ao carregar avaliações do usuário:", e);
+            }
+        }
+
+        function renderStars(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                stars += i <= rating ? '★' : '☆';
+            }
+            return stars || '☆☆☆☆☆';
+        }
+
+        window.toggleReviewForm = function(orderId, productId) {
+            const el = document.getElementById(`review-form-${orderId}-${productId}`);
+            if (el) el.classList.toggle('hidden');
+        };
+
+        window.setRatingStar = function(orderId, productId, star) {
+            const hiddenInput = document.getElementById(`rating-val-${orderId}-${productId}`);
+            if (hiddenInput) hiddenInput.value = star;
+            const starBtns = document.querySelectorAll(`.star-btn-${orderId}-${productId}`);
+            starBtns.forEach(btn => {
+                const s = parseInt(btn.getAttribute('data-star'), 10);
+                btn.innerText = s <= star ? '★' : '☆';
+            });
+        };
+
+        window.hoverRatingStar = function(orderId, productId, star) {
+            const starBtns = document.querySelectorAll(`.star-btn-${orderId}-${productId}`);
+            starBtns.forEach(btn => {
+                const s = parseInt(btn.getAttribute('data-star'), 10);
+                btn.innerText = s <= star ? '★' : '☆';
+            });
+        };
+
+        window.resetRatingStar = function(orderId, productId) {
+            const hiddenInput = document.getElementById(`rating-val-${orderId}-${productId}`);
+            const rating = hiddenInput ? parseInt(hiddenInput.value, 10) : 5;
+            const starBtns = document.querySelectorAll(`.star-btn-${orderId}-${productId}`);
+            starBtns.forEach(btn => {
+                const s = parseInt(btn.getAttribute('data-star'), 10);
+                btn.innerText = s <= rating ? '★' : '☆';
+            });
+        };
+
+        window.submitProductReview = async function(orderId, productId) {
+            const ratingVal = document.getElementById(`rating-val-${orderId}-${productId}`)?.value || 5;
+            const commentVal = document.getElementById(`review-comment-${orderId}-${productId}`)?.value || '';
+
+            try {
+                const res = await fetch(`/api/products/${productId}/reviews`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rating: ratingVal, comment: commentVal, order_id: orderId })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert("✨ Avaliação enviada com sucesso! Obrigado pelo seu feedback.");
+                    await fetchMyReviews();
+                    await loadMyOrders();
+                } else {
+                    alert("⚠️ " + (data.error || "Erro ao salvar avaliação."));
+                }
+            } catch(e) {
+                console.error("Erro ao enviar avaliação:", e);
+                alert("Erro de conexão ao salvar avaliação.");
+            }
+        };
+
         async function loadMyOrders() {
             try {
+                await fetchMyReviews();
                 const res = await fetch('/api/my-orders');
                 const orders = await res.json();
                 allUserOrders = orders;
@@ -919,17 +1002,67 @@ gtag('config', 'AW-18202657831');
                                 </div>
                             ` : '';
 
+                            // Bloco de Avaliação do Jogo (Avaliação de 1 a 5 Estrelas + Comentário)
+                            let reviewBox = '';
+                            if (isApproved) {
+                                const existingRev = window.userReviewsMap && window.userReviewsMap[item.product_id];
+                                const isEvaluated = !!existingRev;
+                                const currentRating = existingRev ? existingRev.rating : 0;
+                                const currentComment = existingRev ? existingRev.comment : '';
+                                
+                                reviewBox = `
+                                    <div class="mt-3 p-3 bg-slate-950/80 border border-amber-500/20 rounded-lg">
+                                        <div class="flex flex-wrap items-center justify-between gap-2">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-[11px] font-orbitron text-amber-400 font-bold">⭐ AVALIAÇÃO DO JOGO:</span>
+                                                <div id="stars-row-${o.id}-${item.product_id}" class="flex text-amber-400 text-sm">
+                                                    ${renderStars(currentRating)}
+                                                </div>
+                                            </div>
+                                            <button onclick="toggleReviewForm(${o.id}, ${item.product_id})" class="text-[10px] font-orbitron text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-2.5 py-1 rounded transition-colors">
+                                                ${isEvaluated ? '✏️ EDITAR AVALIAÇÃO' : '⭐ AVALIAR JOGO'}
+                                            </button>
+                                        </div>
+                                        
+                                        <div id="review-form-${o.id}-${item.product_id}" class="hidden mt-3 pt-3 border-t border-slate-800/80 space-y-3">
+                                            <div class="flex items-center gap-3">
+                                                <span class="text-xs text-slate-300 font-orbitron">Sua nota:</span>
+                                                <div class="flex text-amber-400 text-lg cursor-pointer gap-1" id="star-selector-${o.id}-${item.product_id}">
+                                                    ${[1,2,3,4,5].map(star => `
+                                                        <span onclick="setRatingStar(${o.id}, ${item.product_id}, ${star})" onmouseover="hoverRatingStar(${o.id}, ${item.product_id}, ${star})" onmouseout="resetRatingStar(${o.id}, ${item.product_id})" class="star-btn-${o.id}-${item.product_id} transition-transform hover:scale-125 select-none" data-star="${star}">
+                                                            ${star <= (currentRating || 5) ? '★' : '☆'}
+                                                        </span>
+                                                    `).join('')}
+                                                </div>
+                                                <input type="hidden" id="rating-val-${o.id}-${item.product_id}" value="${currentRating || 5}">
+                                            </div>
+                                            <div>
+                                                <textarea id="review-comment-${o.id}-${item.product_id}" rows="2" placeholder="Escreva seu comentário sobre a sua experiência com este jogo..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-200 focus:border-amber-400 outline-none transition-colors">${currentComment}</textarea>
+                                            </div>
+                                            <div class="flex justify-end gap-2">
+                                                <button onclick="submitProductReview(${o.id}, ${item.product_id})" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-orbitron font-bold text-xs rounded transition-all shadow-md">
+                                                    ENVIAR AVALIAÇÃO
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+
                             itemsHtml += `
-                                <div class="flex items-center gap-4 bg-slate-900/50 p-3 rounded-lg border border-slate-800 mt-3">
-                                    <div class="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
-                                        ${steamBadge}
-                                        <img src="${item.image}" class="w-full h-full object-cover">
+                                <div class="flex flex-col bg-slate-900/50 p-3 rounded-lg border border-slate-800 mt-3">
+                                    <div class="flex items-center gap-4">
+                                        <div class="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
+                                            ${steamBadge}
+                                            <img src="${item.image}" class="w-full h-full object-cover">
+                                        </div>
+                                        <div class="flex-grow">
+                                            <div class="text-xs text-electricblue font-orbitron tracking-widest uppercase">${item.category}</div>
+                                            <div class="font-bold text-slate-200">${item.title} (x${item.quantity})</div>
+                                            ${keyBox}
+                                        </div>
                                     </div>
-                                    <div class="flex-grow">
-                                        <div class="text-xs text-electricblue font-orbitron tracking-widest uppercase">${item.category}</div>
-                                        <div class="font-bold text-slate-200">${item.title} (x${item.quantity})</div>
-                                        ${keyBox}
-                                    </div>
+                                    ${reviewBox}
                                 </div>
                             `;
                         });

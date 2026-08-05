@@ -348,6 +348,125 @@ gtag('config', 'AW-18202657831');
             </div>
         </div>
 
+        <!-- Central de Interatividade do Jogo: Avaliações, Comentários e Perguntas -->
+        <div id="avaliacoes" class="mt-12 bg-slate-950/70 border border-slate-900 rounded-2xl p-6 sm:p-8 backdrop-blur-md cyber-panel-glow">
+            
+            <!-- Navegação entre Abas -->
+            <div class="flex flex-wrap items-center gap-3 border-b border-slate-800/80 pb-4 mb-8">
+                <button onclick="switchGameTab('reviews')" id="tab-btn-reviews" class="px-5 py-3 rounded-xl font-orbitron text-xs tracking-widest font-bold transition-all duration-300 flex items-center gap-2.5 bg-amber-500/10 border border-amber-500/40 text-amber-400 shadow-lg shadow-amber-500/10">
+                    <i data-lucide="star" class="w-4 h-4 text-amber-400"></i> AVALIAÇÕES (<span id="reviews-count-badge">0</span>)
+                </button>
+                <button onclick="switchGameTab('comments')" id="tab-btn-comments" class="px-5 py-3 rounded-xl font-orbitron text-xs tracking-widest font-bold transition-all duration-300 flex items-center gap-2.5 text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent">
+                    <i data-lucide="message-square" class="w-4 h-4 text-electricblue"></i> COMENTÁRIOS (<span id="comments-count-badge">0</span>)
+                </button>
+                <button onclick="switchGameTab('questions')" id="tab-btn-questions" class="px-5 py-3 rounded-xl font-orbitron text-xs tracking-widest font-bold transition-all duration-300 flex items-center gap-2.5 text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent">
+                    <i data-lucide="help-circle" class="w-4 h-4 text-purple-400"></i> PERGUNTAS & DÚVIDAS (<span id="questions-count-badge">0</span>)
+                </button>
+            </div>
+
+            <!-- Aba 1: Avaliações -->
+            <div id="game-tab-reviews" class="space-y-8">
+                <!-- Resumo e Estatísticas de Avaliações -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 bg-slate-900/50 border border-slate-850 p-6 rounded-2xl items-center">
+                    <!-- Nota Média Grande -->
+                    <div class="md:col-span-4 flex flex-col items-center justify-center text-center border-b md:border-b-0 md:border-r border-slate-800 pb-6 md:pb-0 md:pr-6">
+                        <span id="avg-rating-val" class="font-orbitron font-black text-5xl text-amber-400 drop-shadow-[0_0_15px_rgba(245,158,11,0.3)]">5.0</span>
+                        <div id="avg-stars-display" class="flex text-amber-400 text-lg my-2 gap-0.5">
+                            ★★★★★
+                        </div>
+                        <span id="total-reviews-lbl" class="text-xs text-slate-400 font-orbitron tracking-wider uppercase">Média baseada em 0 avaliações</span>
+                    </div>
+
+                    <!-- Barras de Distribuição das Notas (5 a 1 Estrelas) -->
+                    <div class="md:col-span-8 space-y-2.5">
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="w-12 font-orbitron text-amber-400 text-right">5 ★</span>
+                            <div class="flex-grow bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800">
+                                <div id="dist-bar-5" class="bg-amber-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <span id="dist-count-5" class="w-8 text-slate-400 text-right font-orbitron">0</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="w-12 font-orbitron text-amber-400 text-right">4 ★</span>
+                            <div class="flex-grow bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800">
+                                <div id="dist-bar-4" class="bg-amber-400/80 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <span id="dist-count-4" class="w-8 text-slate-400 text-right font-orbitron">0</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="w-12 font-orbitron text-amber-400 text-right">3 ★</span>
+                            <div class="flex-grow bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800">
+                                <div id="dist-bar-3" class="bg-amber-400/60 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <span id="dist-count-3" class="w-8 text-slate-400 text-right font-orbitron">0</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="w-12 font-orbitron text-amber-400 text-right">2 ★</span>
+                            <div class="flex-grow bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800">
+                                <div id="dist-bar-2" class="bg-amber-400/40 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <span id="dist-count-2" class="w-8 text-slate-400 text-right font-orbitron">0</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="w-12 font-orbitron text-amber-400 text-right">1 ★</span>
+                            <div class="flex-grow bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800">
+                                <div id="dist-bar-1" class="bg-amber-400/20 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <span id="dist-count-1" class="w-8 text-slate-400 text-right font-orbitron">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de Avaliações dos Clientes -->
+                <div id="reviews-list-container" class="space-y-4">
+                    <!-- Injetado dinamicamente via JS -->
+                </div>
+            </div>
+
+            <!-- Aba 2: Comentários -->
+            <div id="game-tab-comments" class="hidden space-y-6">
+                <!-- Form de Comentário -->
+                <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-5 space-y-3">
+                    <h4 class="font-orbitron text-xs text-white tracking-widest font-bold uppercase flex items-center gap-2">
+                        <i data-lucide="message-square" class="w-4 h-4 text-electricblue"></i> DEIXE SEU COMENTÁRIO SOBRE O JOGO
+                    </h4>
+                    <textarea id="comment-input-text" rows="3" placeholder="Compartilhe suas ideias, dicas ou impressões gerais com a comunidade Zher Keys..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:border-electricblue outline-none transition-colors"></textarea>
+                    <div class="flex justify-end">
+                        <button onclick="submitComment()" class="px-5 py-2 bg-electricblue hover:bg-blue-600 text-white font-orbitron font-bold text-xs rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-blue-500/20">
+                            <i data-lucide="send" class="w-3.5 h-3.5"></i> ENVIAR COMENTÁRIO
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Lista de Comentários -->
+                <div id="comments-list-container" class="space-y-4">
+                    <!-- Injetado dinamicamente -->
+                </div>
+            </div>
+
+            <!-- Aba 3: Perguntas & Dúvidas -->
+            <div id="game-tab-questions" class="hidden space-y-6">
+                <!-- Form de Pergunta -->
+                <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-5 space-y-3">
+                    <h4 class="font-orbitron text-xs text-white tracking-widest font-bold uppercase flex items-center gap-2">
+                        <i data-lucide="help-circle" class="w-4 h-4 text-purple-400"></i> FAÇA UMA PERGUNTA SOBRE ESTE JOGO
+                    </h4>
+                    <textarea id="question-input-text" rows="3" placeholder="Tem alguma dúvida sobre requisitos, ativação ou idiomas? Pergunte aqui e nossa equipe responderá em breve..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:border-purple-400 outline-none transition-colors"></textarea>
+                    <div class="flex justify-end">
+                        <button onclick="submitQuestion()" class="px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white font-orbitron font-bold text-xs rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-purple-500/20">
+                            <i data-lucide="send" class="w-3.5 h-3.5"></i> FAZER PERGUNTA
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Lista de Perguntas e Respostas -->
+                <div id="questions-list-container" class="space-y-4">
+                    <!-- Injetado dinamicamente -->
+                </div>
+            </div>
+
+        </div>
+
     </main>
 
     <!-- FOOTER -->
@@ -916,6 +1035,308 @@ gtag('config', 'AW-18202657831');
 
         // Init badge
         updateCartBadge();
+
+        // --- LÓGICA DE ABAS DO JOGO: AVALIAÇÕES, COMENTÁRIOS E PERGUNTAS ---
+        window.switchGameTab = function(tabName) {
+            const tabReviews = document.getElementById('game-tab-reviews');
+            const tabComments = document.getElementById('game-tab-comments');
+            const tabQuestions = document.getElementById('game-tab-questions');
+
+            const btnReviews = document.getElementById('tab-btn-reviews');
+            const btnComments = document.getElementById('tab-btn-comments');
+            const btnQuestions = document.getElementById('tab-btn-questions');
+
+            if (!tabReviews || !tabComments || !tabQuestions) return;
+
+            tabReviews.classList.add('hidden');
+            tabComments.classList.add('hidden');
+            tabQuestions.classList.add('hidden');
+
+            btnReviews.className = "px-5 py-3 rounded-xl font-orbitron text-xs tracking-widest font-bold transition-all duration-300 flex items-center gap-2.5 text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent";
+            btnComments.className = "px-5 py-3 rounded-xl font-orbitron text-xs tracking-widest font-bold transition-all duration-300 flex items-center gap-2.5 text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent";
+            btnQuestions.className = "px-5 py-3 rounded-xl font-orbitron text-xs tracking-widest font-bold transition-all duration-300 flex items-center gap-2.5 text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent";
+
+            if (tabName === 'reviews') {
+                tabReviews.classList.remove('hidden');
+                btnReviews.className = "px-5 py-3 rounded-xl font-orbitron text-xs tracking-widest font-bold transition-all duration-300 flex items-center gap-2.5 bg-amber-500/10 border border-amber-500/40 text-amber-400 shadow-lg shadow-amber-500/10";
+            } else if (tabName === 'comments') {
+                tabComments.classList.remove('hidden');
+                btnComments.className = "px-5 py-3 rounded-xl font-orbitron text-xs tracking-widest font-bold transition-all duration-300 flex items-center gap-2.5 bg-electricblue/10 border border-electricblue/40 text-electricblue shadow-lg shadow-electricblue/10";
+            } else if (tabName === 'questions') {
+                tabQuestions.classList.remove('hidden');
+                btnQuestions.className = "px-5 py-3 rounded-xl font-orbitron text-xs tracking-widest font-bold transition-all duration-300 flex items-center gap-2.5 bg-purple-500/10 border border-purple-500/40 text-purple-400 shadow-lg shadow-purple-500/10";
+            }
+        };
+
+        async function loadProductReviews() {
+            if (!window.currentProduct || !window.currentProduct.id) return;
+            try {
+                const res = await fetch(`/api/products/${window.currentProduct.id}/reviews`);
+                if (!res.ok) return;
+                const data = await res.json();
+
+                const countBadge = document.getElementById('reviews-count-badge');
+                if (countBadge) countBadge.innerText = data.totalReviews;
+                
+                const avgValEl = document.getElementById('avg-rating-val');
+                if (avgValEl) avgValEl.innerText = (data.averageRating || 5.0).toFixed(1);
+                
+                const starsCount = Math.round(data.averageRating || 5);
+                let starsHtml = '';
+                for (let i = 1; i <= 5; i++) starsHtml += i <= starsCount ? '★' : '☆';
+                
+                const avgStarsEl = document.getElementById('avg-stars-display');
+                if (avgStarsEl) avgStarsEl.innerText = starsHtml;
+                
+                const totalLblEl = document.getElementById('total-reviews-lbl');
+                if (totalLblEl) totalLblEl.innerText = `Média baseada em ${data.totalReviews} avaliações`;
+
+                if (data.totalReviews > 0 && data.distribution) {
+                    [5, 4, 3, 2, 1].forEach(star => {
+                        const count = data.distribution[star] || 0;
+                        const pct = Math.round((count / data.totalReviews) * 100);
+                        const bar = document.getElementById(`dist-bar-${star}`);
+                        const countEl = document.getElementById(`dist-count-${star}`);
+                        if (bar) bar.style.width = `${pct}%`;
+                        if (countEl) countEl.innerText = count;
+                    });
+                }
+
+                const container = document.getElementById('reviews-list-container');
+                if (!container) return;
+
+                if (data.reviews.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-8 bg-slate-900/30 rounded-xl border border-slate-850 text-slate-500 font-inter text-xs">
+                            <p>Ainda não há avaliações para este jogo.</p>
+                            <p class="mt-1 text-[11px] text-slate-600">Compre o jogo e seja o primeiro a avaliar de 1 a 5 estrelas!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                data.reviews.forEach(r => {
+                    let rStars = '';
+                    for (let i = 1; i <= 5; i++) rStars += i <= r.rating ? '★' : '☆';
+                    
+                    const dateStr = new Date(r.created_at).toLocaleDateString('pt-BR');
+                    const initial = (r.author_name || 'U').charAt(0).toUpperCase();
+
+                    html += `
+                        <div class="bg-slate-900/40 border border-slate-850 rounded-xl p-4 flex flex-col gap-2">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-orbitron font-bold text-xs text-amber-400">
+                                        ${initial}
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-orbitron font-bold text-xs text-white">${r.author_name}</span>
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-950/40 border border-emerald-800/40 text-[9px] font-orbitron text-emerald-400 uppercase">
+                                            <i data-lucide="check-circle" class="w-2.5 h-2.5"></i> Comprador Verificado
+                                        </span>
+                                    </div>
+                                </div>
+                                <span class="text-[10px] text-slate-500 font-orbitron">${dateStr}</span>
+                            </div>
+
+                            <div class="flex text-amber-400 text-sm gap-0.5">
+                                ${rStars}
+                            </div>
+
+                            <p class="text-xs text-slate-300 font-inter leading-relaxed mt-1">
+                                ${r.comment ? r.comment : '<i>Sem comentário escrito.</i>'}
+                            </p>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+                if (window.lucide) lucide.createIcons();
+            } catch(e) {
+                console.error("Erro ao carregar avaliações:", e);
+            }
+        }
+
+        async function loadProductComments() {
+            if (!window.currentProduct || !window.currentProduct.id) return;
+            try {
+                const res = await fetch(`/api/products/${window.currentProduct.id}/comments`);
+                if (!res.ok) return;
+                const comments = await res.json();
+
+                const badge = document.getElementById('comments-count-badge');
+                if (badge) badge.innerText = comments.length;
+
+                const container = document.getElementById('comments-list-container');
+                if (!container) return;
+
+                if (comments.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-8 bg-slate-900/30 rounded-xl border border-slate-850 text-slate-500 font-inter text-xs">
+                            <p>Nenhum comentário enviado até o momento. Seja o primeiro a comentar!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                comments.forEach(c => {
+                    const dateStr = new Date(c.created_at).toLocaleDateString('pt-BR') + ' às ' + new Date(c.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    const initial = (c.author_name || 'U').charAt(0).toUpperCase();
+
+                    html += `
+                        <div class="bg-slate-900/40 border border-slate-850 rounded-xl p-4 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-orbitron font-bold text-xs text-electricblue">
+                                        ${initial}
+                                    </div>
+                                    <span class="font-orbitron font-bold text-xs text-white">${c.author_name}</span>
+                                </div>
+                                <span class="text-[10px] text-slate-500 font-orbitron">${dateStr}</span>
+                            </div>
+                            <p class="text-xs text-slate-300 font-inter leading-relaxed pl-11">
+                                ${c.comment}
+                            </p>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch(e) {
+                console.error("Erro ao carregar comentários:", e);
+            }
+        }
+
+        window.submitComment = async function() {
+            const textEl = document.getElementById('comment-input-text');
+            const comment = textEl?.value?.trim();
+            if (!comment) return alert("Por favor, digite seu comentário antes de enviar.");
+
+            try {
+                const res = await fetch(`/api/products/${window.currentProduct.id}/comments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ comment })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    textEl.value = '';
+                    loadProductComments();
+                } else {
+                    alert("⚠️ " + (data.error || "Faça login para postar comentários."));
+                }
+            } catch(e) {
+                alert("Erro de conexão ao enviar comentário.");
+            }
+        };
+
+        async function loadProductQuestions() {
+            if (!window.currentProduct || !window.currentProduct.id) return;
+            try {
+                const res = await fetch(`/api/products/${window.currentProduct.id}/questions`);
+                if (!res.ok) return;
+                const questions = await res.json();
+
+                const badge = document.getElementById('questions-count-badge');
+                if (badge) badge.innerText = questions.length;
+
+                const container = document.getElementById('questions-list-container');
+                if (!container) return;
+
+                if (questions.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-8 bg-slate-900/30 rounded-xl border border-slate-850 text-slate-500 font-inter text-xs">
+                            <p>Nenhuma dúvida cadastrada sobre este produto. Faça sua pergunta!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                questions.forEach(q => {
+                    const qDateStr = new Date(q.created_at).toLocaleDateString('pt-BR');
+                    const initial = (q.author_name || 'U').charAt(0).toUpperCase();
+
+                    let answerHtml = '';
+                    if (q.answer) {
+                        const aDateStr = new Date(q.answered_at || q.created_at).toLocaleDateString('pt-BR');
+                        answerHtml = `
+                            <div class="mt-3 ml-6 p-3.5 bg-emerald-950/30 border border-emerald-800/40 rounded-xl space-y-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-orbitron font-bold text-xs text-emerald-400 flex items-center gap-1.5 uppercase">
+                                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Resposta da Zher Keys (${q.admin_name || 'Suporte'})
+                                    </span>
+                                    <span class="text-[10px] text-slate-500 font-orbitron">${aDateStr}</span>
+                                </div>
+                                <p class="text-xs text-slate-200 font-inter leading-relaxed">
+                                    ${q.answer}
+                                </p>
+                            </div>
+                        `;
+                    } else {
+                        answerHtml = `
+                            <div class="mt-2 ml-6 text-[11px] text-amber-400/80 font-orbitron flex items-center gap-1.5">
+                                <i data-lucide="clock" class="w-3 h-3"></i> Aguardando resposta do suporte Zher Keys...
+                            </div>
+                        `;
+                    }
+
+                    html += `
+                        <div class="bg-slate-900/40 border border-slate-850 rounded-xl p-4 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-purple-950/40 border border-purple-800/50 flex items-center justify-center font-orbitron font-bold text-xs text-purple-400">
+                                        ${initial}
+                                    </div>
+                                    <span class="font-orbitron font-bold text-xs text-white">${q.author_name}</span>
+                                </div>
+                                <span class="text-[10px] text-slate-500 font-orbitron">${qDateStr}</span>
+                            </div>
+                            <p class="text-xs text-slate-200 font-inter font-semibold leading-relaxed pl-11">
+                                ❓ ${q.question}
+                            </p>
+                            ${answerHtml}
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+                if (window.lucide) lucide.createIcons();
+            } catch(e) {
+                console.error("Erro ao carregar perguntas:", e);
+            }
+        }
+
+        window.submitQuestion = async function() {
+            const textEl = document.getElementById('question-input-text');
+            const question = textEl?.value?.trim();
+            if (!question) return alert("Por favor, digite sua pergunta antes de enviar.");
+
+            try {
+                const res = await fetch(`/api/products/${window.currentProduct.id}/questions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    textEl.value = '';
+                    loadProductQuestions();
+                } else {
+                    alert("⚠️ " + (data.error || "Faça login para enviar perguntas."));
+                }
+            } catch(e) {
+                alert("Erro de conexão ao enviar pergunta.");
+            }
+        };
+
+        // Verifica hash da URL se o usuário veio de um link direto para #avaliacoes
+        if (window.location.hash === '#avaliacoes' || window.location.hash === '#reviews') {
+            window.switchGameTab('reviews');
+        }
+
+        loadProductReviews();
+        loadProductComments();
+        loadProductQuestions();
     </script>
     <script src="/bg-player.js" defer></script>
 </body>
