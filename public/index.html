@@ -3435,8 +3435,9 @@ gtag('config', 'AW-18202657831');
                 images = images.concat(galleryImages);
             }
 
-            if (p.image && !images.includes(p.image)) {
-                images.unshift(p.image);
+            // Apenas adiciona a imagem de capa se a galeria de screenshots estiver vazia
+            if (images.length === 0 && p.image) {
+                images.push(p.image);
             }
 
             return images.filter((img, i) => img && typeof img === 'string' && images.indexOf(img) === i);
