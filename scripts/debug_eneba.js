@@ -34,7 +34,7 @@ async function debugEnebaCheckout() {
             await emailInput.type(process.env.ENEBA_BOT_EMAIL || 'zherkeys@gmail.com');
             const passInput = await page.$('input[name="password"], input[type="password"]');
             if (passInput) {
-                await passInput.type(process.env.ENEBA_BOT_PASSWORD || 'Caio40028922!');
+                await passInput.type(process.env.ENEBA_BOT_PASSWORD || '');
             }
             const submitBtn = await page.$('button[type="submit"]');
             if (submitBtn) {
