@@ -736,7 +736,7 @@ async function autoUpdateProductSteamInfo(productId, title, currentDescription) 
                 }
             }
             
-            if (newGallery === '[]' || !newGallery || newGallery === 'null') {
+            if (product.gallery === null || product.gallery === undefined) {
                 let mediaItems = [];
                 if (steamInfo.movies && steamInfo.movies.length > 0) {
                     mediaItems.push(steamInfo.movies[0]); // Vídeo de gameplay em primeiro!
@@ -747,7 +747,7 @@ async function autoUpdateProductSteamInfo(productId, title, currentDescription) 
                 if (mediaItems.length > 0) {
                     newGallery = JSON.stringify(mediaItems);
                     needsUpdate = true;
-                    console.log(`[STEAM-SYNC] Atualizando galeria e trailer de gameplay do produto ID ${productId}.`);
+                    console.log(`[STEAM-SYNC] Inicializando galeria e trailer de gameplay do novo produto ID ${productId}.`);
                 }
             }
             
