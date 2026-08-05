@@ -338,6 +338,90 @@ gtag('config', 'AW-18202657831');
         </div>
     </section>
 
+    <!-- SEÇÃO SORTEIO SEMANAL -->
+    <section class="py-12 px-4 max-w-7xl mx-auto scroll-mt-20">
+        <div class="border-beam-container w-full group">
+            <div class="border-beam-inner p-4 sm:p-12 overflow-hidden relative">
+                <!-- Background visual details -->
+                <div class="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,_rgba(59,130,246,0.15),_transparent_70%)] pointer-events-none"></div>
+                <div class="absolute -right-20 -top-20 w-80 h-80 bg-cyberrose/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-center relative z-10">
+                    <!-- Text Info Column -->
+                    <div class="lg:col-span-7 flex flex-col justify-center text-left">
+                        <div class="inline-flex items-center gap-2 bg-slate-950/80 border border-slate-800 px-3 py-1 rounded-full mb-4 w-fit backdrop-blur-md">
+                            <span class="flex h-2 w-2 relative">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                            <span class="font-orbitron text-[9px] sm:text-[10px] tracking-widest text-emerald-400 uppercase font-bold">// SORTEIO SEMANAL ATIVO</span>
+                        </div>
+                        
+                        <h2 class="font-orbitron font-black text-2xl sm:text-5xl lg:text-6xl text-white mb-4 sm:mb-6 uppercase tracking-tight leading-tight sm:leading-none break-words">
+                            GANHE <span class="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]">10 MILHÕES</span> <br class="hidden sm:inline" />DE Z-COINS!
+                        </h2>
+                        
+                        <p class="font-inter text-slate-300 text-xs sm:text-base mb-6 sm:mb-8 font-light leading-relaxed max-w-xl">
+                            Toda semana, a ZHER KEYS realiza o maior sorteio da comunidade! São <strong class="text-white font-semibold">10.000.000 de Z-Coins</strong> distribuídos para você acumular fortunas, rodar a roleta, jogar no cassino e dominar os minijogos. 
+                            <br><br class="hidden sm:block">
+                            Para participar, basta estar ativo no site, jogar nossos minijogos e resgatar suas chaves diárias.
+                        </p>
+                        
+                        <!-- Mini Info / Timer -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4 mb-6 sm:mb-8 max-w-xl w-full">
+                            <div class="bg-slate-950/60 border border-slate-800/80 p-3 sm:p-4 rounded-xl backdrop-blur-sm flex flex-col justify-center">
+                                <div class="text-[9px] sm:text-[10px] font-orbitron tracking-widest text-slate-500 uppercase mb-1">VALOR DO PRÊMIO</div>
+                                <div class="font-orbitron font-bold text-xs sm:text-base text-emerald-400 flex items-center gap-1 flex-wrap">
+                                    💰 10.000.000 <span class="text-[8px] sm:text-[9px] text-slate-500 font-normal uppercase tracking-wider">Z-Coins</span>
+                                </div>
+                            </div>
+                            <div class="bg-slate-950/60 border border-slate-800/80 p-3 sm:p-4 rounded-xl backdrop-blur-sm flex flex-col justify-center">
+                                <div class="text-[9px] sm:text-[10px] font-orbitron tracking-widest text-slate-500 uppercase mb-1">PRÓXIMO GANHADOR EM</div>
+                                <div id="sweepstake-timer" class="font-orbitron font-bold text-xs sm:text-base text-cyberrose animate-pulse truncate">
+                                    Carregando...
+                                </div>
+                            </div>
+                            <div class="bg-slate-950/60 border border-slate-800/80 p-3 sm:p-4 rounded-xl backdrop-blur-sm flex flex-col justify-center">
+                                <div class="text-[9px] sm:text-[10px] font-orbitron tracking-widest text-slate-500 uppercase mb-1">ÚLTIMO GANHADOR</div>
+                                <div id="sweepstake-last-winner" class="font-orbitron font-bold text-xs text-white truncate py-0.5">
+                                    Carregando...
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+                            <button onclick="openSweepstakeModal()" class="magnetic-button w-full sm:w-auto text-center bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-[10px] sm:text-xs tracking-widest font-bold px-6 py-3.5 sm:py-4.5 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all duration-300 uppercase">
+                                PARTICIPAR AGORA
+                            </button>
+                            <button onclick="openSweepstakeInstructions()" class="w-full sm:w-auto bg-slate-950/60 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-orbitron text-[10px] sm:text-xs tracking-widest px-6 py-3.5 sm:py-4.5 rounded-xl backdrop-blur-md transition-all duration-300 flex items-center justify-center gap-2">
+                                <i data-lucide="info" class="w-4 h-4 text-electricblue"></i> COMO FUNCIONA
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Image Column -->
+                    <div class="lg:col-span-5 flex justify-center items-center">
+                        <div class="relative w-full max-w-[450px] aspect-square rounded-2xl overflow-hidden border border-slate-700/50 shadow-[0_0_40px_rgba(59,130,246,0.25)] hover:shadow-[0_0_50px_rgba(244,63,94,0.3)] transition-all duration-500 group-hover:scale-[1.02]">
+                            <img src="/sorteio_zcoins.png" alt="Sorteio Semanal Z-Coins" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700">
+                            <!-- Overlay cyber effect -->
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-60"></div>
+                            <!-- Subtle cyber sticker/badge on top of image -->
+                            <div class="absolute bottom-6 left-6 right-6 bg-slate-950/90 border border-slate-800/80 p-4 rounded-xl backdrop-blur-md flex items-center justify-between">
+                                <div>
+                                    <div class="text-[9px] font-orbitron tracking-widest text-slate-500">SORTEIO OFICIAL</div>
+                                    <div class="font-orbitron font-bold text-xs text-white uppercase tracking-wider">COMUNIDADE ZHER KEYS</div>
+                                </div>
+                                <div class="bg-cyberrose/20 border border-cyberrose/30 text-cyberrose font-orbitron text-[9px] tracking-widest px-2.5 py-1 rounded font-bold uppercase">
+                                    ACUMULADO
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- DROPS LENDÁRIOS DA SEMANA (BENTO GRID) -->
     <section id="catalogo" class="py-24 px-4 max-w-7xl mx-auto scroll-mt-20">
         <div class="text-center md:text-left mb-16 flex flex-col md:flex-row md:items-end justify-between gap-4">
