@@ -1637,7 +1637,10 @@ gtag('config', 'AW-18202657831');
                         <div class="flex-grow text-center sm:text-left min-w-0 flex-1">
                             <div class="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
                                 <span class="bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[10px] px-2 py-0.5 rounded-full uppercase">${p.category}</span>
-                                <span class="text-[10px] text-slate-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded font-orbitron font-bold">POSIÇÃO #${idx + 1}</span>
+                                <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-lg shadow-sm" title="Digite o número da posição desejada e pressione Enter para alterar a ordem imediatamente!">
+                                    <span class="text-[9px] font-orbitron text-slate-400 font-bold">POS:</span>
+                                    <input type="number" min="1" max="${products.length}" value="${idx + 1}" onchange="changeProductPositionDirectly(${p.id}, this.value)" class="w-12 bg-slate-950 border border-slate-700 focus:border-cyan-400 text-cyan-400 text-xs font-orbitron font-bold rounded px-1 py-0.5 text-center focus:outline-none transition-colors">
+                                </div>
                             </div>
                             <h4 class="text-white font-orbitron font-bold text-lg mt-1 truncate w-full">${p.title}</h4>
                             <span class="text-toxicgreen font-bold text-sm">R$ ${parseFloat(p.price).toFixed(2).replace('.', ',')}</span>
@@ -1665,6 +1668,24 @@ gtag('config', 'AW-18202657831');
                 console.error("Erro ao carregar produtos:", e);
             }
         }
+
+        window.changeProductPositionDirectly = async (productId, newPosStr) => {
+            let newPos = parseInt(newPosStr, 10);
+            if (isNaN(newPos) || newPos < 1) newPos = 1;
+            if (!window.allProducts || window.allProducts.length === 0) return;
+            if (newPos > window.allProducts.length) newPos = window.allProducts.length;
+
+            const currentIdx = window.allProducts.findIndex(p => p.id === productId);
+            if (currentIdx < 0) return;
+
+            const targetIdx = newPos - 1;
+            if (currentIdx === targetIdx) return;
+
+            const movedProduct = window.allProducts.splice(currentIdx, 1)[0];
+            window.allProducts.splice(targetIdx, 0, movedProduct);
+
+            await saveProductsOrder();
+        };
 
         async function saveProductsOrder() {
             try {
@@ -2194,7 +2215,7 @@ gtag('config', 'AW-18202657831');
             
             productGallery.forEach((mediaSrc, idx) => {
                 const wrapper = document.createElement('div');
-                wrapper.className = "relative group aspect-square rounded-lg overflow-hidden border border-slate-800 bg-slate-950/50 flex items-center justify-center cursor-move transition-all select-none shadow-md hover:border-slate-600";
+                wrapper.className = "relative group w-full h-36 rounded-xl overflow-hidden border border-slate-800 bg-slate-950 flex flex-col items-center justify-center cursor-move transition-all select-none shadow-lg hover:border-slate-600 p-0.5";
                 wrapper.setAttribute('draggable', 'true');
                 wrapper.dataset.index = idx;
                 
@@ -2232,7 +2253,7 @@ gtag('config', 'AW-18202657831');
                     draggedGalleryIndex = null;
                 };
                 
-                // Detecta o tipo de midia
+                // Detecta o tipo de mídia
                 let mediaElement;
                 let isImage = false;
                 if (mediaSrc.startsWith('data:video/') || mediaSrc.endsWith('.mp4') || mediaSrc.endsWith('.webm') || mediaSrc.endsWith('.ogg')) {
@@ -2240,7 +2261,7 @@ gtag('config', 'AW-18202657831');
                     mediaElement.src = mediaSrc;
                     mediaElement.muted = true;
                     mediaElement.playsInline = true;
-                    mediaElement.className = "object-cover w-full h-full pointer-events-none";
+                    mediaElement.className = "object-cover w-full h-full rounded-lg pointer-events-none";
                     
                     wrapper.onmouseenter = () => mediaElement.play();
                     wrapper.onmouseleave = () => {
@@ -2258,7 +2279,7 @@ gtag('config', 'AW-18202657831');
                     }
                     
                     mediaElement = document.createElement('div');
-                    mediaElement.className = "w-full h-full relative bg-slate-950 flex items-center justify-center pointer-events-none";
+                    mediaElement.className = "w-full h-full relative bg-slate-950 flex items-center justify-center pointer-events-none rounded-lg overflow-hidden";
                     
                     if (ytId) {
                         const img = document.createElement('img');
@@ -2275,71 +2296,78 @@ gtag('config', 'AW-18202657831');
                     isImage = true;
                     mediaElement = document.createElement('img');
                     mediaElement.src = mediaSrc;
-                    mediaElement.className = "object-cover w-full h-full pointer-events-none";
+                    mediaElement.className = "object-cover w-full h-full rounded-lg pointer-events-none";
                 }
                 
                 // Badge de Ordem (#1, #2, etc.)
                 const orderBadge = document.createElement('span');
-                orderBadge.className = `absolute top-1 left-1 ${idx === 0 ? 'bg-electricblue text-white font-bold' : 'bg-slate-900/90 text-slate-300'} text-[8px] font-orbitron px-1.5 py-0.5 rounded shadow border border-slate-700/60 z-10`;
+                orderBadge.className = `absolute top-2 left-2 ${idx === 0 ? 'bg-electricblue text-white font-bold' : 'bg-slate-950/90 text-slate-300'} text-[9px] font-orbitron px-2 py-0.5 rounded-md shadow border border-slate-700/80 z-10`;
                 orderBadge.innerText = idx === 0 ? `#1 (1º Slide)` : `#${idx + 1}`;
 
-                // Controles de Ação (Mover Esquerda, Mover Direita, Remover)
+                // Barra de Ações (Rodapé do Card)
                 const controlsContainer = document.createElement('div');
-                controlsContainer.className = "absolute top-1.5 right-1.5 flex items-center gap-1.5 opacity-100 z-10 bg-slate-950/80 p-1 rounded-lg border border-slate-700/80 backdrop-blur-md";
+                controlsContainer.className = "absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between bg-slate-950/90 p-1 rounded-lg border border-slate-800 backdrop-blur-md z-10";
+
+                // Botão de Usar Thumb (Se for Imagem)
+                const leftBox = document.createElement('div');
+                if (isImage) {
+                    const setThumbBtn = document.createElement('button');
+                    setThumbBtn.type = "button";
+                    setThumbBtn.className = "bg-toxicgreen hover:bg-emerald-400 text-obsidian text-[8px] font-orbitron font-bold px-1.5 py-1 rounded shadow cursor-pointer flex items-center gap-1 border border-toxicgreen/50";
+                    setThumbBtn.title = "Definir como Thumbnail Principal";
+                    setThumbBtn.innerHTML = `<svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> THUMB`;
+                    setThumbBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        setGalleryImageAsThumb(mediaSrc);
+                    };
+                    leftBox.appendChild(setThumbBtn);
+                }
+                controlsContainer.appendChild(leftBox);
+
+                const rightBox = document.createElement('div');
+                rightBox.className = "flex items-center gap-1";
 
                 if (idx > 0) {
                     const moveLeftBtn = document.createElement('button');
                     moveLeftBtn.type = "button";
-                    moveLeftBtn.className = "bg-slate-800 hover:bg-slate-700 text-white rounded p-1 shadow-lg cursor-pointer flex items-center justify-center";
-                    moveLeftBtn.title = "Mover Slide para Esquerda";
+                    moveLeftBtn.className = "bg-slate-800 hover:bg-slate-700 text-white rounded p-1 shadow cursor-pointer flex items-center justify-center";
+                    moveLeftBtn.title = "Mover para Esquerda";
                     moveLeftBtn.innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>`;
                     moveLeftBtn.onclick = (e) => {
                         e.stopPropagation();
                         moveGalleryItem(idx, idx - 1);
                     };
-                    controlsContainer.appendChild(moveLeftBtn);
+                    rightBox.appendChild(moveLeftBtn);
                 }
 
                 if (idx < productGallery.length - 1) {
                     const moveRightBtn = document.createElement('button');
                     moveRightBtn.type = "button";
-                    moveRightBtn.className = "bg-slate-800 hover:bg-slate-700 text-white rounded p-1 shadow-lg cursor-pointer flex items-center justify-center";
-                    moveRightBtn.title = "Mover Slide para Direita";
+                    moveRightBtn.className = "bg-slate-800 hover:bg-slate-700 text-white rounded p-1 shadow cursor-pointer flex items-center justify-center";
+                    moveRightBtn.title = "Mover para Direita";
                     moveRightBtn.innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>`;
                     moveRightBtn.onclick = (e) => {
                         e.stopPropagation();
                         moveGalleryItem(idx, idx + 1);
                     };
-                    controlsContainer.appendChild(moveRightBtn);
+                    rightBox.appendChild(moveRightBtn);
                 }
 
                 const removeBtn = document.createElement('button');
                 removeBtn.type = "button";
-                removeBtn.className = "bg-red-600 hover:bg-red-500 text-white rounded-md p-1.5 shadow-lg cursor-pointer flex items-center justify-center transition-colors border border-red-500/50";
+                removeBtn.className = "bg-red-600 hover:bg-red-500 text-white rounded p-1 shadow cursor-pointer flex items-center justify-center transition-colors border border-red-500/50";
                 removeBtn.title = "Excluir esta foto da Galeria";
-                removeBtn.innerHTML = `<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>`;
+                removeBtn.innerHTML = `<svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>`;
                 removeBtn.onclick = (e) => {
                     e.stopPropagation();
                     removeGalleryImage(idx);
                 };
-                controlsContainer.appendChild(removeBtn);
+                rightBox.appendChild(removeBtn);
+                controlsContainer.appendChild(rightBox);
                 
                 wrapper.appendChild(mediaElement);
                 wrapper.appendChild(orderBadge);
                 wrapper.appendChild(controlsContainer);
-
-                if (isImage) {
-                    const setThumbBtn = document.createElement('button');
-                    setThumbBtn.type = "button";
-                    setThumbBtn.className = "absolute bottom-1 left-1 bg-toxicgreen hover:bg-emerald-400 text-obsidian text-[8px] font-orbitron font-bold px-1.5 py-0.5 rounded shadow opacity-90 sm:opacity-0 group-hover:opacity-100 transition-all cursor-pointer flex items-center gap-1 z-10 border border-toxicgreen/50";
-                    setThumbBtn.title = "Definir esta foto como Thumbnail principal do produto";
-                    setThumbBtn.innerHTML = `<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> USAR THUMB`;
-                    setThumbBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        setGalleryImageAsThumb(mediaSrc);
-                    };
-                    wrapper.appendChild(setThumbBtn);
-                }
 
                 container.appendChild(wrapper);
             });
