@@ -52,7 +52,7 @@ const pool = new Pool({
 // Sistema de Backup de Segurança de Produtos em Arquivo JSON Local (Gravado no Git/GitHub)
 async function syncProductsBackup() {
     try {
-        const res = await pool.query('SELECT * FROM products ORDER BY id ASC');
+        const res = await pool.query('SELECT * FROM products ORDER BY COALESCE(display_order, 0) ASC, id ASC');
         if (res.rows && res.rows.length > 0) {
             const dataDir = path.join(__dirname, 'data');
             if (!fs.existsSync(dataDir)) {
@@ -1058,6 +1058,7 @@ async function initDB() {
             ALTER TABLE products ADD COLUMN IF NOT EXISTS old_price NUMERIC(10, 2);
             ALTER TABLE products ADD COLUMN IF NOT EXISTS gameflip_listing_id TEXT;
             ALTER TABLE products ADD COLUMN IF NOT EXISTS gallery TEXT DEFAULT '[]';
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS display_order INTEGER DEFAULT 0;
             
             ALTER TABLE users ADD COLUMN IF NOT EXISTS balance NUMERIC(10, 2) DEFAULT 0.00;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS points INTEGER DEFAULT 0;
@@ -1737,7 +1738,7 @@ app.get('/api/products', async (req, res) => {
         // Limpa pedidos pendentes expirados e restaura o estoque antes de carregar o catálogo de produtos!
         await cleanupExpiredOrders();
 
-        const result = await pool.query('SELECT id, title, description, price, old_price, image, category, in_stock, is_global, restricted_countries, genres FROM products ORDER BY id ASC');
+        const result = await pool.query('SELECT id, title, description, price, old_price, image, category, in_stock, is_global, restricted_countries, genres, display_order FROM products ORDER BY COALESCE(display_order, 0) ASC, id ASC');
         productsCache = result.rows.map(row => ({
             ...row,
             description: formatProductDescription(row.description, row.is_global, row.restricted_countries)
@@ -1753,10 +1754,39 @@ app.get('/api/products', async (req, res) => {
 // Admin Listar (EXPÕE A CHAVE PARA O ADMIN VER)
 app.get('/api/admin/products', requireAdmin, async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM products ORDER BY id ASC');
+        const result = await pool.query('SELECT * FROM products ORDER BY COALESCE(display_order, 0) ASC, id ASC');
         res.json(result.rows);
     } catch(e) {
         res.status(500).json({ error: 'Erro ao buscar produtos' });
+    }
+});
+
+// Reordenar produtos (Admin)
+app.post('/api/admin/products/reorder', requireAdmin, async (req, res) => {
+    const { order } = req.body;
+    if (!Array.isArray(order) || order.length === 0) {
+        return res.status(400).json({ error: 'Ordem de produtos inválida.' });
+    }
+    try {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            for (let i = 0; i < order.length; i++) {
+                await client.query('UPDATE products SET display_order = $1 WHERE id = $2', [i, parseInt(order[i])]);
+            }
+            await client.query('COMMIT');
+            productsCache = null; // Invalida o cache para atualizar a exibição pública imediatamente
+            syncProductsBackup(); // Atualiza o arquivo de backup local
+            res.json({ success: true, message: 'Ordem dos produtos atualizada com sucesso!' });
+        } catch (e) {
+            await client.query('ROLLBACK');
+            throw e;
+        } finally {
+            client.release();
+        }
+    } catch (e) {
+        console.error("Erro ao reordenar produtos:", e);
+        res.status(500).json({ error: 'Erro interno ao salvar ordem dos produtos.' });
     }
 });
 

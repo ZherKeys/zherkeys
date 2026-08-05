@@ -281,9 +281,17 @@ gtag('config', 'AW-18202657831');
             <!-- Lista de Produtos -->
             <div class="lg:col-span-2 bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
                 <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-6">
-                    <h3 class="font-orbitron font-bold text-white tracking-widest flex items-center gap-2">
-                        <i data-lucide="database" class="w-5 h-5 text-electricblue"></i> COFRE DE PRODUTOS
-                    </h3>
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <h3 class="font-orbitron font-bold text-white tracking-widest flex items-center gap-2">
+                            <i data-lucide="database" class="w-5 h-5 text-electricblue"></i> COFRE DE PRODUTOS
+                        </h3>
+                        <span class="text-[11px] font-orbitron text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1 rounded-lg flex items-center gap-1.5" title="Arraste os produtos para reordenar a posição deles no site">
+                            <i data-lucide="grip-vertical" class="w-4 h-4 text-electricblue animate-pulse"></i> Arraste para Reordenar
+                        </span>
+                        <span id="reorder-status-badge" class="text-xs font-orbitron text-emerald-400 font-bold hidden bg-emerald-950/90 border border-emerald-500/40 px-3 py-1 rounded-lg animate-bounce">
+                            ✓ Nova Ordem Salva no Site!
+                        </span>
+                    </div>
                     <button type="button" onclick="updateMarketPrices()" id="btn-update-prices" class="font-orbitron text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-lg shadow-emerald-950/40 border border-emerald-500/30 transition-all cursor-pointer">
                         <i data-lucide="trending-up" class="w-4 h-4 text-emerald-200"></i> ATUALIZAR PREÇOS MÉDIOS (INTERNET)
                     </button>
@@ -1517,6 +1525,8 @@ gtag('config', 'AW-18202657831');
                 if (window.lucide) lucide.createIcons();
             }
         }
+        let draggedProductIndex = null;
+
         async function loadProducts() {
             try {
                 const res = await fetch('/api/admin/products');
@@ -1530,8 +1540,8 @@ gtag('config', 'AW-18202657831');
                     return;
                 }
 
-                let html = '';
-                products.forEach(p => {
+                container.innerHTML = '';
+                products.forEach((p, idx) => {
                     const hasKey = p.activation_key && p.activation_key.trim() !== '' ? 
                         '<span class="text-emerald-400 text-[10px] border border-emerald-900 bg-emerald-900/20 px-2 py-0.5 rounded font-orbitron mt-2 inline-block">TEM CHAVE SECRETA</span>' : 
                         '<span class="text-red-400 text-[10px] border border-red-900 bg-red-900/20 px-2 py-0.5 rounded font-orbitron mt-2 inline-block">SEM CHAVE</span>';
@@ -1543,9 +1553,52 @@ gtag('config', 'AW-18202657831');
                         '<span class="text-rose-400 text-[10px] border border-rose-900 bg-rose-900/20 px-2 py-0.5 rounded font-orbitron mt-2 inline-block ml-2" title="Restrita a alguns países"><i data-lucide="lock" class="w-3 h-3 inline"></i> RESTRITA</span>' : 
                         '<span class="text-slate-400 text-[10px] border border-slate-700 bg-slate-800/50 px-2 py-0.5 rounded font-orbitron mt-2 inline-block ml-2"><i data-lucide="globe" class="w-3 h-3 inline"></i> GLOBAL</span>';
 
-                    html += `
-                        <div class="flex flex-col sm:flex-row items-center gap-6 bg-slate-950 p-4 rounded-xl border border-slate-800">
-                            <div class="relative group/thumb w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden border border-slate-800 shadow-lg bg-slate-900">
+                    const card = document.createElement('div');
+                    card.className = "flex flex-col sm:flex-row items-center gap-4 bg-slate-950 p-4 rounded-xl border border-slate-800 transition-all hover:border-electricblue/50 cursor-grab active:cursor-grabbing select-none group/card";
+                    card.setAttribute('draggable', 'true');
+                    card.setAttribute('data-id', p.id);
+                    card.setAttribute('data-index', idx);
+
+                    // HTML5 Drag and Drop events for reordering
+                    card.ondragstart = (e) => {
+                        draggedProductIndex = idx;
+                        e.dataTransfer.effectAllowed = 'move';
+                        card.classList.add('opacity-40', 'border-electricblue', 'bg-slate-900');
+                    };
+
+                    card.ondragover = (e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                        card.classList.add('border-electricblue', 'bg-slate-900/80');
+                    };
+
+                    card.ondragleave = () => {
+                        card.classList.remove('border-electricblue', 'bg-slate-900/80');
+                    };
+
+                    card.ondrop = (e) => {
+                        e.preventDefault();
+                        card.classList.remove('border-electricblue', 'bg-slate-900/80');
+                        const targetIdx = idx;
+                        if (draggedProductIndex !== null && draggedProductIndex !== targetIdx) {
+                            const movedProduct = window.allProducts.splice(draggedProductIndex, 1)[0];
+                            window.allProducts.splice(targetIdx, 0, movedProduct);
+                            draggedProductIndex = null;
+                            saveProductsOrder();
+                        }
+                    };
+
+                    card.ondragend = () => {
+                        card.classList.remove('opacity-40', 'border-electricblue', 'bg-slate-900');
+                        draggedProductIndex = null;
+                    };
+
+                    card.innerHTML = `
+                        <div class="flex items-center gap-3 w-full sm:w-auto">
+                            <div class="p-2 text-slate-500 group-hover/card:text-electricblue transition-colors cursor-grab" title="Arraste para reordenar a exibição no site">
+                                <i data-lucide="grip-vertical" class="w-6 h-6 text-slate-400 group-hover/card:text-electricblue"></i>
+                            </div>
+                            <div class="relative group/thumb w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border border-slate-800 shadow-lg bg-slate-900">
                                 <img src="${p.image || '/logo.png'}" class="w-full h-full object-cover">
                                 <label class="absolute inset-0 bg-slate-950/85 text-white opacity-0 group-hover/thumb:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer p-1 text-center" title="Trocar Thumbnail deste produto">
                                     <i data-lucide="camera" class="w-5 h-5 text-toxicgreen mb-1"></i>
@@ -1553,33 +1606,61 @@ gtag('config', 'AW-18202657831');
                                     <input type="file" accept="image/*" class="hidden" onchange="quickChangeProductThumb(this, ${p.id})">
                                 </label>
                             </div>
-                            <div class="flex-grow text-center sm:text-left min-w-0 flex-1">
+                        </div>
+                        <div class="flex-grow text-center sm:text-left min-w-0 flex-1">
+                            <div class="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
                                 <span class="bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[10px] px-2 py-0.5 rounded-full uppercase">${p.category}</span>
-                                <h4 class="text-white font-orbitron font-bold text-lg mt-1 truncate w-full">${p.title}</h4>
-                                <span class="text-toxicgreen font-bold text-sm">R$ ${parseFloat(p.price).toFixed(2).replace('.', ',')}</span>
-                                <br>
-                                ${hasKey}
-                                ${stockStatus}
-                                ${regionTag}
+                                <span class="text-[10px] text-slate-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded font-orbitron font-bold">POSIÇÃO #${idx + 1}</span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <button onclick="quickSelectThumb(${p.id})" class="px-2.5 py-2 bg-slate-800 hover:bg-slate-700 text-toxicgreen border border-slate-700 rounded-lg transition flex items-center gap-1.5 text-xs font-orbitron" title="Trocar Thumbnail">
-                                    <i data-lucide="image" class="w-4 h-4"></i> <span class="hidden sm:inline text-[10px]">THUMB</span>
-                                </button>
-                                <button onclick="editProduct(${p.id})" class="p-2 bg-slate-800 text-electricblue rounded-lg hover:bg-slate-700 transition" title="Editar">
-                                    <i data-lucide="edit" class="w-4 h-4"></i>
-                                </button>
-                                <button onclick="deleteProduct(${p.id})" class="p-2 bg-slate-800 text-cyberrose rounded-lg hover:bg-slate-700 transition" title="Excluir">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                            </div>
+                            <h4 class="text-white font-orbitron font-bold text-lg mt-1 truncate w-full">${p.title}</h4>
+                            <span class="text-toxicgreen font-bold text-sm">R$ ${parseFloat(p.price).toFixed(2).replace('.', ',')}</span>
+                            <br>
+                            ${hasKey}
+                            ${stockStatus}
+                            ${regionTag}
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="quickSelectThumb(${p.id})" class="px-2.5 py-2 bg-slate-800 hover:bg-slate-700 text-toxicgreen border border-slate-700 rounded-lg transition flex items-center gap-1.5 text-xs font-orbitron" title="Trocar Thumbnail">
+                                <i data-lucide="image" class="w-4 h-4"></i> <span class="hidden sm:inline text-[10px]">THUMB</span>
+                            </button>
+                            <button onclick="editProduct(${p.id})" class="p-2 bg-slate-800 text-electricblue rounded-lg hover:bg-slate-700 transition" title="Editar">
+                                <i data-lucide="edit" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="deleteProduct(${p.id})" class="p-2 bg-slate-800 text-cyberrose rounded-lg hover:bg-slate-700 transition" title="Excluir">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
                         </div>
                     `;
+                    container.appendChild(card);
                 });
-                container.innerHTML = html;
                 lucide.createIcons();
             } catch(e) {
-                console.error(e);
+                console.error("Erro ao carregar produtos:", e);
+            }
+        }
+
+        async function saveProductsOrder() {
+            try {
+                const order = window.allProducts.map(p => p.id);
+                const res = await fetch('/api/admin/products/reorder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ order })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadProducts();
+                    const badge = document.getElementById('reorder-status-badge');
+                    if (badge) {
+                        badge.classList.remove('hidden');
+                        setTimeout(() => badge.classList.add('hidden'), 3500);
+                    }
+                } else {
+                    alert(data.error || "Erro ao salvar nova ordem dos produtos.");
+                }
+            } catch (err) {
+                console.error("Erro ao reordenar produtos:", err);
+                alert("Erro ao comunicar com o servidor para salvar a ordem.");
             }
         }
 
