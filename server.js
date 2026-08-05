@@ -1738,7 +1738,7 @@ app.get('/api/products', async (req, res) => {
         // Limpa pedidos pendentes expirados e restaura o estoque antes de carregar o catálogo de produtos!
         await cleanupExpiredOrders();
 
-        const result = await pool.query('SELECT id, title, description, price, old_price, image, category, in_stock, is_global, restricted_countries, genres, display_order FROM products ORDER BY COALESCE(display_order, 0) ASC, id ASC');
+        const result = await pool.query('SELECT id, title, description, price, old_price, image, category, in_stock, is_global, restricted_countries, genres, display_order, gallery FROM products ORDER BY COALESCE(display_order, 0) ASC, id ASC');
         productsCache = result.rows.map(row => ({
             ...row,
             description: formatProductDescription(row.description, row.is_global, row.restricted_countries)

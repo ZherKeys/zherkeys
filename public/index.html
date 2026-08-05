@@ -3537,7 +3537,10 @@ gtag('config', 'AW-18202657831');
                 if (idx === index) {
                     item.classList.add('border-electricblue', 'bg-slate-900', 'shadow-cyber');
                     item.classList.remove('border-slate-800/80', 'bg-slate-950/80');
-                    item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    const thumbsContainer = document.getElementById('steam-slide-thumbs');
+                    if (thumbsContainer) {
+                        thumbsContainer.scrollTop = item.offsetTop - thumbsContainer.offsetTop - 10;
+                    }
                     if (progBar) {
                         progBar.style.transition = 'width 3500ms linear';
                         progBar.style.width = '100%';
