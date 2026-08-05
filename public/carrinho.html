@@ -267,6 +267,53 @@ gtag('config', 'AW-18202657831');
         </div>
     </footer>
 
+    <!-- MODAL DE VERIFICAÇÃO ATENTA DE ITENS E PLATAFORMA -->
+    <div id="checkout-confirm-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 sm:p-6 transition-all duration-300">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onclick="closeConfirmModal()"></div>
+        <div class="relative w-full max-w-lg bg-slate-950 border-2 border-amber-500/60 rounded-2xl shadow-[0_0_50px_rgba(245,158,11,0.25)] overflow-hidden p-6 sm:p-8 text-left transition-all duration-300">
+            <!-- Top Warning Bar -->
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600"></div>
+
+            <!-- Header -->
+            <div class="text-center mb-6 pt-2">
+                <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 mb-3 animate-bounce">
+                    <i data-lucide="alert-triangle" class="w-7 h-7"></i>
+                </div>
+                <h3 class="font-orbitron font-black text-lg sm:text-xl text-amber-400 tracking-wider uppercase leading-tight">
+                    ⚠️ CONFIRA OS ITENS ATENTAMENTE ANTES DE COMPRAR!
+                </h3>
+                <p class="text-slate-400 text-xs mt-1.5 font-inter">
+                    Certifique-se de que os produtos e a plataforma de resgate correspondem à sua conta.
+                </p>
+            </div>
+
+            <!-- Items & Platform List -->
+            <div id="modal-confirm-items-list" class="max-h-56 overflow-y-auto space-y-3 mb-6 pr-1 custom-scrollbar">
+                <!-- Dynamically populated -->
+            </div>
+
+            <!-- Agreement Checkbox -->
+            <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl mb-6">
+                <label class="flex items-start gap-3 cursor-pointer select-none group">
+                    <input type="checkbox" id="confirm-agree-checkbox" onchange="toggleConfirmCheckbox(this)" class="mt-0.5 w-5 h-5 rounded border-slate-700 bg-slate-950 text-emerald-500 focus:ring-emerald-500 cursor-pointer accent-emerald-500 transition-all">
+                    <span class="text-xs sm:text-sm text-slate-200 font-inter leading-snug group-hover:text-white transition-colors">
+                        <strong>OK, eu estou de acordo</strong> e verifiquei os itens e plataformas de resgate acima.
+                    </span>
+                </label>
+            </div>
+
+            <!-- Buttons / Actions -->
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button onclick="closeConfirmModal()" type="button" class="w-full sm:w-1/3 py-3.5 px-4 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white font-orbitron text-xs font-bold rounded-xl border border-slate-700 transition-colors uppercase">
+                    VOLTAR
+                </button>
+                <button id="btn-modal-finalizar" onclick="executeFinalCheckout()" disabled type="button" class="w-full sm:w-2/3 py-3.5 px-4 bg-slate-900 text-slate-500 font-orbitron text-xs tracking-wider font-bold rounded-xl border border-slate-800 transition-all duration-300 uppercase flex items-center justify-center gap-2 cursor-not-allowed opacity-60">
+                    <span>MARQUE A CAIXINHA</span> <i data-lucide="lock" class="w-4 h-4 text-slate-600"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- PIX MODAL -->
     <div id="pix-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 sm:p-6 opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onclick="closePixModal()"></div>
@@ -754,9 +801,123 @@ gtag('config', 'AW-18202657831');
             renderCartPage();
         };
 
+        let confirmTimerInterval = null;
+        let confirmTimeRemaining = 10;
+
+        window.openConfirmModal = () => {
+            const listContainer = document.getElementById('modal-confirm-items-list');
+            if (!listContainer) return;
+            let html = '';
+            cart.forEach(item => {
+                const priceNum = typeof item.price === 'string' ? parseFloat(item.price.replace('R$ ', '').replace(',', '.')) : parseFloat(item.price);
+                const platform = item.category || 'PC Key Global';
+                html += `
+                    <div class="bg-slate-900/90 border border-slate-800 p-3 rounded-xl flex items-center justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                            <span class="text-[9px] font-orbitron font-bold text-electricblue bg-electricblue/10 border border-electricblue/30 px-2.5 py-0.5 rounded-full uppercase tracking-wider">PLATAFORMA: ${platform}</span>
+                            <h5 class="text-white font-orbitron font-bold text-xs sm:text-sm mt-1 truncate">${item.title}</h5>
+                        </div>
+                        <span class="text-cyberrose font-orbitron font-bold text-sm whitespace-nowrap">${formatPrice(priceNum)}</span>
+                    </div>
+                `;
+            });
+            listContainer.innerHTML = html;
+
+            const chk = document.getElementById('confirm-agree-checkbox');
+            if (chk) chk.checked = false;
+
+            window.toggleConfirmCheckbox(false);
+
+            const modal = document.getElementById('checkout-confirm-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+            if (window.lucide) lucide.createIcons();
+        };
+
+        window.closeConfirmModal = () => {
+            if (confirmTimerInterval) {
+                clearInterval(confirmTimerInterval);
+                confirmTimerInterval = null;
+            }
+            const modal = document.getElementById('checkout-confirm-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        };
+
+        window.toggleConfirmCheckbox = (elem) => {
+            const isChecked = typeof elem === 'boolean' ? elem : (elem && elem.checked);
+            const btn = document.getElementById('btn-modal-finalizar');
+            if (!btn) return;
+
+            if (confirmTimerInterval) {
+                clearInterval(confirmTimerInterval);
+                confirmTimerInterval = null;
+            }
+
+            if (isChecked) {
+                confirmTimeRemaining = 10;
+                btn.disabled = true;
+                btn.className = "w-full sm:w-2/3 py-3.5 px-4 bg-slate-900 text-amber-400 font-orbitron text-xs tracking-wider font-bold rounded-xl border border-amber-500/40 transition-all duration-300 uppercase flex items-center justify-center gap-2 cursor-not-allowed opacity-90 shadow-md shadow-amber-950/20";
+                btn.innerHTML = `<span>Aguarde (${confirmTimeRemaining}s)...</span> <i data-lucide="clock" class="w-4 h-4 animate-spin text-amber-400"></i>`;
+                if (window.lucide) lucide.createIcons();
+
+                confirmTimerInterval = setInterval(() => {
+                    confirmTimeRemaining--;
+                    if (confirmTimeRemaining > 0) {
+                        btn.innerHTML = `<span>Aguarde (${confirmTimeRemaining}s)...</span> <i data-lucide="clock" class="w-4 h-4 animate-spin text-amber-400"></i>`;
+                        if (window.lucide) lucide.createIcons();
+                    } else {
+                        clearInterval(confirmTimerInterval);
+                        confirmTimerInterval = null;
+                        btn.disabled = false;
+                        btn.className = "w-full sm:w-2/3 py-3.5 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-orbitron text-xs tracking-widest font-bold rounded-xl border border-emerald-400/50 shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all duration-300 uppercase flex items-center justify-center gap-2 cursor-pointer animate-pulse";
+                        btn.innerHTML = `<span>FINALIZAR COMPRA ⚡</span> <i data-lucide="zap" class="w-4 h-4"></i>`;
+                        if (window.lucide) lucide.createIcons();
+                    }
+                }, 1000);
+            } else {
+                btn.disabled = true;
+                btn.className = "w-full sm:w-2/3 py-3.5 px-4 bg-slate-900 text-slate-500 font-orbitron text-xs tracking-wider font-bold rounded-xl border border-slate-800 transition-all duration-300 uppercase flex items-center justify-center gap-2 cursor-not-allowed opacity-60";
+                btn.innerHTML = `<span>MARQUE A CAIXINHA</span> <i data-lucide="lock" class="w-4 h-4 text-slate-600"></i>`;
+                if (window.lucide) lucide.createIcons();
+            }
+        };
+
+        window.executeFinalCheckout = () => {
+            closeConfirmModal();
+            processCheckoutBackend();
+        };
+
         window.finalizarCompra = async () => {
             if(cart.length === 0) return;
             
+            const method = window.selectedPaymentMethod || 'credits';
+            const cur = window.currentCurrency;
+            const lang = cur === 'USD' ? 'en' : (cur === 'EUR' ? 'es' : 'pt');
+
+            // Valida o CPF caso o método de pagamento seja PIX
+            if (method === 'pix') {
+                const cpfInput = document.getElementById('cart-payer-cpf');
+                const cpfVal = cpfInput ? cpfInput.value.replace(/\D/g, '') : '';
+                if (!validarCPF(cpfVal)) {
+                    document.getElementById('cart-cpf-error-msg').classList.remove('hidden');
+                    if (cpfInput) {
+                        cpfInput.classList.add('border-red-500', 'focus:border-red-500');
+                        cpfInput.focus();
+                    }
+                    alert(lang === 'en' ? 'Please enter a valid CPF.' : 'Por favor, insira um CPF válido.');
+                    return;
+                }
+            }
+
+            openConfirmModal();
+        };
+
+        window.processCheckoutBackend = async () => {
             const btn = document.getElementById('btn-checkout');
             const cur = window.currentCurrency;
             const lang = cur === 'USD' ? 'en' : (cur === 'EUR' ? 'es' : 'pt');
@@ -767,21 +928,10 @@ gtag('config', 'AW-18202657831');
             
             try {
                 const method = window.selectedPaymentMethod || 'credits';
-                
-                // Valida o CPF caso o método de pagamento seja PIX
                 let cpfVal = '';
                 if (method === 'pix') {
                     const cpfInput = document.getElementById('cart-payer-cpf');
-                    cpfVal = cpfInput.value.replace(/\D/g, '');
-                    if (!validarCPF(cpfVal)) {
-                        document.getElementById('cart-cpf-error-msg').classList.remove('hidden');
-                        cpfInput.classList.add('border-red-500', 'focus:border-red-500');
-                        alert(lang === 'en' ? 'Please enter a valid CPF.' : 'Por favor, insira um CPF válido.');
-                        cpfInput.focus();
-                        btn.innerHTML = `${dict.checkout_btn} <i data-lucide="zap" class="w-4 h-4"></i>`;
-                        btn.classList.remove('opacity-50', 'pointer-events-none');
-                        return;
-                    }
+                    cpfVal = cpfInput ? cpfInput.value.replace(/\D/g, '') : '';
                 }
 
                 const items = cart.map(item => ({ id: item.id, quantity: 1 }));
@@ -802,14 +952,9 @@ gtag('config', 'AW-18202657831');
                 
                 if(res.ok && data.success) {
                     if (method === 'pix') {
-                        // Exibe o Pix modal com o QR code retornado
                         showPixModal(data.qr_code_base64, data.qr_code);
-                        
-                        // Limpa o carrinho no frontend, pois as chaves do pedido pendente já foram reservadas!
                         cart = [];
                         localStorage.setItem('zher_cart', JSON.stringify(cart));
-                        
-                        // Restaura o botão de checkout
                         btn.innerHTML = `${dict.checkout_btn} <i data-lucide="zap" class="w-4 h-4"></i>`;
                         btn.classList.remove('opacity-50', 'pointer-events-none');
                         return;
