@@ -1202,20 +1202,31 @@ gtag('config', 'AW-18202657831');
             if(!currentChatOrderId) return;
             try {
                 const res = await fetch(`/api/orders/${currentChatOrderId}/chat`);
-                const messages = await res.json();
-                
                 const container = document.getElementById('user-chat-messages');
                 if (!container) return;
+
+                if (!res.ok) {
+                    container.innerHTML = `
+                        <div class="h-full flex flex-col items-center justify-center text-slate-500 opacity-60 p-4 text-center">
+                            <i data-lucide="headset" class="w-12 h-12 mb-3 text-electricblue"></i>
+                            <p class="font-orbitron text-xs tracking-widest uppercase">ENVIE UMA MENSAGEM PARA INICIAR O SUPORTE</p>
+                        </div>
+                    `;
+                    if (window.lucide) window.lucide.createIcons();
+                    return;
+                }
+
+                const messages = await res.json();
                 container.innerHTML = '';
                 
-                if(messages.length === 0) {
+                if(!Array.isArray(messages) || messages.length === 0) {
                     container.innerHTML = `
                         <div class="h-full flex flex-col items-center justify-center text-slate-500 opacity-50">
                             <i data-lucide="headset" class="w-12 h-12 mb-3"></i>
-                            <p class="font-orbitron text-xs tracking-widest">ENVIE UMA MENSAGEM PARA INICIAR O SUPORTE</p>
+                            <p class="font-orbitron text-xs tracking-widest uppercase">ENVIE UMA MENSAGEM PARA INICIAR O SUPORTE</p>
                         </div>
                     `;
-                    if (window.lucide) lucide.createIcons();
+                    if (window.lucide) window.lucide.createIcons();
                     return;
                 }
 
@@ -1235,6 +1246,7 @@ gtag('config', 'AW-18202657831');
                     `;
                 });
                 container.scrollTop = container.scrollHeight;
+                if (window.lucide) window.lucide.createIcons();
             } catch(e) {
                 console.error(e);
             }

@@ -3327,12 +3327,15 @@ app.post('/api/orders/:orderId/items/:productId/reveal', requireAuth, async (req
 
 app.get('/api/orders/:id/chat', requireAuth, async (req, res) => {
     try {
-        const orderRes = await pool.query('SELECT * FROM orders WHERE id = $1 AND user_id = $2', [req.params.id, req.session.userId]);
+        const orderId = parseInt(req.params.id, 10);
+        const userId = parseInt(req.session.userId, 10);
+        const orderRes = await pool.query('SELECT * FROM orders WHERE id = $1 AND user_id = $2', [orderId, userId]);
         if(orderRes.rows.length === 0) return res.status(403).json({ error: 'Acesso negado' });
         
-        const chatRes = await pool.query('SELECT * FROM order_chats WHERE order_id = $1 ORDER BY created_at ASC', [req.params.id]);
-        res.json(chatRes.rows);
+        const chatRes = await pool.query('SELECT * FROM order_chats WHERE order_id = $1 ORDER BY created_at ASC', [orderId]);
+        res.json(chatRes.rows || []);
     } catch(e) {
+        console.error('Erro em GET /api/orders/:id/chat:', e);
         res.status(500).json({ error: 'Erro ao buscar chat' });
     }
 });
@@ -3340,12 +3343,15 @@ app.get('/api/orders/:id/chat', requireAuth, async (req, res) => {
 app.post('/api/orders/:id/chat', requireAuth, async (req, res) => {
     const { message } = req.body;
     try {
-        const orderRes = await pool.query('SELECT * FROM orders WHERE id = $1 AND user_id = $2', [req.params.id, req.session.userId]);
+        const orderId = parseInt(req.params.id, 10);
+        const userId = parseInt(req.session.userId, 10);
+        const orderRes = await pool.query('SELECT * FROM orders WHERE id = $1 AND user_id = $2', [orderId, userId]);
         if(orderRes.rows.length === 0) return res.status(403).json({ error: 'Acesso negado' });
         
-        await pool.query('INSERT INTO order_chats (order_id, sender_type, message) VALUES ($1, $2, $3)', [req.params.id, 'user', message]);
+        await pool.query('INSERT INTO order_chats (order_id, sender_type, message) VALUES ($1, $2, $3)', [orderId, 'user', message]);
         res.status(201).json({ message: 'Enviado' });
     } catch(e) {
+        console.error('Erro em POST /api/orders/:id/chat:', e);
         res.status(500).json({ error: 'Erro ao enviar mensagem' });
     }
 });

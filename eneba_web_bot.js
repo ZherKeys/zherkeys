@@ -239,9 +239,16 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
             // Log snippets of payment options and page warnings
             const paymentPageSnippet = await page.evaluate(() => {
                 const text = document.body.innerText || '';
-                return text.substring(0, 500);
+                return text.substring(0, 1000);
             });
-            writeLog('info', `Snippet da página de pagamento:`, paymentPageSnippet);
+            writeLog('info', `Snippet da página de pagamento:`, paymentPageSnippet.substring(0, 300));
+
+            if (paymentPageSnippet.includes('Not enough funds') || paymentPageSnippet.includes('The amount is not enough') || paymentPageSnippet.includes('Not enough balance')) {
+                writeLog('error', `❌ SALDO INSUFICIENTE NA CARTEIRA ENEBA: O valor total deste jogo com as taxas do Eneba ultrapassou o saldo disponível (R$ 8,88).`);
+                await saveStepScreenshot(page, '04_error_insufficient_eneba_funds');
+                await browser.close();
+                return [];
+            }
 
             // Clica em Continuar / Confirmar Pagamento
             writeLog('info', `Clicando no botão de confirmação 'Continue' / 'Pagar agora'...`);
