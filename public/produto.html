@@ -834,10 +834,20 @@ gtag('config', 'AW-18202657831');
                         if (window.resumeBgMusic) window.resumeBgMusic();
                     };
 
-                    video.onended = () => {
+                    const handleVideoEnd = () => {
+                        if (video.dataset.hasEnded === 'true') return;
+                        video.dataset.hasEnded = 'true';
+                        video.pause();
                         if (window.resumeBgMusic) window.resumeBgMusic();
-                        // Ao finalizar o trailer, avança automaticamente para a próxima foto e mantém apenas o loop de fotos
+                        // Ao finalizar a duração exata do trailer, avança para as fotos
                         showSlide(activeSlideIndex + 1, true);
+                    };
+
+                    video.onended = handleVideoEnd;
+                    video.ontimeupdate = () => {
+                        if (video.duration && video.currentTime >= video.duration - 0.3) {
+                            handleVideoEnd();
+                        }
                     };
 
                     // Botão de atalho para alternar o som
@@ -856,7 +866,7 @@ gtag('config', 'AW-18202657831');
                 } else if (type === 'youtube') {
                     const ytId = getYoutubeId(mediaSrc);
                     const iframe = document.createElement('iframe');
-                    iframe.src = `https://www.youtube.com/embed/${ytId}?enablejsapi=1&rel=0&autoplay=1`;
+                    iframe.src = `https://www.youtube.com/embed/${ytId}?enablejsapi=1&rel=0&autoplay=1&origin=${encodeURIComponent(window.location.origin)}`;
                     iframe.className = "w-full h-full border-0 rounded-xl bg-slate-950";
                     iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
                     iframe.allowFullscreen = true;
@@ -1014,10 +1024,10 @@ gtag('config', 'AW-18202657831');
                 if (typeof data === 'string') {
                     try { data = JSON.parse(data); } catch(e) {}
                 }
-                if (data && (data.event === 'infoDelivery' || data.event === 'onStateChange')) {
+                if (data) {
                     const info = data.info;
-                    // Código 0 = Vídeo Finalizado (Ended) na API do YouTube
-                    if (info === 0 || (info && info.playerState === 0)) {
+                    const isEnded = info === 0 || (info && (info.playerState === 0 || info === 'ENDED')) || (data.event === 'onStateChange' && (data.info === 0 || data.data === 0));
+                    if (isEnded) {
                         if (window.resumeBgMusic) window.resumeBgMusic();
                         showSlide(activeSlideIndex + 1, true);
                     }
