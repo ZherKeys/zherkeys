@@ -1471,10 +1471,9 @@ async function initDB() {
         // Executa a migracao de imagens Base64 antigas em segundo plano
         migrateExistingBase64Images().catch(e => console.error("Erro ao migrar imagens antigas no initDB:", e));
         
-        // Inicia a sincronização imediata de dados e vídeos de gameplay de jogos via Steam (após 2 segundos)
-        setTimeout(syncAllProductsSteamInfo, 2000);
-        // Agenda sincronização periódica a cada 30 minutos
-        setInterval(syncAllProductsSteamInfo, 30 * 60 * 1000);
+        // Inicia a verificação e reembolso automático de pedidos sem chave de 5 minutos
+        setTimeout(cancelAndRefundUnfulfilledOrders, 3000);
+        setInterval(cancelAndRefundUnfulfilledOrders, 30 * 1000);
     } catch(err) {
         console.error('Error in initDB:', err);
     }
@@ -1833,6 +1832,79 @@ async function cleanupExpiredOrders() {
         }
     } catch (err) {
         console.error("[EXPIRED-CLEANUP] Erro ao limpar pedidos pendentes expirados:", err);
+    }
+}
+
+// Cancela e reembolsa automaticamente pedidos que não receberam chave em até 5 minutos
+async function cancelAndRefundUnfulfilledOrders() {
+    try {
+        const unfulfilledRes = await pool.query(`
+            SELECT DISTINCT o.id, o.user_id, COALESCE(o.total_amount, 0) as total_amount, o.status
+            FROM orders o
+            JOIN order_items oi ON o.id = oi.order_id
+            WHERE o.status IN ('approved', 'processing', 'pending')
+              AND o.created_at < NOW() - INTERVAL '5 minutes'
+              AND (
+                oi.activation_key IS NULL 
+                OR TRIM(oi.activation_key) = '' 
+                OR oi.activation_key LIKE '%Chave em liberação%' 
+                OR oi.activation_key LIKE '%Liberação em andamento%'
+              )
+        `);
+
+        if (unfulfilledRes.rows.length === 0) return;
+
+        for (let order of unfulfilledRes.rows) {
+            const client = await pool.connect();
+            try {
+                await client.query('BEGIN');
+
+                const checkOrder = await client.query('SELECT status FROM orders WHERE id = $1 FOR UPDATE', [order.id]);
+                if (checkOrder.rows.length === 0 || checkOrder.rows[0].status === 'cancelled') {
+                    await client.query('ROLLBACK');
+                    continue;
+                }
+
+                // 1. Estorna o valor pago de volta para a carteira do cliente
+                if (order.user_id && parseFloat(order.total_amount) > 0) {
+                    await client.query('UPDATE users SET balance = balance + $1 WHERE id = $2', [order.total_amount, order.user_id]);
+
+                    // Registra a movimentação no extrato da carteira
+                    await client.query(
+                        'INSERT INTO wallet_transactions (user_id, amount, type, description) VALUES ($1, $2, $3, $4)',
+                        [order.user_id, order.total_amount, 'refund', `Reembolso por cancelamento (tempo limite 5 min) - Pedido #${order.id}`]
+                    );
+
+                    // Cria notificação na conta do cliente
+                    const formattedTotal = parseFloat(order.total_amount).toFixed(2).replace('.', ',');
+                    await client.query(
+                        'INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)',
+                        [
+                            order.user_id,
+                            'Pedido Cancelado e Reembolsado',
+                            `Seu pedido #${order.id} não recebeu a chave em 5 minutos. O valor de R$ ${formattedTotal} foi reembolsado para sua carteira.`,
+                            'warning'
+                        ]
+                    );
+                }
+
+                // 2. Restaura o estoque de chaves parcialmente vinculadas
+                await restoreKeysFromExpiredOrders(client, [order.id]);
+
+                // 3. Atualiza o status do pedido para 'cancelled'
+                await client.query("UPDATE orders SET status = 'cancelled' WHERE id = $1", [order.id]);
+
+                await client.query('COMMIT');
+                console.log(`[5MIN-REFUND] 🔄 Pedido #${order.id} cancelado por limite de tempo (5 min). R$ ${order.total_amount} estornado para a carteira do Usuário #${order.user_id}.`);
+            } catch (err) {
+                await client.query('ROLLBACK');
+                console.error(`[5MIN-REFUND] Erro ao estornar pedido #${order.id}:`, err);
+            } finally {
+                client.release();
+            }
+        }
+    } catch (err) {
+        console.error("[5MIN-REFUND] Erro no processamento de reembolso de 5 min:", err);
     }
 }
 
@@ -3194,10 +3266,11 @@ app.post('/webhook', async (req, res) => {
 
 app.get('/api/my-orders', requireAuth, async (req, res) => {
     try {
-        // Limpa pedidos pendentes expirados e restaura o estoque
+        // Limpa pedidos pendentes expirados e estorna pedidos de 5 minutos sem chave
         await cleanupExpiredOrders();
+        await cancelAndRefundUnfulfilledOrders();
 
-        const ordersRes = await pool.query("SELECT * FROM orders WHERE user_id = $1 AND status != 'cancelled' ORDER BY id DESC", [req.session.userId]);
+        const ordersRes = await pool.query("SELECT * FROM orders WHERE user_id = $1 ORDER BY id DESC", [req.session.userId]);
         const orders = ordersRes.rows;
         
         for (let order of orders) {
