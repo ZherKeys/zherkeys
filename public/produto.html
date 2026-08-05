@@ -783,7 +783,7 @@ gtag('config', 'AW-18202657831');
                     video.src = mediaSrc;
                     video.controls = true;
                     video.muted = false; // Tenta reproduzir com SOM por padrão!
-                    video.loop = true;
+                    video.loop = false;
                     video.playsInline = true;
                     video.setAttribute('playsinline', '');
                     video.setAttribute('autoplay', '');
@@ -835,6 +835,8 @@ gtag('config', 'AW-18202657831');
 
                     video.onended = () => {
                         if (window.resumeBgMusic) window.resumeBgMusic();
+                        // Ao finalizar o trailer, avança automaticamente para a próxima foto e mantém apenas o loop de fotos
+                        showSlide(activeSlideIndex + 1, true);
                     };
 
                     // Botão de atalho para alternar o som
@@ -893,13 +895,25 @@ gtag('config', 'AW-18202657831');
             }
         }
 
-        function showSlide(index) {
+        function showSlide(index, isAuto = false) {
             const slidesCount = allImages.length;
             if (slidesCount <= 1) return;
             
+            const firstImageIndex = allImages.findIndex(item => getMediaType(item) === 'image');
+            
             let nextIndex = index;
-            if (index >= slidesCount) nextIndex = 0;
-            if (index < 0) nextIndex = slidesCount - 1;
+            if (nextIndex >= slidesCount) {
+                // No modo automático, se houverem fotos na galeria, volta para a primeira foto (evitando reprisar o trailer)
+                nextIndex = (isAuto && firstImageIndex !== -1) ? firstImageIndex : 0;
+            }
+            if (nextIndex < 0) {
+                nextIndex = slidesCount - 1;
+            }
+            
+            // Se for rotação automática da galeria e tentar voltar para o vídeo/trailer, redireciona para a primeira foto
+            if (isAuto && firstImageIndex !== -1 && getMediaType(allImages[nextIndex]) !== 'image') {
+                nextIndex = firstImageIndex;
+            }
             
             const prevMedia = document.getElementById(`slide-media-${activeSlideIndex}`);
             if (prevMedia) {
@@ -947,6 +961,7 @@ gtag('config', 'AW-18202657831');
                 }
                 if (window.pauseBgMusic) window.pauseBgMusic();
                 if (nextType === 'video' && nextMedia) {
+                    nextMedia.currentTime = 0;
                     nextMedia.muted = false; // Com som!
                     nextMedia.play().catch(e => console.log("Autoplay de video local bloqueado pelo navegador"));
                 } else if (nextType === 'youtube' && nextMedia) {
@@ -964,23 +979,23 @@ gtag('config', 'AW-18202657831');
 
         window.nextSlide = () => {
             resetAutoPlay();
-            showSlide(activeSlideIndex + 1);
+            showSlide(activeSlideIndex + 1, false);
         };
 
         window.prevSlide = () => {
             resetAutoPlay();
-            showSlide(activeSlideIndex - 1);
+            showSlide(activeSlideIndex - 1, false);
         };
 
         window.goToSlide = (index) => {
             resetAutoPlay();
-            showSlide(index);
+            showSlide(index, false);
         };
 
         function startAutoPlay() {
             if (autoPlayInterval) clearInterval(autoPlayInterval);
             autoPlayInterval = setInterval(() => {
-                showSlide(activeSlideIndex + 1);
+                showSlide(activeSlideIndex + 1, true);
             }, 3500);
         }
 
