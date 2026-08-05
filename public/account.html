@@ -134,9 +134,15 @@ gtag('config', 'AW-18202657831');
         <div class="flex-grow">
             <!-- Minhas Compras -->
             <div id="tab-compras" class="bg-slate-900/50 border border-slate-800 rounded-2xl p-8 min-h-[400px]">
-                <h2 class="font-orbitron font-bold text-xl text-white mb-6 tracking-widest flex items-center justify-between">
+                <h2 class="font-orbitron font-bold text-xl text-white mb-6 tracking-widest flex items-center justify-between flex-wrap gap-4">
                     <span class="flex items-center gap-3"><i data-lucide="shopping-bag" class="text-electricblue"></i> <span data-i18n="seus_jogos">SEUS JOGOS</span></span>
-                    <button onclick="loadMyOrders()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-500 transition-all"><i data-lucide="refresh-cw" class="w-4 h-4"></i> <span data-i18n="refresh_status">ATUALIZAR STATUS</span></button>
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <a href="https://youtu.be/PVaMg9RHPng?si=SsZrrNQcPwlM0vmB" target="_blank" class="text-xs text-white hover:text-white flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 px-4 py-2 rounded-lg border border-red-500/50 transition-all font-bold shadow-lg shadow-red-950/40">
+                            <i data-lucide="youtube" class="w-4 h-4 text-white"></i>
+                            <span>TUTORIAL DE COMO RESGATAR</span>
+                        </a>
+                        <button onclick="loadMyOrders()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-2 rounded-lg border border-slate-700 hover:border-slate-500 transition-all"><i data-lucide="refresh-cw" class="w-4 h-4"></i> <span data-i18n="refresh_status">ATUALIZAR STATUS</span></button>
+                    </div>
                 </h2>
                 
                 <div id="my-orders-list" class="space-y-6">
@@ -976,14 +982,18 @@ gtag('config', 'AW-18202657831');
                                 const blurClass = isBlurred ? 'blur-sm select-none' : '';
                                 const eyeIcon = isBlurred ? 'eye' : 'eye-off';
                                 keyBox = `
-                                    <div class="mt-3 p-3 bg-emerald-950/50 border border-emerald-800/50 rounded-lg flex items-center justify-between group">
+                                    <div class="mt-3 p-3 bg-emerald-950/50 border border-emerald-800/50 rounded-lg flex items-center justify-between group flex-wrap gap-2">
                                         <div class="flex items-center gap-2">
                                             <i data-lucide="key" class="w-4 h-4 text-emerald-400"></i>
                                             <span id="${keyId}" class="font-orbitron font-bold text-emerald-300 tracking-wider filter ${blurClass} transition-all duration-300">${item.activation_key}</span>
                                         </div>
-                                        <div class="flex gap-2">
+                                        <div class="flex gap-2 items-center flex-wrap">
                                             <button onclick="toggleKeyVisibility('${keyId}', this, ${o.id}, ${item.product_id})" class="text-xs text-emerald-500 hover:text-emerald-300 bg-emerald-900/30 px-2 py-1 rounded flex items-center justify-center" title="Mostrar/Ocultar"><i data-lucide="${eyeIcon}" class="w-4 h-4"></i></button>
-                                            <button onclick="copyToClipboard('${item.activation_key}', ${o.id}, ${item.product_id}, '${keyId}')" class="text-xs text-emerald-500 hover:text-emerald-300 bg-emerald-900/30 px-2 py-1 rounded">${lang === 'en' ? 'COPY' : 'COPIAR'}</button>
+                                            <button onclick="copyToClipboard('${item.activation_key}', ${o.id}, ${item.product_id}, '${keyId}')" class="text-xs text-emerald-500 hover:text-emerald-300 bg-emerald-900/30 px-2 py-1 rounded font-bold">${lang === 'en' ? 'COPY' : 'COPIAR'}</button>
+                                            <a href="https://youtu.be/PVaMg9RHPng?si=SsZrrNQcPwlM0vmB" target="_blank" class="text-xs text-white bg-red-600/80 hover:bg-red-600 border border-red-500/60 px-2.5 py-1 rounded flex items-center gap-1.5 font-bold transition-all shadow-sm" title="Tutorial de como resgatar">
+                                                <i data-lucide="youtube" class="w-3.5 h-3.5 text-white"></i>
+                                                <span>TUTORIAL COMO RESGATAR</span>
+                                            </a>
                                         </div>
                                     </div>
                                 `;
