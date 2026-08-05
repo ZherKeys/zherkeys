@@ -124,6 +124,13 @@ gtag('config', 'AW-18202657831');
                 <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl flex flex-col gap-2.5">
                     <span class="text-[9px] text-slate-500 font-orbitron tracking-widest uppercase">Ganhos Rápidos</span>
                     <span class="text-xs font-semibold text-white font-inter">Assista a um anúncio rápido e ganhe pontos fixos sem precisar jogar!</span>
+                    
+                    <!-- AVISO SISTEMA ANTI-TRAPAÇA (10 SEGUNDOS OBRIGATÓRIOS) -->
+                    <div class="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-400 text-[10px] font-inter leading-relaxed flex items-start gap-2">
+                        <i data-lucide="shield-alert" class="w-3.5 h-3.5 shrink-0 mt-0.5 text-amber-400"></i>
+                        <span><b>SISTEMA ANTI-TRAPAÇA:</b> Ao clicar no botão, uma nova página de anúncio será aberta. Aguarde no mínimo <b>10 segundos</b> na página aberta antes de fechar ou retornar, caso contrário a recompensa <b>NÃO será contabilizada</b>!</span>
+                    </div>
+
                     <button onclick="watchQuickAdForPoints()" class="w-full bg-gradient-to-r from-electricblue to-blue-600 hover:from-blue-500 hover:to-blue-600 text-white font-orbitron text-[10px] tracking-widest font-bold py-2.5 rounded-lg shadow-lg shadow-blue-500/10 hover:scale-[1.01] transition-all uppercase flex items-center justify-center gap-2 cursor-pointer">
                         ⚡ GANHAR +250 PONTOS <i data-lucide="zap" class="w-3.5 h-3.5 animate-pulse"></i>
                     </button>
@@ -549,6 +556,7 @@ gtag('config', 'AW-18202657831');
     <script>
         // CORREÇÃO: Abre links de anúncios de forma robusta por meio de cliques de tags <a> invisíveis
         function safeOpenAdLink(url, newTab = true) {
+            window.lastAdOpenedTimestamp = Date.now();
             try {
                 const a = document.createElement('a');
                 a.href = url;
@@ -567,6 +575,20 @@ gtag('config', 'AW-18202657831');
                     console.error("safeOpenAdLink fallback: falha crítica", err);
                 }
             }
+        }
+
+        // Validação Anti-Trapaça: Verifica se a pessoa permaneceu no anúncio por no mínimo 10 segundos
+        function verifyAntiCheatAdTime(actionName = 'sua recompensa') {
+            if (!window.lastAdOpenedTimestamp) {
+                alert("🚫 RECOMPENSA NÃO CONTABILIZADA (SISTEMA ANTI-TRAPAÇA)\n\nVocê precisa clicar no botão para abrir a página do patrocinador em uma nova aba antes de resgatar.");
+                return false;
+            }
+            const secondsElapsed = Math.floor((Date.now() - window.lastAdOpenedTimestamp) / 1000);
+            if (secondsElapsed < 10) {
+                alert(`🚫 RECOMPENSA NÃO CONTABILIZADA (SISTEMA ANTI-TRAPAÇA)\n\nVocê retornou ao site em apenas ${secondsElapsed} segundo(s).\n\nPara que ${actionName} seja contabilizada, é obrigatório clicar no anúncio, abrir a nova página e aguardar no mínimo 10 segundos na página do patrocinador antes de fechar ou retornar!`);
+                return false;
+            }
+            return true;
         }
 
         // CORREÇÃO: Polyfill completo para ctx.roundRect para garantir compatibilidade com navegadores antigos, Safari legado e WebViews de celular
@@ -3796,6 +3818,7 @@ gtag('config', 'AW-18202657831');
 
         // Envia requisição segura ao servidor
         async function sendClaimToBackend(scoreValue, multiplierValue) {
+            if (!verifyAntiCheatAdTime('seus pontos do jogo')) return;
             try {
                 const response = await fetch('/api/minigames/claim', {
                     method: 'POST',
@@ -3896,6 +3919,7 @@ gtag('config', 'AW-18202657831');
         }
 
         async function claimQuickAdPoints() {
+            if (!verifyAntiCheatAdTime('os 250 Z-Points')) return;
             try {
                 const res = await fetch('/api/minigames/watch-ad-points', {
                     method: 'POST',

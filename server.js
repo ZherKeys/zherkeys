@@ -4923,12 +4923,17 @@ app.post('/api/minigames/watch-ad-points', requireAuth, async (req, res) => {
     try {
         await client.query('BEGIN');
         
-        const userRes = await client.query('SELECT points, balance FROM users WHERE id = $1 FOR UPDATE', [userId]);
-        if (userRes.rows.length === 0) {
-            await client.query('ROLLBACK');
-            return res.status(404).json({ error: 'Usuário não encontrado.' });
+        // Anti-Cheat Server-side: Verifica se se passaram pelo menos 10s desde a última recompensa
+        const lastEarning = await client.query('SELECT created_at FROM points_earnings WHERE user_id = $1 ORDER BY id DESC LIMIT 1', [userId]);
+        if (lastEarning.rows.length > 0) {
+            const lastTime = new Date(lastEarning.rows[0].created_at).getTime();
+            const now = Date.now();
+            if (now - lastTime < 10000) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({ error: 'Sistema Anti-Trapaça: É necessário aguardar pelo menos 10 segundos na página do anúncio antes de reivindicar novamente.' });
+            }
         }
-        
+
         const rewardPoints = 250;
         const currentPoints = parseInt(userRes.rows[0].points || 0);
         const newPoints = currentPoints + rewardPoints;

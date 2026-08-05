@@ -2722,8 +2722,14 @@ gtag('config', 'AW-18202657831');
                         <i data-lucide="shield-alert" class="w-8 h-8"></i>
                     </div>
                     <h4 class="font-orbitron font-bold text-base text-white mb-2 uppercase">REQUISITO DE PARTICIPAÇÃO</h4>
-                    <p class="font-inter text-slate-400 text-xs mb-6 max-w-sm">Para validar sua inscrição no sorteio e manter o prêmio de 10 milhões acumulado, assista a 5 anúncios curtos dos patrocinadores.</p>
-                    
+                    <p class="font-inter text-slate-400 text-xs mb-4 max-w-sm">Para validar sua inscrição no sorteio e manter o prêmio de 10 milhões acumulado, assista a 5 anúncios curtos dos patrocinadores.</p>
+
+                    <!-- AVISO SISTEMA ANTI-TRAPAÇA (10 SEGUNDOS OBRIGATÓRIOS) -->
+                    <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-400 text-[11px] font-inter leading-relaxed mb-4 flex items-start gap-2 text-left w-full">
+                        <i data-lucide="shield-alert" class="w-4 h-4 shrink-0 mt-0.5 text-amber-400"></i>
+                        <span><b>SISTEMA ANTI-TRAPAÇA:</b> Ao clicar no botão abaixo, a página do patrocinador abrirá em outra aba. Permaneça na página do anúncio por no mínimo <b>10 segundos</b> antes de fechar ou retornar, caso contrário a etapa <b>NÃO será contabilizada</b>!</span>
+                    </div>
+
                     <div class="w-full bg-slate-950 border border-slate-800 p-4 rounded-xl mb-6">
                         <div class="flex justify-between text-xs font-orbitron tracking-widest mb-2">
                             <span class="text-slate-500">ANÚNCIOS ASSISTIDOS</span>
@@ -2746,6 +2752,9 @@ gtag('config', 'AW-18202657831');
             const btn = document.getElementById('sweepstake-ad-btn');
             if (!btn || sweepstakeAdInterval) return;
 
+            // Registra timestamp exato de abertura da página do anúncio
+            window.lastSweepstakeAdOpenedTime = Date.now();
+
             // Abre o anúncio em uma nova aba de forma robusta
             window.open('https://www.effectivecpmnetwork.com/ebnkjkt839?key=ba6e905c81bb744476c394cc6c561d5f', '_blank');
 
@@ -2761,6 +2770,14 @@ gtag('config', 'AW-18202657831');
                     clearInterval(sweepstakeAdInterval);
                     sweepstakeAdInterval = null;
                     
+                    // Validação Anti-Trapaça: Verifica se a pessoa permaneceu no anúncio por pelo menos 10 segundos
+                    const secondsElapsed = Math.floor((Date.now() - (window.lastSweepstakeAdOpenedTime || 0)) / 1000);
+                    if (!window.lastSweepstakeAdOpenedTime || secondsElapsed < 10) {
+                        alert(`🚫 ETAPA NÃO CONTABILIZADA (SISTEMA ANTI-TRAPAÇA)\n\nVocê retornou ao site em apenas ${secondsElapsed} segundo(s).\n\nPara que a etapa seja contabilizada com sucesso no sorteio, é obrigatório abrir a página do patrocinador e aguardar no mínimo 10 segundos antes de fechar ou retornar!`);
+                        renderSweepstakeAdFlow();
+                        return;
+                    }
+
                     sweepstakeAdsWatched++;
                     if (sweepstakeAdsWatched >= 5) {
                         registerInSweepstake();
