@@ -63,6 +63,66 @@ async function dismissGreenWelcomeBanner(page) {
     } catch (e) {}
 }
 
+async function handleEneba2FAPrompt(page) {
+    try {
+        const secret = process.env.ENEBA_2FA_SECRET;
+        if (!secret) return false;
+
+        const is2FA = await page.evaluate(() => {
+            const text = (document.body.innerText || '').toLowerCase();
+            const inputs = Array.from(document.querySelectorAll('input'));
+            const has2FAInput = inputs.some(i => {
+                const name = (i.name || i.id || i.placeholder || '').toLowerCase();
+                return name.includes('code') || name.includes('otp') || name.includes('2fa') || name.includes('token') || name.includes('verification');
+            });
+            return (text.includes('authenticator') || text.includes('2-step') || text.includes('two-factor') || text.includes('verification code') || text.includes('security code')) && has2FAInput;
+        });
+
+        if (is2FA) {
+            writeLog('info', `🔐 DETECTADA TELA DE 2FA (GOOGLE AUTHENTICATOR)! Gerando código de 6 dígitos...`);
+            const { generate } = require('otplib');
+            const code = await generate({ secret: secret.replace(/\s+/g, '').toUpperCase() });
+            writeLog('info', `🔐 Código 2FA gerado pelo robô: ${code}`);
+
+            const typed = await page.evaluate(async (totpCode) => {
+                const inputs = Array.from(document.querySelectorAll('input'));
+                const targetInput = inputs.find(i => {
+                    const name = (i.name || i.id || i.placeholder || i.type || '').toLowerCase();
+                    return name.includes('code') || name.includes('otp') || name.includes('2fa') || name.includes('token') || name.includes('verification') || i.type === 'number' || i.type === 'text';
+                });
+                if (targetInput) {
+                    targetInput.focus();
+                    targetInput.value = totpCode;
+                    targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    return true;
+                }
+                return false;
+            }, code);
+
+            if (typed) {
+                await new Promise(r => setTimeout(r, 500));
+                await page.keyboard.press('Enter');
+                
+                await page.evaluate(() => {
+                    const btns = Array.from(document.querySelectorAll('button, a, input[type="submit"]'));
+                    const subBtn = btns.find(b => {
+                        const txt = (b.innerText || b.textContent || b.value || '').toLowerCase();
+                        return txt.includes('verify') || txt.includes('confirm') || txt.includes('submit') || txt.includes('continuar') || txt.includes('enter');
+                    });
+                    if (subBtn) subBtn.click();
+                });
+                await new Promise(r => setTimeout(r, 3000));
+                writeLog('info', `✅ Código 2FA submetido com sucesso pelo robô!`);
+                return true;
+            }
+        }
+    } catch (e) {
+        writeLog('error', `Falha ao processar 2FA automático: ${e.message}`);
+    }
+    return false;
+}
+
 async function saveStepScreenshot(page, stepName) {
     try {
         await dismissGreenWelcomeBanner(page);
@@ -319,6 +379,8 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
                 writeLog('info', `Resultado clique final 2º passo:`, finalPayClicked);
             }
 
+            await handleEneba2FAPrompt(page);
+
             await new Promise(r => setTimeout(r, 6000));
             await saveStepScreenshot(page, '04_after_payment_click');
             writeLog('info', `URL 6s após pagamento: ${page.url()}`);
@@ -372,6 +434,7 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
             }
 
             writeLog('info', `Formulário de login preenchido e submetido.`);
+            await handleEneba2FAPrompt(page);
             await saveStepScreenshot(page, '05_after_auto_login_attempt');
 
             // Retorna para a Biblioteca de Chaves do usuário
