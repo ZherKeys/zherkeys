@@ -310,10 +310,39 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
         writeLog('info', `Status de login em /user/purchases: ${isLoggedOnPurchases ? 'LOGADO ✅' : 'NÃO LOGADO ⚠️'}`);
 
         if (!isLoggedOnPurchases) {
-            writeLog('error', `❌ Sessão da Eneba não autenticada! Abra o atalho 'ABRIR_LOGIN_ENEBA.bat' no Desktop para conectar a conta Eneba.`);
-            await saveStepScreenshot(page, '05_error_not_logged_in');
-            await browser.close();
-            return [];
+            writeLog('warn', `⚠️ Sessão da Eneba não autenticada! Executando Login Automático pelo Robô (100% Autônomo)...`);
+            await saveStepScreenshot(page, '05_attempting_auto_login');
+            
+            const botEmail = process.env.ENEBA_BOT_EMAIL || 'zherkeys@gmail.com';
+            const botPass = process.env.ENEBA_BOT_PASSWORD || 'Caio40028922!';
+
+            await page.goto('https://my.eneba.com/login', { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => null);
+            
+            const autoLoginResult = await page.evaluate(async (emailStr, passStr) => {
+                const emailIn = document.querySelector('input[name="email"], input[type="email"]');
+                const passIn = document.querySelector('input[name="password"], input[type="password"]');
+                const submitBtn = document.querySelector('button[type="submit"], form button');
+
+                if (emailIn && passIn) {
+                    emailIn.value = emailStr;
+                    passIn.value = passStr;
+                    emailIn.dispatchEvent(new Event('input', { bubbles: true }));
+                    passIn.dispatchEvent(new Event('input', { bubbles: true }));
+                    if (submitBtn) {
+                        submitBtn.click();
+                        return { success: true };
+                    }
+                }
+                return { success: false };
+            }, botEmail, botPass);
+
+            writeLog('info', `Resultado tentativa de auto-login do robô:`, autoLoginResult);
+            await new Promise(r => setTimeout(r, 5000));
+            await saveStepScreenshot(page, '05_after_auto_login_attempt');
+
+            // Retorna para a página de compras do usuário
+            await page.goto('https://www.eneba.com/user/purchases', { waitUntil: 'networkidle2', timeout: 45000 }).catch(() => null);
+            await saveStepScreenshot(page, '05_user_purchases_after_login');
         }
 
         // Clica no primeiro pedido recente para visualizar/revelar a chave
