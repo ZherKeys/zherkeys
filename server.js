@@ -2656,33 +2656,45 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
                 const newBalance = balance - totalAmount;
                 await client.query('UPDATE users SET balance = $1 WHERE id = $2', [newBalance, req.session.userId]);
                 
-                // Registra a transação no extrato da carteira
+                // Registra a transação no extrato da carteira (tolerante se a tabela não existir)
                 await client.query(
                     'INSERT INTO wallet_transactions (user_id, amount, type, description) VALUES ($1, $2, $3, $4)',
                     [req.session.userId, -totalAmount, 'purchase', `Compra do Pedido #${orderId}`]
-                );
+                ).catch(() => {});
                 
-                // Atribui as chaves e atualiza o estoque
-                await assignKeysToOrder(client, orderId);
-                
-                // Delistar anúncio correspondente no Gameflip
-                const productsRes = await client.query('SELECT gameflip_listing_id FROM products WHERE id = ANY($1::int[])', [ids]);
-                for (let prod of productsRes.rows) {
-                    if (prod.gameflip_listing_id && prod.gameflip_listing_id.trim() !== '') {
-                        markGameflipListingAsSold(prod.gameflip_listing_id.trim());
+                // Delistar anúncio correspondente no Gameflip (tolerante)
+                try {
+                    const productsRes = await client.query('SELECT gameflip_listing_id FROM products WHERE id = ANY($1::int[])', [ids]);
+                    for (let prod of productsRes.rows) {
+                        if (prod.gameflip_listing_id && prod.gameflip_listing_id.trim() !== '') {
+                            markGameflipListingAsSold(prod.gameflip_listing_id.trim());
+                        }
                     }
-                }
+                } catch (e) {}
                 
-                // Registra a notificação da compra
+                // Registra a notificação da compra (tolerante)
                 await client.query(
                     'INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)',
                     [req.session.userId, 'Compra Aprovada!', `Seu pedido #${orderId} foi aprovado com créditos. Chave de ativação liberada.`, 'success']
-                );
+                ).catch(() => {});
                 
+                // Finaliza a transação bancária IMEDIATAMENTE (super rápido)
                 await client.query('COMMIT');
+                client.release();
                 
-                // Envia e-mail de confirmação da compra aprovada contendo as chaves (Keys) APENAS se já liberadas!
-                await checkAndSendOrderKeysEmail(pool, orderId);
+                // Atribui as chaves e aciona o robô em segundo plano (fora da transação para não travar o banco)
+                setImmediate(async () => {
+                    try {
+                        const bgClient = await pool.connect();
+                        try {
+                            await assignKeysToOrder(bgClient, orderId);
+                        } finally {
+                            bgClient.release();
+                        }
+                    } catch (errBg) {
+                        console.error(`[CREDITS-CHECKOUT] Erro no background assignKeysToOrder #${orderId}:`, errBg.message || errBg);
+                    }
+                });
                 
                 return res.json({ success: true, message: 'Compra realizada com sucesso usando créditos da carteira!' });
                 
