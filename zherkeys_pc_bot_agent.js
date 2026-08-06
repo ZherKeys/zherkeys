@@ -16,6 +16,15 @@ const ZHERKEYS_SITE_URL = process.env.ZHERKEYS_SITE_URL || 'https://zherkeys.com
 const BOT_API_SECRET = process.env.BOT_API_SECRET || 'zherkeys-secret-bot-token-2026';
 const POLL_INTERVAL_MS = 5000;
 
+// Trava Anti-Queda: Previne fechamentos inesperados se a internet oscilar
+process.on('uncaughtException', (err) => {
+    console.error(`[PC-BOT CRASH GUARD] Erro inesperado capturado (mantendo robô ativo): ${err.message || err}`);
+});
+
+process.on('unhandledRejection', (reason) => {
+    console.error(`[PC-BOT CRASH GUARD] Erro de rede/Promise capturado (mantendo robô ativo):`, reason);
+});
+
 let isProcessing = false;
 
 console.log("=========================================================================");
