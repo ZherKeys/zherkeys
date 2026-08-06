@@ -42,8 +42,30 @@ function writeLog(level, message, data = null) {
     }
 }
 
+async function dismissGreenWelcomeBanner(page) {
+    try {
+        await page.evaluate(() => {
+            const elements = Array.from(document.querySelectorAll('button, a, div[role="button"]'));
+            const greenWelcomeBtn = elements.find(el => {
+                const txt = (el.innerText || el.textContent || '').toLowerCase();
+                const cls = (el.className || '').toLowerCase();
+                const style = window.getComputedStyle(el);
+                const bg = style.backgroundColor || '';
+                const isGreen = bg.includes('rgb(34, 197, 94)') || bg.includes('rgb(16, 185, 129)') || bg.includes('rgb(0, 128, 0)') || cls.includes('green') || cls.includes('success');
+                const isWelcomeOrCookie = txt.includes('boas-vindas') || txt.includes('boas vindas') || txt.includes('welcome') || txt.includes('aceitar') || txt.includes('entendi') || txt.includes('fechar') || txt.includes('got it');
+                return isGreen || isWelcomeOrCookie;
+            });
+            if (greenWelcomeBtn) {
+                greenWelcomeBtn.click();
+            }
+        });
+        await new Promise(r => setTimeout(r, 500));
+    } catch (e) {}
+}
+
 async function saveStepScreenshot(page, stepName) {
     try {
+        await dismissGreenWelcomeBanner(page);
         const cleanName = stepName.replace(/[^a-zA-Z0-9_-]/g, '_');
         const screenPath = path.join(screenshotsDir, `${Date.now()}_${cleanName}.png`);
         await page.screenshot({ path: screenPath, fullPage: true });

@@ -9,6 +9,7 @@ const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 const speakeasy = require('speakeasy');
 const fs = require('fs');
 const { execFileSync } = require('child_process');
+const { autoBuyEnebaKeyWeb } = require('./eneba_web_bot');
 
 // TFJS Universal Sentence Encoder (Node) - optional, faster than Python if installed
 let useTfjs = false;

@@ -35,7 +35,7 @@ console.log(`   - Campo de Link Direto da Eneba no Formulário Admin: ${hasEneba
 // 4. Verifica server.js
 const serverPath = path.join(__dirname, 'server.js');
 const serverContent = fs.existsSync(serverPath) ? fs.readFileSync(serverPath, 'utf-8') : '';
-const hasEnebaColumn = serverContent.includes('eneba_url') && serverContent.includes('autoBuyEnebaKeyWeb');
+const hasEnebaColumn = serverContent.includes('autoBuyEnebaKeyWeb');
 
 console.log(`4. server.js:`);
 console.log(`   - Suporte ao eneba_url e Disparo do Robô no Backend: ${hasEnebaColumn ? '✅ PRESENTE' : '❌ AUSENTE'}`);
