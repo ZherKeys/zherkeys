@@ -1,54 +1,39 @@
 /**
- * Script de Inicialização da Sessão do Robô Eneba (Login Único com Google/Eneba)
+ * Native Chrome Launcher for Eneba Session Initialization
  */
-const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-puppeteer.use(StealthPlugin());
-
+const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
 async function initLogin() {
     console.log("=================================================");
-    console.log("🌐 ABRINDO CHROME OFICIAL PARA LOGIN NA ENEBA...");
-    console.log("Por favor, faça login com a sua conta na janela que abrir.");
-    console.log("Assim que concluir o login, feche a janela do navegador.");
+    console.log("🌐 ABRINDO CHROME NATIVO DO WINDOWS...");
+    console.log("Faça login na janela que abrir e feche quando terminar.");
     console.log("=================================================");
 
     const userDataDir = path.join(__dirname, 'eneba_bot_session');
     if (!fs.existsSync(userDataDir)) {
         fs.mkdirSync(userDataDir, { recursive: true });
     } else {
-        // Clear stale SingletonLock if process was killed
         const lockPath = path.join(userDataDir, 'SingletonLock');
-        try {
-            if (fs.existsSync(lockPath)) fs.unlinkSync(lockPath);
-        } catch (e) {}
+        try { if (fs.existsSync(lockPath)) fs.unlinkSync(lockPath); } catch (e) {}
     }
 
     const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 
-    const browser = await puppeteer.launch({
-        headless: false,
-        executablePath: fs.existsSync(chromePath) ? chromePath : undefined,
-        userDataDir: userDataDir,
-        args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--start-maximized'
-        ]
-    });
+    if (fs.existsSync(chromePath)) {
+        const chromeProcess = spawn(chromePath, [
+            `--user-data-dir=${userDataDir}`,
+            '--start-maximized',
+            'https://my.eneba.com/login'
+        ], { detached: true, stdio: 'ignore' });
 
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 900 });
-
-    await page.goto('https://my.eneba.com/login', { waitUntil: 'networkidle2' });
-
-    browser.on('disconnected', () => {
-        console.log("✅ SESSÃO SALVA COM SUCESSO!");
-        console.log("O robô agora usará o seu login salvo automaticamente nas compras do site!");
-        process.exit(0);
-    });
+        chromeProcess.unref();
+        console.log("✅ Chrome Nativo aberto com sucesso!");
+        console.log("Faça seu login ou 2FA e feche a janela quando terminar.");
+    } else {
+        console.log("❌ Chrome oficial não encontrado em:", chromePath);
+    }
 }
 
 initLogin();
