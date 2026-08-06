@@ -1675,8 +1675,11 @@ app.get('/api/bot/pending-orders', async (req, res) => {
     }
 
     try {
+        // Garante que a coluna eneba_url existe no banco PostgreSQL do Render
+        await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS eneba_url TEXT;`).catch(() => {});
+
         const query = `
-            SELECT oi.order_id, oi.product_id, oi.quantity, p.title, p.eneba_url, p.auto_stock_provider
+            SELECT oi.order_id, oi.product_id, oi.quantity, p.title, COALESCE(p.eneba_url, '') AS eneba_url, p.auto_stock_provider
             FROM order_items oi
             JOIN products p ON oi.product_id = p.id
             JOIN orders o ON oi.order_id = o.id
@@ -1821,7 +1824,8 @@ async function assignKeysToOrder(client, orderId) {
         const productId = item.product_id;
         const qty = item.quantity || 1;
         
-        const prodRes = await client.query('SELECT title, eneba_url, activation_key, in_stock, auto_stock_provider FROM products WHERE id = $1 FOR UPDATE', [productId]);
+        await client.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS eneba_url TEXT;').catch(() => {});
+        const prodRes = await client.query('SELECT title, COALESCE(eneba_url, \'\') AS eneba_url, activation_key, in_stock, auto_stock_provider FROM products WHERE id = $1 FOR UPDATE', [productId]);
         if (prodRes.rows.length === 0) continue;
         
         const prod = prodRes.rows[0];
