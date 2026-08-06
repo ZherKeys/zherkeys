@@ -1661,6 +1661,92 @@ async function autoPurchaseEnebaKeys(productTitleOrUrl, quantity = 1) {
     return [];
 }
 
+// =========================================================================
+// API DE INTEGRAÇÃO EM TEMPO REAL: ROBÔ LOCAL PC <-> SERVIDOR ZHERKEYS
+// =========================================================================
+
+const BOT_API_SECRET = process.env.BOT_API_SECRET || 'zherkeys-secret-bot-token-2026';
+
+// 1. Endpoint para o Robô no PC consultar pedidos pendentes de auto-estoque
+app.get('/api/bot/pending-orders', async (req, res) => {
+    const authHeader = req.headers['x-bot-token'] || req.query.token;
+    if (authHeader !== BOT_API_SECRET) {
+        return res.status(401).json({ error: 'Não autorizado. Token de robô inválido.' });
+    }
+
+    try {
+        const query = `
+            SELECT oi.order_id, oi.product_id, oi.quantity, p.title, p.eneba_url, p.auto_stock_provider
+            FROM order_items oi
+            JOIN products p ON oi.product_id = p.id
+            JOIN orders o ON oi.order_id = o.id
+            WHERE o.status != 'cancelled' AND (
+                oi.activation_key IS NULL 
+                OR TRIM(oi.activation_key) = '' 
+                OR oi.activation_key LIKE '%Chave em liberação%' 
+                OR oi.activation_key LIKE '%Liberação em andamento%'
+            )
+            ORDER BY oi.order_id ASC
+        `;
+        const result = await pool.query(query);
+        res.json({ success: true, pendingOrders: result.rows });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 2. Endpoint para o Robô no PC entregar a Key resgatada e aprovar o pedido no site
+app.post('/api/bot/fulfill-order', async (req, res) => {
+    const authHeader = req.headers['x-bot-token'] || req.body.token;
+    if (authHeader !== BOT_API_SECRET) {
+        return res.status(401).json({ error: 'Não autorizado. Token de robô inválido.' });
+    }
+
+    const { orderId, productId, activationKey } = req.body;
+    if (!orderId || !productId || !activationKey) {
+        return res.status(400).json({ error: 'Parâmetros orderId, productId e activationKey são obrigatórios.' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Atualiza a chave no item do pedido
+        await client.query(
+            'UPDATE order_items SET activation_key = $1 WHERE order_id = $2 AND product_id = $3',
+            [activationKey.trim(), orderId, productId]
+        );
+
+        // Verifica se todas as chaves do pedido foram entregues
+        const checkKeysRes = await client.query('SELECT activation_key FROM order_items WHERE order_id = $1', [orderId]);
+        let allKeysReady = true;
+        for (let row of checkKeysRes.rows) {
+            const k = (row.activation_key || '').trim();
+            if (!k || k.includes('Chave em liberação') || k.includes('Liberação em andamento')) {
+                allKeysReady = false;
+                break;
+            }
+        }
+
+        const finalStatus = allKeysReady ? 'approved' : 'processing';
+        await client.query("UPDATE orders SET status = $1 WHERE id = $2 AND status != 'cancelled'", [finalStatus, orderId]);
+
+        await client.query('COMMIT');
+
+        // Envia o e-mail oficial com a chave
+        checkAndSendOrderKeysEmail(pool, orderId).catch(() => {});
+
+        console.log(`[BOT-API] 🎉 Pedido #${orderId} atualizado pelo Robô Local! Key entregue: ${activationKey}`);
+        res.json({ success: true, orderId, status: finalStatus, keyDelivered: activationKey });
+
+    } catch (err) {
+        await client.query('ROLLBACK');
+        res.status(500).json({ error: err.message });
+    } finally {
+        client.release();
+    }
+});
+
 // Função central para verificar e enviar e-mail de chaves liberadas APENAS quando a chave chegar com sucesso!
 async function checkAndSendOrderKeysEmail(clientOrPool, orderId) {
     try {
