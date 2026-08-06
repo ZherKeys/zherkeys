@@ -361,11 +361,31 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
             await saveStepScreenshot(page, '05_user_keys_library_after_login');
         }
 
-        // Clica no primeiro pedido recente para visualizar/revelar a chave (IGNORANDO links de cabeçalho como 'Redeem gift card')
-        writeLog('info', `[ETAPA 6/6] Procurando pedido recente e botão 'Display key' / 'Mostrar chave'...`);
-        const redeemClicked = await page.evaluate(() => {
-            const redeemBtns = Array.from(document.querySelectorAll('button, a'));
-            const target = redeemBtns.find(b => {
+        // Clica no pedido MAIS RECENTE que corresponda exatamente ao título do produto comprado
+        writeLog('info', `[ETAPA 6/6] Procurando o produto "${productTitle}" mais recente na biblioteca para exibir a chave...`);
+        const redeemClicked = await page.evaluate((targetTitle) => {
+            // Extrai palavras-chave do título do produto para busca precisa no DOM
+            const titleWords = targetTitle.toLowerCase()
+                .replace(/https?:\/\/[^\s]+/gi, '')
+                .replace(/[^a-z0-9\s]/gi, ' ')
+                .split(' ')
+                .filter(w => w.length > 2 && !['key', 'code', 'dlc', 'global', 'steam', 'xbox', 'pc', 'edition'].includes(w));
+
+            // Seleciona todos os containers de itens da biblioteca de chaves
+            const orderCards = Array.from(document.querySelectorAll('main div[class*="card"], main div[class*="item"], main div[class*="row"], main div[class*="purchase"], main li, table tr'));
+            
+            // Filtra os cards que contêm as palavras-chave do produto desejado
+            const matchingCards = orderCards.filter(card => {
+                const cardText = (card.innerText || card.textContent || '').toLowerCase();
+                return titleWords.some(word => cardText.includes(word));
+            });
+
+            // Pega o PRIMEIRO card correspondente (que é a compra mais recente realizada no topo da lista)
+            const targetCard = matchingCards.length > 0 ? matchingCards[0] : document.body;
+
+            // Procura o botão 'Display key' / 'Exibir chave' DENTRO do card do produto mais recente
+            const btns = Array.from(targetCard.querySelectorAll('button, a'));
+            const targetBtn = btns.find(b => {
                 const txt = (b.innerText || b.textContent || '').toLowerCase();
                 const href = (b.getAttribute('href') || '').toLowerCase();
                 
@@ -374,14 +394,30 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
                 
                 return txt.includes('display key') || txt.includes('mostrar chave') || txt.includes('exibir chave') || txt.includes('ver chave') || txt.includes('view key') || txt.includes('get key') || txt.includes('view code');
             });
-            if (target) {
-                target.click();
-                return { clicked: true, text: target.innerText, href: target.getAttribute('href') };
-            }
-            return { clicked: false };
-        });
 
-        writeLog('info', `Resultado clique para resgatar chave:`, redeemClicked);
+            if (targetBtn) {
+                targetBtn.click();
+                return { clicked: true, text: targetBtn.innerText, matchedProductCard: matchingCards.length > 0 };
+            }
+
+            // Fallback: Se não encontrou o card específico, procura o primeiro botão de chave na lista mais recente
+            const allBtns = Array.from(document.querySelectorAll('button, a'));
+            const fallbackBtn = allBtns.find(b => {
+                const txt = (b.innerText || b.textContent || '').toLowerCase();
+                const href = (b.getAttribute('href') || '').toLowerCase();
+                if (txt.includes('gift card') || href.includes('gift-card') || href.includes('redeem-gift') || txt.includes('vale-presente')) return false;
+                return txt.includes('display key') || txt.includes('mostrar chave') || txt.includes('exibir chave') || txt.includes('ver chave') || txt.includes('view key') || txt.includes('get key') || txt.includes('view code');
+            });
+
+            if (fallbackBtn) {
+                fallbackBtn.click();
+                return { clicked: true, text: fallbackBtn.innerText, matchedProductCard: false };
+            }
+
+            return { clicked: false };
+        }, productTitle);
+
+        writeLog('info', `Resultado clique para resgatar chave do produto:`, redeemClicked);
         
         if (!redeemClicked.clicked) {
             writeLog('error', `❌ Botão de resgatar chave ('Display key') não foi encontrado na página de compras. A compra pode não ter sido concluída.`);
