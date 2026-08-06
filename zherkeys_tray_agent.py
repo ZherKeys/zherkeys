@@ -132,7 +132,11 @@ def bot_loop_cycle():
             node_script = os.path.join(BASE_DIR, 'zherkeys_pc_bot_agent.js')
             result = subprocess.run(['node', node_script, '--single-run'], capture_output=True, text=True, timeout=120)
             
-            if "SUCESSO" in result.stdout or "atualizado pelo Robô Local" in result.stdout or "Key resgatada" in result.stdout:
+            stdout_text = result.stdout or ""
+            stderr_text = result.stderr or ""
+            combined_output = stdout_text + "\n" + stderr_text
+
+            if "SUCESSO" in combined_output or "atualizado pelo Robô Local" in combined_output or "Key resgatada" in combined_output:
                 update_tray_status('green', f'Zher Keys Bot - Pedido #{order_id} Entregue!')
                 send_pc_notification(
                     "🎉 CHAVE ENTREGUE COM SUCESSO!",
