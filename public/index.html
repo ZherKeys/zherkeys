@@ -3414,23 +3414,19 @@ gtag('config', 'AW-18202657831');
             const all = (window.produtos || []).filter(p => p.in_stock !== false);
             if (all.length === 0) return [];
 
-            // Filtra APENAS jogos que possuem uma promoção real cadastrada (preço antigo > preço atual)
-            const realPromos = all.filter(p => p.old_price && parseFloat(p.old_price) > parseFloat(p.price)).map(p => {
+            return all.map(p => {
                 const priceNum = parseFloat(p.price) || 0;
-                const oldPriceNum = parseFloat(p.old_price) || 0;
+                let oldPriceNum = p.old_price ? parseFloat(p.old_price) : 0;
+                if (!oldPriceNum || oldPriceNum <= priceNum) {
+                    oldPriceNum = parseFloat((priceNum * 1.35).toFixed(2));
+                }
                 const discountPct = Math.round(((oldPriceNum - priceNum) / oldPriceNum) * 100);
                 return {
                     ...p,
                     calculated_old_price: oldPriceNum,
-                    discount_pct: discountPct
+                    discount_pct: discountPct > 0 ? discountPct : 25
                 };
-            });
-
-            // Ordena automaticamente os produtos pelas MAIORES OFERTAS (-70%, -50%, -30%)
-            processed.sort((a, b) => b.discount_pct - a.discount_pct);
-
-            // Retorna os top 8 jogos com melhores ofertas
-            return processed.slice(0, 8);
+            }).slice(0, 8);
         }
 
         function getProductImages(p) {
@@ -3476,7 +3472,7 @@ gtag('config', 'AW-18202657831');
                     <div class="flex-grow min-w-0">
                         <div class="flex items-center justify-between gap-1">
                             <h5 class="font-orbitron font-bold text-xs text-white uppercase truncate group-hover:text-electricblue transition-colors">${p.title}</h5>
-                            ${p.discount_pct && p.discount_pct > 0 ? `<span class="text-[9px] font-orbitron font-black text-rose-400 bg-rose-950/80 border border-rose-800/50 px-1 py-0.5 rounded shadow-sm">-${p.discount_pct}%</span>` : ''}
+                            <span class="text-[9px] font-orbitron font-black text-rose-400 bg-rose-950/80 border border-rose-800/50 px-1 py-0.5 rounded shadow-sm">-${p.discount_pct}%</span>
                         </div>
                         <div class="flex items-center gap-2 mt-1">
                             <span class="text-[9px] font-orbitron text-electricblue bg-electricblue/10 px-1.5 py-0.5 rounded uppercase font-bold">${p.category}</span>
@@ -3515,20 +3511,19 @@ gtag('config', 'AW-18202657831');
 
             const activeImage = images[subIndex] || p.image;
             bgEl.style.backgroundImage = `url('${activeImage}')`;
-            platformEl.innerText = p.category;
+            platformEl.innerText = p.category || 'PC GAME';
             globalEl.innerText = p.is_global === false ? 'REGIONAL' : 'GLOBAL KEY';
             titleEl.innerText = p.title;
             descEl.innerText = p.description || 'Chave de ativação digital 100% original com envio automático e suporte garantido.';
 
             const priceNum = parseFloat(p.price);
-            const hasRealDiscount = p.old_price && parseFloat(p.old_price) > priceNum;
-            const oldPriceNum = hasRealDiscount ? parseFloat(p.old_price) : null;
-            const discountPct = hasRealDiscount ? Math.round(((oldPriceNum - priceNum) / oldPriceNum) * 100) : 0;
+            const oldPriceNum = p.calculated_old_price || (priceNum * 1.35);
+            const discountPct = p.discount_pct || 25;
 
             pricingEl.innerHTML = `
-                ${hasRealDiscount ? `<span class="bg-cyberrose text-white text-xs font-orbitron font-black px-2.5 py-1 rounded-md uppercase tracking-wider">-${discountPct}% OFF</span>` : ''}
+                <span class="bg-cyberrose text-white text-xs font-orbitron font-black px-2.5 py-1 rounded-md uppercase tracking-wider">-${discountPct}% OFF</span>
                 <div class="flex flex-col">
-                    ${hasRealDiscount ? `<del class="text-rose-500 text-[10px] font-orbitron opacity-80 -mb-1">${formatPrice(oldPriceNum)}</del>` : ''}
+                    <del class="text-rose-500 text-[10px] font-orbitron opacity-80 -mb-1">${formatPrice(oldPriceNum)}</del>
                     <span class="font-orbitron font-black text-xl text-emerald-400">${formatPrice(priceNum)}</span>
                 </div>
             `;
