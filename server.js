@@ -2720,20 +2720,20 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
                     return res.status(400).json({ error: 'Saldo insuficiente na carteira.' });
                 }
                 
-                // Criar o pedido APROVADO imediatamente no banco de dados (is_deposit = false)
+                // Criar o pedido PENDENTE DE CHAVE no banco de dados (status = 'processing')
                 const orderRes = await client.query(
                     'INSERT INTO orders (user_id, status, total_amount, is_deposit) VALUES ($1, $2, $3, $4) RETURNING id',
-                    [req.session.userId, 'approved', totalAmount, false]
+                    [req.session.userId, 'processing', totalAmount, false]
                 );
                 const orderId = orderRes.rows[0].id;
                 
-                // Salvar os itens do pedido
+                // Salvar os itens do pedido com status inicial 'Chave em liberação...'
                 for (let item of items) {
                     const dbProduct = realProducts.find(p => p.id === parseInt(item.id));
                     if(dbProduct) {
                         await client.query(
-                            'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)',
-                            [orderId, dbProduct.id, 1, parseFloat(dbProduct.price)]
+                            'INSERT INTO order_items (order_id, product_id, quantity, price, activation_key) VALUES ($1, $2, $3, $4, $5)',
+                            [orderId, dbProduct.id, 1, parseFloat(dbProduct.price), 'Chave em liberação...']
                         );
                     }
                 }
