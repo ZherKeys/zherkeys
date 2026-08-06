@@ -18,6 +18,12 @@ async function initLogin() {
     const userDataDir = path.join(__dirname, 'eneba_bot_session');
     if (!fs.existsSync(userDataDir)) {
         fs.mkdirSync(userDataDir, { recursive: true });
+    } else {
+        // Clear stale SingletonLock if process was killed
+        const lockPath = path.join(userDataDir, 'SingletonLock');
+        try {
+            if (fs.existsSync(lockPath)) fs.unlinkSync(lockPath);
+        } catch (e) {}
     }
 
     const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
