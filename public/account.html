@@ -144,7 +144,11 @@ gtag('config', 'AW-18202657831');
                             <i data-lucide="youtube" class="w-4 h-4 text-white"></i>
                             <span>TUTORIAL DE COMO RESGATAR</span>
                         </a>
-                        <button onclick="loadMyOrders()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-2 rounded-lg border border-slate-700 hover:border-slate-500 transition-all"><i data-lucide="refresh-cw" class="w-4 h-4"></i> <span data-i18n="refresh_status">ATUALIZAR STATUS</span></button>
+                        <button onclick="loadMyOrders()" class="text-xs text-slate-400 hover:text-white flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-lg border border-slate-700 hover:border-slate-500 transition-all" title="Atualização automática a cada 10s">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i> 
+                            <span data-i18n="refresh_status">ATUALIZAR STATUS</span>
+                        </button>
                     </div>
                 </h2>
                 
@@ -2225,6 +2229,8 @@ gtag('config', 'AW-18202657831');
         } else {
             loadMyOrders();
         }
+        // Atualiza o status automaticamente a cada 10 segundos para o cliente
+        setInterval(loadMyOrders, 10000);
         applyCurrencyMask(document.getElementById('deposit-amount'));
     </script>
     <!-- Ad Network scripts disabled for Google Merchant compliance -->
