@@ -3405,22 +3405,20 @@ gtag('config', 'AW-18202657831');
             }
         };
 
+        // Steam-Style Featured Hero Slider Logic (Multi-Image Slide Cycle per Game)
+        let currentSteamSlideIndex = 0;
+        let currentSteamImageSubIndex = 0;
+        let steamSlideTimer = null;
+
         function getFeaturedPromoProducts() {
             const all = (window.produtos || []).filter(p => p.in_stock !== false);
             if (all.length === 0) return [];
 
-            // Processa todos os produtos calculando a porcentagem de desconto real ou de mercado
-            const processed = all.map(p => {
+            // Filtra APENAS jogos que possuem uma promoção real cadastrada (preço antigo > preço atual)
+            const realPromos = all.filter(p => p.old_price && parseFloat(p.old_price) > parseFloat(p.price)).map(p => {
                 const priceNum = parseFloat(p.price) || 0;
-                let oldPriceNum = p.old_price ? parseFloat(p.old_price) : 0;
-                
-                // Se o produto não tiver um preço antigo cadastrado, gera a estimativa de mercado (+35%)
-                if (!oldPriceNum || oldPriceNum <= priceNum) {
-                    oldPriceNum = parseFloat((priceNum * 1.35).toFixed(2));
-                }
-
+                const oldPriceNum = parseFloat(p.old_price) || 0;
                 const discountPct = Math.round(((oldPriceNum - priceNum) / oldPriceNum) * 100);
-
                 return {
                     ...p,
                     calculated_old_price: oldPriceNum,
@@ -3478,7 +3476,7 @@ gtag('config', 'AW-18202657831');
                     <div class="flex-grow min-w-0">
                         <div class="flex items-center justify-between gap-1">
                             <h5 class="font-orbitron font-bold text-xs text-white uppercase truncate group-hover:text-electricblue transition-colors">${p.title}</h5>
-                            <span class="text-[9px] font-orbitron font-black text-rose-400 bg-rose-950/80 border border-rose-800/50 px-1 py-0.5 rounded shadow-sm">-${p.discount_pct}%</span>
+                            ${p.discount_pct && p.discount_pct > 0 ? `<span class="text-[9px] font-orbitron font-black text-rose-400 bg-rose-950/80 border border-rose-800/50 px-1 py-0.5 rounded shadow-sm">-${p.discount_pct}%</span>` : ''}
                         </div>
                         <div class="flex items-center gap-2 mt-1">
                             <span class="text-[9px] font-orbitron text-electricblue bg-electricblue/10 px-1.5 py-0.5 rounded uppercase font-bold">${p.category}</span>
@@ -3523,13 +3521,14 @@ gtag('config', 'AW-18202657831');
             descEl.innerText = p.description || 'Chave de ativação digital 100% original com envio automático e suporte garantido.';
 
             const priceNum = parseFloat(p.price);
-            const oldPriceNum = p.calculated_old_price || (p.old_price ? parseFloat(p.old_price) : (priceNum * 1.35));
-            const discountPct = p.discount_pct || Math.round(((oldPriceNum - priceNum) / oldPriceNum) * 100);
+            const hasRealDiscount = p.old_price && parseFloat(p.old_price) > priceNum;
+            const oldPriceNum = hasRealDiscount ? parseFloat(p.old_price) : null;
+            const discountPct = hasRealDiscount ? Math.round(((oldPriceNum - priceNum) / oldPriceNum) * 100) : 0;
 
             pricingEl.innerHTML = `
-                <span class="bg-cyberrose text-white text-xs font-orbitron font-black px-2.5 py-1 rounded-md uppercase tracking-wider">-${discountPct}% OFF</span>
+                ${hasRealDiscount ? `<span class="bg-cyberrose text-white text-xs font-orbitron font-black px-2.5 py-1 rounded-md uppercase tracking-wider">-${discountPct}% OFF</span>` : ''}
                 <div class="flex flex-col">
-                    <del class="text-rose-500 text-[10px] font-orbitron opacity-80 -mb-1">${formatPrice(oldPriceNum)}</del>
+                    ${hasRealDiscount ? `<del class="text-rose-500 text-[10px] font-orbitron opacity-80 -mb-1">${formatPrice(oldPriceNum)}</del>` : ''}
                     <span class="font-orbitron font-black text-xl text-emerald-400">${formatPrice(priceNum)}</span>
                 </div>
             `;
