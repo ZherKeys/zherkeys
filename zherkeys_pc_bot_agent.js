@@ -104,6 +104,11 @@ async function pollAndFulfillOrders() {
     }
 }
 
-// Inicia o ciclo contínuo de polling
-setInterval(pollAndFulfillOrders, POLL_INTERVAL_MS);
-pollAndFulfillOrders();
+// Inicia o ciclo de polling (Suporta disparo individual ou contínuo)
+const isSingleRun = process.argv.includes('--single-run');
+if (isSingleRun) {
+    pollAndFulfillOrders().then(() => process.exit(0)).catch(() => process.exit(1));
+} else {
+    setInterval(pollAndFulfillOrders, POLL_INTERVAL_MS);
+    pollAndFulfillOrders();
+}
