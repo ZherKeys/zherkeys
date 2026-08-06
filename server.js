@@ -1646,7 +1646,12 @@ async function autoPurchaseEnebaKeys(productTitleOrUrl, quantity = 1) {
         }
     }
 
-    // 2. Fallback: Robô de Navegação Web Automática em Segundo Plano (Puppeteer)
+    // 2. Fallback: Se for no servidor Render/Nuvem, delega para o Robô Local no PC (Evita travamentos de 60s na nuvem)
+    if (process.env.RENDER || process.env.NODE_ENV === 'production') {
+        console.log(`[ENEBA-AUTOBUY] Pedido em nuvem (Render): Registrado para o Robô Local do PC resgatar a chave.`);
+        return [];
+    }
+
     try {
         const { autoBuyEnebaKeyWeb } = require('./eneba_web_bot');
         console.log(`[ENEBA-AUTOBUY] Executando Robô Web Automático para "${productTitleOrUrl}"...`);

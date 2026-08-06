@@ -108,38 +108,48 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
         await page.setViewport({ width: 1280, height: 800 });
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
 
-        // 1. Busca produto na Eneba ignorando banners promocionais
-        const searchUrl = `https://www.eneba.com/store/all?text=${encodeURIComponent(productTitle)}`;
-        writeLog('info', `[ETAPA 1/6] Navegando até busca: ${searchUrl}`);
-        await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: 45000 });
-        await saveStepScreenshot(page, '01_search_page');
+        // 1. Acessa produto na Eneba (Suporta tanto Link Direto quanto busca por Título)
+        const cleanProductTarget = (productTitle || '').trim();
+        let fullProductUrl = '';
 
-        const productHref = await page.evaluate((titleStr) => {
-            const titleWords = titleStr.toLowerCase().split(' ').filter(w => w.length > 2);
-            const anchors = Array.from(document.querySelectorAll('main a[href], div[class*="catalog"] a[href], div[class*="grid"] a[href]'));
-            
-            const matched = anchors.find(a => {
-                const href = (a.getAttribute('href') || '').toLowerCase();
-                if (href.includes('surfshark') || href.includes('nordvpn') || href.includes('itm_source=')) return false;
-                const text = (a.innerText || '').toLowerCase();
-                return (href.includes('-key-') || href.includes('-code-') || href.includes('-steam-') || href.includes('/item/')) &&
-                       titleWords.some(w => href.includes(w) || text.includes(w));
-            });
+        if (cleanProductTarget.startsWith('http://') || cleanProductTarget.startsWith('https://') || cleanProductTarget.includes('eneba.com')) {
+            fullProductUrl = cleanProductTarget;
+            writeLog('info', `[ETAPA 1/6] Link direto detectado! Navegando diretamente para: ${fullProductUrl}`);
+            await page.goto(fullProductUrl, { waitUntil: 'networkidle2', timeout: 45000 });
+            await saveStepScreenshot(page, '01_direct_product_page');
+        } else {
+            const searchUrl = `https://www.eneba.com/store/all?text=${encodeURIComponent(cleanProductTarget)}`;
+            writeLog('info', `[ETAPA 1/6] Navegando até busca: ${searchUrl}`);
+            await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: 45000 });
+            await saveStepScreenshot(page, '01_search_page');
 
-            return matched ? matched.getAttribute('href') : null;
-        }, productTitle);
+            const productHref = await page.evaluate((titleStr) => {
+                const titleWords = titleStr.toLowerCase().split(' ').filter(w => w.length > 2);
+                const anchors = Array.from(document.querySelectorAll('main a[href], div[class*="catalog"] a[href], div[class*="grid"] a[href]'));
+                
+                const matched = anchors.find(a => {
+                    const href = (a.getAttribute('href') || '').toLowerCase();
+                    if (href.includes('surfshark') || href.includes('nordvpn') || href.includes('itm_source=')) return false;
+                    const text = (a.innerText || '').toLowerCase();
+                    return (href.includes('-key-') || href.includes('-code-') || href.includes('-steam-') || href.includes('/item/')) &&
+                           titleWords.some(w => href.includes(w) || text.includes(w));
+                });
 
-        if (!productHref) {
-            writeLog('error', `❌ Produto "${productTitle}" não encontrado na Eneba.`);
-            await saveStepScreenshot(page, '01_error_product_not_found');
-            await browser.close();
-            return [];
+                return matched ? matched.getAttribute('href') : null;
+            }, cleanProductTarget);
+
+            if (!productHref) {
+                writeLog('error', `❌ Produto "${cleanProductTarget}" não encontrado na Eneba.`);
+                await saveStepScreenshot(page, '01_error_product_not_found');
+                await browser.close();
+                return [];
+            }
+
+            fullProductUrl = productHref.startsWith('http') ? productHref : `https://www.eneba.com${productHref}`;
+            writeLog('info', `[ETAPA 2/6] Acessando página do produto: ${fullProductUrl}`);
+            await page.goto(fullProductUrl, { waitUntil: 'networkidle2', timeout: 45000 });
+            await saveStepScreenshot(page, '02_product_page');
         }
-
-        const fullProductUrl = productHref.startsWith('http') ? productHref : `https://www.eneba.com${productHref}`;
-        writeLog('info', `[ETAPA 2/6] Acessando página do produto: ${fullProductUrl}`);
-        await page.goto(fullProductUrl, { waitUntil: 'networkidle2', timeout: 45000 });
-        await saveStepScreenshot(page, '02_product_page');
 
         // 2. Clica no botão de Compra / Buy Now
         writeLog('info', `[ETAPA 2/6] Procurando e clicando no botão 'Comprar Agora'...`);
@@ -318,26 +328,23 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
 
             await page.goto('https://my.eneba.com/login', { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => null);
             
-            const autoLoginResult = await page.evaluate(async (emailStr, passStr) => {
-                const emailIn = document.querySelector('input[name="email"], input[type="email"]');
-                const passIn = document.querySelector('input[name="password"], input[type="password"]');
-                const submitBtn = document.querySelector('button[type="submit"], form button');
+            const emailIn = await page.$('input[name="email"], input[type="email"]');
+            if (emailIn) {
+                await emailIn.click({ clickCount: 3 });
+                await emailIn.type(botEmail, { delay: 30 });
+                await page.keyboard.press('Enter');
+                await new Promise(r => setTimeout(r, 2500));
+            }
 
-                if (emailIn && passIn) {
-                    emailIn.value = emailStr;
-                    passIn.value = passStr;
-                    emailIn.dispatchEvent(new Event('input', { bubbles: true }));
-                    passIn.dispatchEvent(new Event('input', { bubbles: true }));
-                    if (submitBtn) {
-                        submitBtn.click();
-                        return { success: true };
-                    }
-                }
-                return { success: false };
-            }, botEmail, botPass);
+            const passIn = await page.$('input[name="password"], input[type="password"]');
+            if (passIn) {
+                await passIn.click({ clickCount: 3 });
+                await passIn.type(botPass, { delay: 30 });
+                await page.keyboard.press('Enter');
+                await new Promise(r => setTimeout(r, 4000));
+            }
 
-            writeLog('info', `Resultado tentativa de auto-login do robô:`, autoLoginResult);
-            await new Promise(r => setTimeout(r, 5000));
+            writeLog('info', `Formulário de login preenchido e submetido.`);
             await saveStepScreenshot(page, '05_after_auto_login_attempt');
 
             // Retorna para a página de compras do usuário
