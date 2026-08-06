@@ -306,8 +306,8 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
         }
 
         // 5. Ir para Meus Pedidos na Eneba para Revelar/Resgatar a Key
-        writeLog('info', `[ETAPA 5/6] Navegando para Meus Pedidos (https://www.eneba.com/user/purchases)...`);
-        await page.goto('https://www.eneba.com/user/purchases', { waitUntil: 'networkidle2', timeout: 45000 });
+        writeLog('info', `[ETAPA 5/6] Navegando para Meus Pedidos (https://my.eneba.com/purchases)...`);
+        await page.goto('https://my.eneba.com/purchases', { waitUntil: 'networkidle2', timeout: 45000 });
         await saveStepScreenshot(page, '05_user_purchases');
 
         // Check if user is logged in on purchases page
@@ -317,7 +317,7 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
             return !isLogin;
         });
 
-        writeLog('info', `Status de login em /user/purchases: ${isLoggedOnPurchases ? 'LOGADO ✅' : 'NÃO LOGADO ⚠️'}`);
+        writeLog('info', `Status de login em /purchases: ${isLoggedOnPurchases ? 'LOGADO ✅' : 'NÃO LOGADO ⚠️'}`);
 
         if (!isLoggedOnPurchases) {
             writeLog('warn', `⚠️ Sessão da Eneba não autenticada! Executando Login Automático pelo Robô (100% Autônomo)...`);
@@ -348,7 +348,7 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
             await saveStepScreenshot(page, '05_after_auto_login_attempt');
 
             // Retorna para a página de compras do usuário
-            await page.goto('https://www.eneba.com/user/purchases', { waitUntil: 'networkidle2', timeout: 45000 }).catch(() => null);
+            await page.goto('https://my.eneba.com/purchases', { waitUntil: 'networkidle2', timeout: 45000 }).catch(() => null);
             await saveStepScreenshot(page, '05_user_purchases_after_login');
         }
 
