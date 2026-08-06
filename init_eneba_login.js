@@ -34,9 +34,7 @@ async function initLogin() {
         userDataDir: userDataDir,
         args: [
             '--no-sandbox',
-            '--disable-gpu',
-            '--disable-software-rasterizer',
-            '--disable-features=CalculateNativeWinOcclusion,IsolateOrigins,site-per-process',
+            '--disable-setuid-sandbox',
             '--start-maximized'
         ]
     });
