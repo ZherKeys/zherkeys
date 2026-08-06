@@ -219,7 +219,7 @@ gtag('config', 'AW-18202657831');
                         </label>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                             <label class="flex items-center gap-2 bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 p-2.5 rounded-lg cursor-pointer transition-colors">
-                                <input type="checkbox" id="prod-stock-eneba" value="eneba" checked class="w-4 h-4 accent-cyan-500 rounded cursor-pointer">
+                                <input type="checkbox" id="prod-stock-eneba" value="eneba" checked class="w-4 h-4 accent-cyan-500 rounded cursor-pointer" onchange="document.getElementById('eneba-url-box').classList.toggle('hidden', !this.checked)">
                                 <span class="text-white font-medium flex items-center gap-1">
                                     <span class="w-2 h-2 rounded-full bg-cyan-400"></span> Estoque Eneba (Auto Bot)
                                 </span>
@@ -230,6 +230,13 @@ gtag('config', 'AW-18202657831');
                                     <span class="w-2 h-2 rounded-full bg-amber-400"></span> Estoque Nuuvem (B2B)
                                 </span>
                             </label>
+                        </div>
+                        <div id="eneba-url-box" class="mt-2.5 bg-slate-900/90 border border-cyan-500/30 p-2.5 rounded-lg">
+                            <label class="block text-[11px] font-bold text-cyan-400 mb-1 font-orbitron">
+                                🔗 LINK DIRETO DO ANÚNCIO NA ENEBA (OPCIONAL)
+                            </label>
+                            <input type="url" id="prod-eneba-url" class="w-full bg-slate-950 border border-slate-800 text-cyan-300 text-xs px-3 py-2 rounded focus:outline-none focus:border-cyan-400 placeholder-slate-600" placeholder="https://www.eneba.com/item/nome-do-jogo-ou-dlc">
+                            <p class="text-[10px] text-slate-400 mt-1 font-inter">Cole o link exato da Eneba para o robô ir direto sem precisar pesquisar.</p>
                         </div>
                         <p class="text-[10px] text-slate-400 leading-relaxed font-inter">
                             ✨ Quando uma das caixinhas está marcada, <b>não é necessário digitar chaves manuais</b>. O robô comprará a chave automaticamente no fornecedor selecionado assim que o pedido for pago!
