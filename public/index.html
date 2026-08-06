@@ -3405,15 +3405,34 @@ gtag('config', 'AW-18202657831');
             }
         };
 
-        // Steam-Style Featured Hero Slider Logic (Multi-Image Slide Cycle per Game)
-        let currentSteamSlideIndex = 0;
-        let currentSteamImageSubIndex = 0;
-        let steamSlideTimer = null;
-
         function getFeaturedPromoProducts() {
             const all = (window.produtos || []).filter(p => p.in_stock !== false);
-            const promos = all.filter(p => p.old_price && parseFloat(p.old_price) > parseFloat(p.price));
-            return promos.length > 0 ? promos : all;
+            if (all.length === 0) return [];
+
+            // Processa todos os produtos calculando a porcentagem de desconto real ou de mercado
+            const processed = all.map(p => {
+                const priceNum = parseFloat(p.price) || 0;
+                let oldPriceNum = p.old_price ? parseFloat(p.old_price) : 0;
+                
+                // Se o produto não tiver um preço antigo cadastrado, gera a estimativa de mercado (+35%)
+                if (!oldPriceNum || oldPriceNum <= priceNum) {
+                    oldPriceNum = parseFloat((priceNum * 1.35).toFixed(2));
+                }
+
+                const discountPct = Math.round(((oldPriceNum - priceNum) / oldPriceNum) * 100);
+
+                return {
+                    ...p,
+                    calculated_old_price: oldPriceNum,
+                    discount_pct: discountPct
+                };
+            });
+
+            // Ordena automaticamente os produtos pelas MAIORES OFERTAS (-70%, -50%, -30%)
+            processed.sort((a, b) => b.discount_pct - a.discount_pct);
+
+            // Retorna os top 8 jogos com melhores ofertas
+            return processed.slice(0, 8);
         }
 
         function getProductImages(p) {
@@ -3457,7 +3476,10 @@ gtag('config', 'AW-18202657831');
                 <div onclick="selectSteamSlide(${idx})" class="steam-thumb-item p-3 rounded-xl border border-slate-800/80 bg-slate-950/80 hover:bg-slate-900 transition-all duration-300 cursor-pointer flex items-center gap-3 relative overflow-hidden group shrink-0 ${idx === 0 ? 'border-electricblue shadow-cyber bg-slate-900' : ''}" data-slide-index="${idx}">
                     <img src="${p.image}" alt="${p.title}" class="w-14 h-14 object-cover rounded-lg shrink-0 border border-slate-800">
                     <div class="flex-grow min-w-0">
-                        <h5 class="font-orbitron font-bold text-xs text-white uppercase truncate group-hover:text-electricblue transition-colors">${p.title}</h5>
+                        <div class="flex items-center justify-between gap-1">
+                            <h5 class="font-orbitron font-bold text-xs text-white uppercase truncate group-hover:text-electricblue transition-colors">${p.title}</h5>
+                            <span class="text-[9px] font-orbitron font-black text-rose-400 bg-rose-950/80 border border-rose-800/50 px-1 py-0.5 rounded shadow-sm">-${p.discount_pct}%</span>
+                        </div>
                         <div class="flex items-center gap-2 mt-1">
                             <span class="text-[9px] font-orbitron text-electricblue bg-electricblue/10 px-1.5 py-0.5 rounded uppercase font-bold">${p.category}</span>
                             <span class="font-orbitron font-bold text-xs text-cyberrose">${formatPrice(parseFloat(p.price))}</span>
@@ -3501,8 +3523,8 @@ gtag('config', 'AW-18202657831');
             descEl.innerText = p.description || 'Chave de ativação digital 100% original com envio automático e suporte garantido.';
 
             const priceNum = parseFloat(p.price);
-            const oldPriceNum = p.old_price ? parseFloat(p.old_price) : (priceNum * 1.5);
-            const discountPct = Math.round(((oldPriceNum - priceNum) / oldPriceNum) * 100);
+            const oldPriceNum = p.calculated_old_price || (p.old_price ? parseFloat(p.old_price) : (priceNum * 1.35));
+            const discountPct = p.discount_pct || Math.round(((oldPriceNum - priceNum) / oldPriceNum) * 100);
 
             pricingEl.innerHTML = `
                 <span class="bg-cyberrose text-white text-xs font-orbitron font-black px-2.5 py-1 rounded-md uppercase tracking-wider">-${discountPct}% OFF</span>
