@@ -382,23 +382,46 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
         await new Promise(r => setTimeout(r, 3000));
         await saveStepScreenshot(page, '06_final_key_revealed');
 
-        // 6. Procura por padrões de CD-Key na página final
-        const pageContent = await page.content();
-        const keyPattern = /[A-Z0-9]{4,5}-[A-Z0-9]{4,5}-[A-Z0-9]{4,5}(-[A-Z0-9]{4,5})?/g;
-        const matches = pageContent.match(keyPattern);
+        // 6. Procura por CD-Keys no DOM (inputs, textareas, tags <code>, classes key)
+        const domKeys = await page.evaluate(() => {
+            const els = Array.from(document.querySelectorAll('input[readonly], input[type="text"], textarea, code, pre, [class*="key"], [class*="code"], [id*="key"]'));
+            const values = els.map(el => el.value || el.innerText || el.textContent || '').map(v => v.trim());
+            return values.filter(v => v.length >= 8 && v.length <= 45 && !v.toLowerCase().includes('http') && !v.toLowerCase().includes('eneba'));
+        });
 
-        // Filtra possíveis falsos positivos de UUID/IDs da Eneba
-        if (matches && matches.length > 0) {
-            const validKeys = matches.filter(k => !k.includes('ENEBA') && !k.includes('UTF-8') && !k.includes('CHROME'));
-            if (validKeys.length > 0) {
-                const extractedKeys = Array.from(new Set(validKeys)).slice(0, quantity);
-                writeLog('info', `🎉 SUCESSO ABSOLUTO! ${extractedKeys.length} chave(s) obtida(s) pelo robô:`, extractedKeys);
-                await browser.close();
-                return extractedKeys;
+        const pageContent = await page.content();
+        
+        // Padrões de CD-Key flexíveis (Steam 5x5, COD 4x3 / 4x4, Xbox 5x5, EA, etc.)
+        const keyPatterns = [
+            /[A-Z0-9]{4,5}-[A-Z0-9]{4,5}-[A-Z0-9]{4,5}(-[A-Z0-9]{4,5})?(-[A-Z0-9]{4,5})?/gi, // XXXXX-XXXXX-XXXXX (-XXXXX)
+            /[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/gi,                                       // XXXX-XXXX-XXXX (COD / DLCs)
+            /[A-Z0-9]{12,25}/gi                                                            // Alfanumérico contínuo (12-25 chars)
+        ];
+
+        let foundKeys = [...domKeys];
+        for (let pattern of keyPatterns) {
+            const matches = pageContent.match(pattern);
+            if (matches && matches.length > 0) {
+                foundKeys = foundKeys.concat(matches);
             }
         }
 
-        writeLog('warn', `⚠️ Compra processada, porém nenhuma chave formatada foi encontrada no HTML. Verifique as screenshots em logs/screenshots/`);
+        // Filtra falsos positivos de UUIDs, datas, scripts ou termos da Eneba
+        const validKeys = Array.from(new Set(foundKeys.map(k => k.trim().toUpperCase()))).filter(k => {
+            if (!k || k.length < 8 || k.length > 40) return false;
+            if (k.includes('ENEBA') || k.includes('CHROME') || k.includes('UTF-8') || k.includes('MODAL') || k.includes('SCRIPT')) return false;
+            // Garante que a chave possui tanto números quanto letras ou hífens
+            return /[A-Z]/.test(k) && /[0-9]/.test(k);
+        });
+
+        if (validKeys.length > 0) {
+            const extractedKeys = validKeys.slice(0, quantity);
+            writeLog('info', `🎉 SUCESSO ABSOLUTO! ${extractedKeys.length} chave(s) obtida(s) pelo robô:`, extractedKeys);
+            await browser.close();
+            return extractedKeys;
+        }
+
+        writeLog('warn', `⚠️ Compra processada na Eneba, porém a leitura automática não extraiu os caracteres. Verifique as screenshots em logs/screenshots/`);
         await browser.close();
         return [];
 
