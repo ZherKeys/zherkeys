@@ -253,14 +253,14 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
             writeLog('info', `[ETAPA 4/6] Selecionando Eneba Wallet (Saldo Eneba)...`);
             
             const walletResult = await page.evaluate(() => {
-                const elements = Array.from(document.querySelectorAll('button, div[role="button"], label, input'));
+                const elements = Array.from(document.querySelectorAll('button, div[role="button"], label, input, [class*="option"], [class*="payment"]'));
                 const walletEl = elements.find(el => {
                     const txt = (el.innerText || el.textContent || el.value || '').toLowerCase();
-                    return txt.includes('eneba wallet') || txt.includes('saldo eneba');
+                    return txt.includes('eneba wallet') || txt.includes('saldo eneba') || txt.includes('carteira') || txt.includes('pay with your eneba wallet');
                 });
                 if (walletEl) {
                     walletEl.click();
-                    return { selected: true, text: walletEl.innerText || walletEl.textContent };
+                    return { selected: true, text: (walletEl.innerText || walletEl.textContent || '').trim() };
                 }
                 return { selected: false };
             });
@@ -276,7 +276,7 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
             writeLog('info', `Snippet da página de pagamento:`, paymentPageSnippet.substring(0, 300));
 
             if (paymentPageSnippet.includes('Not enough funds') || paymentPageSnippet.includes('The amount is not enough') || paymentPageSnippet.includes('Not enough balance')) {
-                writeLog('error', `❌ SALDO INSUFICIENTE NA CARTEIRA ENEBA: O valor total deste jogo com as taxas do Eneba ultrapassou o saldo disponível (R$ 8,88).`);
+                writeLog('error', `❌ SALDO INSUFICIENTE NA CARTEIRA ENEBA: O valor total deste jogo ultrapassou o saldo disponível.`);
                 await saveStepScreenshot(page, '04_error_insufficient_eneba_funds');
                 await browser.close();
                 return [];
@@ -285,11 +285,12 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
             // Clica em Continuar / Confirmar Pagamento
             writeLog('info', `Clicando no botão de confirmação 'Continue' / 'Pagar agora'...`);
             const payClicked = await page.evaluate(() => {
-                const btns = Array.from(document.querySelectorAll('button, a'));
+                const btns = Array.from(document.querySelectorAll('button, a, input[type="submit"]'));
                 const payBtn = btns.find(b => {
-                    const txt = (b.innerText || b.textContent || '').trim().toLowerCase();
-                    // Ignora os cards de seleção de método de pagamento (ex: "Pay with your Eneba wallet")
-                    if (txt.includes('wallet') || txt.includes('apple pay') || txt.includes('google pay') || txt.includes('credit or debit')) return false;
+                    const txt = (b.innerText || b.textContent || b.value || '').trim().toLowerCase();
+                    // Ignora os cards de seleção de método de pagamento
+                    if (txt.includes('wallet') && !txt.includes('pay with') && !txt.includes('pay now')) return false;
+                    if (txt.includes('apple pay') || txt.includes('google pay') || txt.includes('credit or debit')) return false;
                     return txt === 'continue' || txt === 'continuar' || txt.includes('proceed') || txt === 'pay now' || txt === 'pagar agora' || b.type === 'submit';
                 });
                 if (payBtn) {
@@ -303,6 +304,14 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
             await new Promise(r => setTimeout(r, 7000));
             await saveStepScreenshot(page, '04_after_payment_click');
             writeLog('info', `URL 7s após pagamento: ${page.url()}`);
+
+            // VERIFICAÇÃO RIGOROSA: Se o pagamento não foi processado ou a página continuou em checkout/payment, CANCELA!
+            if (!payClicked.clicked || page.url().includes('/checkout/payment')) {
+                writeLog('error', `❌ FALHA NO PAGAMENTO: O robô não conseguiu confirmar o pagamento na Eneba. A compra NÃO foi realizada.`);
+                await saveStepScreenshot(page, '04_error_payment_failed');
+                await browser.close();
+                return [];
+            }
         }
 
         // 5. Ir para Meus Pedidos na Eneba para Revelar/Resgatar a Key
@@ -352,13 +361,18 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
             await saveStepScreenshot(page, '05_user_purchases_after_login');
         }
 
-        // Clica no primeiro pedido recente para visualizar/revelar a chave
+        // Clica no primeiro pedido recente para visualizar/revelar a chave (IGNORANDO links de cabeçalho como 'Redeem gift card')
         writeLog('info', `[ETAPA 6/6] Procurando pedido recente e botão 'Display key' / 'Mostrar chave'...`);
         const redeemClicked = await page.evaluate(() => {
             const redeemBtns = Array.from(document.querySelectorAll('button, a'));
             const target = redeemBtns.find(b => {
                 const txt = (b.innerText || b.textContent || '').toLowerCase();
-                return txt.includes('display key') || txt.includes('mostrar chave') || txt.includes('redeem') || txt.includes('ver chave') || txt.includes('view key');
+                const href = (b.getAttribute('href') || '').toLowerCase();
+                
+                // IGNORA links de resgatar vale-presente / gift card / suporte / header
+                if (txt.includes('gift card') || href.includes('gift-card') || href.includes('redeem-gift') || txt.includes('vale-presente')) return false;
+                
+                return txt.includes('display key') || txt.includes('mostrar chave') || txt.includes('exibir chave') || txt.includes('ver chave') || txt.includes('view key') || txt.includes('get key') || txt.includes('view code');
             });
             if (target) {
                 target.click();
@@ -368,6 +382,14 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
         });
 
         writeLog('info', `Resultado clique para resgatar chave:`, redeemClicked);
+        
+        if (!redeemClicked.clicked) {
+            writeLog('error', `❌ Botão de resgatar chave ('Display key') não foi encontrado na página de compras. A compra pode não ter sido concluída.`);
+            await saveStepScreenshot(page, '06_error_no_display_key_button');
+            await browser.close();
+            return [];
+        }
+
         await new Promise(r => setTimeout(r, 3000));
         await saveStepScreenshot(page, '06_key_display_modal');
 
@@ -416,7 +438,7 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
         // Filtra falsos positivos de UUIDs, datas, scripts ou termos da Eneba
         const validKeys = Array.from(new Set(foundKeys.map(k => k.trim().toUpperCase()))).filter(k => {
             if (!k || k.length < 8 || k.length > 40) return false;
-            if (k.includes('ENEBA') || k.includes('CHROME') || k.includes('UTF-8') || k.includes('MODAL') || k.includes('SCRIPT')) return false;
+            if (k.includes('ENEBA') || k.includes('CHROME') || k.includes('UTF-8') || k.includes('MODAL') || k.includes('SCRIPT') || k.includes('GIFT') || k.includes('REDEEM') || k.includes('CARD') || k.includes('TOKEN')) return false;
             // Garante que a chave possui tanto números quanto letras ou hífens
             return /[A-Z]/.test(k) && /[0-9]/.test(k);
         });
