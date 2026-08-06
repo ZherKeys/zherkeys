@@ -282,14 +282,12 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
                 return [];
             }
 
-            // Clica em Continuar / Confirmar Pagamento
-            writeLog('info', `Clicando no botão de confirmação 'Continue' / 'Pagar agora'...`);
+            // 1. Clica no botão de confirmação inicial 'Continue' / 'Proceed'
+            writeLog('info', `Clicando no botão de confirmação inicial 'Continue'...`);
             const payClicked = await page.evaluate(() => {
                 const btns = Array.from(document.querySelectorAll('button, a, input[type="submit"]'));
                 const payBtn = btns.find(b => {
                     const txt = (b.innerText || b.textContent || b.value || '').trim().toLowerCase();
-                    // Ignora os cards de seleção de método de pagamento
-                    if (txt.includes('wallet') && !txt.includes('pay with') && !txt.includes('pay now')) return false;
                     if (txt.includes('apple pay') || txt.includes('google pay') || txt.includes('credit or debit')) return false;
                     return txt === 'continue' || txt === 'continuar' || txt.includes('proceed') || txt === 'pay now' || txt === 'pagar agora' || b.type === 'submit';
                 });
@@ -299,14 +297,34 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
                 }
                 return { clicked: false };
             });
-            writeLog('info', `Resultado clique pagamento final:`, payClicked);
+            writeLog('info', `Resultado clique 1º passo pagamento:`, payClicked);
 
-            await new Promise(r => setTimeout(r, 7000));
+            await new Promise(r => setTimeout(r, 2500));
+
+            // 2. Se a página continuar em checkout/payment, clica no botão FINAL de confirmação ('Pay with Eneba wallet' / 'Pay now' / 'Confirm')
+            if (page.url().includes('/checkout/payment')) {
+                writeLog('info', `Procurando botão final de pagamento de 2º passo ('Pay now' / 'Confirm')...`);
+                const finalPayClicked = await page.evaluate(() => {
+                    const btns = Array.from(document.querySelectorAll('button, a, input[type="submit"]'));
+                    const finalBtn = btns.find(b => {
+                        const txt = (b.innerText || b.textContent || b.value || '').trim().toLowerCase();
+                        return txt.includes('pay') || txt.includes('pagar') || txt.includes('confirm') || txt.includes('submit') || txt.includes('continue');
+                    });
+                    if (finalBtn) {
+                        finalBtn.click();
+                        return { clicked: true, text: (finalBtn.innerText || finalBtn.textContent || '').trim() };
+                    }
+                    return { clicked: false };
+                });
+                writeLog('info', `Resultado clique final 2º passo:`, finalPayClicked);
+            }
+
+            await new Promise(r => setTimeout(r, 6000));
             await saveStepScreenshot(page, '04_after_payment_click');
-            writeLog('info', `URL 7s após pagamento: ${page.url()}`);
+            writeLog('info', `URL 6s após pagamento: ${page.url()}`);
 
             // VERIFICAÇÃO RIGOROSA: Se o pagamento não foi processado ou a página continuou em checkout/payment, CANCELA!
-            if (!payClicked.clicked || page.url().includes('/checkout/payment')) {
+            if (page.url().includes('/checkout/payment')) {
                 writeLog('error', `❌ FALHA NO PAGAMENTO: O robô não conseguiu confirmar o pagamento na Eneba. A compra NÃO foi realizada.`);
                 await saveStepScreenshot(page, '04_error_payment_failed');
                 await browser.close();
