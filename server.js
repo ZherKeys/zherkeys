@@ -1688,7 +1688,7 @@ app.get('/api/bot/pending-orders', async (req, res) => {
             FROM order_items oi
             JOIN products p ON oi.product_id = p.id
             JOIN orders o ON oi.order_id = o.id
-            WHERE o.status != 'cancelled' AND (
+            WHERE o.status IN ('processing', 'approved') AND (
                 oi.activation_key IS NULL 
                 OR TRIM(oi.activation_key) = '' 
                 OR oi.activation_key LIKE '%Chave em liberação%' 
