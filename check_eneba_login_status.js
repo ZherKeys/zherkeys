@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 
 async function checkLoginStatus() {
-    console.log("🔍 Verificando sessão salva em eneba_bot_session...");
+    console.log("🔍 Verificando biblioteca de chaves em https://my.eneba.com/my-keys...");
     
     const userDataDir = path.join(__dirname, 'eneba_bot_session');
     if (!fs.existsSync(userDataDir)) {
@@ -26,11 +26,10 @@ async function checkLoginStatus() {
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
 
     try {
-        console.log("🌐 Acessando https://my.eneba.com/purchases...");
-        await page.goto('https://my.eneba.com/purchases', { waitUntil: 'networkidle2', timeout: 30000 });
+        console.log("🌐 Acessando https://my.eneba.com/my-keys...");
+        await page.goto('https://my.eneba.com/my-keys', { waitUntil: 'networkidle2', timeout: 30000 });
 
         const currentUrl = page.url();
-        const pageText = await page.evaluate(() => document.body.innerText || '');
         const isLoginRedirect = currentUrl.includes('/login');
 
         const screenPath = path.join(__dirname, 'logs', 'screenshots', 'login_check_status.png');
@@ -39,9 +38,9 @@ async function checkLoginStatus() {
         console.log("\n=======================================================");
         console.log(`URL Atual: ${currentUrl}`);
         if (!isLoginRedirect) {
-            console.log("✅ SESSÃO ATIVA! Você ESTÁ LOGADO na Eneba!");
+            console.log("✅ BIBLIOTECA DE CHAVES ACESSADA COM SUCESSO na Eneba!");
         } else {
-            console.log("❌ SESSÃO INATIVA ou EXPIRADA! Você NÃO está logado (redirecionado para login).");
+            console.log("❌ SESSÃO INATIVA ou EXPIRADA! Redirecionado para login.");
         }
         console.log("=======================================================\n");
 

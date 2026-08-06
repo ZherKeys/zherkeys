@@ -314,19 +314,19 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
             }
         }
 
-        // 5. Ir para Meus Pedidos na Eneba para Revelar/Resgatar a Key
-        writeLog('info', `[ETAPA 5/6] Navegando para Meus Pedidos (https://my.eneba.com/purchases)...`);
-        await page.goto('https://my.eneba.com/purchases', { waitUntil: 'networkidle2', timeout: 45000 });
-        await saveStepScreenshot(page, '05_user_purchases');
+        // 5. Ir para Biblioteca de Chaves / Meus Pedidos na Eneba (Keys Library)
+        writeLog('info', `[ETAPA 5/6] Navegando para Biblioteca de Chaves (https://my.eneba.com/my-keys)...`);
+        await page.goto('https://my.eneba.com/my-keys', { waitUntil: 'networkidle2', timeout: 45000 });
+        await saveStepScreenshot(page, '05_user_keys_library');
 
-        // Check if user is logged in on purchases page
+        // Check if user is logged in on keys library page
         const isLoggedOnPurchases = await page.evaluate(() => {
             const text = document.body.innerText || '';
-            const isLogin = location.href.includes('/login') || text.includes('Log in') && !text.includes('My purchases');
+            const isLogin = location.href.includes('/login') || text.includes('Log in') && !text.includes('My keys') && !text.includes('Purchases');
             return !isLogin;
         });
 
-        writeLog('info', `Status de login em /purchases: ${isLoggedOnPurchases ? 'LOGADO ✅' : 'NÃO LOGADO ⚠️'}`);
+        writeLog('info', `Status de login em /my-keys: ${isLoggedOnPurchases ? 'LOGADO ✅' : 'NÃO LOGADO ⚠️'}`);
 
         if (!isLoggedOnPurchases) {
             writeLog('warn', `⚠️ Sessão da Eneba não autenticada! Executando Login Automático pelo Robô (100% Autônomo)...`);
@@ -356,9 +356,9 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
             writeLog('info', `Formulário de login preenchido e submetido.`);
             await saveStepScreenshot(page, '05_after_auto_login_attempt');
 
-            // Retorna para a página de compras do usuário
-            await page.goto('https://my.eneba.com/purchases', { waitUntil: 'networkidle2', timeout: 45000 }).catch(() => null);
-            await saveStepScreenshot(page, '05_user_purchases_after_login');
+            // Retorna para a Biblioteca de Chaves do usuário
+            await page.goto('https://my.eneba.com/my-keys', { waitUntil: 'networkidle2', timeout: 45000 }).catch(() => null);
+            await saveStepScreenshot(page, '05_user_keys_library_after_login');
         }
 
         // Clica no primeiro pedido recente para visualizar/revelar a chave (IGNORANDO links de cabeçalho como 'Redeem gift card')
