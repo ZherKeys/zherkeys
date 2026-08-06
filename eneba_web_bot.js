@@ -361,8 +361,8 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
             await saveStepScreenshot(page, '05_user_keys_library_after_login');
         }
 
-        // Clica no pedido MAIS RECENTE que corresponda exatamente ao título do produto comprado
-        writeLog('info', `[ETAPA 6/6] Procurando o produto "${productTitle}" mais recente na biblioteca para exibir a chave...`);
+        // Clica no pedido MAIS RECENTE E NÃO REVELADO que corresponda ao produto comprado
+        writeLog('info', `[ETAPA 6/6] Procurando o produto "${productTitle}" mais recente NÃO REVELADO na biblioteca...`);
         const redeemClicked = await page.evaluate((targetTitle) => {
             // Extrai palavras-chave do título do produto para busca precisa no DOM
             const titleWords = targetTitle.toLowerCase()
@@ -374,16 +374,23 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
             // Seleciona todos os containers de itens da biblioteca de chaves
             const orderCards = Array.from(document.querySelectorAll('main div[class*="card"], main div[class*="item"], main div[class*="row"], main div[class*="purchase"], main li, table tr'));
             
-            // Filtra os cards que contêm as palavras-chave do produto desejado
-            const matchingCards = orderCards.filter(card => {
+            // Filtra os cards que contêm o título do produto E possuem o botão de revelar a chave ATIVO (NÃO REVELADO)
+            const matchingUnrevealedCards = orderCards.filter(card => {
                 const cardText = (card.innerText || card.textContent || '').toLowerCase();
-                return titleWords.some(word => cardText.includes(word));
+                const matchesTitle = titleWords.some(word => cardText.includes(word));
+                // Garante que o item possui botão de revelar chave e não foi exibido anteriormente
+                const hasDisplayBtn = cardText.includes('display key') || cardText.includes('exibir chave') || cardText.includes('mostrar chave') || cardText.includes('view key') || cardText.includes('get key') || cardText.includes('view code');
+                const isAlreadyRevealed = cardText.includes('key revealed') || cardText.includes('chave exibida') || cardText.includes('revealed');
+                
+                return matchesTitle && hasDisplayBtn && !isAlreadyRevealed;
             });
 
-            // Pega o PRIMEIRO card correspondente (que é a compra mais recente realizada no topo da lista)
-            const targetCard = matchingCards.length > 0 ? matchingCards[0] : document.body;
+            // Se não encontrou pendente não revelado, tenta qualquer card correspondente ao produto
+            const targetCard = matchingUnrevealedCards.length > 0 ? matchingUnrevealedCards[0] : (
+                orderCards.find(card => titleWords.some(w => (card.innerText || card.textContent || '').toLowerCase().includes(w))) || document.body
+            );
 
-            // Procura o botão 'Display key' / 'Exibir chave' DENTRO do card do produto mais recente
+            // Procura o botão 'Display key' / 'Exibir chave' DENTRO do card específico
             const btns = Array.from(targetCard.querySelectorAll('button, a'));
             const targetBtn = btns.find(b => {
                 const txt = (b.innerText || b.textContent || '').toLowerCase();
@@ -397,10 +404,10 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
 
             if (targetBtn) {
                 targetBtn.click();
-                return { clicked: true, text: targetBtn.innerText, matchedProductCard: matchingCards.length > 0 };
+                return { clicked: true, text: targetBtn.innerText, isUnrevealedMatch: matchingUnrevealedCards.length > 0 };
             }
 
-            // Fallback: Se não encontrou o card específico, procura o primeiro botão de chave na lista mais recente
+            // Fallback: Procura qualquer botão de chave não revelado na página
             const allBtns = Array.from(document.querySelectorAll('button, a'));
             const fallbackBtn = allBtns.find(b => {
                 const txt = (b.innerText || b.textContent || '').toLowerCase();
@@ -411,7 +418,7 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
 
             if (fallbackBtn) {
                 fallbackBtn.click();
-                return { clicked: true, text: fallbackBtn.innerText, matchedProductCard: false };
+                return { clicked: true, text: fallbackBtn.innerText, isUnrevealedMatch: false };
             }
 
             return { clicked: false };
