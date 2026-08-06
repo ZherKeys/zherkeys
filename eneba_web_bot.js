@@ -150,8 +150,29 @@ async function handleEneba2FAPrompt(page) {
     return false;
 }
 
+function cleanOldScreenshots(maxKeep = 25) {
+    try {
+        if (!fs.existsSync(screenshotsDir)) return;
+        const files = fs.readdirSync(screenshotsDir)
+            .filter(f => f.endsWith('.png'))
+            .map(f => {
+                const p = path.join(screenshotsDir, f);
+                return { name: f, path: p, time: fs.statSync(p).mtimeMs };
+            })
+            .sort((a, b) => b.time - a.time);
+
+        if (files.length > maxKeep) {
+            const toDelete = files.slice(maxKeep);
+            toDelete.forEach(f => {
+                try { fs.unlinkSync(f.path); } catch (err) {}
+            });
+        }
+    } catch (e) {}
+}
+
 async function saveStepScreenshot(page, stepName) {
     try {
+        cleanOldScreenshots(25);
         await dismissGreenWelcomeBanner(page);
         const cleanName = stepName.replace(/[^a-zA-Z0-9_-]/g, '_');
         const screenPath = path.join(screenshotsDir, `${Date.now()}_${cleanName}.png`);

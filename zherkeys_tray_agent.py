@@ -100,8 +100,10 @@ def exit_bot(icon, item):
     icon.stop()
     os._exit(0)
 
+order_error_counts = {}
+
 def bot_loop_cycle():
-    global notified_orders
+    global notified_orders, order_error_counts
     orders = fetch_pending_orders()
     
     if orders is None:
@@ -116,7 +118,13 @@ def bot_loop_cycle():
         order_id = order.get('order_id')
         title = order.get('title', 'Produto')
         
-        update_tray_status('yellow', f'Zher Keys Bot - Processando Pedido #{order_id} ({title})')
+        # Limite máximo de 3 tentativas por pedido com erro para evitar loop infinito
+        failed_count = order_error_counts.get(order_id, 0)
+        if failed_count >= 3:
+            update_tray_status('red', f'Zher Keys Bot - Pedido #{order_id} Pausado (Limite 3 tentativas)')
+            return
+
+        update_tray_status('yellow', f'Zher Keys Bot - Processando Pedido #{order_id} ({title}) [Tentativa {failed_count + 1}/3]')
         
         if order_id not in notified_orders:
             notified_orders.add(order_id)
@@ -125,7 +133,7 @@ def bot_loop_cycle():
                 f"Pedido #{order_id} - {title}\nIniciando resgate de chave na Eneba..."
             )
         
-        print(f"\n⚡ [TRAY-AGENT] Executando resgate para o Pedido #{order_id} ({title})...")
+        print(f"\n⚡ [TRAY-AGENT] Executando resgate para o Pedido #{order_id} ({title}) [Tentativa {failed_count + 1}/3]...")
         
         # Executa o robô Node.js para realizar a compra
         try:
@@ -137,6 +145,7 @@ def bot_loop_cycle():
             combined_output = stdout_text + "\n" + stderr_text
 
             if "SUCESSO" in combined_output or "atualizado pelo Robô Local" in combined_output or "Key resgatada" in combined_output:
+                order_error_counts.pop(order_id, None)
                 update_tray_status('green', f'Zher Keys Bot - Pedido #{order_id} Entregue!')
                 send_pc_notification(
                     "🎉 CHAVE ENTREGUE COM SUCESSO!",
@@ -144,17 +153,21 @@ def bot_loop_cycle():
                 )
             else:
                 # 🔴 Algo falhou durante o resgate
-                update_tray_status('red', f'Zher Keys Bot - Erro no Pedido #{order_id}')
+                order_error_counts[order_id] = failed_count + 1
+                curr_count = order_error_counts[order_id]
+                update_tray_status('red', f'Zher Keys Bot - Erro no Pedido #{order_id} ({curr_count}/3)')
                 send_pc_notification(
                     "❌ ERRO AO RESGATAR CHAVE",
-                    f"Pedido #{order_id} ({title})\nVerifique as screenshots em logs/screenshots/",
+                    f"Pedido #{order_id} ({title})\nTentativa {curr_count}/3 falhou. Screenshots salvas em logs/screenshots/",
                     is_error=True
                 )
         except Exception as err:
-            update_tray_status('red', f'Zher Keys Bot - Erro no Pedido #{order_id}')
+            order_error_counts[order_id] = failed_count + 1
+            curr_count = order_error_counts[order_id]
+            update_tray_status('red', f'Zher Keys Bot - Erro no Pedido #{order_id} ({curr_count}/3)')
             send_pc_notification(
                 "❌ ALERTA DE ERRO",
-                f"Falha ao executar o robô para o Pedido #{order_id}: {err}",
+                f"Falha ao executar o robô para o Pedido #{order_id} ({curr_count}/3): {err}",
                 is_error=True
             )
 
