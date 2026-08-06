@@ -3613,10 +3613,18 @@ gtag('config', 'AW-18202657831');
         }
 
         window.initSteamSlider = initSteamSlider;
+
+        // Auto-executa a renderização do slider assim que os produtos ou a página carregarem
+        if (window.produtos && window.produtos.length > 0) {
+            initSteamSlider();
+        }
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (typeof initSteamSlider === 'function') initSteamSlider();
+            }, 200);
+        });
     </script>
 
     <script src="/bg-player.js" defer></script>
 </body>
-</html>
-
 
