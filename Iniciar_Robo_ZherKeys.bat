@@ -6,7 +6,9 @@ echo ========================================================
 echo   ROBO AUTOMATICO ZHER KEYS - SYSTEM TRAY E NOTIFICACOES
 echo ========================================================
 echo.
-cd /d "%~dp0"
+chcp 65001 > nul
+set PYTHONUTF8=1
+set PYTHONIOENCODING=utf-8
 
 :loop
 echo [%date% %time%] Iniciando robo no canto da tela (System Tray)...

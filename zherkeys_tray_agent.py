@@ -10,6 +10,16 @@ from PIL import Image, ImageDraw
 import pystray
 from plyer import notification
 
+# Configuração de UTF-8 global para o Windows
+os.environ["PYTHONUTF8"] = "1"
+os.environ["PYTHONIOENCODING"] = "utf-8"
+if sys.platform == 'win32':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 ZHERKEYS_SITE_URL = os.environ.get('ZHERKEYS_SITE_URL', 'https://zherkeys.com')
 BOT_API_SECRET = os.environ.get('BOT_API_SECRET', 'zherkeys-secret-bot-token-2026')
 POLL_INTERVAL_SEC = 5
@@ -66,7 +76,9 @@ def update_tray_status(status, text):
     status_text = text
     if icon_instance:
         icon_instance.icon = create_badge_icon(status)
-        icon_instance.title = text
+        # O Windows Shell Tray (pystray) limita a tooltip (title) em 128 caracteres. Truncamos para evitar crash.
+        safe_title = text[:124] + '...' if len(text) > 127 else text
+        icon_instance.title = safe_title
 
 def fetch_pending_orders():
     url = f"{ZHERKEYS_SITE_URL}/api/bot/pending-orders"
@@ -138,7 +150,18 @@ def bot_loop_cycle():
         # Executa o robô Node.js para realizar a compra
         try:
             node_script = os.path.join(BASE_DIR, 'zherkeys_pc_bot_agent.js')
-            result = subprocess.run(['node', node_script, '--single-run'], capture_output=True, text=True, timeout=120)
+            child_env = os.environ.copy()
+            child_env["PYTHONUTF8"] = "1"
+            child_env["PYTHONIOENCODING"] = "utf-8"
+            result = subprocess.run(
+                ['node', node_script, '--single-run'],
+                capture_output=True,
+                text=True,
+                encoding='utf-8',
+                errors='replace',
+                env=child_env,
+                timeout=120
+            )
             
             stdout_text = result.stdout or ""
             stderr_text = result.stderr or ""

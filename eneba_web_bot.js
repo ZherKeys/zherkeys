@@ -63,30 +63,59 @@ async function dismissGreenWelcomeBanner(page) {
     } catch (e) {}
 }
 
+function clearStaleSessionLocks(userDataDir) {
+    try {
+        const lockFiles = ['SingletonLock', 'SingletonSocket', 'SingletonCookie'];
+        lockFiles.forEach(f => {
+            const p = path.join(userDataDir, f);
+            if (fs.existsSync(p)) {
+                try { fs.unlinkSync(p); } catch (e) {}
+            }
+        });
+    } catch (e) {}
+}
+
 async function handleEneba2FAPrompt(page) {
     try {
         const secret = process.env.ENEBA_2FA_SECRET;
         if (!secret) return false;
 
-        const is2FA = await page.evaluate(() => {
-            const text = (document.body.innerText || '').toLowerCase();
-            const inputs = Array.from(document.querySelectorAll('input'));
-            const has2FAInput = inputs.some(i => {
-                const name = (i.name || i.id || i.placeholder || '').toLowerCase();
-                return name.includes('code') || name.includes('otp') || name.includes('2fa') || name.includes('token') || name.includes('verification');
-            });
-            const matchesText = text.includes('authenticator') || 
-                                text.includes('2-step') || 
-                                text.includes('two-factor') || 
-                                text.includes('verification code') || 
-                                text.includes('security code') ||
-                                text.includes('provide 2fa') ||
-                                text.includes('enter 2fa') ||
-                                text.includes('2fa verification');
-            return matchesText && has2FAInput;
-        });
+        const frames = [page, ...page.frames()];
+        let foundFrame = null;
 
-        if (is2FA) {
+        for (let frame of frames) {
+            try {
+                const is2FA = await frame.evaluate(() => {
+                    const text = (document.body.innerText || '').toLowerCase();
+                    const inputs = Array.from(document.querySelectorAll('input'));
+                    const has2FAInput = inputs.some(i => {
+                        const name = (i.name || i.id || i.placeholder || i.autocomplete || '').toLowerCase();
+                        return name.includes('code') || name.includes('otp') || name.includes('2fa') || name.includes('token') || name.includes('verification') || name.includes('pin') || name.includes('digit') || i.type === 'number';
+                    }) || inputs.length === 6;
+
+                    const matchesText = text.includes('authenticator') || 
+                                        text.includes('2-step') || 
+                                        text.includes('two-factor') || 
+                                        text.includes('verification code') || 
+                                        text.includes('security code') ||
+                                        text.includes('provide 2fa') ||
+                                        text.includes('enter 2fa') ||
+                                        text.includes('2fa verification') ||
+                                        text.includes('autenticação') ||
+                                        text.includes('verificação') ||
+                                        text.includes('código de segurança') ||
+                                        text.includes('enter the code');
+                    return matchesText || (has2FAInput && (text.includes('code') || text.includes('2fa') || text.includes('código')));
+                });
+
+                if (is2FA) {
+                    foundFrame = frame;
+                    break;
+                }
+            } catch (e) {}
+        }
+
+        if (foundFrame) {
             writeLog('info', `🔐 DETECTADA CAIXA 'PROVIDE 2FA VERIFICATION'! Verificando tempo restante do ciclo de 30s...`);
 
             // GARANTIA ANTI-EXPIRAÇÃO: Se faltarem menos de 4s para os 30s expirarem, aguarda o novo ciclo de 30s completos!
@@ -111,15 +140,30 @@ async function handleEneba2FAPrompt(page) {
             }
             writeLog('info', `🔐 Código 2FA gerado pelo robô com sucesso: ${code}`);
 
-            const typed = await page.evaluate(async (totpCode) => {
+            const typed = await foundFrame.evaluate(async (totpCode) => {
                 const inputs = Array.from(document.querySelectorAll('input'));
+                
+                // Caso 1: 6 inputs individuais (1 caractere por input)
+                if (inputs.length === 6 && totpCode.length === 6) {
+                    const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+                    for (let i = 0; i < 6; i++) {
+                        inputs[i].focus();
+                        setVal.call(inputs[i], totpCode[i]);
+                        inputs[i].dispatchEvent(new Event('input', { bubbles: true }));
+                        inputs[i].dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                    return true;
+                }
+
+                // Caso 2: Input único de 6 dígitos
                 const targetInput = inputs.find(i => {
-                    const name = (i.name || i.id || i.placeholder || i.type || '').toLowerCase();
+                    const name = (i.name || i.id || i.placeholder || i.type || i.autocomplete || '').toLowerCase();
                     return name.includes('code') || name.includes('otp') || name.includes('2fa') || name.includes('token') || name.includes('verification') || i.type === 'number' || i.type === 'text';
                 });
                 if (targetInput) {
                     targetInput.focus();
-                    targetInput.value = totpCode;
+                    const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+                    setVal.call(targetInput, totpCode);
                     targetInput.dispatchEvent(new Event('input', { bubbles: true }));
                     targetInput.dispatchEvent(new Event('change', { bubbles: true }));
                     return true;
@@ -131,11 +175,11 @@ async function handleEneba2FAPrompt(page) {
                 await new Promise(r => setTimeout(r, 500));
                 await page.keyboard.press('Enter');
                 
-                await page.evaluate(() => {
+                await foundFrame.evaluate(() => {
                     const btns = Array.from(document.querySelectorAll('button, a, input[type="submit"]'));
                     const subBtn = btns.find(b => {
                         const txt = (b.innerText || b.textContent || b.value || '').toLowerCase();
-                        return txt.includes('verify') || txt.includes('confirm') || txt.includes('submit') || txt.includes('continuar') || txt.includes('enter');
+                        return txt.includes('verify') || txt.includes('confirm') || txt.includes('submit') || txt.includes('continuar') || txt.includes('enter') || txt.includes('enviar');
                     });
                     if (subBtn) subBtn.click();
                 });
@@ -205,12 +249,29 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
         
         writeLog('info', `Lançando navegador Puppeteer Stealth... (Executable: ${hasCustomChrome ? 'Chrome Oficial' : 'Bundled Chromium'})`);
 
-        browser = await puppeteer.launch({
-            headless: true, // Execute em segundo plano
-            executablePath: hasCustomChrome ? chromePath : undefined,
-            userDataDir: userDataDir,
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1280,800']
-        });
+        clearStaleSessionLocks(userDataDir);
+        try {
+            browser = await puppeteer.launch({
+                headless: true, // Execute em segundo plano
+                executablePath: hasCustomChrome ? chromePath : undefined,
+                userDataDir: userDataDir,
+                args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1280,800']
+            });
+        } catch (launchErr) {
+            if (launchErr.message && launchErr.message.includes('already running')) {
+                writeLog('warn', `⚠️ Sessão do Chrome bloqueada detectada. Forçando limpeza de locks e tentando novamente...`);
+                clearStaleSessionLocks(userDataDir);
+                await new Promise(r => setTimeout(r, 1200));
+                browser = await puppeteer.launch({
+                    headless: true,
+                    executablePath: hasCustomChrome ? chromePath : undefined,
+                    userDataDir: userDataDir,
+                    args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1280,800']
+                });
+            } else {
+                throw launchErr;
+            }
+        }
 
         const page = await browser.newPage();
         await page.setViewport({ width: 1280, height: 800 });
@@ -427,18 +488,44 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
                 writeLog('info', `Resultado clique final 2º passo:`, finalPayClicked);
             }
 
-            await handleEneba2FAPrompt(page);
+            // LOOP DE CONFIRMAÇÃO DE PAGAMENTO E MONITORAMENTO DE 2FA (até 30 segundos)
+            writeLog('info', `⏳ Monitorando processamento do pagamento e verificação de 2FA por até 30s...`);
+            const payStartTime = Date.now();
+            let paymentSuccessNavigated = false;
 
-            await new Promise(r => setTimeout(r, 6000));
+            while (Date.now() - payStartTime < 30000) {
+                // Tenta processar prompt de 2FA se surgir na página ou em IFrames
+                const handled2FA = await handleEneba2FAPrompt(page);
+                if (handled2FA) {
+                    writeLog('info', `🔐 2FA submetido com sucesso! Aguardando processamento do pedido...`);
+                    await new Promise(r => setTimeout(r, 4000));
+                }
+
+                const currentUrl = page.url();
+                if (!currentUrl.includes('/checkout/payment') && (currentUrl.includes('/my-keys') || currentUrl.includes('/purchases') || currentUrl.includes('/success') || currentUrl.includes('/order') || currentUrl.includes('/item'))) {
+                    writeLog('info', `✅ Pagamento confirmado e redirecionado para: ${currentUrl}`);
+                    paymentSuccessNavigated = true;
+                    break;
+                }
+
+                // Checa se surgiu erro de saldo ou recusa de pagamento
+                const pageSnippetText = await page.evaluate(() => (document.body.innerText || '').toLowerCase()).catch(() => '');
+                if (pageSnippetText.includes('not enough funds') || pageSnippetText.includes('insufficient balance') || pageSnippetText.includes('payment failed') || pageSnippetText.includes('pagamento recusado')) {
+                    writeLog('error', `❌ PAGAMENTO RECUSADO OU SALDO INSUFICIENTE.`);
+                    await saveStepScreenshot(page, '04_error_payment_failed');
+                    await browser.close();
+                    return [];
+                }
+
+                await new Promise(r => setTimeout(r, 2000));
+            }
+
             await saveStepScreenshot(page, '04_after_payment_click');
-            writeLog('info', `URL 6s após pagamento: ${page.url()}`);
+            writeLog('info', `URL após janela de monitoramento de pagamento: ${page.url()}`);
 
-            // VERIFICAÇÃO RIGOROSA: Se o pagamento não foi processado ou a página continuou em checkout/payment, CANCELA!
-            if (page.url().includes('/checkout/payment')) {
-                writeLog('error', `❌ FALHA NO PAGAMENTO: O robô não conseguiu confirmar o pagamento na Eneba. A compra NÃO foi realizada.`);
-                await saveStepScreenshot(page, '04_error_payment_failed');
-                await browser.close();
-                return [];
+            // Se permaneceu em /checkout/payment após 30s, tenta navegar para Biblioteca de Chaves para verificar se o faturamento ocorreu
+            if (page.url().includes('/checkout/payment') && !paymentSuccessNavigated) {
+                writeLog('warn', `⚠️ Permanecido em /checkout/payment após 30s. Redirecionando para Biblioteca de Chaves (/my-keys) para verificar se a compra foi concluída...`);
             }
         }
 
