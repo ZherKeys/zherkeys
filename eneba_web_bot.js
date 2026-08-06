@@ -75,11 +75,29 @@ async function handleEneba2FAPrompt(page) {
                 const name = (i.name || i.id || i.placeholder || '').toLowerCase();
                 return name.includes('code') || name.includes('otp') || name.includes('2fa') || name.includes('token') || name.includes('verification');
             });
-            return (text.includes('authenticator') || text.includes('2-step') || text.includes('two-factor') || text.includes('verification code') || text.includes('security code')) && has2FAInput;
+            const matchesText = text.includes('authenticator') || 
+                                text.includes('2-step') || 
+                                text.includes('two-factor') || 
+                                text.includes('verification code') || 
+                                text.includes('security code') ||
+                                text.includes('provide 2fa') ||
+                                text.includes('enter 2fa') ||
+                                text.includes('2fa verification');
+            return matchesText && has2FAInput;
         });
 
         if (is2FA) {
-            writeLog('info', `🔐 DETECTADA TELA DE 2FA (GOOGLE AUTHENTICATOR)! Gerando código de 6 dígitos...`);
+            writeLog('info', `🔐 DETECTADA CAIXA 'PROVIDE 2FA VERIFICATION'! Verificando tempo restante do ciclo de 30s...`);
+
+            // GARANTIA ANTI-EXPIRAÇÃO: Se faltarem menos de 4s para os 30s expirarem, aguarda o novo ciclo de 30s completos!
+            const nowSec = Math.floor(Date.now() / 1000);
+            const secondsLeftInWindow = 30 - (nowSec % 30);
+            if (secondsLeftInWindow < 4) {
+                const waitTime = secondsLeftInWindow + 1;
+                writeLog('info', `⏳ Faltam apenas ${secondsLeftInWindow}s para o ciclo de 30s expirar. Aguardando ${waitTime}s para gerar um código novo com 30s completos de validade...`);
+                await new Promise(r => setTimeout(r, waitTime * 1000));
+            }
+
             let code = '';
             try {
                 const speakeasy = require('speakeasy');
