@@ -80,9 +80,18 @@ async function handleEneba2FAPrompt(page) {
 
         if (is2FA) {
             writeLog('info', `🔐 DETECTADA TELA DE 2FA (GOOGLE AUTHENTICATOR)! Gerando código de 6 dígitos...`);
-            const { generate } = require('otplib');
-            const code = await generate({ secret: secret.replace(/\s+/g, '').toUpperCase() });
-            writeLog('info', `🔐 Código 2FA gerado pelo robô: ${code}`);
+            let code = '';
+            try {
+                const speakeasy = require('speakeasy');
+                code = speakeasy.totp({
+                    secret: secret.replace(/\s+/g, '').toUpperCase(),
+                    encoding: 'base32'
+                });
+            } catch (err) {
+                const { generate } = require('otplib');
+                code = await generate({ secret: secret.replace(/\s+/g, '').toUpperCase() });
+            }
+            writeLog('info', `🔐 Código 2FA gerado pelo robô com sucesso: ${code}`);
 
             const typed = await page.evaluate(async (totpCode) => {
                 const inputs = Array.from(document.querySelectorAll('input'));
