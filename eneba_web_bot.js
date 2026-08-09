@@ -229,16 +229,22 @@ function cleanOldScreenshots(maxKeep = 25) {
     } catch (e) {}
 }
 
-async function saveStepScreenshot(page, stepName) {
+async function saveStepScreenshot(page, stepName, orderId = null) {
     try {
-        cleanOldScreenshots(25);
+        cleanOldScreenshots(40);
         await dismissGreenWelcomeBanner(page);
-        const cleanName = stepName.replace(/[^a-zA-Z0-9_-]/g, '_');
-        const screenPath = path.join(screenshotsDir, `${Date.now()}_${cleanName}.png`);
-        await page.screenshot({ path: screenPath, fullPage: true });
-        writeLog('info', `📸 Screenshot salva: ${screenPath}`);
         
-        // Save latest screenshot as well
+        let targetDir = screenshotsDir;
+        if (orderId) {
+            targetDir = path.join(screenshotsDir, `pedido_${orderId}`);
+            if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
+        }
+
+        const cleanName = stepName.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const screenPath = path.join(targetDir, `${Date.now()}_${cleanName}.png`);
+        await page.screenshot({ path: screenPath, fullPage: true });
+        writeLog('info', `📸 Screenshot salva (${orderId ? 'Pedido #' + orderId : 'Geral'}): ${screenPath}`);
+        
         const latestPath = path.join(__dirname, 'eneba_checkout_debug.png');
         await page.screenshot({ path: latestPath, fullPage: true });
     } catch (e) {
@@ -246,8 +252,9 @@ async function saveStepScreenshot(page, stepName) {
     }
 }
 
-async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
+async function autoBuyEnebaKeyWeb(productTitle, quantity = 1, orderId = null) {
     writeLog('info', `===============================================================`);
+    writeLog('info', `🤖 PROCESSANDO AUTO-COMPRA ENEBA ${orderId ? 'PARA O PEDIDO #' + orderId : 'GERAL'}`);
     writeLog('info', `🤖 INICIANDO AUTOMAÇÃO DE COMPRA ENEBA: "${productTitle}" (${quantity} unid)`);
     writeLog('info', `===============================================================`);
     

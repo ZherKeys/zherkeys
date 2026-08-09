@@ -3544,6 +3544,64 @@ app.delete('/api/admin/orders/:id', requireAdmin, async (req, res) => {
     }
 });
 
+// Servir staticamente as screenshots do robô
+app.use('/logs/screenshots', express.static(path.join(__dirname, 'logs', 'screenshots')));
+
+// API ADMIN: Buscar Screenshots e Logs do Robô Organizados por Pedido/Cliente
+app.get('/api/admin/orders/:id/bot-screenshots', requireAdmin, async (req, res) => {
+    try {
+        const orderId = req.params.id;
+        const screenshotsBaseDir = path.join(__dirname, 'logs', 'screenshots');
+        const orderSubDir = path.join(screenshotsBaseDir, `pedido_${orderId}`);
+
+        let screenshotFiles = [];
+
+        // 1. Busca fotos na pasta específica do pedido (ex: logs/screenshots/pedido_1042/)
+        if (fs.existsSync(orderSubDir)) {
+            const files = fs.readdirSync(orderSubDir).filter(f => f.endsWith('.png'));
+            screenshotFiles = files.map(f => ({
+                filename: f,
+                url: `/logs/screenshots/pedido_${orderId}/${f}`,
+                time: fs.statSync(path.join(orderSubDir, f)).mtimeMs,
+                dateStr: new Date(fs.statSync(path.join(orderSubDir, f)).mtimeMs).toLocaleString('pt-BR')
+            }));
+        }
+
+        // 2. Se não houver subpasta, busca arquivos com a tag do pedido na raiz de screenshots
+        if (screenshotFiles.length === 0 && fs.existsSync(screenshotsBaseDir)) {
+            const allFiles = fs.readdirSync(screenshotsBaseDir).filter(f => f.endsWith('.png'));
+            screenshotFiles = allFiles
+                .filter(f => f.includes(`order_${orderId}`) || f.includes(`pedido_${orderId}`))
+                .map(f => ({
+                    filename: f,
+                    url: `/logs/screenshots/${f}`,
+                    time: fs.statSync(path.join(screenshotsBaseDir, f)).mtimeMs,
+                    dateStr: new Date(fs.statSync(path.join(screenshotsBaseDir, f)).mtimeMs).toLocaleString('pt-BR')
+                }));
+        }
+
+        // 3. Fallback: Exibe as capturas mais recentes do sistema caso não haja pasta criada
+        if (screenshotFiles.length === 0 && fs.existsSync(screenshotsBaseDir)) {
+            const allFiles = fs.readdirSync(screenshotsBaseDir).filter(f => f.endsWith('.png'));
+            screenshotFiles = allFiles.slice(-6).map(f => ({
+                filename: f,
+                url: `/logs/screenshots/${f}`,
+                time: fs.statSync(path.join(screenshotsBaseDir, f)).mtimeMs,
+                dateStr: new Date(fs.statSync(path.join(screenshotsBaseDir, f)).mtimeMs).toLocaleString('pt-BR')
+            }));
+        }
+
+        screenshotFiles.sort((a, b) => a.time - b.time);
+
+        res.json({
+            orderId: orderId,
+            screenshots: screenshotFiles
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 
 // ===================================
 // PRODUCT REVIEWS, COMMENTS & QUESTIONS
