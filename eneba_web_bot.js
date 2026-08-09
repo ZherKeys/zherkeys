@@ -141,31 +141,46 @@ async function handleEneba2FAPrompt(page) {
             writeLog('info', `🔐 Código 2FA gerado pelo robô com sucesso: ${code}`);
 
             const typed = await foundFrame.evaluate(async (totpCode) => {
-                const inputs = Array.from(document.querySelectorAll('input'));
-                
-                // Caso 1: 6 inputs individuais (1 caractere por input)
-                if (inputs.length === 6 && totpCode.length === 6) {
-                    const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+                // Filtra apenas inputs visíveis e ignora barra de busca e elementos do cabeçalho/navegação
+                const allInputs = Array.from(document.querySelectorAll('input')).filter(i => {
+                    if (i.type === 'hidden') return false;
+                    if (i.closest('header, nav, [class*="search"], [class*="header"]')) return false;
+                    const style = window.getComputedStyle(i);
+                    return style.display !== 'none' && style.visibility !== 'hidden' && i.offsetWidth > 0 && i.offsetHeight > 0;
+                });
+
+                // Prioriza inputs dentro de modals/dialogs/overlays de 2FA se existirem
+                const modalInputs = allInputs.filter(i => i.closest('[role="dialog"], [class*="modal"], [class*="popup"], [class*="overlay"], [class*="2fa"], [class*="auth"], form'));
+                const targetInputs = modalInputs.length > 0 ? modalInputs : allInputs;
+
+                const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+
+                // Caso 1: 6 inputs individuais (1 dígito cada)
+                const digitInputs = targetInputs.filter(i => i.maxLength === 1 || i.getAttribute('inputmode') === 'numeric' || (i.name || i.id || '').toLowerCase().includes('digit'));
+                if ((digitInputs.length === 6 || targetInputs.length === 6) && totpCode.length === 6) {
+                    const listToFill = digitInputs.length === 6 ? digitInputs : targetInputs;
                     for (let i = 0; i < 6; i++) {
-                        inputs[i].focus();
-                        setVal.call(inputs[i], totpCode[i]);
-                        inputs[i].dispatchEvent(new Event('input', { bubbles: true }));
-                        inputs[i].dispatchEvent(new Event('change', { bubbles: true }));
+                        listToFill[i].focus();
+                        setVal.call(listToFill[i], totpCode[i]);
+                        listToFill[i].dispatchEvent(new Event('input', { bubbles: true }));
+                        listToFill[i].dispatchEvent(new Event('change', { bubbles: true }));
+                        listToFill[i].dispatchEvent(new KeyboardEvent('keyup', { key: totpCode[i], bubbles: true }));
                     }
                     return true;
                 }
 
-                // Caso 2: Input único de 6 dígitos
-                const targetInput = inputs.find(i => {
-                    const name = (i.name || i.id || i.placeholder || i.type || i.autocomplete || '').toLowerCase();
-                    return name.includes('code') || name.includes('otp') || name.includes('2fa') || name.includes('token') || name.includes('verification') || i.type === 'number' || i.type === 'text';
-                });
+                // Caso 2: Input único de 6 dígitos específico de 2FA/Código
+                const targetInput = targetInputs.find(i => {
+                    const name = (i.name || i.id || i.placeholder || i.autocomplete || i.ariaLabel || '').toLowerCase();
+                    return name.includes('code') || name.includes('otp') || name.includes('2fa') || name.includes('token') || name.includes('verification') || name.includes('pin') || i.autocomplete === 'one-time-code';
+                }) || (targetInputs.length === 1 ? targetInputs[0] : null);
+
                 if (targetInput) {
                     targetInput.focus();
-                    const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
                     setVal.call(targetInput, totpCode);
                     targetInput.dispatchEvent(new Event('input', { bubbles: true }));
                     targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    targetInput.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
                     return true;
                 }
                 return false;
@@ -244,18 +259,28 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
             fs.mkdirSync(userDataDir, { recursive: true });
         }
 
-        const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-        const hasCustomChrome = fs.existsSync(chromePath);
+        const winChromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+        const chromePath = process.env.PUPPETEER_EXECUTABLE_PATH || (fs.existsSync(winChromePath) ? winChromePath : undefined);
         
-        writeLog('info', `Lançando navegador Puppeteer Stealth... (Executable: ${hasCustomChrome ? 'Chrome Oficial' : 'Bundled Chromium'})`);
+        writeLog('info', `Lançando navegador Puppeteer Stealth em Nuvem/Local... (Executable: ${chromePath ? chromePath : 'Bundled Chromium'})`);
 
         clearStaleSessionLocks(userDataDir);
         try {
             browser = await puppeteer.launch({
-                headless: true, // Execute em segundo plano
-                executablePath: hasCustomChrome ? chromePath : undefined,
+                headless: true, // Executa 100% em segundo plano (na nuvem ou local)
+                executablePath: chromePath,
                 userDataDir: userDataDir,
-                args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1280,800']
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-accelerated-2d-canvas',
+                    '--no-first-run',
+                    '--no-zygote',
+                    '--single-process',
+                    '--disable-gpu',
+                    '--window-size=2560,1440'
+                ]
             });
         } catch (launchErr) {
             if (launchErr.message && launchErr.message.includes('already running')) {
@@ -264,9 +289,19 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
                 await new Promise(r => setTimeout(r, 1200));
                 browser = await puppeteer.launch({
                     headless: true,
-                    executablePath: hasCustomChrome ? chromePath : undefined,
+                    executablePath: chromePath,
                     userDataDir: userDataDir,
-                    args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1280,800']
+                    args: [
+                        '--no-sandbox',
+                        '--disable-setuid-sandbox',
+                        '--disable-dev-shm-usage',
+                        '--disable-accelerated-2d-canvas',
+                        '--no-first-run',
+                        '--no-zygote',
+                        '--single-process',
+                        '--disable-gpu',
+                        '--window-size=2560,1440'
+                    ]
                 });
             } else {
                 throw launchErr;
@@ -451,14 +486,15 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
                 return [];
             }
 
-            // 1. Clica no botão de confirmação inicial 'Continue' / 'Proceed'
+            // 1. Clica no botão de confirmação inicial 'Continue' / 'Proceed' / 'Pay with Eneba Wallet'
             writeLog('info', `Clicando no botão de confirmação inicial 'Continue'...`);
             const payClicked = await page.evaluate(() => {
-                const btns = Array.from(document.querySelectorAll('button, a, input[type="submit"]'));
+                const btns = Array.from(document.querySelectorAll('button, a, input[type="submit"], [role="button"]'));
                 const payBtn = btns.find(b => {
+                    if (b.closest('header, nav, [class*="breadcrumb"], [class*="step"]')) return false;
                     const txt = (b.innerText || b.textContent || b.value || '').trim().toLowerCase();
-                    if (txt.includes('apple pay') || txt.includes('google pay') || txt.includes('credit or debit')) return false;
-                    return txt === 'continue' || txt === 'continuar' || txt.includes('proceed') || txt === 'pay now' || txt === 'pagar agora' || b.type === 'submit';
+                    if (txt === 'payment' || txt === 'cart' || txt.includes('apple pay') || txt.includes('google pay') || txt.includes('credit or debit')) return false;
+                    return txt === 'continue' || txt === 'continuar' || txt.includes('proceed') || txt === 'pay now' || txt === 'pagar agora' || txt.includes('pay with') || b.type === 'submit';
                 });
                 if (payBtn) {
                     payBtn.click();
@@ -472,12 +508,16 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1) {
 
             // 2. Se a página continuar em checkout/payment, clica no botão FINAL de confirmação ('Pay with Eneba wallet' / 'Pay now' / 'Confirm')
             if (page.url().includes('/checkout/payment')) {
-                writeLog('info', `Procurando botão final de pagamento de 2º passo ('Pay now' / 'Confirm')...`);
+                writeLog('info', `Procurando botão final de pagamento ('Pay with Eneba wallet' / 'Pay now')...`);
                 const finalPayClicked = await page.evaluate(() => {
-                    const btns = Array.from(document.querySelectorAll('button, a, input[type="submit"]'));
+                    const btns = Array.from(document.querySelectorAll('button, input[type="submit"], [role="button"], a'));
                     const finalBtn = btns.find(b => {
+                        if (b.closest('header, nav, ul, ol, [class*="step"], [class*="breadcrumb"]')) return false;
                         const txt = (b.innerText || b.textContent || b.value || '').trim().toLowerCase();
-                        return txt.includes('pay') || txt.includes('pagar') || txt.includes('confirm') || txt.includes('submit') || txt.includes('continue');
+                        if (txt === 'payment' || txt === 'cart' || txt === 'get your product') return false;
+                        if (txt.includes('apple pay') || txt.includes('google pay') || txt.includes('credit or debit')) return false;
+                        
+                        return txt.includes('pay with') || txt.includes('pay now') || txt.includes('pagar') || txt === 'continue' || txt === 'continuar' || txt.includes('confirm') || b.type === 'submit';
                     });
                     if (finalBtn) {
                         finalBtn.click();
