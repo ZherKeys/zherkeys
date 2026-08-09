@@ -78,6 +78,7 @@ gtag('config', 'AW-18202657831');
             <div class="flex gap-4 font-orbitron text-xs tracking-widest overflow-x-auto max-w-xl py-2">
                 <button onclick="switchTab('produtos')" id="tab-btn-produtos" class="text-white border-b-2 border-toxicgreen pb-1 transition-all shrink-0">PRODUTOS</button>
                 <button onclick="switchTab('vendas')" id="tab-btn-vendas" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all shrink-0">VENDAS</button>
+                <button onclick="switchTab('robo')" id="tab-btn-robo" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all shrink-0 flex items-center gap-1"><i data-lucide="bot" class="w-3.5 h-3.5 text-purple-400"></i> ROBÔ ENEBA</button>
                 <button onclick="switchTab('suporte')" id="tab-btn-suporte" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all shrink-0">SUPORTE GLOBAL</button>
                 <button onclick="switchTab('carteiras')" id="tab-btn-carteiras" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all shrink-0">CARTEIRAS</button>
                 <button onclick="switchTab('streaming')" id="tab-btn-streaming" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all shrink-0">ZHER PLAY (STREAMING)</button>
@@ -380,7 +381,34 @@ gtag('config', 'AW-18202657831');
             
         </div>
 
-        <!-- ABA: CARTEIRA DE CLIENTES -->
+        <!-- ABA: ROBÔ ENEBA & SCREENSHOTS POR CLIENTE -->
+        <div id="section-robo" class="hidden space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-4 mb-6">
+                    <div>
+                        <h3 class="font-orbitron font-bold text-white tracking-widest text-lg flex items-center gap-2">
+                            <i data-lucide="bot" class="w-6 h-6 text-purple-400"></i> MONITORAMENTO & SCREENSHOTS DO ROBÔ (POR CLIENTE)
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">Selecione o pedido do cliente para ver todas as capturas de tela e logs de automação gerados pelo robô na nuvem.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <select id="robo-order-select" onchange="loadBotScreenshotsForSelectedOrder()" class="bg-slate-950 border border-slate-800 text-white rounded-lg px-4 py-2 text-xs font-orbitron focus:outline-none focus:border-purple-500">
+                            <option value="">-- SELECIONE UM PEDIDO --</option>
+                        </select>
+                        <button onclick="loadBotScreenshotsForSelectedOrder()" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-xs font-orbitron font-bold flex items-center gap-1 transition-colors">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i> ATUALIZAR
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Galeria de Screenshots por Pedido -->
+                <div id="robo-screenshots-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div class="col-span-full text-center text-slate-500 py-12 font-orbitron text-xs">
+                        Selecione um pedido no menu acima ou clique no botão "📸 PRINTS DO ROBÔ" em Vendas.
+                    </div>
+                </div>
+            </div>
+        </div>
         <div id="section-carteiras" class="hidden">
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 min-h-[50vh]">
                 <h3 class="font-orbitron font-bold text-white tracking-widest mb-6 border-b border-slate-800 pb-4 flex items-center justify-between">
@@ -901,6 +929,7 @@ gtag('config', 'AW-18202657831');
             document.getElementById('section-musica').classList.add('hidden');
             document.getElementById('tab-btn-produtos').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
             document.getElementById('tab-btn-vendas').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
+            if (document.getElementById('tab-btn-robo')) document.getElementById('tab-btn-robo').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
             document.getElementById('tab-btn-suporte').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
             document.getElementById('tab-btn-carteiras').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
             document.getElementById('tab-btn-streaming').className = "text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all";
@@ -915,7 +944,15 @@ gtag('config', 'AW-18202657831');
                 document.getElementById('section-vendas').classList.remove('hidden');
                 document.getElementById('tab-btn-vendas').className = "text-white border-b-2 border-purple-400 pb-1 transition-all";
                 loadOrders();
+            } else if(tab === 'robo') {
+                document.getElementById('section-robo').classList.remove('hidden');
+                if (document.getElementById('tab-btn-robo')) document.getElementById('tab-btn-robo').className = "text-white border-b-2 border-purple-400 pb-1 transition-all";
+                loadBotOrdersDropdown();
             } else if(tab === 'suporte') {
+                document.getElementById('section-suporte').classList.remove('hidden');
+                document.getElementById('tab-btn-suporte').className = "text-white border-b-2 border-blue-400 pb-1 transition-all";
+                loadGlobalSupport();
+            } else if(tab === 'carteiras') {
                 document.getElementById('section-suporte').classList.remove('hidden');
                 document.getElementById('tab-btn-suporte').className = "text-white border-b-2 border-blue-400 pb-1 transition-all";
                 loadGlobalSupport();
@@ -2626,6 +2663,8 @@ gtag('config', 'AW-18202657831');
                         approveBtn = `<button onclick="approveOrder(event, ${o.id})" class="text-[9px] bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1 px-2 rounded ml-2 transition-colors">FORÇAR APROVAÇÃO (TESTE)</button>`;
                     }
 
+                    let botBtn = `<button onclick="viewBotScreenshotsForOrder(event, ${o.id}, '${o.user_email}')" class="text-[9px] bg-purple-600 hover:bg-purple-500 text-white font-bold py-1 px-2 rounded ml-2 transition-colors flex items-center gap-1" title="Ver Prints do Robô Eneba"><i data-lucide="camera" class="w-3 h-3"></i> PRINTS ROBÔ</button>`;
+
                     let deleteBtn = `<button onclick="deleteOrder(event, ${o.id})" class="text-[9px] bg-rose-600 hover:bg-rose-500 text-white font-bold py-1 px-2 rounded ml-2 transition-colors" title="Apagar Pedido"><i data-lucide="trash-2" class="w-3 h-3"></i></button>`;
 
                     html += `
@@ -2635,6 +2674,7 @@ gtag('config', 'AW-18202657831');
                                 <div class="flex items-center">
                                     <span class="font-orbitron text-[9px] px-2 py-1 rounded border ${statusColor}">${statusText}</span>
                                     ${approveBtn}
+                                    ${botBtn}
                                     ${deleteBtn}
                                 </div>
                             </div>
@@ -2650,6 +2690,78 @@ gtag('config', 'AW-18202657831');
                 console.error(e);
             }
         }
+
+        async function loadBotOrdersDropdown() {
+            try {
+                const res = await fetch('/api/admin/orders');
+                const orders = await res.json();
+                const select = document.getElementById('robo-order-select');
+                if (!select) return;
+                
+                select.innerHTML = '<option value="">-- SELECIONE UM PEDIDO DE CLIENTE --</option>';
+                orders.forEach(o => {
+                    select.innerHTML += `<option value="${o.id}">Pedido #${o.id} - ${o.user_email} (R$ ${parseFloat(o.total_amount).toFixed(2)})</option>`;
+                });
+            } catch(e) {}
+        }
+
+        async function loadBotScreenshotsForSelectedOrder(orderIdParam = null, emailParam = '') {
+            try {
+                const select = document.getElementById('robo-order-select');
+                const orderId = orderIdParam || (select ? select.value : null);
+                const container = document.getElementById('robo-screenshots-container');
+                if (!container) return;
+
+                if (!orderId) {
+                    container.innerHTML = `<div class="col-span-full text-center text-slate-500 py-12 font-orbitron text-xs">Selecione um pedido no menu acima.</div>`;
+                    return;
+                }
+
+                container.innerHTML = `<div class="col-span-full text-center text-purple-400 py-12 font-orbitron text-xs">⌛ Carregando capturas do robô para o Pedido #${orderId}...</div>`;
+
+                const res = await fetch(`/api/admin/orders/${orderId}/bot-screenshots`);
+                const data = await res.json();
+
+                if (!data.screenshots || data.screenshots.length === 0) {
+                    container.innerHTML = `<div class="col-span-full text-center text-slate-400 py-12 font-orbitron text-xs">Nenhuma screenshot gerada ainda para o Pedido #${orderId}.</div>`;
+                    return;
+                }
+
+                let html = '';
+                data.screenshots.forEach(s => {
+                    html += `
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden group hover:border-purple-500 transition-all">
+                            <div class="aspect-video bg-black relative overflow-hidden cursor-pointer" onclick="window.open('${s.url}', '_blank')">
+                                <img src="${s.url}" alt="${s.filename}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-orbitron font-bold">
+                                    🔍 AMPLIAR FOTO
+                                </div>
+                            </div>
+                            <div class="p-3 bg-slate-900/80">
+                                <div class="text-[11px] font-bold text-white truncate" title="${s.filename}">${s.filename}</div>
+                                <div class="text-[10px] text-slate-400 mt-1 flex justify-between">
+                                    <span>📅 ${s.dateStr}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        window.viewBotScreenshotsForOrder = function(event, orderId, email) {
+            if (event) event.stopPropagation();
+            switchTab('robo');
+            setTimeout(() => {
+                const select = document.getElementById('robo-order-select');
+                if (select) select.value = orderId;
+                loadBotScreenshotsForSelectedOrder(orderId, email);
+            }, 100);
+        };
 
         window.approveOrder = async (e, id) => {
             e.stopPropagation();
