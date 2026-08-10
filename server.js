@@ -3367,7 +3367,7 @@ async function approveOrderSecure(orderId, paymentId) {
             const items = await client.query('SELECT product_id, activation_key FROM order_items WHERE order_id = $1', [orderId]);
             const pIds = items.rows.map(r => r.product_id);
             if (pIds.length > 0) {
-                const needsKeys = items.rows.some(r => !r.activation_key || r.activation_key.trim() === '');
+                const needsKeys = items.rows.some(r => !r.activation_key || r.activation_key.trim() === '' || r.activation_key.includes('liberação') || r.activation_key.includes('liberacao'));
                 if (needsKeys) {
                     await assignKeysToOrder(client, orderId);
                 }
@@ -3577,6 +3577,43 @@ app.put('/api/admin/orders/:id/approve', requireAdmin, async (req, res) => {
         }
     } catch(e) {
         res.status(500).json({ error: 'Erro ao aprovar' });
+    }
+});
+
+// Rota para Forçar o Disparo do Robô Eneba para um Pedido Específico pelo Painel Admin
+app.post('/api/admin/orders/:id/trigger-bot', requireAdmin, async (req, res) => {
+    try {
+        const orderId = parseInt(req.params.id);
+        const itemsRes = await pool.query('SELECT product_id, quantity FROM order_items WHERE order_id = $1', [orderId]);
+        if (itemsRes.rows.length === 0) return res.status(404).json({ error: 'Pedido não encontrado' });
+        
+        const productId = itemsRes.rows[0].product_id;
+        const prodRes = await pool.query('SELECT title, COALESCE(eneba_url, \'\') AS eneba_url FROM products WHERE id = $1', [productId]);
+        if (prodRes.rows.length === 0) return res.status(404).json({ error: 'Produto não encontrado' });
+        
+        const prod = prodRes.rows[0];
+        const targetUrlOrTitle = (prod.eneba_url && prod.eneba_url.trim() !== '') ? prod.eneba_url.trim() : prod.title;
+
+        // Dispara o robô em segundo plano imediatamente
+        setImmediate(async () => {
+            try {
+                const { autoBuyEnebaKeyWeb } = require('./eneba_web_bot');
+                console.log(`🤖 [ADMIN-TRIGGER-BOT] Forçando robô para o Pedido #${orderId}...`);
+                const enebaFetchedKeys = await autoBuyEnebaKeyWeb(targetUrlOrTitle, 1, orderId, saveBotLogToDatabase);
+                if (enebaFetchedKeys && enebaFetchedKeys.length > 0) {
+                    const deliveredKey = enebaFetchedKeys.join(', ');
+                    await pool.query('UPDATE order_items SET activation_key = $1 WHERE order_id = $2 AND product_id = $3', [deliveredKey, orderId, productId]);
+                    await pool.query("UPDATE orders SET status = 'approved' WHERE id = $1", [orderId]);
+                    console.log(`🎉 [ADMIN-TRIGGER-BOT] Pedido #${orderId} finalizado com key: ${deliveredKey}`);
+                }
+            } catch(e) {
+                console.error(`❌ [ADMIN-TRIGGER-BOT] Erro ao disparar robô:`, e.message || e);
+            }
+        });
+
+        res.json({ success: true, message: `Robô Eneba disparado com sucesso em segundo plano para o Pedido #${orderId}!` });
+    } catch(e) {
+        res.status(500).json({ error: e.message });
     }
 });
 

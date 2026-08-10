@@ -395,8 +395,11 @@ gtag('config', 'AW-18202657831');
                         <select id="robo-order-select" onchange="loadBotScreenshotsForSelectedOrder()" class="bg-slate-950 border border-slate-800 text-white rounded-lg px-4 py-2 text-xs font-orbitron focus:outline-none focus:border-purple-500">
                             <option value="">-- SELECIONE UM PEDIDO --</option>
                         </select>
-                        <button onclick="loadBotScreenshotsForSelectedOrder()" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-xs font-orbitron font-bold flex items-center gap-1 transition-colors">
+                        <button onclick="loadBotScreenshotsForSelectedOrder()" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-orbitron font-bold flex items-center gap-1 transition-colors">
                             <i data-lucide="refresh-cw" class="w-4 h-4"></i> ATUALIZAR
+                        </button>
+                        <button onclick="triggerBotForSelectedOrder()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-orbitron font-bold flex items-center gap-1 shadow-lg transition-all">
+                            <i data-lucide="bot" class="w-4 h-4"></i> 🚀 DISPARAR ROBÔ NESTE PEDIDO
                         </button>
                     </div>
                 </div>
@@ -2774,6 +2777,24 @@ gtag('config', 'AW-18202657831');
                 console.error(e);
             }
         }
+
+        window.triggerBotForSelectedOrder = async function() {
+            const select = document.getElementById('robo-order-select');
+            const orderId = select ? select.value : null;
+            if (!orderId) {
+                alert("Por favor, selecione um pedido no menu acima primeiro!");
+                return;
+            }
+            if (!confirm(`Deseja disparar a automação do Robô Eneba na nuvem para o Pedido #${orderId}?`)) return;
+            try {
+                const res = await fetch(`/api/admin/orders/${orderId}/trigger-bot`, { method: 'POST' });
+                const data = await res.json();
+                alert(data.message || data.error);
+                loadBotScreenshotsForSelectedOrder(orderId);
+            } catch(e) {
+                alert("Erro ao disparar robô: " + e.message);
+            }
+        };
 
         window.viewBotScreenshotsForOrder = function(event, orderId, email) {
             if (event) event.stopPropagation();
