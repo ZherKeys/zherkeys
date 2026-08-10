@@ -209,6 +209,72 @@ async function handleEneba2FAPrompt(page) {
     return false;
 }
 
+async function ensureEnebaLogin(page, orderId = null) {
+    try {
+        const email = process.env.ENEBA_BOT_EMAIL || process.env.ENEBA_EMAIL || 'zherkeys@gmail.com';
+        const password = process.env.ENEBA_BOT_PASSWORD || process.env.ENEBA_PASSWORD || 'Caio40028922!';
+
+        const currentUrl = page.url().toLowerCase();
+        
+        const isLoginPage = currentUrl.includes('/auth/login') || currentUrl.includes('/login') || await page.evaluate(() => {
+            const inputs = Array.from(document.querySelectorAll('input'));
+            return inputs.some(i => i.type === 'password' || (i.type === 'email' && i.name && i.name.includes('email')));
+        });
+
+        if (isLoginPage) {
+            writeLog('info', `🔐 DETECTADA PÁGINA DE LOGIN ENEBA! Efetuando login automático com e-mail, senha e 2FA...`);
+            await saveStepScreenshot(page, '00_login_page_detected', orderId);
+
+            // 1. Preenche E-mail
+            const emailFilled = await page.evaluate((userEmail) => {
+                const emailInput = document.querySelector('input[type="email"], input[name="email"], input[id*="email"]');
+                if (emailInput) {
+                    const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+                    emailInput.focus();
+                    setVal.call(emailInput, userEmail);
+                    emailInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    emailInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    return true;
+                }
+                return false;
+            }, email);
+
+            if (emailFilled) {
+                await new Promise(r => setTimeout(r, 600));
+                await page.keyboard.press('Enter');
+                await new Promise(r => setTimeout(r, 1500));
+            }
+
+            // 2. Preenche Senha
+            const passFilled = await page.evaluate((userPass) => {
+                const passInput = document.querySelector('input[type="password"], input[name="password"], input[id*="password"]');
+                if (passInput) {
+                    const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+                    passInput.focus();
+                    setVal.call(passInput, userPass);
+                    passInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    passInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    return true;
+                }
+                return false;
+            }, password);
+
+            if (passFilled) {
+                await new Promise(r => setTimeout(r, 600));
+                await page.keyboard.press('Enter');
+                await new Promise(r => setTimeout(r, 2500));
+            }
+
+            // 3. Processa o 2FA automaticamente se for solicitado
+            await handleEneba2FAPrompt(page);
+            await saveStepScreenshot(page, '00_after_login_2fa', orderId);
+            writeLog('info', `✅ Processo de Login Eneba com E-mail, Senha e 2FA concluído com sucesso!`);
+        }
+    } catch (err) {
+        writeLog('warn', `Aviso na checagem de login Eneba: ${err.message}`);
+    }
+}
+
 function cleanOldScreenshots(maxKeep = 25) {
     try {
         if (!fs.existsSync(screenshotsDir)) return;
@@ -359,8 +425,11 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1, orderId = null) {
             fullProductUrl = productHref.startsWith('http') ? productHref : `https://www.eneba.com${productHref}`;
             writeLog('info', `[ETAPA 2/6] Acessando página do produto: ${fullProductUrl}`);
             await page.goto(fullProductUrl, { waitUntil: 'networkidle2', timeout: 45000 });
-            await saveStepScreenshot(page, '02_product_page');
+            await saveStepScreenshot(page, '02_product_page', orderId);
         }
+
+        // Verifica se é necessário fazer login com E-mail + Senha + 2FA
+        await ensureEnebaLogin(page, orderId);
 
         // 2. Clica no botão de Compra / Buy Now
         writeLog('info', `[ETAPA 2/6] Procurando e clicando no botão 'Comprar Agora'...`);
