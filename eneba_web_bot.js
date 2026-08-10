@@ -316,10 +316,48 @@ async function ensureEnebaLogin(page, orderId = null, dbSaveFn = null) {
             await saveStepScreenshot(page, '04_2fa_completed', orderId, dbSaveFn);
             writeLog('info', `✅ Login no Eneba concluído com sucesso com E-mail, Senha e 2FA!`);
         } else {
-            writeLog('info', `✅ Sessão ativa detectada (sem botão de Login). Prosseguindo direto para a compra...`);
+            writeLog('info', `✅ Sessão ativa detectada (sem botão de Login). Prosseguindo...`);
         }
+
+        // SEMPRE CHECA SE O CARRINHO ESTÁ VAZIO E ESVAZIA SE HOUVER ITENS ANTIGOS
+        await clearEnebaCartIfNotEmpty(page, orderId, dbSaveFn);
+
     } catch (err) {
         writeLog('warn', `Aviso na checagem de login Eneba: ${err.message}`);
+    }
+}
+
+async function clearEnebaCartIfNotEmpty(page, orderId = null, dbSaveFn = null) {
+    try {
+        writeLog('info', `🛒 Checando se o carrinho do Eneba possui itens antigos salvos...`);
+        await page.goto('https://www.eneba.com/cart', { waitUntil: 'networkidle2', timeout: 30000 });
+        await new Promise(r => setTimeout(r, 1500));
+
+        const hasItems = await page.evaluate(() => {
+            const trashBtns = Array.from(document.querySelectorAll('button[aria-label*="Remover"], button[aria-label*="remove"], button[class*="remove"], button svg'));
+            const removeLinks = Array.from(document.querySelectorAll('button, a')).filter(b => (b.innerText || '').toLowerCase().includes('remover') || (b.innerText || '').toLowerCase().includes('remove'));
+            return trashBtns.length > 0 || removeLinks.length > 0;
+        });
+
+        if (hasItems) {
+            writeLog('warn', `⚠️ Carrinho possuía itens antigos acumulados. Esvaziando o carrinho primeiro...`);
+            await saveStepScreenshot(page, '01_clearing_old_cart_items', orderId, dbSaveFn);
+
+            await page.evaluate(() => {
+                const removeBtns = Array.from(document.querySelectorAll('button, a')).filter(el => {
+                    const txt = (el.innerText || el.textContent || '').toLowerCase();
+                    const aria = (el.getAttribute('aria-label') || '').toLowerCase();
+                    return txt.includes('remover') || txt.includes('remove') || aria.includes('remover') || aria.includes('remove');
+                });
+                removeBtns.forEach(b => b.click());
+            });
+            await new Promise(r => setTimeout(r, 2000));
+            writeLog('info', `✅ Carrinho esvaziado com sucesso!`);
+        } else {
+            writeLog('info', `✅ Carrinho limpo e vazio. Pronto para adicionar o produto do pedido!`);
+        }
+    } catch (e) {
+        writeLog('warn', `Aviso ao verificar/esvaziar carrinho: ${e.message}`);
     }
 }
 
