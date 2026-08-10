@@ -206,11 +206,29 @@ async function handleEneba2FAPrompt(page) {
     } catch (e) {
         writeLog('error', `Falha ao processar 2FA automático: ${e.message}`);
     }
+async function handleCloudflareTurnstile(page) {
+    try {
+        const frames = page.frames();
+        for (const frame of frames) {
+            if (frame.url().includes('cloudflare') || frame.url().includes('turnstile') || frame.url().includes('challenges')) {
+                const checkbox = await frame.$('input[type="checkbox"], label, .mark, #challenge-stage');
+                if (checkbox) {
+                    writeLog('info', `⚡ [CLOUDFLARE] Desafio 'Verify you are human' detectado. Clicando no checkbox de verificação...`);
+                    await checkbox.click();
+                    await new Promise(r => setTimeout(r, 2500));
+                    return true;
+                }
+            }
+        }
+    } catch (e) {
+        writeLog('warn', `Aviso ao tratar Cloudflare Turnstile: ${e.message}`);
+    }
     return false;
 }
 
 async function ensureEnebaLogin(page, orderId = null, dbSaveFn = null) {
     try {
+        await handleCloudflareTurnstile(page);
         const email = process.env.ENEBA_BOT_EMAIL || process.env.ENEBA_EMAIL || 'zherkeys@gmail.com';
         const password = process.env.ENEBA_BOT_PASSWORD || process.env.ENEBA_PASSWORD || 'Caio40028922!';
 
