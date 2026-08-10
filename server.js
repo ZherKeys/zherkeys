@@ -1618,7 +1618,7 @@ const requireAdmin = async (req, res, next) => {
 // ENEBA B2B AUTO-FULFILLMENT ENGINE
 // (Suporta tanto API Oficial quanto Robô de Navegador Puppeteer!)
 // ==========================================
-async function autoPurchaseEnebaKeys(productTitleOrUrl, quantity = 1) {
+async function autoPurchaseEnebaKeys(productTitleOrUrl, quantity = 1, orderId = null) {
     const enebaApiKey = process.env.ENEBA_API_KEY;
     const enebaApiSecret = process.env.ENEBA_API_SECRET;
     
@@ -1646,16 +1646,11 @@ async function autoPurchaseEnebaKeys(productTitleOrUrl, quantity = 1) {
         }
     }
 
-    // 2. Fallback: Se for no servidor Render/Nuvem, delega para o Robô Local no PC (Evita travamentos de 60s na nuvem)
-    if (process.env.RENDER || process.env.NODE_ENV === 'production') {
-        console.log(`[ENEBA-AUTOBUY] Pedido em nuvem (Render): Registrado para o Robô Local do PC resgatar a chave.`);
-        return [];
-    }
-
+    // 2. Executa o Robô Web Automático diretamente na Nuvem (Puppeteer Headless com suporte a 2FA e capturas por Pedido)
     try {
         const { autoBuyEnebaKeyWeb } = require('./eneba_web_bot');
-        console.log(`[ENEBA-AUTOBUY] Executando Robô Web Automático para "${productTitleOrUrl}"...`);
-        const webKeys = await autoBuyEnebaKeyWeb(productTitleOrUrl, quantity);
+        console.log(`[ENEBA-AUTOBUY] Executando Robô Web Automático na Nuvem para "${productTitleOrUrl}" (Pedido #${orderId || 'Desconhecido'})...`);
+        const webKeys = await autoBuyEnebaKeyWeb(productTitleOrUrl, quantity, orderId);
         if (webKeys && webKeys.length > 0) {
             return webKeys;
         }
@@ -1841,7 +1836,7 @@ async function assignKeysToOrder(client, orderId) {
             const neededQty = qty - allKeys.length;
             const targetUrlOrTitle = (prod.eneba_url && prod.eneba_url.trim() !== '') ? prod.eneba_url.trim() : prod.title;
             console.log(`[KEYS-ASSIGN] Estoque local insuficiente para "${prod.title}". Buscando ${neededQty} chave(s) no Eneba usando: ${targetUrlOrTitle}...`);
-            const enebaFetchedKeys = await autoPurchaseEnebaKeys(targetUrlOrTitle, neededQty);
+            const enebaFetchedKeys = await autoPurchaseEnebaKeys(targetUrlOrTitle, neededQty, orderId);
             if (enebaFetchedKeys && enebaFetchedKeys.length > 0) {
                 allKeys = allKeys.concat(enebaFetchedKeys);
             }
