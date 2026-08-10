@@ -48,7 +48,6 @@ class CJDropshippingAPI {
 
     /**
      * Obter lista de categorias da CJ Dropshipping (1.1 Category List GET)
-     * Endpoint: GET https://developers.cjdropshipping.com/api2.0/v1/product/getCategory
      */
     async getCategoryList() {
         const token = await this.getValidAccessToken();
@@ -69,7 +68,6 @@ class CJDropshippingAPI {
             if (data && data.result && data.data) {
                 return data.data;
             } else {
-                console.error('Erro na resposta da API CJ getCategory:', data);
                 return this.getFallbackCategories();
             }
         } catch (error) {
@@ -79,8 +77,7 @@ class CJDropshippingAPI {
     }
 
     /**
-     * Obter Lista de Produtos V2 (1.2 Product List V2 GET)
-     * Endpoint: GET https://developers.cjdropshipping.com/api2.0/v1/product/listV2
+     * Obter Lista de Produtos V2 com descrições (1.2 Product List V2 GET)
      */
     async getProductList({ page = 1, size = 20, keyWord = '', categoryId = '' } = {}) {
         const token = await this.getValidAccessToken();
@@ -89,7 +86,7 @@ class CJDropshippingAPI {
         }
 
         try {
-            let url = `${this.baseUrl}/listV2?page=${page}&size=${size}`;
+            let url = `${this.baseUrl}/listV2?page=${page}&size=${size}&features=enable_description,enable_category`;
             if (keyWord) url += `&keyWord=${encodeURIComponent(keyWord)}`;
             if (categoryId) url += `&categoryId=${encodeURIComponent(categoryId)}`;
 
@@ -114,8 +111,95 @@ class CJDropshippingAPI {
     }
 
     /**
-     * Categorias de Exemplo/Fallback para exibição offline
+     * Obter Detalhes Completos do Produto (1.5 Product Details GET)
      */
+    async getProductDetails(pid) {
+        const token = await this.getValidAccessToken();
+        if (!token) return null;
+
+        try {
+            const url = `${this.baseUrl}/query?pid=${encodeURIComponent(pid)}`;
+            const response = await httpFetch(url, {
+                method: 'GET',
+                headers: {
+                    'CJ-Access-Token': token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            if (data && data.result && data.data) {
+                return data.data;
+            }
+            return null;
+        } catch (error) {
+            console.error('Erro ao buscar detalhes do produto CJ:', error.message);
+            return null;
+        }
+    }
+
+    /**
+     * Adicionar Produto à Lista Oficial "Meus Produtos" na Conta CJ (1.6 Add to My Product POST)
+     * Endpoint: POST https://developers.cjdropshipping.com/api2.0/v1/product/addMyProduct
+     */
+    async addMyProduct(pid) {
+        const token = await this.getValidAccessToken();
+        if (!token) return { success: false, message: "Token ausente" };
+
+        try {
+            const url = `${this.baseUrl}/addMyProduct`;
+            const response = await httpFetch(url, {
+                method: 'POST',
+                headers: {
+                    'CJ-Access-Token': token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ pid })
+            });
+
+            const data = await response.json();
+            if (data && data.result) {
+                console.log(`✅ Produto ${pid} adicionado à lista "Meus Produtos" na conta CJ!`);
+                return { success: true, data: data.data };
+            } else {
+                console.warn(`Aviso ao adicionar produto ${pid} na CJ:`, data.message);
+                return { success: false, message: data.message };
+            }
+        } catch (error) {
+            console.error('Erro na chamada addMyProduct CJ:', error.message);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Obter Lista de Produtos Cadastrados em "Meus Produtos" na CJ (1.7 My Product List GET)
+     * Endpoint: GET https://developers.cjdropshipping.com/api2.0/v1/product/myProductList
+     */
+    async getMyProductList({ page = 1, size = 20 } = {}) {
+        const token = await this.getValidAccessToken();
+        if (!token) return null;
+
+        try {
+            const url = `${this.baseUrl}/myProductList?page=${page}&size=${size}`;
+            const response = await httpFetch(url, {
+                method: 'GET',
+                headers: {
+                    'CJ-Access-Token': token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            if (data && data.result && data.data) {
+                return data.data;
+            }
+            return null;
+        } catch (error) {
+            console.error('Erro ao buscar MyProductList CJ:', error.message);
+            return null;
+        }
+    }
+
     getFallbackCategories() {
         return [
             {
@@ -132,9 +216,6 @@ class CJDropshippingAPI {
         ];
     }
 
-    /**
-     * Produtos de Exemplo/Fallback
-     */
     getFallbackProducts() {
         return {
             pageSize: 20,
@@ -150,7 +231,8 @@ class CJDropshippingAPI {
                             sku: "CJNSSYWY01847",
                             sellPrice: "19.99",
                             nowPrice: "14.50",
-                            bigImage: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500"
+                            bigImage: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500",
+                            description: "Fone de ouvido gamer de alta fidelidade com microfone com cancelamento de ruído e leds RGB."
                         }
                     ]
                 }

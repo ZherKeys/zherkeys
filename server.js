@@ -66,6 +66,36 @@ app.get('/api/cj/products', async (req, res) => {
     }
 });
 
+app.get('/api/cj/product/:pid', async (req, res) => {
+    try {
+        const { pid } = req.params;
+        const details = await cjApi.getProductDetails(pid);
+        res.json({ success: true, data: details });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+app.post('/api/cj/add-my-product', async (req, res) => {
+    try {
+        const { pid } = req.body;
+        const result = await cjApi.addMyProduct(pid);
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+app.get('/api/cj/my-products', async (req, res) => {
+    try {
+        const { page, size } = req.query;
+        const list = await cjApi.getMyProductList({ page, size });
+        res.json({ success: true, data: list });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 // Setup Database (PostgreSQL)
 const poolConfig = process.env.DATABASE_URL
     ? { connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } }

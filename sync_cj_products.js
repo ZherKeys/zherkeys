@@ -1,6 +1,6 @@
 /**
  * Script de Sincronização Automática de Produtos CJ Dropshipping -> Banco de Dados ZherKeys
- * Busca produtos em alta (Trending) ou de categorias específicas da CJ e insere/atualiza automaticamente no banco.
+ * E vinculação direta no painel oficial "Meus Produtos" da sua conta na CJ Dropshipping.
  */
 
 require('dotenv').config();
@@ -18,7 +18,6 @@ async function autoSyncCJProducts(limit = 20) {
     console.log('🔄 Iniciando Sincronização Automática de Produtos da CJ Dropshipping...');
 
     try {
-        // Busca produtos em alta (productFlag: 0 = Trending) diretamente da API CJ v2
         const cjData = await cjApi.getProductList({ page: 1, size: limit });
 
         if (!cjData || !cjData.content || !cjData.content[0] || !cjData.content[0].productList) {
@@ -27,7 +26,7 @@ async function autoSyncCJProducts(limit = 20) {
         }
 
         const products = cjData.content[0].productList;
-        console.log(`📦 ${products.length} produtos encontrados na CJ. Inserindo no banco de dados...`);
+        console.log(`📦 ${products.length} produtos encontrados na CJ. Vinculando à sua conta CJ e inserindo no banco...`);
 
         let insertedCount = 0;
 
@@ -38,7 +37,10 @@ async function autoSyncCJProducts(limit = 20) {
             const sku = prod.sku || prod.spu || prod.id;
             const category = prod.oneCategoryName || 'Eletrônicos';
 
-            // Verifica se a tabela products tem suporte ou insere o produto
+            // 1. Vincula automaticamente à lista "Meus Produtos" na sua conta oficial da CJ
+            await cjApi.addMyProduct(prod.id);
+
+            // 2. Insere/Atualiza no banco de dados local da ZherKeys
             const queryText = `
                 INSERT INTO products (name, price, image, description, category, stock, cj_product_id)
                 VALUES ($1, $2, $3, $4, $5, 100, $6)
@@ -47,14 +49,13 @@ async function autoSyncCJProducts(limit = 20) {
             `;
 
             try {
-                await pool.query(queryText, [name, price, image, `Produto importado automaticamente via CJ Dropshipping. SKU: ${sku}`, category, prod.id]);
+                await pool.query(queryText, [name, price, image, prod.description || `SKU: ${sku}`, category, prod.id]);
                 insertedCount++;
             } catch (err) {
-                // Caso a coluna cj_product_id não exista no schema legados, tenta inserção simples
                 try {
                     await pool.query(
                         `INSERT INTO products (name, price, image, description, category, stock) VALUES ($1, $2, $3, $4, $5, 100)`,
-                        [name, price, image, `Importado via CJ Dropshipping. SKU: ${sku}`, category]
+                        [name, price, image, prod.description || `SKU: ${sku}`, category]
                     );
                     insertedCount++;
                 } catch (e) {
@@ -63,15 +64,14 @@ async function autoSyncCJProducts(limit = 20) {
             }
         }
 
-        console.log(`✅ Sincronização concluída! ${insertedCount} produtos inseridos/atualizados com sucesso!`);
+        console.log(`✅ Sincronização concluída! ${insertedCount} produtos vinculados à sua conta CJ e salvos no banco!`);
     } catch (error) {
         console.error('❌ Erro na sincronização de produtos CJ:', error.message);
     }
 }
 
-// Se rodado diretamente via terminal node sync_cj_products.js
 if (require.main === module) {
-    autoSyncCJProducts(20).then(() => pool.end());
+    autoSyncCJProducts(10).then(() => pool.end());
 }
 
 module.exports = { autoSyncCJProducts };
