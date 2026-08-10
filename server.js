@@ -2770,7 +2770,6 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
                 
                 // Finaliza a transação bancária IMEDIATAMENTE (super rápido)
                 await client.query('COMMIT');
-                client.release();
                 
                 // Atribui as chaves e aciona o robô em segundo plano (fora da transação para não travar o banco)
                 setImmediate(async () => {
