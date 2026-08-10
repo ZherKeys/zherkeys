@@ -235,61 +235,88 @@ async function ensureEnebaLogin(page, orderId = null, dbSaveFn = null) {
         const email = process.env.ENEBA_BOT_EMAIL || process.env.ENEBA_EMAIL || 'zherkeys@gmail.com';
         const password = process.env.ENEBA_BOT_PASSWORD || process.env.ENEBA_PASSWORD || 'Caio40028922!';
 
-        const currentUrl = page.url().toLowerCase();
-        
-        const isLoginPage = currentUrl.includes('/auth/login') || currentUrl.includes('/login') || await page.evaluate(() => {
-            const inputs = Array.from(document.querySelectorAll('input'));
-            return inputs.some(i => i.type === 'password' || (i.type === 'email' && i.name && i.name.includes('email')));
+        // Dispensa banners de cookies se houver
+        await page.evaluate(() => {
+            const btns = Array.from(document.querySelectorAll('button'));
+            const aceitarBtn = btns.find(b => (b.innerText || '').toLowerCase().includes('aceitar tudo') || (b.innerText || '').toLowerCase().includes('aceitar') || (b.innerText || '').trim() === 'Sim');
+            if (aceitarBtn) aceitarBtn.click();
         });
 
-        if (isLoginPage) {
-            writeLog('info', `🔐 DETECTADA PÁGINA DE LOGIN ENEBA! Efetuando login automático com e-mail, senha e 2FA...`);
-            await saveStepScreenshot(page, '00_login_page_detected', orderId, dbSaveFn);
+        // 1. Verifica se existe o botão de Login na página
+        const hasLoginBtn = await page.evaluate(() => {
+            const btns = Array.from(document.querySelectorAll('a, button, span'));
+            const loginBtn = btns.find(b => {
+                const txt = (b.innerText || b.textContent || '').toLowerCase();
+                return txt.includes('log in') || txt.includes('entrar') || txt.includes('registrar-se');
+            });
+            if (loginBtn) {
+                loginBtn.click();
+                return true;
+            }
+            return false;
+        });
 
-            // 1. Preenche E-mail
-            const emailFilled = await page.evaluate((userEmail) => {
-                const emailInput = document.querySelector('input[type="email"], input[name="email"], input[id*="email"]');
-                if (emailInput) {
+        if (hasLoginBtn) {
+            writeLog('info', `🔑 Botão de Login detectado! Abrindo modal e iniciando autenticação...`);
+            await new Promise(r => setTimeout(r, 2000));
+            await saveStepScreenshot(page, '01_login_modal_opened', orderId, dbSaveFn);
+
+            // Preenche e-mail
+            await page.evaluate((uEmail) => {
+                const el = document.querySelector('input[type="email"], input[name="email"], input[id*="email"]');
+                if (el) {
                     const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-                    emailInput.focus();
-                    setVal.call(emailInput, userEmail);
-                    emailInput.dispatchEvent(new Event('input', { bubbles: true }));
-                    emailInput.dispatchEvent(new Event('change', { bubbles: true }));
-                    return true;
+                    el.focus();
+                    setVal.call(el, uEmail);
+                    el.dispatchEvent(new Event('input', { bubbles: true }));
                 }
-                return false;
             }, email);
+            await new Promise(r => setTimeout(r, 1000));
+            await saveStepScreenshot(page, '02_email_filled', orderId, dbSaveFn);
 
-            if (emailFilled) {
-                await new Promise(r => setTimeout(r, 600));
-                await page.keyboard.press('Enter');
-                await new Promise(r => setTimeout(r, 1500));
-            }
+            // Clica em "Log in with password"
+            await page.evaluate(() => {
+                const btns = Array.from(document.querySelectorAll('button, a'));
+                const passBtn = btns.find(b => {
+                    const txt = (b.innerText || b.textContent || '').toLowerCase();
+                    return txt.includes('log in with password') || txt.includes('entrar com senha') || txt.includes('password') || txt.includes('continuar');
+                });
+                if (passBtn) passBtn.click();
+            });
+            await new Promise(r => setTimeout(r, 2000));
 
-            // 2. Preenche Senha
-            const passFilled = await page.evaluate((userPass) => {
-                const passInput = document.querySelector('input[type="password"], input[name="password"], input[id*="password"]');
-                if (passInput) {
+            // Preenche Senha
+            await page.evaluate((uPass) => {
+                const el = document.querySelector('input[type="password"], input[name="password"], input[id*="password"]');
+                if (el) {
                     const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-                    passInput.focus();
-                    setVal.call(passInput, userPass);
-                    passInput.dispatchEvent(new Event('input', { bubbles: true }));
-                    passInput.dispatchEvent(new Event('change', { bubbles: true }));
-                    return true;
+                    el.focus();
+                    setVal.call(el, uPass);
+                    el.dispatchEvent(new Event('input', { bubbles: true }));
                 }
-                return false;
             }, password);
+            await new Promise(r => setTimeout(r, 1000));
+            await saveStepScreenshot(page, '03_password_filled', orderId, dbSaveFn);
 
-            if (passFilled) {
-                await new Promise(r => setTimeout(r, 600));
-                await page.keyboard.press('Enter');
-                await new Promise(r => setTimeout(r, 2500));
-            }
+            // Clica em Log in
+            await page.evaluate(() => {
+                const btns = Array.from(document.querySelectorAll('button, input[type="submit"]'));
+                const sub = btns.find(b => {
+                    const txt = (b.innerText || b.textContent || b.value || '').toLowerCase();
+                    return txt.includes('log in') || txt.includes('entrar') || txt.includes('sign in');
+                });
+                if (sub) sub.click();
+            });
 
-            // 3. Processa o 2FA automaticamente se for solicitado
+            await new Promise(r => setTimeout(r, 3000));
+            await handleCloudflareTurnstile(page);
+
+            // Processa o 2FA
             await handleEneba2FAPrompt(page);
-            await saveStepScreenshot(page, '00_after_login_2fa', orderId, dbSaveFn);
-            writeLog('info', `✅ Processo de Login Eneba com E-mail, Senha e 2FA concluído com sucesso!`);
+            await saveStepScreenshot(page, '04_2fa_completed', orderId, dbSaveFn);
+            writeLog('info', `✅ Login no Eneba concluído com sucesso com E-mail, Senha e 2FA!`);
+        } else {
+            writeLog('info', `✅ Sessão ativa detectada (sem botão de Login). Prosseguindo direto para a compra...`);
         }
     } catch (err) {
         writeLog('warn', `Aviso na checagem de login Eneba: ${err.message}`);
