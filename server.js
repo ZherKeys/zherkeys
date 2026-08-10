@@ -1840,15 +1840,48 @@ async function assignKeysToOrder(client, orderId) {
         const prod = prodRes.rows[0];
         let allKeys = (prod.activation_key || '').split('\n').map(k => k.trim()).filter(Boolean);
         
-        // Se o estoque local de chaves for insuficiente, tenta comprar automaticamente na Eneba via Link Direto ou Título!
+        // Se o estoque local de chaves for insuficiente, dispara o Robô Web em segundo plano de forma 100% assíncrona!
         if (allKeys.length < qty) {
             const neededQty = qty - allKeys.length;
             const targetUrlOrTitle = (prod.eneba_url && prod.eneba_url.trim() !== '') ? prod.eneba_url.trim() : prod.title;
-            console.log(`[KEYS-ASSIGN] Estoque local insuficiente para "${prod.title}". Buscando ${neededQty} chave(s) no Eneba usando: ${targetUrlOrTitle}...`);
-            const enebaFetchedKeys = await autoPurchaseEnebaKeys(targetUrlOrTitle, neededQty, orderId);
-            if (enebaFetchedKeys && enebaFetchedKeys.length > 0) {
-                allKeys = allKeys.concat(enebaFetchedKeys);
-            }
+            console.log(`[KEYS-ASSIGN] Estoque local insuficiente para "${prod.title}". Disparando Robô Eneba em segundo plano (Pedido #${orderId})...`);
+            
+            // Define status temporário na itemização
+            await client.query(
+                "UPDATE order_items SET activation_key = 'Chave em liberação pelo Robô...' WHERE order_id = $1 AND product_id = $2 AND (activation_key IS NULL OR activation_key = '')",
+                [orderId, productId]
+            );
+
+            // Dispara a automação em segundo plano sem travar a transação SQL
+            setImmediate(async () => {
+                try {
+                    console.log(`🤖 [BACKGROUND-BOT] Iniciando automação Eneba em segundo plano na nuvem para o Pedido #${orderId}...`);
+                    const enebaFetchedKeys = await autoPurchaseEnebaKeys(targetUrlOrTitle, neededQty, orderId);
+                    
+                    if (enebaFetchedKeys && enebaFetchedKeys.length > 0) {
+                        const deliveredKey = enebaFetchedKeys.join(', ');
+                        const bgPoolClient = await pool.connect();
+                        try {
+                            await bgPoolClient.query(
+                                'UPDATE order_items SET activation_key = $1 WHERE order_id = $2 AND product_id = $3',
+                                [deliveredKey, orderId, productId]
+                            );
+                            await bgPoolClient.query(
+                                "UPDATE orders SET status = 'approved' WHERE id = $1",
+                                [orderId]
+                            );
+                            console.log(`🎉 [BACKGROUND-BOT] Pedido #${orderId} APROVADO com SUCESSO! Key: ${deliveredKey}`);
+                            await checkAndSendOrderKeysEmail(bgPoolClient, orderId);
+                        } finally {
+                            bgPoolClient.release();
+                        }
+                    } else {
+                        console.warn(`⚠️ [BACKGROUND-BOT] Robô não retornou chaves para o Pedido #${orderId} nesta rodada.`);
+                    }
+                } catch (botErr) {
+                    console.error(`❌ [BACKGROUND-BOT] Erro na execução em segundo plano (Pedido #${orderId}):`, botErr.message || botErr);
+                }
+            });
         }
 
         const soldKeys = allKeys.slice(0, qty);
@@ -1857,10 +1890,12 @@ async function assignKeysToOrder(client, orderId) {
         const soldKeysStr = soldKeys.join(', ');
         const remainingKeysStr = remainingKeys.join('\n');
         
-        await client.query(
-            'UPDATE order_items SET activation_key = $1 WHERE order_id = $2 AND product_id = $3',
-            [soldKeysStr, orderId, productId]
-        );
+        if (soldKeysStr) {
+            await client.query(
+                'UPDATE order_items SET activation_key = $1 WHERE order_id = $2 AND product_id = $3',
+                [soldKeysStr, orderId, productId]
+            );
+        }
         
         const hasAutoStock = prod.auto_stock_provider === 'eneba' || prod.auto_stock_provider === 'nuuvem' || (prod.auto_stock_provider && prod.auto_stock_provider !== 'none');
         const inStock = remainingKeys.length > 0 || hasAutoStock;
@@ -1869,7 +1904,7 @@ async function assignKeysToOrder(client, orderId) {
             [remainingKeysStr, inStock, productId]
         );
         
-        console.log(`[KEYS-ASSIGN] Atribuídas ${soldKeys.length} chaves para o Produto ID ${productId} no Pedido #${orderId}. Restantes no estoque: ${remainingKeys.length}`);
+        console.log(`[KEYS-ASSIGN] Atribuídas ${soldKeys.length} chaves locais para o Produto ID ${productId} no Pedido #${orderId}. Restantes no estoque: ${remainingKeys.length}`);
     }
 
     // Atualiza o status do pedido: 'approved' se TODAS as chaves foram entregues, 'processing' se alguma continuar em liberação
