@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHER SHOP | E-Commerce Futurista & Produtos High-Tech</title>
+    <!-- Tailwind CSS (Local) -->
+    <script src="/tailwind.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        obsidian: '#020617',
+                        cyberrose: '#F43F5E',
+                        electricblue: '#3B82F6',
+                        surface: 'rgba(15, 23, 42, 0.8)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: #f8fafc; }
+        .mesh-bg {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.18) 0px, transparent 50%),
+                radial-gradient(at 90% 10%, rgba(244, 63, 94, 0.15) 0px, transparent 50%);
+        }
+    </style>
+</head>
+<body class="antialiased mesh-bg min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-slate-950/85 backdrop-blur-xl border-b border-slate-800/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='/'">
+                <img src="logo.png" alt="Zher Keys Logo" class="w-10 h-10 object-contain rounded-lg border border-slate-700/50 p-1">
+                <span class="font-orbitron font-black text-xl tracking-wider text-white">ZHER <span class="text-cyberrose">SHOP</span></span>
+            </div>
+
+            <div class="flex items-center gap-6 font-orbitron text-xs tracking-widest text-slate-400">
+                <a href="/" class="hover:text-white transition-colors">INÍCIO</a>
+                <a href="/shop.html" class="text-cyberrose font-bold">SHOPPING</a>
+                <a href="/minigames.html" class="text-emerald-400 font-bold hover:text-emerald-300">MINIGAMES</a>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <input type="text" id="shop-search-input" placeholder="Buscar produtos..." class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs font-orbitron text-white focus:outline-none focus:border-cyberrose w-44 sm:w-60">
+                    <button id="shop-search-btn" class="absolute right-3 top-2.5 text-slate-400 hover:text-white"><i data-lucide="search" class="w-4 h-4"></i></button>
+                </div>
+
+                <a href="/carrinho.html" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-slate-900 border border-slate-800 hover:border-cyberrose text-slate-300 hover:text-white transition-all">
+                    <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                    <span id="cart-count" class="absolute -top-1 -right-1 bg-cyberrose text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="flex-grow pt-28 pb-16 px-4 max-w-7xl mx-auto w-full">
+        <!-- Hero Header -->
+        <div class="bg-gradient-to-r from-slate-900/90 via-slate-950/90 to-slate-900/90 border border-slate-800 rounded-3xl p-8 sm:p-12 mb-10 relative overflow-hidden shadow-2xl">
+            <div class="relative z-10 max-w-2xl">
+                <span class="font-orbitron text-xs tracking-widest text-cyberrose font-bold block mb-3">// CATÁLOGO OFICIAL DROPSHIPPING</span>
+                <h1 class="font-orbitron font-black text-3xl sm:text-5xl text-white tracking-tight mb-4">ZHER <span class="text-cyberrose">SHOP</span></h1>
+                <p class="text-slate-400 text-sm sm:text-base mb-6">Eletrônicos, gadgets futuristas, fones sem fio e periféricos high-tech diretamente dos fornecedores globais.</p>
+                <div class="flex items-center gap-4 text-xs font-orbitron text-slate-300">
+                    <span class="flex items-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i> Frete com Rastreio</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4 text-electricblue"></i> Compra Garantida</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Categories Bar -->
+        <div class="flex items-center gap-3 overflow-x-auto pb-4 mb-8 no-scrollbar" id="category-pills-container">
+            <button class="cat-pill active bg-cyberrose text-white border border-cyberrose px-5 py-2.5 rounded-xl font-orbitron text-xs font-bold whitespace-nowrap cursor-pointer transition-all" data-cat="">
+                🔥 Todos os Produtos
+            </button>
+            <!-- Injetado dinamicamente via JS -->
+        </div>
+
+        <!-- Products Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="shop-products-grid">
+            <!-- Carregando skeleton -->
+            <div class="col-span-full text-center py-20">
+                <i data-lucide="loader" class="w-10 h-10 text-cyberrose animate-spin mx-auto mb-4"></i>
+                <p class="font-orbitron text-xs tracking-widest text-slate-400">CARREGANDO CATÁLOGO ZHER SHOP...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 bg-slate-950/80 py-8 text-center text-xs text-slate-500 font-orbitron">
+        <p>&copy; 2026 Zher Keys & Zher Shop Store. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        // Inicializar ícones Lucide
+        lucide.createIcons();
+
+        // Carregar categorias dinâmicas da API da CJ
+        async function fetchShopCategories() {
+            try {
+                const res = await fetch('/api/cj/categories');
+                const result = await res.json();
+                if (result.success && result.data && Array.isArray(result.data)) {
+                    const pillsContainer = document.getElementById('category-pills-container');
+                    result.data.slice(0, 8).forEach(cat => {
+                        const btn = document.createElement('button');
+                        btn.className = 'cat-pill bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-5 py-2.5 rounded-xl font-orbitron text-xs font-bold whitespace-nowrap cursor-pointer transition-all';
+                        btn.textContent = cat.categoryFirstName || 'Categoria';
+                        btn.setAttribute('data-cat', cat.categoryFirstName);
+                        btn.onclick = () => filterByCategory(btn, cat.categoryFirstName);
+                        pillsContainer.appendChild(btn);
+                    });
+                }
+            } catch (e) {
+                console.error('Erro ao carregar categorias:', e);
+            }
+        }
+
+        // Carregar produtos dinâmicos da API da CJ
+        async function fetchShopProducts(keyWord = '', category = '') {
+            const grid = document.getElementById('shop-products-grid');
+            grid.innerHTML = `
+                <div class="col-span-full text-center py-20">
+                    <i data-lucide="loader" class="w-10 h-10 text-cyberrose animate-spin mx-auto mb-4"></i>
+                    <p class="font-orbitron text-xs tracking-widest text-slate-400">BUSCANDO PRODUTOS NA ZHER SHOP...</p>
+                </div>
+            `;
+            lucide.createIcons();
+
+            try {
+                let url = `/api/cj/products?size=20`;
+                if (keyWord) url += `&keyWord=${encodeURIComponent(keyWord)}`;
+
+                const res = await fetch(url);
+                const result = await res.json();
+
+                let productsList = [];
+                if (result.success && result.data && result.data.content && result.data.content[0] && result.data.content[0].productList) {
+                    productsList = result.data.content[0].productList;
+                }
+
+                if (productsList.length === 0) {
+                    grid.innerHTML = `
+                        <div class="col-span-full text-center py-16 bg-slate-950/40 border border-slate-900 rounded-3xl">
+                            <p class="font-orbitron text-sm text-slate-400">Nenhum produto encontrado na busca.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = '';
+                productsList.forEach(prod => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-slate-950/80 border border-slate-800/80 hover:border-cyberrose/50 rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 group hover:-translate-y-1 shadow-lg';
+                    
+                    const title = prod.nameEn || 'Produto High-Tech Zher Shop';
+                    const price = parseFloat(prod.nowPrice || prod.sellPrice || 29.99);
+                    const image = prod.bigImage || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500';
+
+                    card.innerHTML = `
+                        <div>
+                            <div class="w-full h-48 rounded-xl overflow-hidden mb-4 bg-slate-900 border border-slate-800/60 relative">
+                                <img src="${image}" alt="${title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <span class="absolute top-2 left-2 bg-cyberrose text-white text-[9px] font-orbitron font-bold px-2 py-0.5 rounded-md">OFERTA</span>
+                            </div>
+                            <h3 class="font-orbitron font-bold text-sm text-white line-clamp-2 mb-2 group-hover:text-cyberrose transition-colors">${title}</h3>
+                        </div>
+                        <div>
+                            <div class="flex items-baseline gap-2 mb-4">
+                                <span class="font-orbitron font-black text-xl text-cyberrose">R$ ${price.toFixed(2).replace('.', ',')}</span>
+                            </div>
+                            <button onclick="addShopToCart('${prod.id}', '${title.replace(/'/g, "")}', ${price}, '${image}')" class="w-full bg-cyberrose hover:bg-rose-600 text-white font-orbitron text-xs font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyberrose/20 cursor-pointer">
+                                <i data-lucide="shopping-cart" class="w-4 h-4"></i> COMPRAR AGORA
+                            </button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+                lucide.createIcons();
+            } catch (e) {
+                console.error('Erro ao buscar produtos:', e);
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-16 bg-slate-950/40 border border-slate-900 rounded-3xl">
+                        <p class="font-orbitron text-sm text-slate-400">Erro ao carregar catálogo. Tente novamente.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function filterByCategory(btnEl, catName) {
+            document.querySelectorAll('.cat-pill').forEach(b => {
+                b.className = 'cat-pill bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-5 py-2.5 rounded-xl font-orbitron text-xs font-bold whitespace-nowrap cursor-pointer transition-all';
+            });
+            btnEl.className = 'cat-pill active bg-cyberrose text-white border border-cyberrose px-5 py-2.5 rounded-xl font-orbitron text-xs font-bold whitespace-nowrap cursor-pointer transition-all';
+            fetchShopProducts(catName);
+        }
+
+        function addShopToCart(id, name, price, img) {
+            alert(`✅ ${name} adicionado ao carrinho da Zher Shop! Redirecionando...`);
+            window.location.href = '/carrinho.html';
+        }
+
+        document.getElementById('shop-search-btn').addEventListener('click', () => {
+            const query = document.getElementById('shop-search-input').value;
+            fetchShopProducts(query);
+        });
+
+        document.getElementById('shop-search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                fetchShopProducts(e.target.value);
+            }
+        });
+
+        // Inicialização
+        fetchShopCategories();
+        fetchShopProducts();
+    </script>
+</body>
+</html>
