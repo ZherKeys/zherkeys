@@ -10,6 +10,8 @@ const speakeasy = require('speakeasy');
 const fs = require('fs');
 const { execFileSync } = require('child_process');
 const { autoBuyEnebaKeyWeb } = require('./eneba_web_bot');
+const CJDropshippingAPI = require('./cj_dropshipping_api');
+const cjApi = new CJDropshippingAPI();
 
 // TFJS Universal Sentence Encoder (Node) - optional, faster than Python if installed
 let useTfjs = false;
@@ -43,6 +45,26 @@ app.use(session({
     resave: false,
     saveUninitialized: false
 }));
+
+// Rotas da API CJ Dropshipping v2
+app.get('/api/cj/categories', async (req, res) => {
+    try {
+        const categories = await cjApi.getCategoryList();
+        res.json({ success: true, data: categories });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+app.get('/api/cj/products', async (req, res) => {
+    try {
+        const { page, size, keyWord, categoryId } = req.query;
+        const products = await cjApi.getProductList({ page, size, keyWord, categoryId });
+        res.json({ success: true, data: products });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 
 // Setup Database (PostgreSQL)
 const poolConfig = process.env.DATABASE_URL
