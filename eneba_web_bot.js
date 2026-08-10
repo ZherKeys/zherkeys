@@ -329,18 +329,24 @@ async function ensureEnebaLogin(page, orderId = null, dbSaveFn = null) {
 
 async function clearEnebaCartIfNotEmpty(page, orderId = null, dbSaveFn = null) {
     try {
-        writeLog('info', `🛒 Checando se o carrinho do Eneba possui itens antigos salvos...`);
-        await page.goto('https://www.eneba.com/cart', { waitUntil: 'networkidle2', timeout: 30000 });
-        await new Promise(r => setTimeout(r, 1500));
-
-        const hasItems = await page.evaluate(() => {
-            const trashBtns = Array.from(document.querySelectorAll('button[aria-label*="Remover"], button[aria-label*="remove"], button[class*="remove"], button svg'));
-            const removeLinks = Array.from(document.querySelectorAll('button, a')).filter(b => (b.innerText || '').toLowerCase().includes('remover') || (b.innerText || '').toLowerCase().includes('remove'));
-            return trashBtns.length > 0 || removeLinks.length > 0;
+        writeLog('info', `🛒 Checando se o carrinho do Eneba possui itens salvos...`);
+        
+        // Verifica se há badge com quantidade no ícone do carrinho no topo da página
+        const hasCartBadge = await page.evaluate(() => {
+            const cartLinks = Array.from(document.querySelectorAll('a[href*="/checkout"], button[aria-label*="cart"], span[class*="badge"]'));
+            return cartLinks.some(el => {
+                const txt = (el.innerText || el.textContent || '').trim();
+                return /^[1-9]\d*$/.test(txt);
+            });
         });
 
-        if (hasItems) {
-            writeLog('warn', `⚠️ Carrinho possuía itens antigos acumulados. Esvaziando o carrinho primeiro...`);
+        if (hasCartBadge) {
+            writeLog('warn', `⚠️ Carrinho possuía itens antigos salvos. Acessando checkout para esvaziar o carrinho...`);
+            await page.evaluate(() => {
+                const cartBtn = document.querySelector('a[href*="/checkout"], button[aria-label*="cart"]');
+                if (cartBtn) cartBtn.click();
+            });
+            await new Promise(r => setTimeout(r, 2500));
             await saveStepScreenshot(page, '01_clearing_old_cart_items', orderId, dbSaveFn);
 
             await page.evaluate(() => {
@@ -354,7 +360,7 @@ async function clearEnebaCartIfNotEmpty(page, orderId = null, dbSaveFn = null) {
             await new Promise(r => setTimeout(r, 2000));
             writeLog('info', `✅ Carrinho esvaziado com sucesso!`);
         } else {
-            writeLog('info', `✅ Carrinho limpo e vazio. Pronto para adicionar o produto do pedido!`);
+            writeLog('info', `✅ Carrinho limpo e sem acúmulo de itens antigos. Prosseguindo...`);
         }
     } catch (e) {
         writeLog('warn', `Aviso ao verificar/esvaziar carrinho: ${e.message}`);
