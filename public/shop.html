@@ -62,7 +62,7 @@
                     <button id="shop-search-btn" class="absolute right-3 top-2.5 text-slate-400 hover:text-white"><i data-lucide="search" class="w-4 h-4"></i></button>
                 </div>
 
-                <a href="/carrinho.html" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-slate-900 border border-slate-800 hover:border-cyberrose text-slate-300 hover:text-white transition-all">
+                <a href="/carrinho.html" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-slate-900 border border-slate-800 hover:border-cyberrose text-slate-300 hover:text-white transition-all" title="Ver Carrinho">
                     <i data-lucide="shopping-cart" class="w-5 h-5"></i>
                     <span id="cart-count" class="absolute -top-1 -right-1 bg-cyberrose text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
                 </a>
@@ -73,15 +73,36 @@
     <!-- Main Container -->
     <main class="flex-grow pt-28 pb-16 px-4 max-w-7xl mx-auto w-full">
         <!-- Hero Header -->
-        <div class="bg-gradient-to-r from-slate-900/90 via-slate-950/90 to-slate-900/90 border border-slate-800 rounded-3xl p-8 sm:p-12 mb-10 relative overflow-hidden shadow-2xl">
+        <div class="bg-gradient-to-r from-slate-900/90 via-slate-950/90 to-slate-900/90 border border-slate-800 rounded-3xl p-8 sm:p-12 mb-8 relative overflow-hidden shadow-2xl">
             <div class="relative z-10 max-w-2xl">
-                <span class="font-orbitron text-xs tracking-widest text-cyberrose font-bold block mb-3">// CATÁLOGO OFICIAL DROPSHIPPING</span>
+                <span class="font-orbitron text-xs tracking-widest text-cyberrose font-bold block mb-3">// PREÇOS CONVERTIDOS COM MARGEM DE LUCRO REAL</span>
                 <h1 class="font-orbitron font-black text-3xl sm:text-5xl text-white tracking-tight mb-4">ZHER <span class="text-cyberrose">SHOP</span></h1>
-                <p class="text-slate-400 text-sm sm:text-base mb-6">Eletrônicos, gadgets futuristas, fones sem fio e periféricos high-tech diretamente dos fornecedores globais.</p>
+                <p class="text-slate-400 text-sm sm:text-base mb-6">Produtos importados e nacionais com valores atualizados em Reais (R$), incluindo margem e frete protegido.</p>
                 <div class="flex items-center gap-4 text-xs font-orbitron text-slate-300">
                     <span class="flex items-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i> Frete com Rastreio</span>
-                    <span class="flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4 text-electricblue"></i> Compra Garantida</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4 text-electricblue"></i> Conversão Dólar ➔ Real Garantida</span>
                 </div>
+            </div>
+        </div>
+
+        <!-- Origem & Filtros Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+            <!-- Filtro de Origem (Nacional vs Internacional) -->
+            <div class="flex items-center gap-2 bg-slate-950/80 border border-slate-800 p-1.5 rounded-2xl">
+                <button class="origin-tab active bg-cyberrose text-white px-4 py-2 rounded-xl font-orbitron text-xs font-bold transition-all cursor-pointer" data-origin="all" onclick="selectOrigin(this, 'all')">
+                    🌐 Todos
+                </button>
+                <button class="origin-tab bg-slate-900 text-slate-400 hover:text-white px-4 py-2 rounded-xl font-orbitron text-xs font-bold transition-all cursor-pointer" data-origin="BR" onclick="selectOrigin(this, 'BR')">
+                    🇧🇷 Nacionais
+                </button>
+                <button class="origin-tab bg-slate-900 text-slate-400 hover:text-white px-4 py-2 rounded-xl font-orbitron text-xs font-bold transition-all cursor-pointer" data-origin="INT" onclick="selectOrigin(this, 'INT')">
+                    🌎 Internacionais
+                </button>
+            </div>
+
+            <!-- Taxa de Conversão Informativa -->
+            <div class="text-xs font-orbitron text-slate-400 flex items-center gap-2 bg-slate-900/60 border border-slate-800/80 px-4 py-2 rounded-xl">
+                <i data-lucide="badge-dollar-sign" class="w-4 h-4 text-emerald-400"></i> Cotação: <strong>1 USD = R$ 5,60</strong> (Margem Dropshipping Aplicada)
             </div>
         </div>
 
@@ -90,12 +111,10 @@
             <button class="cat-pill active bg-cyberrose text-white border border-cyberrose px-5 py-2.5 rounded-xl font-orbitron text-xs font-bold whitespace-nowrap cursor-pointer transition-all" data-cat="">
                 🔥 Todos os Produtos
             </button>
-            <!-- Injetado dinamicamente via JS -->
         </div>
 
         <!-- Products Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="shop-products-grid">
-            <!-- Carregando skeleton -->
             <div class="col-span-full text-center py-20">
                 <i data-lucide="loader" class="w-10 h-10 text-cyberrose animate-spin mx-auto mb-4"></i>
                 <p class="font-orbitron text-xs tracking-widest text-slate-400">CARREGANDO CATÁLOGO ZHER SHOP...</p>
@@ -103,27 +122,58 @@
         </div>
     </main>
 
+    <!-- Notification Toast -->
+    <div id="shop-toast" class="fixed bottom-6 right-6 bg-emerald-500 text-slate-950 px-6 py-4 rounded-2xl font-orbitron font-bold text-xs shadow-2xl flex items-center gap-3 z-50 transform translate-y-20 opacity-0 transition-all duration-300">
+        <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+        <span id="toast-msg">Produto adicionado ao carrinho!</span>
+    </div>
+
     <!-- Footer -->
     <footer class="border-t border-slate-900 bg-slate-950/80 py-8 text-center text-xs text-slate-500 font-orbitron">
         <p>&copy; 2026 Zher Keys & Zher Shop Store. Todos os direitos reservados.</p>
     </footer>
 
     <script>
-        // Inicializar ícones Lucide
+        // Cotação e Margem de Lucro para evitar prejuízo
+        const USD_TO_BRL_RATE = 5.60;
+        const DROPSHIPPING_MARKUP = 1.85; // Margem de lucro de 85% sobre o custo USD da CJ
+
+        let currentOrigin = 'all';
+        let currentKeyword = '';
+
         lucide.createIcons();
 
-        // Carregar categorias dinâmicas da API da CJ
+        // Atualiza a badge do carrinho
+        function updateCartBadge() {
+            try {
+                const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                const totalCount = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+                const badge = document.getElementById('cart-count');
+                if (badge) badge.textContent = totalCount;
+            } catch (e) {
+                console.error('Erro ao ler carrinho:', e);
+            }
+        }
+
+        // Função de Conversão Real (Evita prejuízo convertendo USD para BRL com margem)
+        function calculateRealPriceInBRL(usdPriceString) {
+            const rawUsd = parseFloat(usdPriceString || 19.99);
+            const brlBase = rawUsd * USD_TO_BRL_RATE;
+            const finalPriceBRL = brlBase * DROPSHIPPING_MARKUP;
+            return finalPriceBRL;
+        }
+
+        // Carregar categorias dinâmicas
         async function fetchShopCategories() {
             try {
                 const res = await fetch('/api/cj/categories');
                 const result = await res.json();
                 if (result.success && result.data && Array.isArray(result.data)) {
                     const pillsContainer = document.getElementById('category-pills-container');
-                    result.data.slice(0, 8).forEach(cat => {
+                    result.data.slice(0, 10).forEach(cat => {
                         const btn = document.createElement('button');
                         btn.className = 'cat-pill bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-5 py-2.5 rounded-xl font-orbitron text-xs font-bold whitespace-nowrap cursor-pointer transition-all';
                         btn.textContent = cat.categoryFirstName || 'Categoria';
-                        btn.setAttribute('data-cat', cat.categoryFirstName);
                         btn.onclick = () => filterByCategory(btn, cat.categoryFirstName);
                         pillsContainer.appendChild(btn);
                     });
@@ -133,8 +183,19 @@
             }
         }
 
-        // Carregar produtos dinâmicos da API da CJ
-        async function fetchShopProducts(keyWord = '', category = '') {
+        // Seleção de Origem (Nacional vs Internacional)
+        function selectOrigin(btnEl, originCode) {
+            document.querySelectorAll('.origin-tab').forEach(b => {
+                b.className = 'origin-tab bg-slate-900 text-slate-400 hover:text-white px-4 py-2 rounded-xl font-orbitron text-xs font-bold transition-all cursor-pointer';
+            });
+            btnEl.className = 'origin-tab active bg-cyberrose text-white px-4 py-2 rounded-xl font-orbitron text-xs font-bold transition-all cursor-pointer';
+            currentOrigin = originCode;
+            fetchShopProducts(currentKeyword);
+        }
+
+        // Carregar produtos
+        async function fetchShopProducts(keyWord = '') {
+            currentKeyword = keyWord;
             const grid = document.getElementById('shop-products-grid');
             grid.innerHTML = `
                 <div class="col-span-full text-center py-20">
@@ -145,7 +206,7 @@
             lucide.createIcons();
 
             try {
-                let url = `/api/cj/products?size=20`;
+                let url = `/api/cj/products?size=24`;
                 if (keyWord) url += `&keyWord=${encodeURIComponent(keyWord)}`;
 
                 const res = await fetch(url);
@@ -156,10 +217,17 @@
                     productsList = result.data.content[0].productList;
                 }
 
+                // Filtrar por origem se selecionado nacional ou internacional
+                if (currentOrigin === 'BR') {
+                    productsList = productsList.filter(p => p.countryCode === 'BR' || (p.oneCategoryName && p.oneCategoryName.includes('Office')));
+                } else if (currentOrigin === 'INT') {
+                    productsList = productsList.filter(p => p.countryCode !== 'BR');
+                }
+
                 if (productsList.length === 0) {
                     grid.innerHTML = `
                         <div class="col-span-full text-center py-16 bg-slate-950/40 border border-slate-900 rounded-3xl">
-                            <p class="font-orbitron text-sm text-slate-400">Nenhum produto encontrado na busca.</p>
+                            <p class="font-orbitron text-sm text-slate-400">Nenhum produto encontrado para este filtro.</p>
                         </div>
                     `;
                     return;
@@ -171,22 +239,30 @@
                     card.className = 'bg-slate-950/80 border border-slate-800/80 hover:border-cyberrose/50 rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 group hover:-translate-y-1 shadow-lg';
                     
                     const title = prod.nameEn || 'Produto High-Tech Zher Shop';
-                    const price = parseFloat(prod.nowPrice || prod.sellPrice || 29.99);
+                    const rawUsdPrice = prod.nowPrice || prod.sellPrice || "19.99";
+                    const realPriceBRL = calculateRealPriceInBRL(rawUsdPrice);
+                    const oldPriceBRL = realPriceBRL * 1.35; // Preço original de referência
+
                     const image = prod.bigImage || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500';
+                    const isNational = prod.countryCode === 'BR';
+                    const originBadge = isNational 
+                        ? `<span class="bg-emerald-950/90 text-emerald-400 border border-emerald-700/60 text-[9px] font-orbitron font-bold px-2 py-0.5 rounded-md">🇧🇷 ESTOQUE BRASIL</span>`
+                        : `<span class="bg-blue-950/90 text-electricblue border border-blue-700/60 text-[9px] font-orbitron font-bold px-2 py-0.5 rounded-md">🌎 IMPORTADO (CJ)</span>`;
 
                     card.innerHTML = `
                         <div>
                             <div class="w-full h-48 rounded-xl overflow-hidden mb-4 bg-slate-900 border border-slate-800/60 relative">
                                 <img src="${image}" alt="${title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                                <span class="absolute top-2 left-2 bg-cyberrose text-white text-[9px] font-orbitron font-bold px-2 py-0.5 rounded-md">OFERTA</span>
+                                <div class="absolute top-2 left-2 flex gap-1">${originBadge}</div>
                             </div>
                             <h3 class="font-orbitron font-bold text-sm text-white line-clamp-2 mb-2 group-hover:text-cyberrose transition-colors">${title}</h3>
                         </div>
                         <div>
                             <div class="flex items-baseline gap-2 mb-4">
-                                <span class="font-orbitron font-black text-xl text-cyberrose">R$ ${price.toFixed(2).replace('.', ',')}</span>
+                                <span class="text-xs text-slate-500 line-through">R$ ${oldPriceBRL.toFixed(2).replace('.', ',')}</span>
+                                <span class="font-orbitron font-black text-xl text-cyberrose">R$ ${realPriceBRL.toFixed(2).replace('.', ',')}</span>
                             </div>
-                            <button onclick="addShopToCart('${prod.id}', '${title.replace(/'/g, "")}', ${price}, '${image}')" class="w-full bg-cyberrose hover:bg-rose-600 text-white font-orbitron text-xs font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyberrose/20 cursor-pointer">
+                            <button onclick="addShopToCart('${prod.id}', '${title.replace(/'/g, "")}', ${realPriceBRL.toFixed(2)}, '${image}')" class="w-full bg-cyberrose hover:bg-rose-600 text-white font-orbitron text-xs font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyberrose/20 cursor-pointer">
                                 <i data-lucide="shopping-cart" class="w-4 h-4"></i> COMPRAR AGORA
                             </button>
                         </div>
@@ -204,17 +280,53 @@
             }
         }
 
+        // Função do Carrinho TOTALMENTE FUNCIONAL
+        function addShopToCart(id, title, priceBRL, image) {
+            try {
+                let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                const existingIndex = cart.findIndex(item => item.id === id || item.name === title);
+
+                if (existingIndex > -1) {
+                    cart[existingIndex].quantity = (cart[existingIndex].quantity || 1) + 1;
+                } else {
+                    cart.push({
+                        id: id,
+                        name: title,
+                        price: parseFloat(priceBRL),
+                        image: image,
+                        quantity: 1,
+                        type: 'physical_dropshipping'
+                    });
+                }
+
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartBadge();
+                showToast(`✅ "${title}" adicionado ao seu carrinho!`);
+            } catch (e) {
+                console.error('Erro ao adicionar ao carrinho:', e);
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('shop-toast');
+            const msgSpan = document.getElementById('toast-msg');
+            if (msgSpan) msgSpan.textContent = message;
+            if (toast) {
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+                setTimeout(() => {
+                    toast.classList.remove('translate-y-0', 'opacity-100');
+                    toast.classList.add('translate-y-20', 'opacity-0');
+                }, 2800);
+            }
+        }
+
         function filterByCategory(btnEl, catName) {
             document.querySelectorAll('.cat-pill').forEach(b => {
                 b.className = 'cat-pill bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-5 py-2.5 rounded-xl font-orbitron text-xs font-bold whitespace-nowrap cursor-pointer transition-all';
             });
             btnEl.className = 'cat-pill active bg-cyberrose text-white border border-cyberrose px-5 py-2.5 rounded-xl font-orbitron text-xs font-bold whitespace-nowrap cursor-pointer transition-all';
             fetchShopProducts(catName);
-        }
-
-        function addShopToCart(id, name, price, img) {
-            alert(`✅ ${name} adicionado ao carrinho da Zher Shop! Redirecionando...`);
-            window.location.href = '/carrinho.html';
         }
 
         document.getElementById('shop-search-btn').addEventListener('click', () => {
@@ -229,6 +341,7 @@
         });
 
         // Inicialização
+        updateCartBadge();
         fetchShopCategories();
         fetchShopProducts();
     </script>
