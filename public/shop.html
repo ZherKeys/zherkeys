@@ -52,7 +52,7 @@
 
             <div class="flex items-center gap-6 font-orbitron text-xs tracking-widest text-slate-400">
                 <a href="/" class="hover:text-white transition-colors">INÍCIO</a>
-                <a href="/shop.html" class="text-cyberrose font-bold">SHOPPING</a>
+                <a href="/shop.html" class="text-cyberrose font-bold">SHOPPING (DEV)</a>
                 <a href="/minigames.html" class="text-emerald-400 font-bold hover:text-emerald-300">MINIGAMES</a>
             </div>
 
@@ -70,12 +70,31 @@
         </div>
     </nav>
 
+    <!-- Overlay Acesso Restrito (Se não for zherkeys@gmail.com) -->
+    <div id="dev-lock-screen" class="fixed inset-0 z-[100] bg-slate-950/95 backdrop-blur-2xl flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-md text-center shadow-2xl">
+            <div class="w-16 h-16 bg-cyberrose/20 text-cyberrose rounded-2xl flex items-center justify-center mx-auto mb-4 border border-cyberrose/40">
+                <i data-lucide="lock" class="w-8 h-8"></i>
+            </div>
+            <h2 class="font-orbitron font-bold text-xl text-white mb-2">MÓDULO EM DESENVOLVIMENTO</h2>
+            <p class="text-xs text-slate-400 mb-6 leading-relaxed">
+                A <strong>Zher Shop</strong> está em fase privada de testes. Acesso restrito para o administrador <strong>zherkeys@gmail.com</strong>.
+            </p>
+            <a href="/login.html" class="block w-full bg-cyberrose hover:bg-rose-600 text-white font-orbitron font-bold text-xs py-3.5 rounded-xl transition-all mb-3 shadow-lg shadow-cyberrose/20">
+                FAZER LOGIN COMO ZHERKEYS@GMAIL.COM
+            </a>
+            <a href="/" class="block text-xs font-orbitron text-slate-500 hover:text-slate-300">
+                Voltar para a Página Inicial
+            </a>
+        </div>
+    </div>
+
     <!-- Main Container -->
     <main class="flex-grow pt-28 pb-16 px-4 max-w-7xl mx-auto w-full">
         <!-- Hero Header -->
         <div class="bg-gradient-to-r from-slate-900/90 via-slate-950/90 to-slate-900/90 border border-slate-800 rounded-3xl p-8 sm:p-12 mb-8 relative overflow-hidden shadow-2xl">
             <div class="relative z-10 max-w-2xl">
-                <span class="font-orbitron text-xs tracking-widest text-cyberrose font-bold block mb-3">// CATÁLOGO PERSISTENTE COM CÁLCULO DE FRETE VIA CEP</span>
+                <span class="font-orbitron text-xs tracking-widest text-cyberrose font-bold block mb-3">// AMBIENTE DE TESTES (ACESSO EXCLUSIVO ZHERKEYS@GMAIL.COM)</span>
                 <h1 class="font-orbitron font-black text-3xl sm:text-5xl text-white tracking-tight mb-4">ZHER <span class="text-cyberrose">SHOP</span></h1>
                 <p class="text-slate-400 text-sm sm:text-base mb-6">Produtos nacionais e importados salvos no banco. Calcule o frete pelo CEP e receba direto no seu endereço.</p>
                 <div class="flex items-center gap-4 text-xs font-orbitron text-slate-300">
@@ -277,6 +296,32 @@
 
         lucide.createIcons();
 
+        // Validação de Permissão Restrita para zherkeys@gmail.com
+        async function verifyDeveloperAccess() {
+            let allowed = false;
+            try {
+                const res = await fetch('/api/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    const email = (data && data.user && data.user.email) || (data && data.email) || '';
+                    if (email.toLowerCase() === 'zherkeys@gmail.com') allowed = true;
+                }
+            } catch (e) {}
+
+            if (!allowed) {
+                try {
+                    const localUser = JSON.parse(localStorage.getItem('user') || '{}');
+                    if (localUser.email && localUser.email.toLowerCase() === 'zherkeys@gmail.com') allowed = true;
+                } catch (e) {}
+            }
+
+            const lockScreen = document.getElementById('dev-lock-screen');
+            if (!allowed && lockScreen) {
+                lockScreen.classList.remove('hidden');
+                lockScreen.classList.add('flex');
+            }
+        }
+
         function updateCartBadge() {
             try {
                 const cart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -294,7 +339,6 @@
             return brlBase * DROPSHIPPING_MARKUP;
         }
 
-        // Calculadora de Frete por CEP via API ViaCEP
         async function calculateCepFreight() {
             const cepInput = document.getElementById('modal-cep-input').value.replace(/\D/g, '');
             const resultBox = document.getElementById('modal-freight-result');
@@ -343,7 +387,6 @@
             }
         }
 
-        // Auto Preenchimento por CEP no Formulário de Endereço
         async function autoFetchAddressByCep(cepRaw) {
             const cepClean = cepRaw.replace(/\D/g, '');
             if (cepClean.length === 8) {
@@ -360,7 +403,6 @@
             }
         }
 
-        // Modais de Produto e Endereço
         async function openProductModal(prodJson) {
             try {
                 currentModalProductData = typeof prodJson === 'string' ? JSON.parse(decodeURIComponent(prodJson)) : prodJson;
@@ -630,6 +672,7 @@
             }
         });
 
+        verifyDeveloperAccess();
         updateCartBadge();
         fetchShopCategories();
         fetchShopProducts();

@@ -142,7 +142,7 @@ gtag('config', 'AW-18202657831');
             </div>
             
             <div class="hidden lg:flex items-center gap-6 font-orbitron text-xs tracking-widest text-slate-400">
-                <a href="/shop.html" class="relative py-2 transition-colors text-cyberrose hover:text-pink-400 font-bold group flex items-center gap-1">
+                <a id="nav-zher-shop-btn" href="/shop.html" class="hidden relative py-2 transition-colors text-cyberrose hover:text-pink-400 font-bold group flex items-center gap-1" style="display: none;">
                     🛍️ ZHER SHOP
                     <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-cyberrose transition-all duration-300 group-hover:w-full"></span>
                 </a>
@@ -3617,11 +3617,38 @@ gtag('config', 'AW-18202657831');
         if (window.produtos && window.produtos.length > 0) {
             initSteamSlider();
         }
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                if (typeof initSteamSlider === 'function') initSteamSlider();
-            }, 200);
-        });
+        // Permissão Restrita da Zher Shop para zherkeys@gmail.com
+        async function checkShopAccessPermission() {
+            const btn = document.getElementById('nav-zher-shop-btn');
+            if (!btn) return;
+
+            let allowed = false;
+            try {
+                const res = await fetch('/api/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    const email = (data && data.user && data.user.email) || (data && data.email) || '';
+                    if (email.toLowerCase() === 'zherkeys@gmail.com') allowed = true;
+                }
+            } catch (e) {}
+
+            if (!allowed) {
+                try {
+                    const localUser = JSON.parse(localStorage.getItem('user') || '{}');
+                    if (localUser.email && localUser.email.toLowerCase() === 'zherkeys@gmail.com') allowed = true;
+                } catch (e) {}
+            }
+
+            if (allowed) {
+                btn.classList.remove('hidden');
+                btn.style.display = 'inline-flex';
+            } else {
+                btn.classList.add('hidden');
+                btn.style.display = 'none';
+            }
+        }
+        window.addEventListener('DOMContentLoaded', checkShopAccessPermission);
+        window.addEventListener('load', checkShopAccessPermission);
     </script>
 
     <script src="/bg-player.js" defer></script>
