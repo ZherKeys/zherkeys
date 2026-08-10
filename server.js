@@ -3588,9 +3588,31 @@ app.get('/api/admin/orders/:id/bot-screenshots', requireAdmin, async (req, res) 
 
         screenshotFiles.sort((a, b) => a.time - b.time);
 
+        // 4. Busca os logs de debug do robô para este pedido
+        let orderLogs = '';
+        const enebaLogPath = path.join(__dirname, 'logs', 'eneba_bot.log');
+        const fillLogPath = path.join(__dirname, 'logs', 'test_fill_2fa_only.log');
+        
+        let fullLogsText = '';
+        if (fs.existsSync(enebaLogPath)) fullLogsText += fs.readFileSync(enebaLogPath, 'utf-8') + '\n';
+        if (fs.existsSync(fillLogPath)) fullLogsText += fs.readFileSync(fillLogPath, 'utf-8') + '\n';
+
+        if (fullLogsText.trim()) {
+            const logLines = fullLogsText.split('\n');
+            const matchingLines = logLines.filter(l => l.toLowerCase().includes(`pedido #${orderId}`) || l.toLowerCase().includes(`pedido_${orderId}`));
+            if (matchingLines.length > 0) {
+                orderLogs = matchingLines.join('\n');
+            } else {
+                orderLogs = logLines.filter(Boolean).slice(-100).join('\n');
+            }
+        } else {
+            orderLogs = '[SISTEMA NUVEM] Nenhum registro de log bruto armazenado até o momento.';
+        }
+
         res.json({
             orderId: orderId,
-            screenshots: screenshotFiles
+            screenshots: screenshotFiles,
+            logs: orderLogs
         });
     } catch (e) {
         res.status(500).json({ error: e.message });

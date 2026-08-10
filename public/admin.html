@@ -407,6 +407,17 @@ gtag('config', 'AW-18202657831');
                         Selecione um pedido no menu acima ou clique no botão "📸 PRINTS DO ROBÔ" em Vendas.
                     </div>
                 </div>
+
+                <!-- Terminal de Logs de Debug por Pedido -->
+                <div class="mt-8 border-t border-slate-800 pt-6">
+                    <h4 class="font-orbitron font-bold text-slate-300 text-sm tracking-wider mb-3 flex items-center justify-between">
+                        <span class="flex items-center gap-2"><i data-lucide="terminal" class="w-4 h-4 text-purple-400"></i> LOG TERMINAL DE DEBUG DO PEDIDO</span>
+                        <span id="robo-log-status" class="text-[10px] text-purple-400 font-mono">Modo Nuvem Ativo</span>
+                    </h4>
+                    <div class="bg-black/90 border border-slate-800 rounded-xl p-4 font-mono text-xs text-emerald-400 max-h-72 overflow-y-auto whitespace-pre-wrap leading-relaxed shadow-inner" id="robo-logs-terminal">
+                        Selecione um pedido acima para visualizar o log de execução do robô...
+                    </div>
+                </div>
             </div>
         </div>
         <div id="section-carteiras" class="hidden">
@@ -2748,6 +2759,17 @@ gtag('config', 'AW-18202657831');
                 });
 
                 container.innerHTML = html;
+
+                // Atualiza a janela de log do terminal de debug
+                const logsTerminal = document.getElementById('robo-logs-terminal');
+                const logStatus = document.getElementById('robo-log-status');
+                if (logsTerminal) {
+                    logsTerminal.innerText = data.logs || '[INFO] Nenhum registro de log em texto encontrado para este pedido.';
+                    logsTerminal.scrollTop = logsTerminal.scrollHeight;
+                }
+                if (logStatus) {
+                    logStatus.innerText = `Sincronizado: ${new Date().toLocaleTimeString('pt-BR')}`;
+                }
             } catch(e) {
                 console.error(e);
             }
