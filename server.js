@@ -1627,6 +1627,19 @@ const requireAdmin = async (req, res, next) => {
 // ENEBA B2B AUTO-FULFILLMENT ENGINE
 // (Suporta tanto API Oficial quanto Robô de Navegador Puppeteer!)
 // ==========================================
+async function saveBotLogToDatabase(orderId, stepName, screenshotBase64, logText) {
+    try {
+        if (!orderId) return;
+        await pool.query(
+            `INSERT INTO bot_order_logs (order_id, step_name, screenshot_base64, log_text) VALUES ($1, $2, $3, $4)`,
+            [parseInt(orderId), stepName || 'step', screenshotBase64 || '', logText || '']
+        );
+        console.log(`[BOT-LOG-DB] 💾 Salvo no Banco: Pedido #${orderId} - Etapa "${stepName}"`);
+    } catch (e) {
+        console.error("[BOT-LOG-DB] Erro ao gravar no banco:", e.message || e);
+    }
+}
+
 async function autoPurchaseEnebaKeys(productTitleOrUrl, quantity = 1, orderId = null) {
     const enebaApiKey = process.env.ENEBA_API_KEY;
     const enebaApiSecret = process.env.ENEBA_API_SECRET;
@@ -1659,7 +1672,7 @@ async function autoPurchaseEnebaKeys(productTitleOrUrl, quantity = 1, orderId = 
     try {
         const { autoBuyEnebaKeyWeb } = require('./eneba_web_bot');
         console.log(`[ENEBA-AUTOBUY] Executando Robô Web Automático na Nuvem para "${productTitleOrUrl}" (Pedido #${orderId || 'Desconhecido'})...`);
-        const webKeys = await autoBuyEnebaKeyWeb(productTitleOrUrl, quantity, orderId);
+        const webKeys = await autoBuyEnebaKeyWeb(productTitleOrUrl, quantity, orderId, saveBotLogToDatabase);
         if (webKeys && webKeys.length > 0) {
             return webKeys;
         }
