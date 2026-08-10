@@ -418,12 +418,12 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1, orderId = null, db
             fullProductUrl = cleanProductTarget;
             writeLog('info', `[ETAPA 1/6] Link direto detectado! Navegando diretamente para: ${fullProductUrl}`);
             await page.goto(fullProductUrl, { waitUntil: 'networkidle2', timeout: 45000 });
-            await saveStepScreenshot(page, , orderId, dbSaveFn);
+            await saveStepScreenshot(page, '01_direct_product_page', orderId, dbSaveFn);
         } else {
             const searchUrl = `https://www.eneba.com/store/all?text=${encodeURIComponent(cleanProductTarget)}`;
             writeLog('info', `[ETAPA 1/6] Navegando até busca: ${searchUrl}`);
             await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: 45000 });
-            await saveStepScreenshot(page, , orderId, dbSaveFn);
+            await saveStepScreenshot(page, '01_search_page', orderId, dbSaveFn);
 
             const productHref = await page.evaluate((titleStr) => {
                 const titleWords = titleStr.toLowerCase().split(' ').filter(w => w.length > 2);
@@ -442,7 +442,7 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1, orderId = null, db
 
             if (!productHref) {
                 writeLog('error', `❌ Produto "${cleanProductTarget}" não encontrado na Eneba.`);
-                await saveStepScreenshot(page, , orderId, dbSaveFn);
+                await saveStepScreenshot(page, '01_error_product_not_found', orderId, dbSaveFn);
                 await browser.close();
                 return [];
             }
@@ -450,7 +450,7 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1, orderId = null, db
             fullProductUrl = productHref.startsWith('http') ? productHref : `https://www.eneba.com${productHref}`;
             writeLog('info', `[ETAPA 2/6] Acessando página do produto: ${fullProductUrl}`);
             await page.goto(fullProductUrl, { waitUntil: 'networkidle2', timeout: 45000 });
-            await saveStepScreenshot(page, '02_product_page', orderId);
+            await saveStepScreenshot(page, '02_product_page', orderId, dbSaveFn);
         }
 
         // Verifica se é necessário fazer login com E-mail + Senha + 2FA
@@ -475,7 +475,7 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1, orderId = null, db
 
         if (!buyBtnClicked.success) {
             writeLog('error', `❌ Botão 'Comprar Agora' não encontrado na página do produto.`);
-            await saveStepScreenshot(page, , orderId, dbSaveFn);
+            await saveStepScreenshot(page, '02_error_no_buy_button', orderId, dbSaveFn);
             await browser.close();
             return [];
         }
@@ -488,7 +488,7 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1, orderId = null, db
             await page.goto('https://www.eneba.com/checkout', { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => null);
         }
         
-        await saveStepScreenshot(page, , orderId, dbSaveFn);
+        await saveStepScreenshot(page, '03_checkout_cart', orderId, dbSaveFn);
         writeLog('info', `[ETAPA 3/6] URL atual no checkout: ${page.url()}`);
 
         // Remove todos os itens antigos acumulados do carrinho mantendo apenas a compra atual com Qty 1
@@ -550,7 +550,7 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1, orderId = null, db
         });
 
         await new Promise(r => setTimeout(r, 4000));
-        await saveStepScreenshot(page, , orderId, dbSaveFn);
+        await saveStepScreenshot(page, 'step_screenshot', orderId, dbSaveFn);
         writeLog('info', `[ETAPA 4/6] URL na etapa de pagamento: ${page.url()}`);
 
         // 4. Etapa de Seleção de Pagamento (https://www.eneba.com/checkout/payment)
@@ -582,7 +582,7 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1, orderId = null, db
 
             if (paymentPageSnippet.includes('Not enough funds') || paymentPageSnippet.includes('The amount is not enough') || paymentPageSnippet.includes('Not enough balance')) {
                 writeLog('error', `❌ SALDO INSUFICIENTE NA CARTEIRA ENEBA: O valor total deste jogo ultrapassou o saldo disponível.`);
-                await saveStepScreenshot(page, , orderId, dbSaveFn);
+                await saveStepScreenshot(page, 'step_screenshot', orderId, dbSaveFn);
                 await browser.close();
                 return [];
             }
@@ -653,7 +653,7 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1, orderId = null, db
                 const pageSnippetText = await page.evaluate(() => (document.body.innerText || '').toLowerCase()).catch(() => '');
                 if (pageSnippetText.includes('not enough funds') || pageSnippetText.includes('insufficient balance') || pageSnippetText.includes('payment failed') || pageSnippetText.includes('pagamento recusado')) {
                     writeLog('error', `❌ PAGAMENTO RECUSADO OU SALDO INSUFICIENTE.`);
-                    await saveStepScreenshot(page, , orderId, dbSaveFn);
+                    await saveStepScreenshot(page, 'step_screenshot', orderId, dbSaveFn);
                     await browser.close();
                     return [];
                 }
@@ -661,7 +661,7 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1, orderId = null, db
                 await new Promise(r => setTimeout(r, 2000));
             }
 
-            await saveStepScreenshot(page, , orderId, dbSaveFn);
+            await saveStepScreenshot(page, 'step_screenshot', orderId, dbSaveFn);
             writeLog('info', `URL após janela de monitoramento de pagamento: ${page.url()}`);
 
             // Se permaneceu em /checkout/payment após 30s, tenta navegar para Biblioteca de Chaves para verificar se o faturamento ocorreu
@@ -673,7 +673,7 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1, orderId = null, db
         // 5. Ir para Biblioteca de Chaves / Meus Pedidos na Eneba (Keys Library)
         writeLog('info', `[ETAPA 5/6] Navegando para Biblioteca de Chaves (https://my.eneba.com/my-keys)...`);
         await page.goto('https://my.eneba.com/my-keys', { waitUntil: 'networkidle2', timeout: 45000 });
-        await saveStepScreenshot(page, , orderId, dbSaveFn);
+        await saveStepScreenshot(page, 'step_screenshot', orderId, dbSaveFn);
 
         // Check if user is logged in on keys library page
         const isLoggedOnPurchases = await page.evaluate(() => {
@@ -686,7 +686,7 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1, orderId = null, db
 
         if (!isLoggedOnPurchases) {
             writeLog('warn', `⚠️ Sessão da Eneba não autenticada! Executando Login Automático pelo Robô (100% Autônomo)...`);
-            await saveStepScreenshot(page, , orderId, dbSaveFn);
+            await saveStepScreenshot(page, 'step_screenshot', orderId, dbSaveFn);
             
             const botEmail = process.env.ENEBA_BOT_EMAIL || 'zherkeys@gmail.com';
             const botPass = process.env.ENEBA_BOT_PASSWORD || 'Caio40028922!';
@@ -711,11 +711,11 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1, orderId = null, db
 
             writeLog('info', `Formulário de login preenchido e submetido.`);
             await handleEneba2FAPrompt(page);
-            await saveStepScreenshot(page, , orderId, dbSaveFn);
+            await saveStepScreenshot(page, 'step_screenshot', orderId, dbSaveFn);
 
             // Retorna para a Biblioteca de Chaves do usuário
             await page.goto('https://my.eneba.com/my-keys', { waitUntil: 'networkidle2', timeout: 45000 }).catch(() => null);
-            await saveStepScreenshot(page, , orderId, dbSaveFn);
+            await saveStepScreenshot(page, 'step_screenshot', orderId, dbSaveFn);
         }
 
         // Clica no pedido MAIS RECENTE E NÃO REVELADO que corresponda ao produto comprado
@@ -785,13 +785,13 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1, orderId = null, db
         
         if (!redeemClicked.clicked) {
             writeLog('error', `❌ Botão de resgatar chave ('Display key') não foi encontrado na página de compras. A compra pode não ter sido concluída.`);
-            await saveStepScreenshot(page, , orderId, dbSaveFn);
+            await saveStepScreenshot(page, 'step_screenshot', orderId, dbSaveFn);
             await browser.close();
             return [];
         }
 
         await new Promise(r => setTimeout(r, 3000));
-        await saveStepScreenshot(page, , orderId, dbSaveFn);
+        await saveStepScreenshot(page, 'step_screenshot', orderId, dbSaveFn);
 
         // Tenta aceitar termos/avisos de região se houver popup
         const confirmClicked = await page.evaluate(() => {
@@ -809,7 +809,7 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1, orderId = null, db
 
         writeLog('info', `Resultado clique de confirmação de termos/região:`, confirmClicked);
         await new Promise(r => setTimeout(r, 3000));
-        await saveStepScreenshot(page, , orderId, dbSaveFn);
+        await saveStepScreenshot(page, 'step_screenshot', orderId, dbSaveFn);
 
         // 6. Procura por CD-Keys no DOM (inputs, textareas, tags <code>, classes key)
         const domKeys = await page.evaluate(() => {
