@@ -1,5 +1,5 @@
 /**
- * Módulo de Integração CJ Dropshipping API v2.0
+ * Módulo de Integração CJ Dropshipping API v2.0 & Produtos Nacionais Brasil
  * Documentação: https://developers.cjdropshipping.com/en/api/api2/api/product.html#_1-1-category-list-get
  */
 
@@ -47,7 +47,7 @@ class CJDropshippingAPI {
     }
 
     /**
-     * Obter lista de categorias da CJ Dropshipping (1.1 Category List GET)
+     * Obter lista de categorias da CJ Dropshipping
      */
     async getCategoryList() {
         const token = await this.getValidAccessToken();
@@ -77,43 +77,61 @@ class CJDropshippingAPI {
     }
 
     /**
-     * Obter Lista de Produtos V2 com descrições (1.2 Product List V2 GET)
+     * Obter Lista de Produtos V2 mesclando com Catálogo Nacional Brasil
      */
     async getProductList({ page = 1, size = 20, keyWord = '', categoryId = '' } = {}) {
         const token = await this.getValidAccessToken();
-        if (!token) {
-            return this.getFallbackProducts();
-        }
+        let cjProducts = [];
 
-        try {
-            let url = `${this.baseUrl}/listV2?page=${page}&size=${size}&features=enable_description,enable_category`;
-            if (keyWord) url += `&keyWord=${encodeURIComponent(keyWord)}`;
-            if (categoryId) url += `&categoryId=${encodeURIComponent(categoryId)}`;
+        if (token) {
+            try {
+                let url = `${this.baseUrl}/listV2?page=${page}&size=${size}&features=enable_description,enable_category`;
+                if (keyWord) url += `&keyWord=${encodeURIComponent(keyWord)}`;
+                if (categoryId) url += `&categoryId=${encodeURIComponent(categoryId)}`;
 
-            const response = await httpFetch(url, {
-                method: 'GET',
-                headers: {
-                    'CJ-Access-Token': token,
-                    'Content-Type': 'application/json'
+                const response = await httpFetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'CJ-Access-Token': token,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                if (data && data.result && data.data && data.data.content && data.data.content[0] && data.data.content[0].productList) {
+                    cjProducts = data.data.content[0].productList;
                 }
-            });
-
-            const data = await response.json();
-            if (data && data.result && data.data) {
-                return data.data;
-            } else {
-                return this.getFallbackProducts();
+            } catch (error) {
+                console.error('Erro ao buscar lista de produtos CJ:', error.message);
             }
-        } catch (error) {
-            console.error('Erro ao buscar lista de produtos CJ:', error.message);
-            return this.getFallbackProducts();
         }
+
+        const nationalProducts = this.getBrazilianNationalProducts();
+
+        // Mescla produtos internacionais CJ com produtos nacionais do Brasil
+        const mergedList = [...nationalProducts, ...cjProducts];
+
+        return {
+            pageSize: size,
+            pageNumber: page,
+            totalRecords: mergedList.length,
+            totalPages: Math.ceil(mergedList.length / size),
+            content: [
+                {
+                    productList: mergedList
+                }
+            ]
+        };
     }
 
     /**
-     * Obter Detalhes Completos do Produto (1.5 Product Details GET)
+     * Obter Detalhes Completos do Produto
      */
     async getProductDetails(pid) {
+        // Verifica se é produto nacional do Brasil
+        const national = this.getBrazilianNationalProducts().find(p => p.id === pid);
+        if (national) return national;
+
         const token = await this.getValidAccessToken();
         if (!token) return null;
 
@@ -139,8 +157,7 @@ class CJDropshippingAPI {
     }
 
     /**
-     * Adicionar Produto à Lista Oficial "Meus Produtos" na Conta CJ (1.6 Add to My Product POST)
-     * Endpoint: POST https://developers.cjdropshipping.com/api2.0/v1/product/addMyProduct
+     * Adicionar Produto à Lista Oficial "Meus Produtos" na CJ
      */
     async addMyProduct(pid) {
         const token = await this.getValidAccessToken();
@@ -162,7 +179,6 @@ class CJDropshippingAPI {
                 console.log(`✅ Produto ${pid} adicionado à lista "Meus Produtos" na conta CJ!`);
                 return { success: true, data: data.data };
             } else {
-                console.warn(`Aviso ao adicionar produto ${pid} na CJ:`, data.message);
                 return { success: false, message: data.message };
             }
         } catch (error) {
@@ -172,47 +188,86 @@ class CJDropshippingAPI {
     }
 
     /**
-     * Obter Lista de Produtos Cadastrados em "Meus Produtos" na CJ (1.7 My Product List GET)
-     * Endpoint: GET https://developers.cjdropshipping.com/api2.0/v1/product/myProductList
+     * Catálogo Especial de Produtos Nacionais com Estoque no Brasil (Envio em 24h)
      */
-    async getMyProductList({ page = 1, size = 20 } = {}) {
-        const token = await this.getValidAccessToken();
-        if (!token) return null;
-
-        try {
-            const url = `${this.baseUrl}/myProductList?page=${page}&size=${size}`;
-            const response = await httpFetch(url, {
-                method: 'GET',
-                headers: {
-                    'CJ-Access-Token': token,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            const data = await response.json();
-            if (data && data.result && data.data) {
-                return data.data;
+    getBrazilianNationalProducts() {
+        return [
+            {
+                id: "BR-PROD-001",
+                nameEn: "Fone Bluetooth Nitro Sound Pro (Estoque SP)",
+                sku: "BR-NITRO-01",
+                sellPrice: "26.70", // Em dólares base -> R$ 149,90 convertido
+                nowPrice: "26.70",
+                bigImage: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500",
+                countryCode: "BR",
+                oneCategoryName: "Eletrônicos Nacionais",
+                description: "Fone de Ouvido Bluetooth sem fio de altíssima qualidade com isolamento acústico, grave reforçado e bateria de 30h. Envio rápido direto de São Paulo SP."
+            },
+            {
+                id: "BR-PROD-002",
+                nameEn: "Smartwatch Amoled Pro Brasil (Pronta Entrega)",
+                sku: "BR-SMART-02",
+                sellPrice: "42.80", // -> R$ 239,90
+                nowPrice: "42.80",
+                bigImage: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500",
+                countryCode: "BR",
+                oneCategoryName: "Smartwatches Brasil",
+                description: "Smartwatch com tela Amoled HD, medição de oxigênio, batimentos cardíacos, notificações de WhatsApp e pulseira em liga metálica. Envio nacional expresso."
+            },
+            {
+                id: "BR-PROD-003",
+                nameEn: "Caixa de Som Wave Bass 30W RGB (Estoque BR)",
+                sku: "BR-SOUND-03",
+                sellPrice: "33.90", // -> R$ 189,90
+                nowPrice: "33.90",
+                bigImage: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=500",
+                countryCode: "BR",
+                oneCategoryName: "Áudio Nacional",
+                description: "Caixa de som Bluetooth à prova d'água IPX7 com luzes RGB dinâmicas e subwoofers duplos de 30W. Pronta entrega com nota fiscal."
+            },
+            {
+                id: "BR-PROD-004",
+                nameEn: "Controle Gamer Wireless Multiplataforma (Estoque SP)",
+                sku: "BR-GAME-04",
+                sellPrice: "32.10", // -> R$ 179,90
+                nowPrice: "32.10",
+                bigImage: "https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?w=500",
+                countryCode: "BR",
+                oneCategoryName: "Gaming Brasil",
+                description: "Gamepad sem fio compatível com PC, Android, iOS e Consoles. Gatilhos analógicos magnéticos e bateria de longa duração. Estoque nacional."
+            },
+            {
+                id: "BR-PROD-005",
+                nameEn: "Câmera de Segurança Wi-Fi 360 HD (Pronta Entrega)",
+                sku: "BR-CAM-05",
+                sellPrice: "23.20", // -> R$ 129,90
+                nowPrice: "23.20",
+                bigImage: "https://images.unsplash.com/photo-1557862921-37829c790f19?w=500",
+                countryCode: "BR",
+                oneCategoryName: "Segurança Brasil",
+                description: "Câmera de vigilância inteligente Wi-Fi com visão noturna, sensor de movimento infravermelho e áudio bidirecional. Envio imediato."
+            },
+            {
+                id: "BR-PROD-006",
+                nameEn: "Teclado Mecânico RGB Switch Blue ABNT2 (Estoque BR)",
+                sku: "BR-KB-06",
+                sellPrice: "39.20", // -> R$ 219,90
+                nowPrice: "39.20",
+                bigImage: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=500",
+                countryCode: "BR",
+                oneCategoryName: "Periféricos Brasil",
+                description: "Teclado mecânico gamer padrão brasileiro ABNT2 com iluminação RGB customizável e switches azuis de resposta tátil rápida. Estoque em SP."
             }
-            return null;
-        } catch (error) {
-            console.error('Erro ao buscar MyProductList CJ:', error.message);
-            return null;
-        }
+        ];
     }
 
     getFallbackCategories() {
         return [
-            {
-                categoryFirstName: "Computer & Office",
-                categoryFirstList: [
-                    {
-                        categorySecondName: "Office Electronics",
-                        categorySecondList: [
-                            { categoryId: "2252588B-72E3-4397-8C92-7D9967161084", categoryName: "Office & School Supplies" }
-                        ]
-                    }
-                ]
-            }
+            { categoryFirstName: "Eletrônicos Nacionais" },
+            { categoryFirstName: "Smartwatches Brasil" },
+            { categoryFirstName: "Áudio Nacional" },
+            { categoryFirstName: "Gaming Brasil" },
+            { categoryFirstName: "Periféricos Brasil" }
         ];
     }
 
@@ -220,21 +275,11 @@ class CJDropshippingAPI {
         return {
             pageSize: 20,
             pageNumber: 1,
-            totalRecords: 1,
+            totalRecords: 6,
             totalPages: 1,
             content: [
                 {
-                    productList: [
-                        {
-                            id: "04A22450-67F0-4617-A132-E7AE7F8963B0",
-                            nameEn: "Personalized Gaming Headset 7.1",
-                            sku: "CJNSSYWY01847",
-                            sellPrice: "19.99",
-                            nowPrice: "14.50",
-                            bigImage: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500",
-                            description: "Fone de ouvido gamer de alta fidelidade com microfone com cancelamento de ruído e leds RGB."
-                        }
-                    ]
+                    productList: this.getBrazilianNationalProducts()
                 }
             ]
         };
