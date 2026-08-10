@@ -1,21 +1,17 @@
 /**
- * Script de Sincronização Automática de Produtos CJ Dropshipping -> Banco de Dados ZherKeys
- * E vinculação direta no painel oficial "Meus Produtos" da sua conta na CJ Dropshipping.
+ * Script de Sincronização Automática de Produtos CJ Dropshipping -> products_backup.json
  */
 
 require('dotenv').config();
-const { Pool } = require('pg');
+const path = require('path');
+const fs = require('fs');
 const CJDropshippingAPI = require('./cj_dropshipping_api');
 
-const poolConfig = process.env.DATABASE_URL
-    ? { connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } }
-    : { host: 'localhost', port: 5432, user: 'postgres', database: 'zherkeys' };
-
-const pool = new Pool(poolConfig);
 const cjApi = new CJDropshippingAPI();
+const jsonPath = path.join(__dirname, 'products_backup.json');
 
 async function autoSyncCJProducts(limit = 20) {
-    console.log('🔄 Iniciando Sincronização Automática de Produtos da CJ Dropshipping...');
+    console.log('🔄 Iniciando Sincronização Automática de Produtos no Zher Store...');
 
     try {
         const cjData = await cjApi.getProductList({ page: 1, size: limit });
@@ -26,52 +22,62 @@ async function autoSyncCJProducts(limit = 20) {
         }
 
         const products = cjData.content[0].productList;
-        console.log(`📦 ${products.length} produtos encontrados na CJ. Vinculando à sua conta CJ e inserindo no banco...`);
+        console.log(`📦 ${products.length} produtos encontrados. Salvando em products_backup.json...`);
+
+        let currentBackup = [];
+        if (fs.existsSync(jsonPath)) {
+            try {
+                currentBackup = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+            } catch (e) {
+                currentBackup = [];
+            }
+        }
 
         let insertedCount = 0;
 
         for (const prod of products) {
-            const name = prod.nameEn || 'Produto CJ Dropshipping';
-            const price = parseFloat(prod.nowPrice || prod.sellPrice || 19.99);
+            const name = prod.nameEn || 'Produto High-Tech Zher';
+            const rawUsdPrice = parseFloat(prod.nowPrice || prod.sellPrice || 19.99);
+            const realPriceBRL = parseFloat((rawUsdPrice * 5.60 * 1.85).toFixed(2));
             const image = prod.bigImage || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500';
-            const sku = prod.sku || prod.spu || prod.id;
             const category = prod.oneCategoryName || 'Eletrônicos';
+            const desc = prod.description || `Produto importado e certificado. SKU: ${prod.sku || prod.id}`;
 
-            // 1. Vincula automaticamente à lista "Meus Produtos" na sua conta oficial da CJ
-            await cjApi.addMyProduct(prod.id);
+            const existingIndex = currentBackup.findIndex(p => p.cj_product_id === prod.id || p.name === name);
 
-            // 2. Insere/Atualiza no banco de dados local da ZherKeys
-            const queryText = `
-                INSERT INTO products (name, price, image, description, category, stock, cj_product_id)
-                VALUES ($1, $2, $3, $4, $5, 100, $6)
-                ON CONFLICT (cj_product_id) DO UPDATE 
-                SET price = EXCLUDED.price, image = EXCLUDED.image, name = EXCLUDED.name
-            `;
+            const prodObj = {
+                id: prod.id,
+                cj_product_id: prod.id,
+                name: name,
+                price: realPriceBRL,
+                image: image,
+                description: desc,
+                category: category,
+                stock: 100,
+                countryCode: prod.countryCode || 'BR'
+            };
 
-            try {
-                await pool.query(queryText, [name, price, image, prod.description || `SKU: ${sku}`, category, prod.id]);
-                insertedCount++;
-            } catch (err) {
-                try {
-                    await pool.query(
-                        `INSERT INTO products (name, price, image, description, category, stock) VALUES ($1, $2, $3, $4, $5, 100)`,
-                        [name, price, image, prod.description || `SKU: ${sku}`, category]
-                    );
-                    insertedCount++;
-                } catch (e) {
-                    console.warn(`Aviso ao salvar produto "${name}":`, e.message);
-                }
+            if (existingIndex > -1) {
+                currentBackup[existingIndex] = prodObj;
+            } else {
+                currentBackup.push(prodObj);
             }
+
+            insertedCount++;
+            // Dispara vínculo na CJ
+            cjApi.addMyProduct(prod.id);
         }
 
-        console.log(`✅ Sincronização concluída! ${insertedCount} produtos vinculados à sua conta CJ e salvos no banco!`);
+        fs.writeFileSync(jsonPath, JSON.stringify(currentBackup, null, 2), 'utf8');
+        console.log(`✅ Sincronização concluída com sucesso! ${insertedCount} produtos salvos persistentemente em products_backup.json!`);
+
     } catch (error) {
-        console.error('❌ Erro na sincronização de produtos CJ:', error.message);
+        console.error('❌ Erro na sincronização:', error.message);
     }
 }
 
 if (require.main === module) {
-    autoSyncCJProducts(10).then(() => pool.end());
+    autoSyncCJProducts(20);
 }
 
 module.exports = { autoSyncCJProducts };

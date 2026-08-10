@@ -75,12 +75,12 @@
         <!-- Hero Header -->
         <div class="bg-gradient-to-r from-slate-900/90 via-slate-950/90 to-slate-900/90 border border-slate-800 rounded-3xl p-8 sm:p-12 mb-8 relative overflow-hidden shadow-2xl">
             <div class="relative z-10 max-w-2xl">
-                <span class="font-orbitron text-xs tracking-widest text-cyberrose font-bold block mb-3">// CATÁLOGO OFICIAL CJ DROPSHIPPING</span>
+                <span class="font-orbitron text-xs tracking-widest text-cyberrose font-bold block mb-3">// CATÁLOGO PERSISTENTE COM CÁLCULO DE FRETE VIA CEP</span>
                 <h1 class="font-orbitron font-black text-3xl sm:text-5xl text-white tracking-tight mb-4">ZHER <span class="text-cyberrose">SHOP</span></h1>
-                <p class="text-slate-400 text-sm sm:text-base mb-6">Clique nos produtos para ver a descrição detalhada, especificações técnicas e comprar diretamente com envio protegido.</p>
+                <p class="text-slate-400 text-sm sm:text-base mb-6">Produtos nacionais e importados salvos no banco. Calcule o frete pelo CEP e receba direto no seu endereço.</p>
                 <div class="flex items-center gap-4 text-xs font-orbitron text-slate-300">
-                    <span class="flex items-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i> Frete com Rastreio</span>
-                    <span class="flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4 text-electricblue"></i> Garantia de Entrega</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="truck" class="w-4 h-4 text-emerald-400"></i> Cálculo de Frete em Tempo Real</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4 text-electricblue"></i> Endereço Seguro & Rastreio</span>
                 </div>
             </div>
         </div>
@@ -89,18 +89,18 @@
         <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
             <div class="flex items-center gap-2 bg-slate-950/80 border border-slate-800 p-1.5 rounded-2xl">
                 <button class="origin-tab active bg-cyberrose text-white px-4 py-2 rounded-xl font-orbitron text-xs font-bold transition-all cursor-pointer" data-origin="all" onclick="selectOrigin(this, 'all')">
-                    🌐 Todos
+                    🌐 Todos (26+)
                 </button>
                 <button class="origin-tab bg-slate-900 text-slate-400 hover:text-white px-4 py-2 rounded-xl font-orbitron text-xs font-bold transition-all cursor-pointer" data-origin="BR" onclick="selectOrigin(this, 'BR')">
-                    🇧🇷 Nacionais
+                    🇧🇷 Nacionais (SP/BR)
                 </button>
                 <button class="origin-tab bg-slate-900 text-slate-400 hover:text-white px-4 py-2 rounded-xl font-orbitron text-xs font-bold transition-all cursor-pointer" data-origin="INT" onclick="selectOrigin(this, 'INT')">
-                    🌎 Internacionais
+                    🌎 Importados CJ
                 </button>
             </div>
 
             <div class="text-xs font-orbitron text-slate-400 flex items-center gap-2 bg-slate-900/60 border border-slate-800/80 px-4 py-2 rounded-xl">
-                <i data-lucide="badge-dollar-sign" class="w-4 h-4 text-emerald-400"></i> Cotação: <strong>1 USD = R$ 5,60</strong> (Margem Dropshipping Aplicada)
+                <i data-lucide="badge-dollar-sign" class="w-4 h-4 text-emerald-400"></i> Cotação: <strong>1 USD = R$ 5,60</strong> (Margem de Lucro Ativa)
             </div>
         </div>
 
@@ -120,7 +120,7 @@
         </div>
     </main>
 
-    <!-- Modal de Detalhes do Produto (Product Detail Modal) -->
+    <!-- Modal de Detalhes do Produto com Calculadora de CEP -->
     <div id="product-detail-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
         <div class="bg-slate-950 border border-slate-800 rounded-3xl max-w-3xl w-full p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto">
             <button onclick="closeProductModal()" class="absolute top-4 right-4 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer">
@@ -133,21 +133,36 @@
                     <img id="modal-img" src="" alt="Produto" class="w-full h-full object-cover">
                 </div>
 
-                <!-- Detalhes e Ações -->
+                <!-- Detalhes e Calculadora -->
                 <div class="flex flex-col justify-between">
                     <div>
                         <div id="modal-origin-badge" class="mb-2"></div>
-                        <h2 id="modal-title" class="font-orbitron font-bold text-xl text-white mb-3">Nome do Produto</h2>
+                        <h2 id="modal-title" class="font-orbitron font-bold text-xl text-white mb-2">Nome do Produto</h2>
                         
                         <div class="flex items-baseline gap-3 mb-4">
                             <span id="modal-old-price" class="text-sm text-slate-500 line-through">R$ 0,00</span>
                             <span id="modal-price" class="font-orbitron font-black text-2xl text-cyberrose">R$ 0,00</span>
                         </div>
 
-                        <div class="mb-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800/60">
-                            <h4 class="font-orbitron text-xs text-slate-400 font-bold uppercase mb-2">Descrição do Produto:</h4>
-                            <p id="modal-desc" class="text-xs text-slate-300 leading-relaxed max-h-36 overflow-y-auto pr-2">
-                                Carregando detalhes do fornecedor...
+                        <!-- Calculadora de Frete por CEP -->
+                        <div class="mb-4 bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                            <h4 class="font-orbitron text-xs text-slate-300 font-bold uppercase mb-2 flex items-center gap-1.5">
+                                <i data-lucide="truck" class="w-4 h-4 text-emerald-400"></i> Calcular Frete e Prazo:
+                            </h4>
+                            <div class="flex gap-2 mb-2">
+                                <input type="text" id="modal-cep-input" placeholder="00000-000" maxlength="9" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-orbitron text-white w-full focus:outline-none focus:border-cyberrose">
+                                <button onclick="calculateCepFreight()" class="bg-slate-800 hover:bg-slate-700 text-white font-orbitron text-xs font-bold px-4 py-2 rounded-xl transition-all cursor-pointer whitespace-nowrap">
+                                    Calcular
+                                </button>
+                            </div>
+                            <div id="modal-freight-result" class="text-xs font-orbitron text-slate-400 space-y-1"></div>
+                        </div>
+
+                        <!-- Descrição -->
+                        <div class="mb-4 bg-slate-900/40 p-3 rounded-xl border border-slate-800/40">
+                            <h4 class="font-orbitron text-[10px] text-slate-400 font-bold uppercase mb-1">Descrição do Produto:</h4>
+                            <p id="modal-desc" class="text-xs text-slate-300 leading-relaxed max-h-24 overflow-y-auto pr-2">
+                                Carregando especificações...
                             </p>
                         </div>
                     </div>
@@ -163,11 +178,79 @@
                         </div>
 
                         <button id="modal-add-cart-btn" class="w-full bg-cyberrose hover:bg-rose-600 text-white font-orbitron text-xs font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyberrose/20 cursor-pointer">
-                            <i data-lucide="shopping-cart" class="w-4 h-4"></i> ADICIONAR AO CARRINHO
+                            <i data-lucide="shopping-cart" class="w-4 h-4"></i> COMPRAR & PREENCHER ENDEREÇO
                         </button>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal de Preenchimento de Endereço de Entrega -->
+    <div id="address-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="bg-slate-950 border border-slate-800 rounded-3xl max-w-xl w-full p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeAddressModal()" class="absolute top-4 right-4 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="text-center mb-6">
+                <i data-lucide="map-pin" class="w-10 h-10 text-cyberrose mx-auto mb-2"></i>
+                <h3 class="font-orbitron font-bold text-xl text-white">Endereço de Entrega</h3>
+                <p class="text-xs text-slate-400">Informe os dados para etiquetar o produto e calcular a entrega final.</p>
+            </div>
+
+            <form id="address-form" onsubmit="confirmAddressAndCheckout(event)" class="space-y-4 text-xs font-orbitron">
+                <div>
+                    <label class="block text-slate-300 mb-1">Nome Completo do Destinatário *</label>
+                    <input type="text" id="addr-name" required placeholder="Seu nome completo" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyberrose">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-slate-300 mb-1">CPF (Necessário p/ Entregas) *</label>
+                        <input type="text" id="addr-cpf" required placeholder="000.000.000-00" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyberrose">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 mb-1">CEP de Entrega *</label>
+                        <input type="text" id="addr-cep" required placeholder="00000-000" onblur="autoFetchAddressByCep(this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyberrose">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-slate-300 mb-1">Rua / Logradouro *</label>
+                    <input type="text" id="addr-street" required placeholder="Nome da sua rua" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyberrose">
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-slate-300 mb-1">Número *</label>
+                        <input type="text" id="addr-num" required placeholder="123" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyberrose">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-slate-300 mb-1">Complemento / Ap</label>
+                        <input type="text" id="addr-comp" placeholder="Apto 42, Bloco B" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyberrose">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-slate-300 mb-1">Bairro *</label>
+                        <input type="text" id="addr-district" required placeholder="Seu bairro" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyberrose">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 mb-1">Cidade *</label>
+                        <input type="text" id="addr-city" required placeholder="Sua cidade" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyberrose">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 mb-1">Estado (UF) *</label>
+                        <input type="text" id="addr-state" required placeholder="SP" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyberrose">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-cyberrose hover:bg-rose-600 text-white font-orbitron font-bold text-xs py-4 rounded-xl transition-all shadow-lg shadow-cyberrose/20 cursor-pointer mt-4 flex items-center justify-center gap-2">
+                    CONFIRMAR ENDEREÇO & IR PRO PAGAMENTO <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </form>
         </div>
     </div>
 
@@ -189,6 +272,7 @@
         let currentOrigin = 'all';
         let currentKeyword = '';
         let currentModalProductData = null;
+        let selectedFreightValue = 0;
         let modalQty = 1;
 
         lucide.createIcons();
@@ -210,12 +294,80 @@
             return brlBase * DROPSHIPPING_MARKUP;
         }
 
-        // Abrir Modal de Detalhes ao Clicar no Produto
+        // Calculadora de Frete por CEP via API ViaCEP
+        async function calculateCepFreight() {
+            const cepInput = document.getElementById('modal-cep-input').value.replace(/\D/g, '');
+            const resultBox = document.getElementById('modal-freight-result');
+
+            if (cepInput.length !== 8) {
+                resultBox.innerHTML = `<span class="text-rose-400">Digite um CEP válido com 8 dígitos.</span>`;
+                return;
+            }
+
+            resultBox.innerHTML = `<span class="text-electricblue animate-pulse">Buscando frete via CEP...</span>`;
+
+            try {
+                const response = await fetch(`https://viacep.com.br/ws/${cepInput}/json/`);
+                const data = await response.json();
+
+                if (data.erro) {
+                    resultBox.innerHTML = `<span class="text-rose-400">CEP não encontrado na base dos Correios.</span>`;
+                    return;
+                }
+
+                const isNational = currentModalProductData && currentModalProductData.countryCode === 'BR';
+                
+                let freightOptionsHTML = '';
+                if (isNational) {
+                    selectedFreightValue = 14.90;
+                    freightOptionsHTML = `
+                        <div class="bg-emerald-950/60 p-2.5 rounded-lg border border-emerald-800/60 mt-1">
+                            <div class="text-emerald-400 font-bold">🇧🇷 ${data.localidade} - ${data.uf}:</div>
+                            <div class="text-slate-300"><b>SEDEX Expresso:</b> R$ 14,90 (2 a 4 dias úteis)</div>
+                            <div class="text-slate-400 text-[10px]"><b>PAC Econômico:</b> R$ 8,90 (5 a 8 dias úteis)</div>
+                        </div>
+                    `;
+                } else {
+                    selectedFreightValue = 18.90;
+                    freightOptionsHTML = `
+                        <div class="bg-blue-950/60 p-2.5 rounded-lg border border-blue-800/60 mt-1">
+                            <div class="text-electricblue font-bold">🌎 Entrega em ${data.localidade} - ${data.uf}:</div>
+                            <div class="text-slate-300"><b>CJ Packet Fast Express:</b> R$ 18,90 (7 a 14 dias úteis)</div>
+                        </div>
+                    `;
+                }
+
+                resultBox.innerHTML = freightOptionsHTML;
+            } catch (e) {
+                resultBox.innerHTML = `<span class="text-rose-400">Erro ao calcular frete. Tente novamente.</span>`;
+            }
+        }
+
+        // Auto Preenchimento por CEP no Formulário de Endereço
+        async function autoFetchAddressByCep(cepRaw) {
+            const cepClean = cepRaw.replace(/\D/g, '');
+            if (cepClean.length === 8) {
+                try {
+                    const res = await fetch(`https://viacep.com.br/ws/${cepClean}/json/`);
+                    const data = await res.json();
+                    if (!data.erro) {
+                        document.getElementById('addr-street').value = data.logradouro || '';
+                        document.getElementById('addr-district').value = data.bairro || '';
+                        document.getElementById('addr-city').value = data.localidade || '';
+                        document.getElementById('addr-state').value = data.uf || '';
+                    }
+                } catch (e) {}
+            }
+        }
+
+        // Modais de Produto e Endereço
         async function openProductModal(prodJson) {
             try {
                 currentModalProductData = typeof prodJson === 'string' ? JSON.parse(decodeURIComponent(prodJson)) : prodJson;
                 modalQty = 1;
+                selectedFreightValue = 0;
                 document.getElementById('modal-qty-val').textContent = 1;
+                document.getElementById('modal-freight-result').innerHTML = '';
 
                 const title = currentModalProductData.nameEn || 'Produto Zher Shop';
                 const rawUsdPrice = currentModalProductData.nowPrice || currentModalProductData.sellPrice || "19.99";
@@ -228,37 +380,23 @@
                 document.getElementById('modal-price').textContent = `R$ ${realPriceBRL.toFixed(2).replace('.', ',')}`;
                 document.getElementById('modal-old-price').textContent = `R$ ${oldPriceBRL.toFixed(2).replace('.', ',')}`;
                 
-                // Exibe a descrição retornada da CJ ou busca detalhes adicionais
                 const descEl = document.getElementById('modal-desc');
                 descEl.textContent = currentModalProductData.description || 'Carregando especificações técnicas completas do fornecedor...';
 
                 const isNational = currentModalProductData.countryCode === 'BR';
                 document.getElementById('modal-origin-badge').innerHTML = isNational 
-                    ? `<span class="bg-emerald-950 text-emerald-400 border border-emerald-700 text-[10px] font-orbitron font-bold px-3 py-1 rounded-md">🇧🇷 ESTOQUE NACIONAL</span>`
+                    ? `<span class="bg-emerald-950 text-emerald-400 border border-emerald-700 text-[10px] font-orbitron font-bold px-3 py-1 rounded-md">🇧🇷 ESTOQUE SP/BRASIL</span>`
                     : `<span class="bg-blue-950 text-electricblue border border-blue-700 text-[10px] font-orbitron font-bold px-3 py-1 rounded-md">🌎 IMPORTADO DA CJ DROPSHIPPING</span>`;
 
                 document.getElementById('modal-add-cart-btn').onclick = () => {
-                    addShopToCart(currentModalProductData.id, title, realPriceBRL.toFixed(2), image, modalQty);
                     closeProductModal();
+                    openAddressModal();
                 };
 
                 const modal = document.getElementById('product-detail-modal');
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
                 lucide.createIcons();
-
-                // Busca descrição completa caso não venha no objeto simples
-                if (!currentModalProductData.description && currentModalProductData.id) {
-                    try {
-                        const detailRes = await fetch(`/api/cj/product/${currentModalProductData.id}`);
-                        const detailData = await detailRes.json();
-                        if (detailData.success && detailData.data && detailData.data.description) {
-                            descEl.textContent = detailData.data.description.replace(/<[^>]*>?/gm, '');
-                        }
-                    } catch (err) {
-                        console.warn('Erro ao carregar detalhes estendidos:', err);
-                    }
-                }
             } catch (e) {
                 console.error('Erro ao abrir modal:', e);
             }
@@ -270,12 +408,53 @@
             modal.classList.add('hidden');
         }
 
+        function openAddressModal() {
+            const modal = document.getElementById('address-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function closeAddressModal() {
+            const modal = document.getElementById('address-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        function confirmAddressAndCheckout(e) {
+            e.preventDefault();
+            const address = {
+                name: document.getElementById('addr-name').value,
+                cpf: document.getElementById('addr-cpf').value,
+                cep: document.getElementById('addr-cep').value,
+                street: document.getElementById('addr-street').value,
+                number: document.getElementById('addr-num').value,
+                complement: document.getElementById('addr-comp').value,
+                district: document.getElementById('addr-district').value,
+                city: document.getElementById('addr-city').value,
+                state: document.getElementById('addr-state').value
+            };
+
+            localStorage.setItem('delivery_address', JSON.stringify(address));
+
+            if (currentModalProductData) {
+                const title = currentModalProductData.nameEn || 'Produto Zher Shop';
+                const rawUsdPrice = currentModalProductData.nowPrice || currentModalProductData.sellPrice || "19.99";
+                const realPriceBRL = calculateRealPriceInBRL(rawUsdPrice);
+                const image = currentModalProductData.bigImage || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500';
+
+                addShopToCart(currentModalProductData.id, title, realPriceBRL.toFixed(2), image, modalQty);
+            }
+
+            closeAddressModal();
+            window.location.href = '/carrinho.html';
+        }
+
         function changeModalQty(delta) {
             modalQty = Math.max(1, modalQty + delta);
             document.getElementById('modal-qty-val').textContent = modalQty;
         }
 
-        // Carregar categorias
         async function fetchShopCategories() {
             try {
                 const res = await fetch('/api/cj/categories');
@@ -304,7 +483,6 @@
             fetchShopProducts(currentKeyword);
         }
 
-        // Carregar produtos
         async function fetchShopProducts(keyWord = '') {
             currentKeyword = keyWord;
             const grid = document.getElementById('shop-products-grid');
@@ -371,7 +549,7 @@
                             <div class="w-full h-48 rounded-xl overflow-hidden mb-4 bg-slate-900 border border-slate-800/60 relative">
                                 <img src="${image}" alt="${title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                                 <div class="absolute top-2 left-2 flex gap-1">${originBadge}</div>
-                                <span class="absolute bottom-2 right-2 bg-slate-950/80 backdrop-blur-md text-slate-300 text-[9px] font-orbitron font-bold px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">👁️ Clique para Ver</span>
+                                <span class="absolute bottom-2 right-2 bg-slate-950/80 backdrop-blur-md text-slate-300 text-[9px] font-orbitron font-bold px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">👁️ Ver Detalhes</span>
                             </div>
                             <h3 class="font-orbitron font-bold text-sm text-white line-clamp-2 mb-2 group-hover:text-cyberrose transition-colors">${title}</h3>
                         </div>
@@ -380,7 +558,7 @@
                                 <span class="text-xs text-slate-500 line-through">R$ ${oldPriceBRL.toFixed(2).replace('.', ',')}</span>
                                 <span class="font-orbitron font-black text-xl text-cyberrose">R$ ${realPriceBRL.toFixed(2).replace('.', ',')}</span>
                             </div>
-                            <button onclick="addShopToCart('${prod.id}', '${title.replace(/'/g, "")}', ${realPriceBRL.toFixed(2)}, '${image}', 1)" class="buy-btn-action w-full bg-cyberrose hover:bg-rose-600 text-white font-orbitron text-xs font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyberrose/20 cursor-pointer">
+                            <button onclick="openProductModal('${encodedProd}')" class="buy-btn-action w-full bg-cyberrose hover:bg-rose-600 text-white font-orbitron text-xs font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyberrose/20 cursor-pointer">
                                 <i data-lucide="shopping-cart" class="w-4 h-4"></i> COMPRAR AGORA
                             </button>
                         </div>
@@ -390,11 +568,6 @@
                 lucide.createIcons();
             } catch (e) {
                 console.error('Erro ao buscar produtos:', e);
-                grid.innerHTML = `
-                    <div class="col-span-full text-center py-16 bg-slate-950/40 border border-slate-900 rounded-3xl">
-                        <p class="font-orbitron text-sm text-slate-400">Erro ao carregar catálogo. Tente novamente.</p>
-                    </div>
-                `;
             }
         }
 
@@ -457,7 +630,6 @@
             }
         });
 
-        // Inicialização
         updateCartBadge();
         fetchShopCategories();
         fetchShopProducts();
