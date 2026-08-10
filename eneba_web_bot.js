@@ -329,41 +329,56 @@ async function ensureEnebaLogin(page, orderId = null, dbSaveFn = null) {
 
 async function clearEnebaCartIfNotEmpty(page, orderId = null, dbSaveFn = null) {
     try {
-        writeLog('info', `🛒 Checando se o carrinho do Eneba possui itens salvos...`);
-        
-        // Verifica se há badge com quantidade no ícone do carrinho no topo da página
-        const hasCartBadge = await page.evaluate(() => {
-            const cartLinks = Array.from(document.querySelectorAll('a[href*="/checkout"], button[aria-label*="cart"], span[class*="badge"]'));
-            return cartLinks.some(el => {
-                const txt = (el.innerText || el.textContent || '').trim();
-                return /^[1-9]\d*$/.test(txt);
+        writeLog('info', `🛒 [CARRINHO] Navegando até https://www.eneba.com/br/checkout para verificar e esvaziar itens antigos...`);
+        await page.goto('https://www.eneba.com/br/checkout', { waitUntil: 'networkidle2', timeout: 35000 });
+        await handleCloudflareTurnstile(page);
+        await new Promise(r => setTimeout(r, 2000));
+
+        const trashCount = await page.evaluate(() => {
+            const allElements = Array.from(document.querySelectorAll('button, div[role="button"], a, svg'));
+            const trashButtons = [];
+
+            allElements.forEach(el => {
+                const html = (el.innerHTML || '').toLowerCase();
+                const aria = (el.getAttribute('aria-label') || '').toLowerCase();
+                const title = (el.getAttribute('title') || '').toLowerCase();
+                
+                // Detecta o SVG exato da lixeira do Eneba
+                if (
+                    html.includes('m14.25,1h9.75') || 
+                    html.includes('18.86,21.62') || 
+                    html.includes('viewbox="0 0 24 24"') ||
+                    aria.includes('remover') || 
+                    aria.includes('remove') || 
+                    aria.includes('excluir') ||
+                    title.includes('remover') ||
+                    title.includes('excluir')
+                ) {
+                    const btn = el.closest('button, div[role="button"], a') || el;
+                    if (!trashButtons.includes(btn)) {
+                        trashButtons.push(btn);
+                    }
+                }
             });
+
+            // Clica em todos os botões da lixeira
+            trashButtons.forEach(b => {
+                try { b.click(); } catch(e) {}
+            });
+
+            return trashButtons.length;
         });
 
-        if (hasCartBadge) {
-            writeLog('warn', `⚠️ Carrinho possuía itens antigos salvos. Acessando checkout para esvaziar o carrinho...`);
-            await page.evaluate(() => {
-                const cartBtn = document.querySelector('a[href*="/checkout"], button[aria-label*="cart"]');
-                if (cartBtn) cartBtn.click();
-            });
+        if (trashCount > 0) {
+            writeLog('warn', `⚠️ [CARRINHO] Foram clicados ${trashCount} botões de lixeira para esvaziar o carrinho!`);
             await new Promise(r => setTimeout(r, 2500));
-            await saveStepScreenshot(page, '01_clearing_old_cart_items', orderId, dbSaveFn);
-
-            await page.evaluate(() => {
-                const removeBtns = Array.from(document.querySelectorAll('button, a')).filter(el => {
-                    const txt = (el.innerText || el.textContent || '').toLowerCase();
-                    const aria = (el.getAttribute('aria-label') || '').toLowerCase();
-                    return txt.includes('remover') || txt.includes('remove') || aria.includes('remover') || aria.includes('remove');
-                });
-                removeBtns.forEach(b => b.click());
-            });
-            await new Promise(r => setTimeout(r, 2000));
-            writeLog('info', `✅ Carrinho esvaziado com sucesso!`);
+            await saveStepScreenshot(page, '01_cleared_cart_trash_buttons', orderId, dbSaveFn);
+            writeLog('info', `✅ [CARRINHO] Carrinho esvaziado com sucesso!`);
         } else {
-            writeLog('info', `✅ Carrinho limpo e sem acúmulo de itens antigos. Prosseguindo...`);
+            writeLog('info', `✅ [CARRINHO] Carrinho limpo e sem acúmulo de itens antigos. Prosseguindo com a compra...`);
         }
     } catch (e) {
-        writeLog('warn', `Aviso ao verificar/esvaziar carrinho: ${e.message}`);
+        writeLog('warn', `Aviso ao verificar/esvaziar carrinho no checkout: ${e.message}`);
     }
 }
 
