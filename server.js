@@ -1058,6 +1058,15 @@ async function initDB() {
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_subscription BOOLEAN DEFAULT false;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS reading_subscription_expires_at TIMESTAMP DEFAULT NULL;
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_reading_subscription BOOLEAN DEFAULT false;
+
+            CREATE TABLE IF NOT EXISTS bot_order_logs (
+                id SERIAL PRIMARY KEY,
+                order_id INTEGER,
+                step_name TEXT,
+                screenshot_base64 TEXT,
+                log_text TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
         `);
 
         // Restaura arquivos de upload (MP3/mídias) do banco para o disco se o container do servidor tiver sido reiniciado
@@ -3538,80 +3547,83 @@ app.delete('/api/admin/orders/:id', requireAdmin, async (req, res) => {
     }
 });
 
-// Servir staticamente as screenshots do robô
-app.use('/logs/screenshots', express.static(path.join(__dirname, 'logs', 'screenshots')));
+// Rota para o Robô salvar Screenshots e Logs no Banco de Dados (Persistência Permanente)
+app.post('/api/bot/save-log', async (req, res) => {
+    try {
+        const { orderId, stepName, screenshotBase64, logText } = req.body;
+        if (orderId) {
+            await pool.query(
+                `INSERT INTO bot_order_logs (order_id, step_name, screenshot_base64, log_text) VALUES ($1, $2, $3, $4)`,
+                [parseInt(orderId), stepName || 'step', screenshotBase64 || '', logText || '']
+            );
+        }
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
-// API ADMIN: Buscar Screenshots e Logs do Robô Organizados por Pedido/Cliente
+// API ADMIN: Buscar Screenshots e Logs do Robô Organizados por Pedido/Cliente (Leitura do Banco + Disco)
 app.get('/api/admin/orders/:id/bot-screenshots', requireAdmin, async (req, res) => {
     try {
-        const orderId = req.params.id;
-        const screenshotsBaseDir = path.join(__dirname, 'logs', 'screenshots');
-        const orderSubDir = path.join(screenshotsBaseDir, `pedido_${orderId}`);
-
+        const orderId = parseInt(req.params.id);
         let screenshotFiles = [];
-
-        // 1. Busca fotos na pasta específica do pedido (ex: logs/screenshots/pedido_1042/)
-        if (fs.existsSync(orderSubDir)) {
-            const files = fs.readdirSync(orderSubDir).filter(f => f.endsWith('.png'));
-            screenshotFiles = files.map(f => ({
-                filename: f,
-                url: `/logs/screenshots/pedido_${orderId}/${f}`,
-                time: fs.statSync(path.join(orderSubDir, f)).mtimeMs,
-                dateStr: new Date(fs.statSync(path.join(orderSubDir, f)).mtimeMs).toLocaleString('pt-BR')
-            }));
-        }
-
-        // 2. Se não houver subpasta, busca arquivos com a tag do pedido na raiz de screenshots
-        if (screenshotFiles.length === 0 && fs.existsSync(screenshotsBaseDir)) {
-            const allFiles = fs.readdirSync(screenshotsBaseDir).filter(f => f.endsWith('.png'));
-            screenshotFiles = allFiles
-                .filter(f => f.includes(`order_${orderId}`) || f.includes(`pedido_${orderId}`))
-                .map(f => ({
-                    filename: f,
-                    url: `/logs/screenshots/${f}`,
-                    time: fs.statSync(path.join(screenshotsBaseDir, f)).mtimeMs,
-                    dateStr: new Date(fs.statSync(path.join(screenshotsBaseDir, f)).mtimeMs).toLocaleString('pt-BR')
-                }));
-        }
-
-        // 3. Fallback: Exibe as capturas mais recentes do sistema caso não haja pasta criada
-        if (screenshotFiles.length === 0 && fs.existsSync(screenshotsBaseDir)) {
-            const allFiles = fs.readdirSync(screenshotsBaseDir).filter(f => f.endsWith('.png'));
-            screenshotFiles = allFiles.slice(-6).map(f => ({
-                filename: f,
-                url: `/logs/screenshots/${f}`,
-                time: fs.statSync(path.join(screenshotsBaseDir, f)).mtimeMs,
-                dateStr: new Date(fs.statSync(path.join(screenshotsBaseDir, f)).mtimeMs).toLocaleString('pt-BR')
-            }));
-        }
-
-        screenshotFiles.sort((a, b) => a.time - b.time);
-
-        // 4. Busca os logs de debug do robô para este pedido
         let orderLogs = '';
-        const enebaLogPath = path.join(__dirname, 'logs', 'eneba_bot.log');
-        const fillLogPath = path.join(__dirname, 'logs', 'test_fill_2fa_only.log');
-        
-        let fullLogsText = '';
-        if (fs.existsSync(enebaLogPath)) fullLogsText += fs.readFileSync(enebaLogPath, 'utf-8') + '\n';
-        if (fs.existsSync(fillLogPath)) fullLogsText += fs.readFileSync(fillLogPath, 'utf-8') + '\n';
 
-        if (fullLogsText.trim()) {
-            const logLines = fullLogsText.split('\n');
-            const matchingLines = logLines.filter(l => l.toLowerCase().includes(`pedido #${orderId}`) || l.toLowerCase().includes(`pedido_${orderId}`));
-            if (matchingLines.length > 0) {
-                orderLogs = matchingLines.join('\n');
-            } else {
-                orderLogs = logLines.filter(Boolean).slice(-100).join('\n');
+        // 1. Busca primeiro no BANCO DE DADOS (Imune a reinícios do container do Render)
+        try {
+            const dbLogsRes = await pool.query(
+                `SELECT * FROM bot_order_logs WHERE order_id = $1 ORDER BY id ASC`,
+                [orderId]
+            );
+            if (dbLogsRes.rows && dbLogsRes.rows.length > 0) {
+                dbLogsRes.rows.forEach(row => {
+                    if (row.screenshot_base64) {
+                        screenshotFiles.push({
+                            filename: `${row.step_name}.jpg`,
+                            url: row.screenshot_base64.startsWith('data:') ? row.screenshot_base64 : `data:image/jpeg;base64,${row.screenshot_base64}`,
+                            time: new Date(row.created_at).getTime(),
+                            dateStr: new Date(row.created_at).toLocaleString('pt-BR')
+                        });
+                    }
+                    if (row.log_text) {
+                        orderLogs += `${row.log_text}\n`;
+                    }
+                });
             }
-        } else {
-            orderLogs = '[SISTEMA NUVEM] Nenhum registro de log bruto armazenado até o momento.';
+        } catch (dbErr) {
+            console.error("[BOT-LOGS-DB] Erro ao consultar banco:", dbErr);
+        }
+
+        // 2. Fallback para arquivos em disco local se o banco estiver vazio
+        if (screenshotFiles.length === 0) {
+            const screenshotsBaseDir = path.join(__dirname, 'logs', 'screenshots');
+            const orderSubDir = path.join(screenshotsBaseDir, `pedido_${orderId}`);
+
+            if (fs.existsSync(orderSubDir)) {
+                const files = fs.readdirSync(orderSubDir).filter(f => f.endsWith('.png') || f.endsWith('.jpg'));
+                screenshotFiles = files.map(f => ({
+                    filename: f,
+                    url: `/logs/screenshots/pedido_${orderId}/${f}`,
+                    time: fs.statSync(path.join(orderSubDir, f)).mtimeMs,
+                    dateStr: new Date(fs.statSync(path.join(orderSubDir, f)).mtimeMs).toLocaleString('pt-BR')
+                }));
+            }
+        }
+
+        if (!orderLogs) {
+            const enebaLogPath = path.join(__dirname, 'logs', 'eneba_bot.log');
+            if (fs.existsSync(enebaLogPath)) {
+                const logLines = fs.readFileSync(enebaLogPath, 'utf-8').split('\n');
+                const matchingLines = logLines.filter(l => l.toLowerCase().includes(`pedido #${orderId}`) || l.toLowerCase().includes(`pedido_${orderId}`));
+                orderLogs = matchingLines.length > 0 ? matchingLines.join('\n') : logLines.slice(-100).join('\n');
+            }
         }
 
         res.json({
             orderId: orderId,
             screenshots: screenshotFiles,
-            logs: orderLogs
+            logs: orderLogs || '[INFO] Nenhuma captura salva para este pedido ainda.'
         });
     } catch (e) {
         res.status(500).json({ error: e.message });

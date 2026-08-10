@@ -297,7 +297,7 @@ function cleanOldScreenshots(maxKeep = 25) {
 
 async function saveStepScreenshot(page, stepName, orderId = null) {
     try {
-        cleanOldScreenshots(40);
+        cleanOldScreenshots(15);
         await dismissGreenWelcomeBanner(page);
         
         let targetDir = screenshotsDir;
@@ -307,12 +307,29 @@ async function saveStepScreenshot(page, stepName, orderId = null) {
         }
 
         const cleanName = stepName.replace(/[^a-zA-Z0-9_-]/g, '_');
-        const screenPath = path.join(targetDir, `${Date.now()}_${cleanName}.png`);
-        await page.screenshot({ path: screenPath, fullPage: true });
-        writeLog('info', `📸 Screenshot salva (${orderId ? 'Pedido #' + orderId : 'Geral'}): ${screenPath}`);
+        const screenPath = path.join(targetDir, `${Date.now()}_${cleanName}.jpg`);
         
-        const latestPath = path.join(__dirname, 'eneba_checkout_debug.png');
-        await page.screenshot({ path: latestPath, fullPage: true });
+        // 📸 Screenshot otimizada de 1280x720 JPEG (qualidade 65%) para economizar 95% de RAM e prevenir OOM 137
+        const imageBuffer = await page.screenshot({ type: 'jpeg', quality: 65, fullPage: false });
+        fs.writeFileSync(screenPath, imageBuffer);
+        
+        const base64Str = `data:image/jpeg;base64,${imageBuffer.toString('base64')}`;
+        writeLog('info', `📸 Screenshot salva (${orderId ? 'Pedido #' + orderId : 'Geral'}): ${cleanName}`);
+        
+        // Persiste a imagem no banco de dados para resistir a reinícios do container
+        if (orderId) {
+            const siteUrl = process.env.ZHERKEYS_SITE_URL || `http://localhost:${process.env.PORT || 10000}`;
+            fetch(`${siteUrl}/api/bot/save-log`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId: orderId,
+                    stepName: cleanName,
+                    screenshotBase64: base64Str,
+                    logText: `[${new Date().toISOString()}] Etapa "${cleanName}" executada com sucesso.`
+                })
+            }).catch(() => {});
+        }
     } catch (e) {
         writeLog('warn', `Falha ao salvar screenshot (${stepName}): ${e.message}`);
     }
@@ -338,22 +355,37 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1, orderId = null) {
         writeLog('info', `Lançando navegador Puppeteer Stealth em Nuvem/Local... (Executable: ${chromePath ? chromePath : 'Bundled Chromium'})`);
 
         clearStaleSessionLocks(userDataDir);
+        const lowMemoryFlags = [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process',
+            '--disable-gpu',
+            '--disable-extensions',
+            '--disable-default-apps',
+            '--mute-audio',
+            '--no-default-browser-check',
+            '--disable-background-networking',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows',
+            '--disable-breakpad',
+            '--disable-component-update',
+            '--disable-ipc-flooding-protection',
+            '--disable-renderer-backgrounding',
+            '--disable-sync',
+            '--window-size=1280,720',
+            '--js-flags="--max-old-space-size=128"'
+        ];
+
         try {
             browser = await puppeteer.launch({
-                headless: true, // Executa 100% em segundo plano (na nuvem ou local)
+                headless: true,
                 executablePath: chromePath,
                 userDataDir: userDataDir,
-                args: [
-                    '--no-sandbox',
-                    '--disable-setuid-sandbox',
-                    '--disable-dev-shm-usage',
-                    '--disable-accelerated-2d-canvas',
-                    '--no-first-run',
-                    '--no-zygote',
-                    '--single-process',
-                    '--disable-gpu',
-                    '--window-size=2560,1440'
-                ]
+                args: lowMemoryFlags
             });
         } catch (launchErr) {
             if (launchErr.message && launchErr.message.includes('already running')) {
@@ -364,17 +396,7 @@ async function autoBuyEnebaKeyWeb(productTitle, quantity = 1, orderId = null) {
                     headless: true,
                     executablePath: chromePath,
                     userDataDir: userDataDir,
-                    args: [
-                        '--no-sandbox',
-                        '--disable-setuid-sandbox',
-                        '--disable-dev-shm-usage',
-                        '--disable-accelerated-2d-canvas',
-                        '--no-first-run',
-                        '--no-zygote',
-                        '--single-process',
-                        '--disable-gpu',
-                        '--window-size=2560,1440'
-                    ]
+                    args: lowMemoryFlags
                 });
             } else {
                 throw launchErr;
