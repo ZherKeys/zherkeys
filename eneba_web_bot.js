@@ -206,6 +206,9 @@ async function handleEneba2FAPrompt(page) {
     } catch (e) {
         writeLog('error', `Falha ao processar 2FA automático: ${e.message}`);
     }
+    return false;
+}
+
 async function handleCloudflareTurnstile(page) {
     try {
         const frames = page.frames();
