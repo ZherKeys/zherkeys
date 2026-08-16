@@ -150,6 +150,10 @@ gtag('config', 'AW-18202657831');
                     CATÁLOGO
                     <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-electricblue transition-all duration-300 group-hover:w-full"></span>
                 </a>
+                <a href="/guias" class="relative py-2 transition-colors text-blue-400 hover:text-blue-300 font-bold group flex items-center gap-1">
+                    📚 GUIAS & ARTIGOS
+                    <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-electricblue transition-all duration-300 group-hover:w-full"></span>
+                </a>
                 <a href="#vantagens" data-i18n="nav_features" class="relative py-2 transition-colors hover:text-white group">
                     RECURSOS
                     <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-electricblue transition-all duration-300 group-hover:w-full"></span>
@@ -213,6 +217,7 @@ gtag('config', 'AW-18202657831');
                 <!-- Mobile menu toggle -->
                 <button id="mobile-menu-toggle" class="lg:hidden inline-flex items-center justify-center p-1 sm:p-2 rounded-md text-slate-300 hover:text-white hover:bg-slate-800" aria-expanded="false" onclick="toggleMobileMenu()">
                     <svg class="h-5 w-5 sm:h-6 sm:w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
             </div>
         </div>
     </nav>
@@ -221,6 +226,7 @@ gtag('config', 'AW-18202657831');
     <div id="mobile-menu" class="lg:hidden hidden bg-slate-950/98 border-t border-slate-800/80 fixed top-16 sm:top-20 left-0 right-0 z-40 backdrop-blur-md shadow-2xl">
         <div class="px-5 py-4 space-y-3 font-orbitron text-xs tracking-wider">
             <a href="#catalogo" class="block text-white hover:text-electricblue py-2 border-b border-slate-900">📦 CATÁLOGO DE JOGOS</a>
+            <a href="/guias" class="block text-blue-400 hover:text-white py-2 border-b border-slate-900 font-bold">📚 GUIAS & ARTIGOS GAMER</a>
             <a href="#vantagens" class="block text-white hover:text-electricblue py-2 border-b border-slate-900">⚡ RECURSOS DA LOJA</a>
             <a href="/account.html" class="block text-electricblue hover:text-white py-2 border-b border-slate-900 font-bold">👤 MINHA CONTA / LOGIN</a>
             <a href="#" onclick="openSupportModal(event)" class="block text-blue-400 hover:text-white py-2 border-b border-slate-900 font-bold">🎧 SUPORTE AO CLIENTE</a>
@@ -228,7 +234,8 @@ gtag('config', 'AW-18202657831');
         </div>
     </div>
 
-    <!-    <section class="relative min-h-screen pt-32 pb-20 flex items-center justify-center px-4 overflow-hidden">
+    <!-- HERO SECTION -->
+    <section class="relative min-h-screen pt-32 pb-20 flex items-center justify-center px-4 overflow-hidden">
         <div class="absolute inset-0 z-0 opacity-40 mix-blend-screen pointer-events-none bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px]"></div>
         <div class="max-w-4xl mx-auto text-center relative z-10 flex flex-col items-center">
             
@@ -257,8 +264,8 @@ gtag('config', 'AW-18202657831');
                     <span class="absolute inset-0 bg-gradient-to-r from-purple-600 to-electricblue opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                 </button>
                 
-                <button class="w-full sm:w-auto bg-slate-950/60 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-orbitron text-xs tracking-widest px-8 py-5 rounded-xl backdrop-blur-md transition-all duration-300 flex items-center justify-center gap-2">
-                    <i data-lucide="shield-check" class="w-4 h-4 text-cyberrose"></i> <span data-i18n="hero_guarantee">ANTI-BAN GUARANTEE</span>
+                <button onclick="window.location.href='/guias'" class="w-full sm:w-auto bg-slate-950/60 border border-slate-800 hover:border-emerald-500 text-slate-300 hover:text-white font-orbitron text-xs tracking-widest px-8 py-5 rounded-xl backdrop-blur-md transition-all duration-300 flex items-center justify-center gap-2">
+                    <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> <span data-i18n="hero_guarantee">CHAVES ORIGINAIS 100% GARANTIDAS</span>
                 </button>
             </div>
 
@@ -741,88 +748,171 @@ gtag('config', 'AW-18202657831');
         <div class="max-w-7xl mx-auto px-4">
             
             <div class="text-center mb-16">
-                <span class="font-orbitron text-xs tracking-widest text-electricblue font-bold block mb-2 uppercase">// INFORMAÇÃO & TUTORIAIS</span>
-                <h2 class="font-orbitron font-black text-3xl sm:text-4xl text-white uppercase tracking-tight">CENTRAL DE GUIAS E DICAS GAMER</h2>
-                <p class="font-inter text-slate-400 text-xs sm:text-sm max-w-2xl mx-auto mt-3">
-                    Aprenda a resgatar suas chaves digitais, entenda como funcionam as licenças globais e conheça as melhores práticas para compras seguras na internet.
+                <div class="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/30 text-blue-400 font-orbitron text-[10px] tracking-widest px-4 py-1.5 rounded-full uppercase font-bold mb-4">
+                    📖 BASE DE CONHECIMENTO & CONTEÚDO EDITORIAL
+                </div>
+                <h2 class="font-orbitron font-black text-3xl sm:text-5xl text-white uppercase tracking-tight">CENTRAL DE GUIAS & ARTIGOS GAMER</h2>
+                <p class="font-inter text-slate-400 text-xs sm:text-base max-w-2xl mx-auto mt-3 font-light leading-relaxed">
+                    Tutoriais aprofundados, boas práticas de segurança cibernética em contas digitais e análises de hardware para extrair o máximo de desempenho dos seus jogos.
                 </p>
+                <div class="mt-6">
+                    <a href="/guias" class="inline-flex items-center gap-2 bg-electricblue/10 hover:bg-electricblue/20 border border-electricblue/40 text-electricblue hover:text-white font-orbitron text-xs tracking-wider px-6 py-2.5 rounded-xl transition-all font-bold">
+                        VER TODOS OS GUIAS & ARTIGOS <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </a>
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 
                 <!-- Guia 1 -->
-                <article class="bg-slate-900/80 border border-slate-800 p-8 rounded-2xl relative overflow-hidden group hover:border-electricblue/50 transition-all duration-300">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-xl bg-electricblue/10 border border-electricblue/30 flex items-center justify-center text-electricblue font-bold">
-                            <i data-lucide="key" class="w-5 h-5"></i>
+                <article class="bg-slate-900/70 border border-slate-800 p-6 rounded-2xl relative overflow-hidden group hover:border-electricblue/50 transition-all duration-300 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <div class="flex items-center justify-between text-xs text-slate-500 mb-3 font-orbitron">
+                            <span class="text-electricblue font-bold flex items-center gap-1"><i data-lucide="key" class="w-3.5 h-3.5"></i> TUTORIAL</span>
+                            <span>8 MIN</span>
                         </div>
-                        <div>
-                            <span class="text-[10px] font-orbitron font-bold text-electricblue uppercase tracking-widest block">TUTORIAL DE ATIVAÇÃO</span>
-                            <h3 class="font-orbitron font-bold text-lg text-white group-hover:text-electricblue transition-colors">Como Ativar Chaves de Jogos na Steam, Epic Games e Consoles</h3>
-                        </div>
+                        <h3 class="font-orbitron font-bold text-base text-white group-hover:text-electricblue transition-colors mb-2">
+                            Como Ativar Chaves na Steam, Epic, Xbox e PSN
+                        </h3>
+                        <p class="font-inter text-slate-400 text-xs leading-relaxed mb-4 font-light">
+                            Passo a passo com telas e dicas para resgatar CD Keys em todas as plataformas oficiais sem erros.
+                        </p>
                     </div>
-                    <p class="font-inter text-slate-400 text-xs sm:text-sm leading-relaxed mb-4 font-light">
-                        Ativar uma chave de jogo (CD-Key) original é um processo simples, rápido e 100% seguro. Após concluir sua compra na Zher Keys, você recebe um código alfanumérico único. Basta abrir o cliente oficial da plataforma (como Steam, Epic Games Launcher, PlayStation Network ou Xbox Live), navegar até a opção "Resgatar um Código" ou "Ativar um Produto", e colar o código fornecido. O jogo é adicionado permanentemente à sua biblioteca pessoal para download ilimitado.
-                    </p>
-                    <button onclick="openActivationGuideModal()" type="button" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-electricblue hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0">
-                        LEIA O GUIA COMPLETO DE ATIVAÇÃO <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-                    </button>
+                    <a href="/artigos/como-ativar-chaves-steam-epic-xbox.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-electricblue hover:underline pt-3 border-t border-slate-800/80">
+                        LER ARTIGO <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
                 </article>
 
                 <!-- Guia 2 -->
-                <article class="bg-slate-900/80 border border-slate-800 p-8 rounded-2xl relative overflow-hidden group hover:border-cyberrose/50 transition-all duration-300">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-xl bg-cyberrose/10 border border-cyberrose/30 flex items-center justify-center text-cyberrose font-bold">
-                            <i data-lucide="globe" class="w-5 h-5"></i>
+                <article class="bg-slate-900/70 border border-slate-800 p-6 rounded-2xl relative overflow-hidden group hover:border-cyberrose/50 transition-all duration-300 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <div class="flex items-center justify-between text-xs text-slate-500 mb-3 font-orbitron">
+                            <span class="text-cyberrose font-bold flex items-center gap-1"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i> SEGURANÇA</span>
+                            <span>10 MIN</span>
                         </div>
-                        <div>
-                            <span class="text-[10px] font-orbitron font-bold text-cyberrose uppercase tracking-widest block">LICENCIAMENTO DIGITAL</span>
-                            <h3 class="font-orbitron font-bold text-lg text-white group-hover:text-cyberrose transition-colors">O que são Chaves Globais (Global Keys) e Regiões de Licença?</h3>
-                        </div>
+                        <h3 class="font-orbitron font-bold text-base text-white group-hover:text-cyberrose transition-colors mb-2">
+                            Segurança Gamer: Como Ativar 2FA e Evitar Phishing
+                        </h3>
+                        <p class="font-inter text-slate-400 text-xs leading-relaxed mb-4 font-light">
+                            Proteja seu perfil Steam, skins e contas contra tentativas de invasão e links maliciosos.
+                        </p>
                     </div>
-                    <p class="font-inter text-slate-400 text-xs sm:text-sm leading-relaxed mb-4 font-light">
-                        As distribuidoras digitais utilizam travas regionais para adequar os preços dos jogos a diferentes moedas e mercados locais. Uma <strong>Global Key</strong> (Chave Global) é uma licença universal que pode ser ativada e jogada em qualquer país do mundo sem restrições de IP ou localização. Na Zher Keys, indicamos com clareza no rótulo de cada produto a sua compatibilidade regional (Global, América Latina ou Brasil) para garantir transparência total e ativação perfeita.
-                    </p>
-                    <button onclick="openRegionGuideModal()" type="button" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-cyberrose hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0">
-                        ENTENDA SOBRE REGIÕES E REGRAS <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-                    </button>
+                    <a href="/artigos/guia-seguranca-contas-games-2fa.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-cyberrose hover:underline pt-3 border-t border-slate-800/80">
+                        LER ARTIGO <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
                 </article>
 
                 <!-- Guia 3 -->
-                <article class="bg-slate-900/80 border border-slate-800 p-8 rounded-2xl relative overflow-hidden group hover:border-purple-500/50 transition-all duration-300">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 font-bold">
-                            <i data-lucide="shield-check" class="w-5 h-5"></i>
+                <article class="bg-slate-900/70 border border-slate-800 p-6 rounded-2xl relative overflow-hidden group hover:border-emerald-500/50 transition-all duration-300 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <div class="flex items-center justify-between text-xs text-slate-500 mb-3 font-orbitron">
+                            <span class="text-emerald-400 font-bold flex items-center gap-1"><i data-lucide="zap" class="w-3.5 h-3.5"></i> FPS & TWEAKS</span>
+                            <span>12 MIN</span>
                         </div>
-                        <div>
-                            <span class="text-[10px] font-orbitron font-bold text-purple-400 uppercase tracking-widest block">SEGURANÇA & PRIVACIDADE</span>
-                            <h3 class="font-orbitron font-bold text-lg text-white group-hover:text-purple-400 transition-colors">Dicas para Comprar Jogos Digitais com Total Segurança</h3>
-                        </div>
+                        <h3 class="font-orbitron font-bold text-base text-white group-hover:text-emerald-400 transition-colors mb-2">
+                            Otimização de PC Gamer: Como Aumentar o FPS
+                        </h3>
+                        <p class="font-inter text-slate-400 text-xs leading-relaxed mb-4 font-light">
+                            Ajustes no Windows 11/10, drivers NVIDIA/AMD e uso correto de DLSS/FSR para eliminar travamentos.
+                        </p>
                     </div>
-                    <p class="font-inter text-slate-400 text-xs sm:text-sm leading-relaxed mb-4 font-light">
-                        A segurança dos seus dados de acesso e financeiros é prioridade absoluta. Sempre verifique se o site possui certificado SSL válido (cadeado de conexão encriptada HTTPS), suporte ao cliente com canais oficiais de comunicação, e métodos de pagamento auditados como Pix instantâneo e intermediadores autorizados. Na Zher Keys, utilizamos criptografia bcryptjs de 256 bits para proteger suas credenciais e garantir que seus dados nunca sejam expostos.
-                    </p>
-                    <a href="/politica-de-privacidade.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-purple-400 hover:text-white transition-colors">
-                        CONHEÇA NOSSA POLÍTICA DE SEGURANÇA <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    <a href="/artigos/otimizacao-fps-desempenho-pc-gamer.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-emerald-400 hover:underline pt-3 border-t border-slate-800/80">
+                        LER ARTIGO <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
                     </a>
                 </article>
 
                 <!-- Guia 4 -->
-                <article class="bg-slate-900/80 border border-slate-800 p-8 rounded-2xl relative overflow-hidden group hover:border-emerald-500/50 transition-all duration-300">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold">
-                            <i data-lucide="coins" class="w-5 h-5"></i>
+                <article class="bg-slate-900/70 border border-slate-800 p-6 rounded-2xl relative overflow-hidden group hover:border-purple-500/50 transition-all duration-300 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <div class="flex items-center justify-between text-xs text-slate-500 mb-3 font-orbitron">
+                            <span class="text-purple-400 font-bold flex items-center gap-1"><i data-lucide="cpu" class="w-3.5 h-3.5"></i> HARDWARE</span>
+                            <span>11 MIN</span>
                         </div>
-                        <div>
-                            <span class="text-[10px] font-orbitron font-bold text-emerald-400 uppercase tracking-widest block">RECOMPENSAS & DESCONTOS</span>
-                            <h3 class="font-orbitron font-bold text-lg text-white group-hover:text-emerald-400 transition-colors">Como Economizar Comprando Gift Cards e Usando ZCoins</h3>
-                        </div>
+                        <h3 class="font-orbitron font-bold text-base text-white group-hover:text-purple-400 transition-colors mb-2">
+                            Como Montar ou Fazer Upgrade para 1080p, 1440p e 4K
+                        </h3>
+                        <p class="font-inter text-slate-400 text-xs leading-relaxed mb-4 font-light">
+                            Equilíbrio entre CPU, GPU, memória RAM dual-channel e SSD NVMe sem gargalos de performance.
+                        </p>
                     </div>
-                    <p class="font-inter text-slate-400 text-xs sm:text-sm leading-relaxed mb-4 font-light">
-                        Além dos preços promocionais em lançamentos e clássicos, nossa plataforma conta com o ecossistema <strong>ZCoins</strong>. Ao interagir com nossos minigames e participar das atividades da comunidade, você acumula saldo em moedas virtuais que podem ser convertidas diretamente em saldo de carteira ou descontos reais na finalização da sua compra no carrinho, economizando ainda mais em seus jogos favoritos.
-                    </p>
-                    <a href="/minigames.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-emerald-400 hover:text-white transition-colors">
-                        JOGUE E ACUMULE ZCOINS <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    <a href="/artigos/como-escolher-hardware-ideal-para-jogos.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-purple-400 hover:underline pt-3 border-t border-slate-800/80">
+                        LER ARTIGO <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
+                </article>
+
+                <!-- Guia 5 -->
+                <article class="bg-slate-900/70 border border-slate-800 p-6 rounded-2xl relative overflow-hidden group hover:border-amber-500/50 transition-all duration-300 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <div class="flex items-center justify-between text-xs text-slate-500 mb-3 font-orbitron">
+                            <span class="text-amber-400 font-bold flex items-center gap-1"><i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i> EDIÇÕES</span>
+                            <span>7 MIN</span>
+                        </div>
+                        <h3 class="font-orbitron font-bold text-base text-white group-hover:text-amber-400 transition-colors mb-2">
+                            Standard, Deluxe ou Ultimate: Qual Escolher?
+                        </h3>
+                        <p class="font-inter text-slate-400 text-xs leading-relaxed mb-4 font-light">
+                            Descubra quando vale a pena pagar pelo Season Pass e aprenda estratégias para economizar.
+                        </p>
+                    </div>
+                    <a href="/artigos/edicoes-de-jogos-standard-deluxe-ultimate.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-amber-400 hover:underline pt-3 border-t border-slate-800/80">
+                        LER ARTIGO <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
+                </article>
+
+                <!-- Guia 6 -->
+                <article class="bg-slate-900/70 border border-slate-800 p-6 rounded-2xl relative overflow-hidden group hover:border-cyan-500/50 transition-all duration-300 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <div class="flex items-center justify-between text-xs text-slate-500 mb-3 font-orbitron">
+                            <span class="text-cyan-400 font-bold flex items-center gap-1"><i data-lucide="globe" class="w-3.5 h-3.5"></i> HISTÓRIA</span>
+                            <span>9 MIN</span>
+                        </div>
+                        <h3 class="font-orbitron font-bold text-base text-white group-hover:text-cyan-400 transition-colors mb-2">
+                            A Evolução dos Jogos Digitais: Da Mídia Física à Nuvem
+                        </h3>
+                        <p class="font-inter text-slate-400 text-xs leading-relaxed mb-4 font-light">
+                            Uma análise histórica de como a Steam, as CD Keys e o Cloud Gaming revolucionaram a indústria.
+                        </p>
+                    </div>
+                    <a href="/artigos/historia-e-evolucao-dos-jogos-digitais.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-cyan-400 hover:underline pt-3 border-t border-slate-800/80">
+                        LER ARTIGO <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
+                </article>
+
+                <!-- Guia 7 -->
+                <article class="bg-slate-900/70 border border-slate-800 p-6 rounded-2xl relative overflow-hidden group hover:border-blue-500/50 transition-all duration-300 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <div class="flex items-center justify-between text-xs text-slate-500 mb-3 font-orbitron">
+                            <span class="text-blue-400 font-bold flex items-center gap-1"><i data-lucide="monitor" class="w-3.5 h-3.5"></i> REQUISITOS</span>
+                            <span>8 MIN</span>
+                        </div>
+                        <h3 class="font-orbitron font-bold text-base text-white group-hover:text-blue-400 transition-colors mb-2">
+                            Como Saber se um Jogo Roda no seu Computador
+                        </h3>
+                        <p class="font-inter text-slate-400 text-xs leading-relaxed mb-4 font-light">
+                            Aprenda a checar DXDiag, VRAM de vídeo e instruções de CPU para evitar frustrações pós-compra.
+                        </p>
+                    </div>
+                    <a href="/artigos/requisitos-de-sistema-como-verificar-compatibilidade.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-blue-400 hover:underline pt-3 border-t border-slate-800/80">
+                        LER ARTIGO <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
+                </article>
+
+                <!-- Guia 8 -->
+                <article class="bg-slate-900/70 border border-slate-800 p-6 rounded-2xl relative overflow-hidden group hover:border-rose-500/50 transition-all duration-300 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <div class="flex items-center justify-between text-xs text-slate-500 mb-3 font-orbitron">
+                            <span class="text-rose-400 font-bold flex items-center gap-1"><i data-lucide="gift" class="w-3.5 h-3.5"></i> GIFT CARDS</span>
+                            <span>7 MIN</span>
+                        </div>
+                        <h3 class="font-orbitron font-bold text-base text-white group-hover:text-rose-400 transition-colors mb-2">
+                            Guia de Gift Cards e Cartões Pré-Pagos
+                        </h3>
+                        <p class="font-inter text-slate-400 text-xs leading-relaxed mb-4 font-light">
+                            Tudo sobre moedas Steam Wallet, PlayStation, Xbox e Roblox para presentear sem bloqueios.
+                        </p>
+                    </div>
+                    <a href="/artigos/guia-presentes-gift-cards-ativacao-segura.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-rose-400 hover:underline pt-3 border-t border-slate-800/80">
+                        LER ARTIGO <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
                     </a>
                 </article>
 
@@ -839,7 +929,7 @@ gtag('config', 'AW-18202657831');
                 <ul class="font-inter text-xs text-slate-400 space-y-2.5 mb-6">
                     <li><a href="/sobre-nos" data-i18n="footer_about_1" class="hover:text-electricblue transition-colors">Sobre nós</a></li>
                     <li><a href="/contact.html" data-i18n="footer_about_2" class="hover:text-electricblue transition-colors">Fale conosco</a></li>
-                    <li><a href="/contact.html" data-i18n="footer_about_3" class="hover:text-electricblue transition-colors">Carreiras</a></li>
+                    <li><a href="/guias" class="hover:text-electricblue transition-colors">Base de Conhecimento</a></li>
                 </ul>
                 <div class="flex items-center gap-4 text-slate-400 mt-4">
                     <a href="https://www.instagram.com/zher_keys/" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors" title="Instagram">
@@ -852,14 +942,14 @@ gtag('config', 'AW-18202657831');
                 </div>
             </div>
 
-            <!-- Coluna 2: Comprar -->
+            <!-- Coluna 2: Guias Gamer -->
             <div>
-                <h5 data-i18n="footer_col_buy" class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">COMPRAR</h5>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">GUIAS GAMER</h5>
                 <ul class="font-inter text-xs text-slate-400 space-y-2.5">
-                    <li><a href="javascript:void(0)" onclick="openActivationGuideModal()" class="hover:text-electricblue transition-colors">Como comprar & Ativar</a></li>
-                    <li><a href="#vitrine" class="hover:text-electricblue transition-colors">Catálogo de Jogos</a></li>
-                    <li><a href="#steam-hero-slider" class="hover:text-electricblue transition-colors">Ofertas & Descontos</a></li>
-                    <li><a href="javascript:void(0)" onclick="openRegionGuideModal()" class="hover:text-electricblue transition-colors">Regras de Região (Global)</a></li>
+                    <li><a href="/artigos/como-ativar-chaves-steam-epic-xbox.html" class="hover:text-electricblue transition-colors">Como Ativar Chaves</a></li>
+                    <li><a href="/artigos/guia-seguranca-contas-games-2fa.html" class="hover:text-electricblue transition-colors">Segurança & 2FA</a></li>
+                    <li><a href="/artigos/otimizacao-fps-desempenho-pc-gamer.html" class="hover:text-electricblue transition-colors">Otimização de FPS</a></li>
+                    <li><a href="/artigos/como-escolher-hardware-ideal-para-jogos.html" class="hover:text-electricblue transition-colors">Hardware para Jogos</a></li>
                 </ul>
             </div>
 
@@ -868,8 +958,8 @@ gtag('config', 'AW-18202657831');
                 <h5 data-i18n="footer_col_help" class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">AJUDA</h5>
                 <ul class="font-inter text-xs text-slate-400 space-y-2.5">
                     <li><a href="/contact.html#faq" class="hover:text-electricblue transition-colors">Perguntas Frequentes</a></li>
-                    <li><a href="javascript:void(0)" onclick="openActivationGuideModal()" class="hover:text-electricblue transition-colors">Guia em Vídeo de Ativação</a></li>
                     <li><a href="/contact.html" class="hover:text-electricblue transition-colors">Central de Suporte (Ticket)</a></li>
+                    <li><a href="/politica-de-entrega.html" class="hover:text-electricblue transition-colors">Política de Entrega</a></li>
                     <li><a href="/politica-de-devolucao.html" class="hover:text-electricblue transition-colors">Política de Devolução</a></li>
                 </ul>
             </div>
@@ -881,7 +971,7 @@ gtag('config', 'AW-18202657831');
                     <li><a href="/sobre-nos.html" class="hover:text-electricblue transition-colors">Sobre Nós</a></li>
                     <li><a href="javascript:void(0)" onclick="openSweepstakeModal()" class="hover:text-electricblue transition-colors">Sorteio de 10 Milhões</a></li>
                     <li><a href="/minigames.html" class="hover:text-electricblue transition-colors">Minijogos & ZCoins</a></li>
-                    <li><a href="/contact.html" class="hover:text-electricblue transition-colors">Programa de Parcerias</a></li>
+                    <li><a href="/guias" class="hover:text-electricblue transition-colors">Portal de Artigos</a></li>
                 </ul>
             </div>
 
@@ -908,6 +998,7 @@ gtag('config', 'AW-18202657831');
         <div class="max-w-7xl mx-auto pt-8 border-t border-slate-900 font-inter text-[11px] text-slate-600">
             <div class="flex flex-wrap items-center justify-center sm:justify-start gap-x-6 gap-y-2 mb-6 border-b border-slate-900/40 pb-4 text-slate-500 font-medium uppercase font-orbitron tracking-wider text-[10px]">
                 <a href="/sobre-nos.html" class="hover:text-white transition-colors">Sobre Nós</a>
+                <a href="/guias" class="hover:text-white transition-colors text-electricblue">Guias & Artigos</a>
                 <a href="/termos-de-servico.html" class="hover:text-white transition-colors">Termos de Serviço</a>
                 <a href="/politica-de-privacidade.html" class="hover:text-white transition-colors">Política de Privacidade</a>
                 <a href="/politica-de-entrega.html" class="hover:text-white transition-colors">Política de Entrega</a>

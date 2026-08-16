@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Google AdSense Account Verification & Auto Ads -->
+    <meta name="google-adsense-account" content="ca-pub-3654713194554139">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3654713194554139" crossorigin="anonymous"></script>
+    
+    <!-- SEO Meta Tags -->
+    <title>Guia de Otimização de PC Gamer: Como Aumentar o FPS e Reduzir Latência | Zher Keys</title>
+    <meta name="description" content="Aprenda a otimizar o Windows 11/10, configurar drivers de GPU NVIDIA/AMD, ativar DLSS/FSR e eliminar travamentos para obter a máxima taxa de quadros (FPS) em jogos.">
+    <link rel="canonical" href="https://zherkeys.com/artigos/otimizacao-fps-desempenho-pc-gamer.html" />
+    
+    <!-- Tailwind CSS -->
+    <script src="/tailwind.js"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        obsidian: '#020617',
+                        cyberrose: '#F43F5E',
+                        electricblue: '#3B82F6',
+                        surface: 'rgba(15, 23, 42, 0.8)',
+                    },
+                    boxShadow: {
+                        cyber: '0 0 20px rgba(59, 130, 246, 0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            overflow-x: hidden;
+        }
+        
+        .scanline::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 99999;
+            opacity: 0.15;
+            pointer-events: none;
+            background-size: 100% 4px, 6px 100%;
+        }
+
+        .mesh-bg {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.18) 0px, transparent 50%),
+                radial-gradient(at 90% 10%, rgba(244, 63, 94, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 80%, rgba(147, 51, 234, 0.12) 0px, transparent 50%);
+        }
+
+        .article-content h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: #ffffff;
+            font-size: 1.35rem;
+            margin-top: 2.25rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+            padding-bottom: 0.5rem;
+        }
+
+        .article-content h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            color: #34d399;
+            font-size: 1.1rem;
+            margin-top: 1.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .article-content p {
+            margin-bottom: 1.25rem;
+            line-height: 1.8;
+            color: #cbd5e1;
+        }
+
+        .article-content ul, .article-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+            color: #cbd5e1;
+        }
+
+        .article-content li {
+            margin-bottom: 0.5rem;
+            line-height: 1.7;
+        }
+    </style>
+</head>
+<body class="text-slate-200 antialiased mesh-bg scanline flex flex-col min-h-screen">
+    <!-- Google AdSense Auto Ads Body Tag -->
+    <amp-auto-ads type="adsense" data-ad-client="ca-pub-3654713194554139"></amp-auto-ads>
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/60 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3 group cursor-pointer" onclick="window.location.href='/'">
+                <img src="/logo.png" alt="Zher Keys Logo" class="w-10 h-10 object-contain rounded-lg shadow-cyber border border-slate-700/50 bg-slate-950/40 p-1 group-hover:scale-105 transition-transform duration-300">
+                <span class="font-orbitron font-black text-xl tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">ZHER <span class="text-electricblue">KEYS</span></span>
+            </div>
+            
+            <div class="hidden md:flex items-center gap-6 font-orbitron text-xs tracking-widest text-slate-400">
+                <a href="/" class="hover:text-white transition-colors">INÍCIO</a>
+                <a href="/#catalogo" class="hover:text-white transition-colors">CATÁLOGO</a>
+                <a href="/guias" class="text-electricblue font-bold hover:text-blue-400 transition-colors">📚 GUIAS & ARTIGOS</a>
+                <a href="/sobre-nos" class="hover:text-white transition-colors">SOBRE NÓS</a>
+                <a href="/contact.html" class="hover:text-white transition-colors">CONTATO</a>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <a href="/guias" class="text-slate-400 hover:text-white font-orbitron text-xs tracking-widest transition-colors flex items-center gap-1.5 bg-slate-900/60 border border-slate-800 px-4 py-2 rounded-lg">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> TODOS OS GUIAS
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN ARTICLE WRAPPER -->
+    <main class="pt-32 pb-24 px-4 max-w-4xl mx-auto flex-grow w-full">
+        
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-2 text-xs text-slate-500 font-orbitron mb-8">
+            <a href="/" class="hover:text-slate-300">HOME</a>
+            <span>/</span>
+            <a href="/guias" class="hover:text-slate-300">GUIAS</a>
+            <span>/</span>
+            <span class="text-emerald-400">OTIMIZAÇÃO DE FPS</span>
+        </nav>
+
+        <!-- Article Header -->
+        <header class="mb-12">
+            <div class="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-orbitron text-[10px] tracking-widest px-4 py-1.5 rounded-full uppercase font-bold mb-4">
+                ⚡ DESEMPENHO & HARDWARE
+            </div>
+            <h1 class="font-orbitron font-black text-3xl sm:text-4xl lg:text-5xl text-white uppercase tracking-tight mb-6 leading-tight">
+                Guia de Otimização de PC Gamer: Como Aumentar o FPS e Eliminar Travamentos
+            </h1>
+            
+            <div class="flex flex-wrap items-center gap-6 text-xs text-slate-400 pb-6 border-b border-slate-900 font-inter">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="cpu" class="w-4 h-4 text-emerald-400"></i>
+                    <span>Laboratório de Hardware Zher Keys</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i data-lucide="calendar" class="w-4 h-4 text-slate-500"></i>
+                    <span>Atualizado em 2026</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i data-lucide="clock" class="w-4 h-4 text-slate-500"></i>
+                    <span>Tempo de Leitura: 12 minutos</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Article Body -->
+        <article class="article-content bg-slate-950/50 backdrop-blur-md border border-slate-900 rounded-3xl p-6 sm:p-10 shadow-2xl font-inter text-slate-300 text-sm sm:text-base leading-relaxed font-light">
+            
+            <p>
+                Manter uma alta taxa de quadros por segundo (FPS) e tempos de resposta consistentes (baixo <em>frametime</em>) é essencial tanto para o aproveitamento visual quanto para a competitividade em jogos online como CS2, Valorant, Warzone, Apex Legends e Fortnite. No entanto, muitas vezes um hardware potente entrega um desempenho abaixo do esperado devido a configurações inadequadas do sistema operacional ou drivers desatualizados.
+            </p>
+
+            <p>
+                Neste guia definitivo, reunimos os procedimentos técnicos comprovados que realmente aumentam o desempenho do seu PC gamer, sem promessas milagrosas e com total segurança para os seus componentes.
+            </p>
+
+            <h2>1. Configurações Essenciais no Windows 11 e Windows 10</h2>
+
+            <h3>A. Habilitar o Modo de Jogo (Game Mode)</h3>
+            <p>
+                O Modo de Jogo do Windows prioriza os recursos de CPU e GPU diretamente para o processo do jogo em execução, suspendendo tarefas em segundo plano e processos desnecessários.
+            </p>
+            <ol class="list-decimal">
+                <li>Abra as <strong>Configurações do Windows</strong> (pressione <code>Win + I</code>).</li>
+                <li>Vá até a aba <strong>Jogos</strong> ➔ <strong>Modo de Jogo</strong>.</li>
+                <li>Certifique-se de que a opção está marcada como <strong>Ativado</strong>.</li>
+            </ol>
+
+            <h3>B. Ativar o Agendamento de GPU Acelerado por Hardware (HAGS)</h3>
+            <p>
+                O recurso <em>Hardware-Accelerated GPU Scheduling</em> reduz a sobrecarga do processador ao permitir que a placa de vídeo gerencie sua própria memória de vídeo (VRAM) diretamente. Além disso, é um pré-requisito obrigatório para o uso de tecnologias como <strong>DLSS 3 Frame Generation</strong> e <strong>FSR 3</strong>.
+            </p>
+            <p>
+                Para ativar: vá em <em>Configurações ➔ Sistema ➔ Tela ➔ Elementos Gráficos ➔ Alterar configurações de gráficos padrão</em> e marque <strong>Agendamento de GPU acelerado por hardware</strong>. Reinicie o computador.
+            </p>
+
+            <h2>2. Otimização de Drivers de Placa de Vídeo (NVIDIA / AMD / Intel)</h2>
+            <p>
+                Drivers são a ponte de comunicação entre o jogo e o hardware. Manter os drivers de vídeo atualizados com uma instalação limpa é o passo que mais previne quedas bruscas de FPS (*stuttering*):
+            </p>
+            <ul class="list-disc">
+                <li><strong>Instalação Limpa com DDU (Display Driver Uninstaller):</strong> A cada 6 meses ou após a troca de GPU, use o DDU em Modo de Segurança para remover resquícios de drivers antigos antes de instalar a versão mais recente.</li>
+                <li><strong>Painel de Controle NVIDIA:</strong> Em <em>Ajustar as configurações de imagem</em>, selecione <em>"Usar as configurações de imagem avançadas em 3D"</em>. Em <em>Gerenciar as configurações em 3D</em>:
+                    <ul class="list-disc pl-5 mt-1">
+                        <li><strong>Modo de gerenciamento de energia:</strong> Preferência por desempenho máximo.</li>
+                        <li><strong>Modo de baixa latência:</strong> Ultra (ou Ativado).</li>
+                        <li><strong>Filtragem de textura - Qualidade:</strong> Alto Desempenho.</li>
+                    </ul>
+                </li>
+                <li><strong>AMD Radeon Software:</strong> Ative recursos como <strong>Radeon Anti-Lag</strong> e desative sobreposições desnecessárias (<em>overlays</em>) que possam consumir ciclos da CPU.</li>
+            </ul>
+
+            <h2>3. Tecnologias de Upscaling Inteligente: DLSS, FSR e XeSS</h2>
+            <p>
+                Os algoritmos modernos de reconstrução espacial e temporal revolucionaram a renderização de gráficos em tempo real:
+            </p>
+            <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-3 my-4">
+                <h4 class="font-orbitron text-white text-sm font-bold flex items-center gap-2">
+                    <i data-lucide="sliders" class="w-4 h-4 text-emerald-400"></i> Qual modo de Upscaling escolher?
+                </h4>
+                <ul class="list-disc pl-5 text-xs sm:text-sm space-y-2 text-slate-300">
+                    <li><strong>Modo Qualidade (Quality):</strong> Ideal para resoluções 1440p e 4K. O jogo é renderizado internamente com resolução ligeiramente menor e reconstruído com IA, garantindo ganho de 30% a 50% de FPS praticamente sem perda de nitidez.</li>
+                    <li><strong>Modo Desempenho (Performance):</strong> Recomendado para telas 4K ou placas intermediárias rodando jogos muito pesados com Ray Tracing ativo.</li>
+                    <li><strong>Frame Generation:</strong> Gera quadros intermediários sintéticos via hardware. Aumenta drasticamente a fluidez visual perceptível, ideal para monitores de alta frequência (144Hz, 240Hz).</li>
+                </ul>
+            </div>
+
+            <h2>4. Gráficos no Jogo: Quais Opções Consomem Mais Desempenho?</h2>
+            <p>
+                Ao personalizar as opções gráficas dentro do menu de cada jogo, ajuste com inteligência para manter a fidelidade visual sem sacrificar quadros:
+            </p>
+            <table class="w-full text-xs sm:text-sm text-left my-4 border border-slate-800 rounded-xl overflow-hidden">
+                <thead class="bg-slate-900 text-white font-orbitron">
+                    <tr>
+                        <th class="p-3">Configuração Gráfica</th>
+                        <th class="p-3">Impacto no FPS</th>
+                        <th class="p-3">Recomendação Competitiva</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-900 text-slate-300">
+                    <tr>
+                        <td class="p-3 font-semibold text-white">Ray Tracing / Path Tracing</td>
+                        <td class="p-3 text-rose-400 font-bold">Extremo (40% - 60%)</td>
+                        <td class="p-3">Desligar ou usar DLSS / FSR</td>
+                    </tr>
+                    <tr>
+                        <td class="p-3 font-semibold text-white">Qualidade de Sombras (Shadows)</td>
+                        <td class="p-3 text-amber-400 font-bold">Alto (15% - 25%)</td>
+                        <td class="p-3">Médio (Medium)</td>
+                    </tr>
+                    <tr>
+                        <td class="p-3 font-semibold text-white">Névoa Volumétrica (Volumetric Fog)</td>
+                        <td class="p-3 text-amber-400 font-bold">Alto (10% - 20%)</td>
+                        <td class="p-3">Baixo ou Médio</td>
+                    </tr>
+                    <tr>
+                        <td class="p-3 font-semibold text-white">Qualidade de Texturas</td>
+                        <td class="p-3 text-emerald-400 font-bold">Baixo (depende da VRAM)</td>
+                        <td class="p-3">Alto (se sua GPU tiver 8GB+ VRAM)</td>
+                    </tr>
+                    <tr>
+                        <td class="p-3 font-semibold text-white">Motion Blur & Depth of Field</td>
+                        <td class="p-3 text-emerald-400 font-bold">Baixo (1% - 3%)</td>
+                        <td class="p-3">Desligar (melhora clareza de visão)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>5. Manutenção Térmica e Saúde do Computador</h2>
+            <p>
+                O <em>Thermal Throttling</em> ocorre quando a CPU ou GPU atinge temperaturas críticas (geralmente acima de 85°C na GPU ou 95°C na CPU) e reduz automaticamente suas frequências de clock para evitar danos físicos, causando travamentos abruptos.
+            </p>
+            <ul class="list-disc">
+                <li>Limpe a poeira das ventoinhas e radiadores a cada 6 a 12 meses.</li>
+                <li>Troque a pasta térmica de componentes antigos por compostos de alta condutividade à base de prata ou carbono.</li>
+                <li>Verifique se o fluxo de ar do gabinete (*Airflow*) possui exaustão e admissão balanceadas.</li>
+            </ul>
+
+            <h2>Conclusão</h2>
+            <p>
+                A otimização de um PC gamer é uma combinação equilibrada entre configurações de sistema limpas, ajustes gráficos conscientes e manutenção de temperatura. Aplicando essas diretrizes, você garante o máximo rendimento em cada partida, com estabilidade impecável e menor latência de comando.
+            </p>
+
+        </article>
+
+        <!-- Author / Share Box -->
+        <div class="mt-12 p-6 bg-slate-950/60 border border-slate-900 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-orbitron font-bold">
+                    ZK
+                </div>
+                <div>
+                    <h4 class="font-orbitron text-white text-xs sm:text-sm font-bold">Zher Keys Hardware Lab</h4>
+                    <p class="text-xs text-slate-500">Testes de desempenho, benchmarks e engenharia de FPS.</p>
+                </div>
+            </div>
+            <a href="/guias" class="inline-flex items-center gap-2 text-xs font-orbitron text-electricblue hover:underline">
+                VER MAIS GUIAS <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer id="suporte" class="bg-slate-950 pt-16 pb-8 border-t border-slate-900 px-4 mt-auto">
+        <div class="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 mb-12">
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">SOBRE NÓS</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5 mb-6">
+                    <li><a href="/sobre-nos" class="hover:text-electricblue transition-colors">Sobre a Zher Keys</a></li>
+                    <li><a href="/contact.html" class="hover:text-electricblue transition-colors">Fale Conosco</a></li>
+                    <li><a href="/guias" class="hover:text-electricblue transition-colors">Base de Conhecimento</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">GUIAS RECOMENDADOS</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5">
+                    <li><a href="/artigos/como-ativar-chaves-steam-epic-xbox.html" class="hover:text-electricblue transition-colors">Como Ativar Chaves</a></li>
+                    <li><a href="/artigos/guia-seguranca-contas-games-2fa.html" class="hover:text-electricblue transition-colors">Segurança & 2FA</a></li>
+                    <li><a href="/artigos/otimizacao-fps-desempenho-pc-gamer.html" class="hover:text-electricblue transition-colors">Otimização de FPS</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">LOJA</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5">
+                    <li><a href="/#catalogo" class="hover:text-electricblue transition-colors">Catálogo</a></li>
+                    <li><a href="/account.html" class="hover:text-electricblue transition-colors">Minha Conta</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">LEGAL</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5">
+                    <li><a href="/politica-de-privacidade.html" class="hover:text-electricblue transition-colors">Privacidade</a></li>
+                    <li><a href="/termos-de-servico.html" class="hover:text-electricblue transition-colors">Termos de Uso</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">SUPORTE</h5>
+                <p class="font-inter text-xs text-slate-400 mb-2">suporte@zherkeys.com</p>
+                <p class="font-inter text-[11px] text-slate-500">CNPJ: 68.398.750/0001-05</p>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto pt-8 border-t border-slate-900/80 text-center text-slate-500 text-xs">
+            &copy; 2026 Zher Keys. Todos os direitos reservados. Guia informativo independente.
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Google AdSense Account Verification & Auto Ads -->
+    <meta name="google-adsense-account" content="ca-pub-3654713194554139">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3654713194554139" crossorigin="anonymous"></script>
+    
+    <!-- SEO Meta Tags -->
+    <title>Central de Guias & Tutoriais Gamer | Zher Keys</title>
+    <meta name="description" content="Explore guias completos, tutoriais de ativação de chaves digitais, dicas de otimização de PC gamer, segurança de contas e análises de hardware na Zher Keys.">
+    <link rel="canonical" href="https://zherkeys.com/guias" />
+    
+    <!-- Tailwind CSS -->
+    <script src="/tailwind.js"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        obsidian: '#020617',
+                        cyberrose: '#F43F5E',
+                        electricblue: '#3B82F6',
+                        surface: 'rgba(15, 23, 42, 0.8)',
+                    },
+                    boxShadow: {
+                        cyber: '0 0 20px rgba(59, 130, 246, 0.4)',
+                        roseGlow: '0 0 20px rgba(244, 63, 94, 0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            overflow-x: hidden;
+        }
+        
+        .scanline::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 99999;
+            opacity: 0.15;
+            pointer-events: none;
+            background-size: 100% 4px, 6px 100%;
+        }
+
+        .mesh-bg {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.18) 0px, transparent 50%),
+                radial-gradient(at 90% 10%, rgba(244, 63, 94, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 80%, rgba(147, 51, 234, 0.12) 0px, transparent 50%);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #020617;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3B82F6;
+        }
+    </style>
+</head>
+<body class="text-slate-200 antialiased mesh-bg scanline flex flex-col min-h-screen">
+    <!-- Google AdSense Auto Ads Body Tag -->
+    <amp-auto-ads type="adsense" data-ad-client="ca-pub-3654713194554139"></amp-auto-ads>
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/60 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3 group cursor-pointer" onclick="window.location.href='/'">
+                <img src="/logo.png" alt="Zher Keys Logo" class="w-10 h-10 object-contain rounded-lg shadow-cyber border border-slate-700/50 bg-slate-950/40 p-1 group-hover:scale-105 transition-transform duration-300">
+                <span class="font-orbitron font-black text-xl tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">ZHER <span class="text-electricblue">KEYS</span></span>
+            </div>
+            
+            <div class="hidden md:flex items-center gap-6 font-orbitron text-xs tracking-widest text-slate-400">
+                <a href="/" class="hover:text-white transition-colors">INÍCIO</a>
+                <a href="/#catalogo" class="hover:text-white transition-colors">CATÁLOGO</a>
+                <a href="/guias" class="text-electricblue font-bold hover:text-blue-400 transition-colors">📚 GUIAS & ARTIGOS</a>
+                <a href="/sobre-nos" class="hover:text-white transition-colors">SOBRE NÓS</a>
+                <a href="/contact.html" class="hover:text-white transition-colors">CONTATO</a>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <a href="/" class="text-slate-400 hover:text-white font-orbitron text-xs tracking-widest transition-colors flex items-center gap-1.5 bg-slate-900/60 border border-slate-800 px-4 py-2 rounded-lg">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> LOJA
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENT WRAPPER -->
+    <main class="pt-32 pb-24 px-4 max-w-7xl mx-auto flex-grow w-full">
+        
+        <!-- Hero Header -->
+        <div class="text-center mb-16 relative">
+            <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-64 h-64 bg-electricblue/10 rounded-full blur-3xl -z-10"></div>
+            <div class="inline-flex items-center gap-2 bg-electricblue/10 border border-electricblue/30 text-electricblue font-orbitron text-[10px] tracking-widest px-4 py-1.5 rounded-full uppercase font-bold mb-4">
+                📖 BASE DE CONHECIMENTO & CONTEÚDO EDITORIAL
+            </div>
+            <h1 class="font-orbitron font-black text-3xl sm:text-5xl lg:text-6xl text-white uppercase tracking-tight mb-4">
+                CENTRAL DE <span class="text-electricblue">GUIAS & ARTIGOS</span>
+            </h1>
+            <p class="font-inter text-slate-400 text-sm sm:text-base max-w-2xl mx-auto font-light leading-relaxed">
+                Artigos técnicos, tutoriais passo a passo de ativação, dicas de segurança cibernética para gamers e guias de otimização de hardware e FPS elaborados por especialistas.
+            </p>
+        </div>
+
+        <!-- Filter / Category Pills -->
+        <div class="flex flex-wrap items-center justify-center gap-2 mb-12">
+            <span class="bg-blue-600/20 border border-blue-500/40 text-blue-400 text-xs font-orbitron px-4 py-1.5 rounded-full font-bold">TODOS OS ARTIGOS</span>
+            <span class="bg-slate-900/60 border border-slate-800 text-slate-400 text-xs font-orbitron px-4 py-1.5 rounded-full">TUTORIAIS DE ATIVAÇÃO</span>
+            <span class="bg-slate-900/60 border border-slate-800 text-slate-400 text-xs font-orbitron px-4 py-1.5 rounded-full">SEGURANÇA & 2FA</span>
+            <span class="bg-slate-900/60 border border-slate-800 text-slate-400 text-xs font-orbitron px-4 py-1.5 rounded-full">HARDWARE & FPS</span>
+        </div>
+
+        <!-- Articles Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            <!-- Artigo 1: Ativação de Chaves -->
+            <article class="bg-slate-950/60 backdrop-blur-md border border-slate-900 hover:border-electricblue/50 rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 group hover:-translate-y-1 shadow-xl">
+                <div>
+                    <div class="flex items-center justify-between text-xs text-slate-500 mb-4 font-orbitron">
+                        <span class="text-electricblue font-bold flex items-center gap-1.5"><i data-lucide="key" class="w-4 h-4"></i> TUTORIAL</span>
+                        <span>8 MIN DE LEITURA</span>
+                    </div>
+                    <h2 class="font-orbitron font-bold text-lg sm:text-xl text-white group-hover:text-electricblue transition-colors mb-3 leading-snug">
+                        Como Ativar e Resgatar Chaves Digitais na Steam, Epic Games, Xbox e PSN
+                    </h2>
+                    <p class="font-inter text-slate-400 text-xs sm:text-sm leading-relaxed mb-6 font-light">
+                        Guia passo a passo com telas e explicações completas para resgatar seus códigos e CD Keys em todas as plataformas oficiais sem erros de região.
+                    </p>
+                </div>
+                <div class="pt-4 border-t border-slate-900/80 flex items-center justify-between">
+                    <span class="text-xs text-slate-500 font-inter">Por Equipe Técnica Zher Keys</span>
+                    <a href="/artigos/como-ativar-chaves-steam-epic-xbox.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-electricblue group-hover:translate-x-1 transition-all">
+                        LER ARTIGO <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
+                </div>
+            </article>
+
+            <!-- Artigo 2: Segurança e 2FA -->
+            <article class="bg-slate-950/60 backdrop-blur-md border border-slate-900 hover:border-cyberrose/50 rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 group hover:-translate-y-1 shadow-xl">
+                <div>
+                    <div class="flex items-center justify-between text-xs text-slate-500 mb-4 font-orbitron">
+                        <span class="text-cyberrose font-bold flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4"></i> SEGURANÇA</span>
+                        <span>10 MIN DE LEITURA</span>
+                    </div>
+                    <h2 class="font-orbitron font-bold text-lg sm:text-xl text-white group-hover:text-cyberrose transition-colors mb-3 leading-snug">
+                        Segurança Gamer: Como Proteger Contas, Ativar 2FA e Evitar Phishing
+                    </h2>
+                    <p class="font-inter text-slate-400 text-xs sm:text-sm leading-relaxed mb-6 font-light">
+                        Aprenda as práticas fundamentais de cibersegurança para blindar suas contas Steam, Epic e Battle.net contra invasões, golpes e roubos de inventário.
+                    </p>
+                </div>
+                <div class="pt-4 border-t border-slate-900/80 flex items-center justify-between">
+                    <span class="text-xs text-slate-500 font-inter">Por Especialistas de Segurança</span>
+                    <a href="/artigos/guia-seguranca-contas-games-2fa.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-cyberrose group-hover:translate-x-1 transition-all">
+                        LER ARTIGO <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
+                </div>
+            </article>
+
+            <!-- Artigo 3: Otimização de FPS -->
+            <article class="bg-slate-950/60 backdrop-blur-md border border-slate-900 hover:border-emerald-500/50 rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 group hover:-translate-y-1 shadow-xl">
+                <div>
+                    <div class="flex items-center justify-between text-xs text-slate-500 mb-4 font-orbitron">
+                        <span class="text-emerald-400 font-bold flex items-center gap-1.5"><i data-lucide="zap" class="w-4 h-4"></i> DESEMPENHO</span>
+                        <span>12 MIN DE LEITURA</span>
+                    </div>
+                    <h2 class="font-orbitron font-bold text-lg sm:text-xl text-white group-hover:text-emerald-400 transition-colors mb-3 leading-snug">
+                        Guia de Otimização de PC Gamer: Como Aumentar FPS e Reduzir a Latência
+                    </h2>
+                    <p class="font-inter text-slate-400 text-xs sm:text-sm leading-relaxed mb-6 font-light">
+                        Ajustes comprovados no Windows 11/10, configurações de drivers de GPU NVIDIA/AMD e uso correto de DLSS e FSR para extrair o máximo de fluidez.
+                    </p>
+                </div>
+                <div class="pt-4 border-t border-slate-900/80 flex items-center justify-between">
+                    <span class="text-xs text-slate-500 font-inter">Por Redação de Hardware</span>
+                    <a href="/artigos/otimizacao-fps-desempenho-pc-gamer.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-emerald-400 group-hover:translate-x-1 transition-all">
+                        LER ARTIGO <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
+                </div>
+            </article>
+
+            <!-- Artigo 4: Hardware Gamer -->
+            <article class="bg-slate-950/60 backdrop-blur-md border border-slate-900 hover:border-purple-500/50 rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 group hover:-translate-y-1 shadow-xl">
+                <div>
+                    <div class="flex items-center justify-between text-xs text-slate-500 mb-4 font-orbitron">
+                        <span class="text-purple-400 font-bold flex items-center gap-1.5"><i data-lucide="cpu" class="w-4 h-4"></i> GUIA DE HARDWARE</span>
+                        <span>11 MIN DE LEITURA</span>
+                    </div>
+                    <h2 class="font-orbitron font-bold text-lg sm:text-xl text-white group-hover:text-purple-400 transition-colors mb-3 leading-snug">
+                        Como Montar ou Fazer Upgrade no PC para Jogar em 1080p, 1440p e 4K
+                    </h2>
+                    <p class="font-inter text-slate-400 text-xs sm:text-sm leading-relaxed mb-6 font-light">
+                        Análise de custo-benefício de processadores, placas de vídeo, memória RAM e SSD NVMe para montar uma máquina equilibrada sem gargalos (bottleneck).
+                    </p>
+                </div>
+                <div class="pt-4 border-t border-slate-900/80 flex items-center justify-between">
+                    <span class="text-xs text-slate-500 font-inter">Por Redação de Hardware</span>
+                    <a href="/artigos/como-escolher-hardware-ideal-para-jogos.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-purple-400 group-hover:translate-x-1 transition-all">
+                        LER ARTIGO <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
+                </div>
+            </article>
+
+            <!-- Artigo 5: Edições de Jogos -->
+            <article class="bg-slate-950/60 backdrop-blur-md border border-slate-900 hover:border-amber-500/50 rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 group hover:-translate-y-1 shadow-xl">
+                <div>
+                    <div class="flex items-center justify-between text-xs text-slate-500 mb-4 font-orbitron">
+                        <span class="text-amber-400 font-bold flex items-center gap-1.5"><i data-lucide="shopping-bag" class="w-4 h-4"></i> GUIA DE COMPRAS</span>
+                        <span>7 MIN DE LEITURA</span>
+                    </div>
+                    <h2 class="font-orbitron font-bold text-lg sm:text-xl text-white group-hover:text-amber-400 transition-colors mb-3 leading-snug">
+                        Standard, Deluxe ou Ultimate: Qual Versão Escolher e Como Economizar
+                    </h2>
+                    <p class="font-inter text-slate-400 text-xs sm:text-sm leading-relaxed mb-6 font-light">
+                        Descubra a real diferença entre edições padrão e especiais, quando vale a pena investir em Season Pass e como identificar DLCs puramente cosméticas.
+                    </p>
+                </div>
+                <div class="pt-4 border-t border-slate-900/80 flex items-center justify-between">
+                    <span class="text-xs text-slate-500 font-inter">Por Equipe Editorial</span>
+                    <a href="/artigos/edicoes-de-jogos-standard-deluxe-ultimate.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-amber-400 group-hover:translate-x-1 transition-all">
+                        LER ARTIGO <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
+                </div>
+            </article>
+
+            <!-- Artigo 6: História da Distribuição Digital -->
+            <article class="bg-slate-950/60 backdrop-blur-md border border-slate-900 hover:border-cyan-500/50 rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 group hover:-translate-y-1 shadow-xl">
+                <div>
+                    <div class="flex items-center justify-between text-xs text-slate-500 mb-4 font-orbitron">
+                        <span class="text-cyan-400 font-bold flex items-center gap-1.5"><i data-lucide="globe" class="w-4 h-4"></i> MERCADO & HISTÓRIA</span>
+                        <span>9 MIN DE LEITURA</span>
+                    </div>
+                    <h2 class="font-orbitron font-bold text-lg sm:text-xl text-white group-hover:text-cyan-400 transition-colors mb-3 leading-snug">
+                        A Evolução dos Jogos Digitais: Da Mídia Física ao Futuro da Nuvem
+                    </h2>
+                    <p class="font-inter text-slate-400 text-xs sm:text-sm leading-relaxed mb-6 font-light">
+                        Uma retrospectiva sobre como as plataformas de chaves e downloads digitais transformaram a indústria mundial de entretenimento eletrônico.
+                    </p>
+                </div>
+                <div class="pt-4 border-t border-slate-900/80 flex items-center justify-between">
+                    <span class="text-xs text-slate-500 font-inter">Por Equipe Editorial</span>
+                    <a href="/artigos/historia-e-evolucao-dos-jogos-digitais.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-cyan-400 group-hover:translate-x-1 transition-all">
+                        LER ARTIGO <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
+                </div>
+            </article>
+
+            <!-- Artigo 7: Requisitos de Sistema -->
+            <article class="bg-slate-950/60 backdrop-blur-md border border-slate-900 hover:border-blue-500/50 rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 group hover:-translate-y-1 shadow-xl">
+                <div>
+                    <div class="flex items-center justify-between text-xs text-slate-500 mb-4 font-orbitron">
+                        <span class="text-blue-400 font-bold flex items-center gap-1.5"><i data-lucide="monitor" class="w-4 h-4"></i> COMPATIBILIDADE</span>
+                        <span>8 MIN DE LEITURA</span>
+                    </div>
+                    <h2 class="font-orbitron font-bold text-lg sm:text-xl text-white group-hover:text-blue-400 transition-colors mb-3 leading-snug">
+                        Como Saber se um Jogo Roda no seu PC: Entendendo Requisitos de Sistema
+                    </h2>
+                    <p class="font-inter text-slate-400 text-xs sm:text-sm leading-relaxed mb-6 font-light">
+                        Entenda o que são requisitos mínimos e recomendados, como comparar sua GPU/CPU e ferramentas de diagnóstico para evitar frustrações pós-compra.
+                    </p>
+                </div>
+                <div class="pt-4 border-t border-slate-900/80 flex items-center justify-between">
+                    <span class="text-xs text-slate-500 font-inter">Por Redação de Hardware</span>
+                    <a href="/artigos/requisitos-de-sistema-como-verificar-compatibilidade.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-blue-400 group-hover:translate-x-1 transition-all">
+                        LER ARTIGO <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
+                </div>
+            </article>
+
+            <!-- Artigo 8: Gift Cards -->
+            <article class="bg-slate-950/60 backdrop-blur-md border border-slate-900 hover:border-rose-500/50 rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 group hover:-translate-y-1 shadow-xl">
+                <div>
+                    <div class="flex items-center justify-between text-xs text-slate-500 mb-4 font-orbitron">
+                        <span class="text-rose-400 font-bold flex items-center gap-1.5"><i data-lucide="gift" class="w-4 h-4"></i> CARTÕES PRÉ-PAGOS</span>
+                        <span>7 MIN DE LEITURA</span>
+                    </div>
+                    <h2 class="font-orbitron font-bold text-lg sm:text-xl text-white group-hover:text-rose-400 transition-colors mb-3 leading-snug">
+                        Guia de Gift Cards e Cartões Pré-Pagos: Como Presentear e Resgatar com Segurança
+                    </h2>
+                    <p class="font-inter text-slate-400 text-xs sm:text-sm leading-relaxed mb-6 font-light">
+                        Tudo sobre cartões de saldo Steam, PlayStation, Xbox, Google Play e Roblox: regras de bloqueio de moedas, taxas e como presentear sem erros.
+                    </p>
+                </div>
+                <div class="pt-4 border-t border-slate-900/80 flex items-center justify-between">
+                    <span class="text-xs text-slate-500 font-inter">Por Equipe Editorial</span>
+                    <a href="/artigos/guia-presentes-gift-cards-ativacao-segura.html" class="inline-flex items-center gap-1.5 text-xs font-orbitron font-bold text-rose-400 group-hover:translate-x-1 transition-all">
+                        LER ARTIGO <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
+                </div>
+            </article>
+
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer id="suporte" class="bg-slate-950 pt-16 pb-8 border-t border-slate-900 px-4 mt-auto">
+        <div class="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 mb-12">
+            
+            <!-- Coluna 1: Sobre nós -->
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">SOBRE NÓS</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5 mb-6">
+                    <li><a href="/sobre-nos" class="hover:text-electricblue transition-colors">Sobre a Zher Keys</a></li>
+                    <li><a href="/contact.html" class="hover:text-electricblue transition-colors">Fale Conosco</a></li>
+                    <li><a href="/guias" class="text-electricblue font-bold hover:underline">Base de Conhecimento</a></li>
+                </ul>
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="font-orbitron font-black text-sm tracking-wider text-white">ZHER <span class="text-electricblue">KEYS</span></span>
+                </div>
+            </div>
+
+            <!-- Coluna 2: Guias & Tutoriais -->
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">GUIAS GAMER</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5">
+                    <li><a href="/artigos/como-ativar-chaves-steam-epic-xbox.html" class="hover:text-electricblue transition-colors">Como Ativar Chaves</a></li>
+                    <li><a href="/artigos/guia-seguranca-contas-games-2fa.html" class="hover:text-electricblue transition-colors">Segurança & 2FA</a></li>
+                    <li><a href="/artigos/otimizacao-fps-desempenho-pc-gamer.html" class="hover:text-electricblue transition-colors">Otimização de FPS</a></li>
+                    <li><a href="/artigos/como-escolher-hardware-ideal-para-jogos.html" class="hover:text-electricblue transition-colors">Hardware para PC</a></li>
+                </ul>
+            </div>
+
+            <!-- Coluna 3: Navegação da Loja -->
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">LOJA DIGITAL</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5">
+                    <li><a href="/#catalogo" class="hover:text-electricblue transition-colors">Catálogo Completo</a></li>
+                    <li><a href="/#vantagens" class="hover:text-electricblue transition-colors">Recursos de Segurança</a></li>
+                    <li><a href="/account.html" class="hover:text-electricblue transition-colors">Painel do Usuário</a></li>
+                </ul>
+            </div>
+
+            <!-- Coluna 4: Políticas & Legal -->
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">LEGAL & PRIVACIDADE</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5">
+                    <li><a href="/politica-de-privacidade.html" class="hover:text-electricblue transition-colors">Política de Privacidade</a></li>
+                    <li><a href="/termos-de-servico.html" class="hover:text-electricblue transition-colors">Termos de Serviço</a></li>
+                    <li><a href="/politica-de-entrega.html" class="hover:text-electricblue transition-colors">Política de Entrega</a></li>
+                    <li><a href="/politica-de-devolucao.html" class="hover:text-electricblue transition-colors">Política de Reembolso</a></li>
+                </ul>
+            </div>
+
+            <!-- Coluna 5: Atendimento -->
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">SUPORTE TÉCNICO</h5>
+                <p class="font-inter text-xs text-slate-400 mb-3">Atendimento especializado de segunda a domingo.</p>
+                <div class="space-y-2 text-xs">
+                    <div class="text-slate-300 font-semibold">suporte@zherkeys.com</div>
+                    <div class="text-slate-500">CNPJ: 68.398.750/0001-05</div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="max-w-7xl mx-auto pt-8 border-t border-slate-900/80 flex flex-col sm:flex-row items-center justify-between text-slate-500 text-xs gap-4">
+            <p>&copy; 2026 Zher Keys. Todos os direitos reservados. Plataforma editorial e de distribuição digital independente.</p>
+            <p class="text-[11px] text-slate-600">Não afiliado oficialmente à Valve, Microsoft, Sony ou Epic Games.</p>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

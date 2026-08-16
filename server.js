@@ -4258,7 +4258,7 @@ app.get('/ads.txt', (req, res) => {
     res.send('google.com, pub-3654713194554139, DIRECT, f08c47fec0942fa0');
 });
 
-// Clean URLs for Google Merchant Center compliance (English and Portuguese translations)
+// Clean URLs for Google Merchant Center and AdSense compliance
 app.get(['/privacy-policy', '/politica-de-privacidade'], (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'politica-de-privacidade.html'));
 });
@@ -4277,6 +4277,18 @@ app.get('/sobre-nos', (req, res) => {
 app.get(['/contact', '/contato', '/fale-conosco'], (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'contact.html'));
 });
+app.get(['/guias', '/guias.html', '/artigos', '/blog', '/tutoriais'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'guias.html'));
+});
+app.get('/artigos/:slug', (req, res) => {
+    let slug = req.params.slug;
+    if (!slug.endsWith('.html')) slug += '.html';
+    const filePath = path.join(__dirname, 'public', 'artigos', slug);
+    if (fs.existsSync(filePath)) {
+        return res.sendFile(filePath);
+    }
+    return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+});
 
 // Dynamic sitemap.xml
 app.get('/sitemap.xml', async (req, res) => {
@@ -4293,6 +4305,46 @@ app.get('/sitemap.xml', async (req, res) => {
     <url>
         <loc>${domain}/</loc>
         <priority>1.00</priority>
+    </url>
+    <url>
+        <loc>${domain}/guias</loc>
+        <priority>0.95</priority>
+    </url>
+    <url>
+        <loc>${domain}/artigos/como-ativar-chaves-steam-epic-xbox.html</loc>
+        <priority>0.90</priority>
+    </url>
+    <url>
+        <loc>${domain}/artigos/guia-seguranca-contas-games-2fa.html</loc>
+        <priority>0.90</priority>
+    </url>
+    <url>
+        <loc>${domain}/artigos/otimizacao-fps-desempenho-pc-gamer.html</loc>
+        <priority>0.90</priority>
+    </url>
+    <url>
+        <loc>${domain}/artigos/como-escolher-hardware-ideal-para-jogos.html</loc>
+        <priority>0.90</priority>
+    </url>
+    <url>
+        <loc>${domain}/artigos/edicoes-de-jogos-standard-deluxe-ultimate.html</loc>
+        <priority>0.90</priority>
+    </url>
+    <url>
+        <loc>${domain}/artigos/historia-e-evolucao-dos-jogos-digitais.html</loc>
+        <priority>0.90</priority>
+    </url>
+    <url>
+        <loc>${domain}/artigos/requisitos-de-sistema-como-verificar-compatibilidade.html</loc>
+        <priority>0.90</priority>
+    </url>
+    <url>
+        <loc>${domain}/artigos/guia-presentes-gift-cards-ativacao-segura.html</loc>
+        <priority>0.90</priority>
+    </url>
+    <url>
+        <loc>${domain}/sobre-nos</loc>
+        <priority>0.80</priority>
     </url>
     <url>
         <loc>${domain}/carrinho.html</loc>
@@ -4335,7 +4387,7 @@ app.get('/sitemap.xml', async (req, res) => {
 
             xml += `    <url>
         <loc>${domain}/produto/${p.id}-${safeSlug}</loc>
-        <priority>0.90</priority>
+        <priority>0.85</priority>
     </url>\n`;
         });
 

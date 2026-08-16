@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Google AdSense Account Verification & Auto Ads -->
+    <meta name="google-adsense-account" content="ca-pub-3654713194554139">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3654713194554139" crossorigin="anonymous"></script>
+    
+    <!-- SEO Meta Tags -->
+    <title>Como Saber se um Jogo Roda no seu PC: Guia de Requisitos de Sistema | Zher Keys</title>
+    <meta name="description" content="Aprenda a checar as especificações do seu computador, entender a diferença entre requisitos mínimos e recomendados e testar a compatibilidade antes de comprar.">
+    <link rel="canonical" href="https://zherkeys.com/artigos/requisitos-de-sistema-como-verificar-compatibilidade.html" />
+    
+    <!-- Tailwind CSS -->
+    <script src="/tailwind.js"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        obsidian: '#020617',
+                        cyberrose: '#F43F5E',
+                        electricblue: '#3B82F6',
+                        surface: 'rgba(15, 23, 42, 0.8)',
+                    },
+                    boxShadow: {
+                        cyber: '0 0 20px rgba(59, 130, 246, 0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            overflow-x: hidden;
+        }
+        
+        .scanline::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 99999;
+            opacity: 0.15;
+            pointer-events: none;
+            background-size: 100% 4px, 6px 100%;
+        }
+
+        .mesh-bg {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.18) 0px, transparent 50%),
+                radial-gradient(at 90% 10%, rgba(244, 63, 94, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 80%, rgba(147, 51, 234, 0.12) 0px, transparent 50%);
+        }
+
+        .article-content h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: #ffffff;
+            font-size: 1.35rem;
+            margin-top: 2.25rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+            padding-bottom: 0.5rem;
+        }
+
+        .article-content h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            color: #60a5fa;
+            font-size: 1.1rem;
+            margin-top: 1.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .article-content p {
+            margin-bottom: 1.25rem;
+            line-height: 1.8;
+            color: #cbd5e1;
+        }
+
+        .article-content ul, .article-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+            color: #cbd5e1;
+        }
+
+        .article-content li {
+            margin-bottom: 0.5rem;
+            line-height: 1.7;
+        }
+    </style>
+</head>
+<body class="text-slate-200 antialiased mesh-bg scanline flex flex-col min-h-screen">
+    <!-- Google AdSense Auto Ads Body Tag -->
+    <amp-auto-ads type="adsense" data-ad-client="ca-pub-3654713194554139"></amp-auto-ads>
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/60 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3 group cursor-pointer" onclick="window.location.href='/'">
+                <img src="/logo.png" alt="Zher Keys Logo" class="w-10 h-10 object-contain rounded-lg shadow-cyber border border-slate-700/50 bg-slate-950/40 p-1 group-hover:scale-105 transition-transform duration-300">
+                <span class="font-orbitron font-black text-xl tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">ZHER <span class="text-electricblue">KEYS</span></span>
+            </div>
+            
+            <div class="hidden md:flex items-center gap-6 font-orbitron text-xs tracking-widest text-slate-400">
+                <a href="/" class="hover:text-white transition-colors">INÍCIO</a>
+                <a href="/#catalogo" class="hover:text-white transition-colors">CATÁLOGO</a>
+                <a href="/guias" class="text-electricblue font-bold hover:text-blue-400 transition-colors">📚 GUIAS & ARTIGOS</a>
+                <a href="/sobre-nos" class="hover:text-white transition-colors">SOBRE NÓS</a>
+                <a href="/contact.html" class="hover:text-white transition-colors">CONTATO</a>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <a href="/guias" class="text-slate-400 hover:text-white font-orbitron text-xs tracking-widest transition-colors flex items-center gap-1.5 bg-slate-900/60 border border-slate-800 px-4 py-2 rounded-lg">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> TODOS OS GUIAS
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN ARTICLE WRAPPER -->
+    <main class="pt-32 pb-24 px-4 max-w-4xl mx-auto flex-grow w-full">
+        
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-2 text-xs text-slate-500 font-orbitron mb-8">
+            <a href="/" class="hover:text-slate-300">HOME</a>
+            <span>/</span>
+            <a href="/guias" class="hover:text-slate-300">GUIAS</a>
+            <span>/</span>
+            <span class="text-blue-400">REQUISITOS DE SISTEMA</span>
+        </nav>
+
+        <!-- Article Header -->
+        <header class="mb-12">
+            <div class="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/30 text-blue-400 font-orbitron text-[10px] tracking-widest px-4 py-1.5 rounded-full uppercase font-bold mb-4">
+                💻 DIAGNÓSTICO & HARDWARE
+            </div>
+            <h1 class="font-orbitron font-black text-3xl sm:text-4xl lg:text-5xl text-white uppercase tracking-tight mb-6 leading-tight">
+                Como Saber se um Jogo Roda no seu PC: Entendendo Requisitos Mínimos e Recomendados
+            </h1>
+            
+            <div class="flex flex-wrap items-center gap-6 text-xs text-slate-400 pb-6 border-b border-slate-900 font-inter">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="monitor" class="w-4 h-4 text-blue-400"></i>
+                    <span>Laboratório Técnico Zher Keys</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i data-lucide="calendar" class="w-4 h-4 text-slate-500"></i>
+                    <span>Publicado em 2026</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i data-lucide="clock" class="w-4 h-4 text-slate-500"></i>
+                    <span>Tempo de Leitura: 8 minutos</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Article Body -->
+        <article class="article-content bg-slate-950/50 backdrop-blur-md border border-slate-900 rounded-3xl p-6 sm:p-10 shadow-2xl font-inter text-slate-300 text-sm sm:text-base leading-relaxed font-light">
+            
+            <p>
+                Antes de comprar e ativar uma nova chave digital de jogo, um dos passos mais importantes é verificar se os componentes do seu computador atendem às exigências técnicas daquele título. Com a transição definitiva dos motores gráficos para a <strong>Unreal Engine 5</strong> e o uso obrigatório de APIs de baixo nível como <strong>DirectX 12 Ultimate e Vulkan</strong>, muitos jogos recentes passaram a exigir recursos específicos de hardware (como memória VRAM dedicada e suporte a SSDs de alta velocidade).
+            </p>
+
+            <p>
+                Neste guia, ensinamos como checar as configurações exatas do seu computador e como interpretar a tabela de requisitos das produtoras.
+            </p>
+
+            <h2>1. Como Checar as Especificações do seu Computador no Windows</h2>
+            <p>
+                Você não precisa instalar nenhum programa externo para descobrir exatamente qual processador, placa de vídeo e quantidade de memória RAM estão instalados na sua máquina:
+            </p>
+            <ol class="list-decimal">
+                <li>Pressione as teclas <code>Win + R</code> no teclado para abrir a caixa "Executar".</li>
+                <li>Digite <code>dxdiag</code> e pressione <strong>Enter</strong>.</li>
+                <li>Na aba <strong>"Sistema"</strong>, você verá o modelo do seu <strong>Processador (CPU)</strong>, a quantidade de <strong>Memória RAM</strong> e a versão do DirectX.</li>
+                <li>Na aba <strong>"Exibição"</strong> (ou "Renderização"), você encontrará o nome exato da sua <strong>Placa de Vídeo (GPU)</strong> e a quantidade de <strong>VRAM (Memória de Vídeo Dedicada)</strong>.</li>
+            </ol>
+
+            <h2>2. O Que Significam os "Requisitos Mínimos" e "Recomendados"?</h2>
+
+            <h3>Requisitos Mínimos (Minimum Requirements)</h3>
+            <p>
+                Representam o patamar básico para que o jogo abra e execute de forma jogável, tipicamente mirando em <strong>1080p ou 720p a 30 FPS com qualidade gráfica Baixa</strong>.
+            </p>
+            <p class="text-amber-400 font-semibold bg-amber-950/30 p-3 rounded-xl border border-amber-900/50">
+                💡 Se o seu computador estiver exatamente nos requisitos mínimos, você precisará reduzir opções como sombras, oclusão ambiental e ativar o modo Desempenho do DLSS/FSR para garantir fluidez.
+            </p>
+
+            <h3>Requisitos Recomendados (Recommended Requirements)</h3>
+            <p>
+                Indicam a configuração pensada pelos desenvolvedores para a experiência pretendida da obra, tipicamente <strong>1080p ou 1440p a 60 FPS com gráficos no Alto</strong>.
+            </p>
+
+            <h2>3. Os 3 Fatores Críticos que Impedem Jogos Modernos de Rodar</h2>
+            <ul class="list-disc">
+                <li><strong>Memória de Vídeo (VRAM) Insuficiente:</strong> Placas com menos de 6GB ou 8GB de VRAM enfrentam fechamentos repentinos (<em>Crash to Desktop</em>) em jogos modernos que utilizam Ray Tracing ou texturas em alta resolução.</li>
+                <li><strong>Instalação em HD Mecânico (HDD):</strong> Jogos da atualidade dependem de leitura contínua de dados em tempo real. Instalar esses jogos em HDDs causa travamentos graves de áudio e mundo invisível.</li>
+                <li><strong>Falta de Instruções AVX2 no Processador:</strong> Processadores muito antigos (com mais de 10 anos de lançamento) não possuem suporte a conjuntos de instruções matemáticas modernas exigidas pelas engines atuais.</li>
+            </ul>
+
+            <h2>Conclusão</h2>
+            <p>
+                Averiguar os requisitos de sistema antes de adquirir um jogo evita contratempos e garante que sua experiência seja satisfatória desde o primeiro minuto. Conhecendo as capacidades do seu computador, você consegue configurar as opções gráficas com precisão e extrair o melhor equilíbrio entre beleza visual e taxa de quadros estável.
+            </p>
+
+        </article>
+
+        <!-- Author Box -->
+        <div class="mt-12 p-6 bg-slate-950/60 border border-slate-900 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-electricblue font-orbitron font-bold">
+                    ZK
+                </div>
+                <div>
+                    <h4 class="font-orbitron text-white text-xs sm:text-sm font-bold">Zher Keys Hardware Lab</h4>
+                    <p class="text-xs text-slate-500">Diagnóstico de compatibilidade e otimização de sistemas.</p>
+                </div>
+            </div>
+            <a href="/guias" class="inline-flex items-center gap-2 text-xs font-orbitron text-electricblue hover:underline">
+                VER MAIS GUIAS <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer id="suporte" class="bg-slate-950 pt-16 pb-8 border-t border-slate-900 px-4 mt-auto">
+        <div class="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 mb-12">
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">SOBRE NÓS</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5 mb-6">
+                    <li><a href="/sobre-nos" class="hover:text-electricblue transition-colors">Sobre a Zher Keys</a></li>
+                    <li><a href="/contact.html" class="hover:text-electricblue transition-colors">Fale Conosco</a></li>
+                    <li><a href="/guias" class="hover:text-electricblue transition-colors">Base de Conhecimento</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">GUIAS RECOMENDADOS</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5">
+                    <li><a href="/artigos/como-ativar-chaves-steam-epic-xbox.html" class="hover:text-electricblue transition-colors">Como Ativar Chaves</a></li>
+                    <li><a href="/artigos/guia-seguranca-contas-games-2fa.html" class="hover:text-electricblue transition-colors">Segurança & 2FA</a></li>
+                    <li><a href="/artigos/otimizacao-fps-desempenho-pc-gamer.html" class="hover:text-electricblue transition-colors">Otimização de FPS</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">LOJA</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5">
+                    <li><a href="/#catalogo" class="hover:text-electricblue transition-colors">Catálogo</a></li>
+                    <li><a href="/account.html" class="hover:text-electricblue transition-colors">Minha Conta</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">LEGAL</h5>
+                <ul class="font-inter text-xs text-slate-400 space-y-2.5">
+                    <li><a href="/politica-de-privacidade.html" class="hover:text-electricblue transition-colors">Privacidade</a></li>
+                    <li><a href="/termos-de-servico.html" class="hover:text-electricblue transition-colors">Termos de Uso</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="font-orbitron text-xs tracking-widest text-white uppercase mb-4 font-bold">SUPORTE</h5>
+                <p class="font-inter text-xs text-slate-400 mb-2">suporte@zherkeys.com</p>
+                <p class="font-inter text-[11px] text-slate-500">CNPJ: 68.398.750/0001-05</p>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto pt-8 border-t border-slate-900/80 text-center text-slate-500 text-xs">
+            &copy; 2026 Zher Keys. Todos os direitos reservados. Guia informativo independente.
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
