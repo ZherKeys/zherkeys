@@ -9,7 +9,6 @@ bin/
 logs/
 .DS_Store
 database.sqlite
-data/
 eneba_bot_session/
 *.png
 *.jpeg

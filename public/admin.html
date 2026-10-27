@@ -87,7 +87,14 @@ gtag('config', 'AW-18202657831');
                 <button onclick="switchTab('musica')" id="tab-btn-musica" class="text-slate-500 hover:text-white pb-1 border-b-2 border-transparent hover:border-slate-500 transition-all shrink-0">🎵 MÚSICA DE FUNDO</button>
             </div>
             
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button onclick="downloadFullSystemBackup()" class="px-2.5 py-1.5 bg-emerald-950/60 border border-emerald-500/40 hover:border-emerald-400 hover:bg-emerald-900/50 text-emerald-400 font-orbitron font-bold text-[10px] tracking-widest rounded transition-all uppercase flex items-center gap-1.5 cursor-pointer" title="Baixar Backup Completo (Usuários + Jogos + Keys + Produtos)">
+                    💾 BACKUP
+                </button>
+                <label class="px-2.5 py-1.5 bg-blue-950/60 border border-blue-500/40 hover:border-blue-400 hover:bg-blue-900/50 text-blue-400 font-orbitron font-bold text-[10px] tracking-widest rounded transition-all uppercase flex items-center gap-1.5 cursor-pointer" title="Restaurar arquivo de Backup JSON">
+                    📂 RESTAURAR
+                    <input type="file" accept=".json" class="hidden" onchange="uploadAndRestoreFullBackup(this)">
+                </label>
                 <a href="/minigames.html" class="px-3 py-1.5 bg-slate-800 border border-slate-700 hover:border-emerald-500 hover:bg-slate-700 text-emerald-400 font-orbitron font-bold text-[10px] tracking-widest rounded transition-all uppercase flex items-center gap-1.5" title="Jogar Minigames">
                     🕹️ JOGAR
                 </a>
@@ -1719,10 +1726,77 @@ gtag('config', 'AW-18202657831');
                     container.appendChild(card);
                 });
                 lucide.createIcons();
+                if (typeof window.autoSyncAdminLocalBackup === 'function') {
+                    window.autoSyncAdminLocalBackup();
+                }
             } catch(e) {
                 console.error("Erro ao carregar produtos:", e);
             }
         }
+
+        window.autoSyncAdminLocalBackup = async () => {
+            try {
+                const res = await fetch('/api/admin/backup/full');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data && data.success) {
+                    localStorage.setItem('zher_admin_full_backup_v1', JSON.stringify(data));
+                }
+            } catch (e) {}
+        };
+
+        window.downloadFullSystemBackup = async () => {
+            try {
+                const res = await fetch('/api/admin/backup/full');
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    alert(data.error || "Erro ao gerar backup.");
+                    return;
+                }
+                localStorage.setItem('zher_admin_full_backup_v1', JSON.stringify(data));
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `zherkeys_backup_completo_${new Date().toISOString().slice(0,10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            } catch (e) {
+                alert("Erro ao baixar backup completo: " + (e.message || e));
+            }
+        };
+
+        window.uploadAndRestoreFullBackup = async (input) => {
+            const file = input && input.files && input.files[0];
+            if (!file) return;
+            try {
+                const text = await file.text();
+                const parsed = JSON.parse(text);
+                const res = await fetch('/api/admin/backup/restore', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        users: parsed.users || [],
+                        products: parsed.products || (Array.isArray(parsed) ? parsed : []),
+                        orders: parsed.orders || null,
+                        replaceProducts: true
+                    })
+                });
+                const resData = await res.json();
+                if (res.ok && resData.success) {
+                    alert("✅ Backup de usuários, jogos, keys e produtos restaurado com sucesso!");
+                    loadProducts();
+                } else {
+                    alert(resData.error || "Erro ao restaurar arquivo de backup.");
+                }
+            } catch (e) {
+                alert("Arquivo de backup inválido: " + (e.message || e));
+            } finally {
+                input.value = '';
+            }
+        };
 
         window.changeProductPositionDirectly = async (productId, newPosStr) => {
             let newPos = parseInt(newPosStr, 10);

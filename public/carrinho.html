@@ -526,8 +526,10 @@ gtag('config', 'AW-18202657831');
                 .then(res => res.json())
                 .then(latestProducts => {
                     cart = cart.map(item => {
-                        const liveProduct = latestProducts.find(p => p.id === item.id);
+                        const liveProduct = latestProducts.find(p => Number(p.id) === Number(item.id) || (p.title && item.title && p.title.toLowerCase().trim() === item.title.toLowerCase().trim()));
                         if (liveProduct) {
+                            item.id = liveProduct.id;
+                            item.price = liveProduct.price;
                             item.in_stock = liveProduct.in_stock;
                         }
                         return item;
@@ -766,7 +768,7 @@ gtag('config', 'AW-18202657831');
                     onApprove: function(data, actions) {
                         return actions.order.capture().then(async function(details) {
                             try {
-                                const items = cart.map(item => ({ id: item.id, quantity: 1 }));
+                                const items = cart.map(item => ({ id: item.id, title: item.title, quantity: 1 }));
                                 const response = await fetch('/create-checkout/paypal', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
@@ -937,7 +939,7 @@ gtag('config', 'AW-18202657831');
                     cpfVal = cpfInput ? cpfInput.value.replace(/\D/g, '') : '';
                 }
 
-                const items = cart.map(item => ({ id: item.id, quantity: 1 }));
+                const items = cart.map(item => ({ id: item.id, title: item.title, quantity: 1 }));
                 
                 const res = await fetch('/create-checkout', {
                     method: 'POST',

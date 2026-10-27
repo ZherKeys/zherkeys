@@ -188,7 +188,10 @@ function splitTopLevelCommas(str) {
 }
 
 function matchSimpleCondition(row, condStr, params) {
-    const c = condStr.trim().replace(/^\(+|\)+$/g, '').trim();
+    let c = condStr.trim();
+    while (c.startsWith('(') && c.endsWith(')')) {
+        c = c.slice(1, -1).trim();
+    }
     if (!c) return true;
 
     let m;
@@ -200,10 +203,10 @@ function matchSimpleCondition(row, condStr, params) {
         const col = m[1].split('.').pop();
         return row[col] === null || row[col] === undefined;
     }
-    if ((m = c.match(/^([\w.]+)\s*=\s*ANY\s*\(\s*\$(\d+)(?:::\w+\[\])?\s*\)$/i))) {
+    if ((m = c.match(/^([\w.]+)\s*=\s*ANY\s*\(\s*\$(\d+)(?:::[\w\[\]]+)?\s*\)?$/i))) {
         const col = m[1].split('.').pop();
         const arr = params[parseInt(m[2], 10) - 1] || [];
-        return Array.isArray(arr) && arr.map(String).includes(String(row[col]));
+        return Array.isArray(arr) && arr.map(x => String(x)).includes(String(row[col]));
     }
     if ((m = c.match(/^([\w.]+)\s+(ILIKE|LIKE)\s+(.+)$/i))) {
         const col = m[1].split('.').pop();
@@ -590,13 +593,16 @@ async function restoreProductsFromBackup() {
             const fileData = fs.readFileSync(backupPath, 'utf-8');
             const backupProducts = JSON.parse(fileData);
             if (Array.isArray(backupProducts) && backupProducts.length > 0) {
-                for (let p of backupProducts) {
-                    const check = await pool.query('SELECT id FROM products WHERE title = $1', [p.title]);
+                for (let idx = 0; idx < backupProducts.length; idx++) {
+                    const p = backupProducts[idx];
+                    const check = await pool.query('SELECT id FROM products WHERE id = $1 OR title = $2', [p.id || -1, p.title]);
                     if (check.rows.length === 0) {
                         await pool.query(
-                            `INSERT INTO products (title, description, price, old_price, image, category, activation_key, in_stock, is_global, restricted_countries, genres, gameflip_listing_id, gallery) 
-                             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+                            `INSERT INTO products (id, title, description, price, old_price, image, category, activation_key, in_stock, is_global, restricted_countries, genres, gameflip_listing_id, gallery, display_order, auto_stock_provider, eneba_url) 
+                             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+                             ON CONFLICT (id) DO NOTHING`,
                             [
+                                p.id || (idx + 1),
                                 p.title,
                                 p.description || '',
                                 parseFloat(p.price) || 0,
@@ -606,10 +612,13 @@ async function restoreProductsFromBackup() {
                                 p.activation_key || '',
                                 p.in_stock !== false,
                                 p.is_global !== false,
-                                typeof p.restricted_countries === 'string' ? p.restricted_countries : JSON.stringify(p.restricted_countries || []),
-                                typeof p.genres === 'string' ? p.genres : JSON.stringify(p.genres || []),
+                                typeof p.restricted_countries === 'string' ? (p.restricted_countries === '[]' ? '' : p.restricted_countries) : '',
+                                typeof p.genres === 'string' ? (p.genres === '[]' ? '' : p.genres) : '',
                                 p.gameflip_listing_id || '',
-                                typeof p.gallery === 'string' ? p.gallery : JSON.stringify(p.gallery || [])
+                                typeof p.gallery === 'string' ? p.gallery : JSON.stringify(p.gallery || []),
+                                p.display_order !== undefined ? p.display_order : idx,
+                                p.auto_stock_provider || 'eneba',
+                                p.eneba_url || ''
                             ]
                         );
                     }
@@ -694,6 +703,27 @@ async function syncFullDatabaseBackup() {
         } catch(e) {
             console.error("Erro no backup de música de fundo:", e.message || e);
         }
+
+        // 6. Arquivo Mestre Unificado (Usuários + Jogos + Keys + Produtos + Pedidos + Tickets)
+        try {
+            const [uRes, pRes, oRes, oiRes, tRes] = await Promise.all([
+                pool.query('SELECT * FROM users ORDER BY id ASC'),
+                pool.query('SELECT * FROM products ORDER BY COALESCE(display_order, 0) ASC, id ASC'),
+                pool.query('SELECT * FROM orders ORDER BY id ASC'),
+                pool.query('SELECT * FROM order_items ORDER BY id ASC'),
+                pool.query('SELECT * FROM support_tickets ORDER BY id ASC')
+            ]);
+            const fullMaster = {
+                backup_date: new Date().toISOString(),
+                users_count: (uRes.rows || []).length,
+                products_count: (pRes.rows || []).length,
+                users: uRes.rows || [],
+                products: pRes.rows || [],
+                orders: { orders: oRes.rows || [], order_items: oiRes.rows || [] },
+                tickets: { tickets: tRes.rows || [] }
+            };
+            fs.writeFileSync(path.join(dataDir, 'full_system_backup.json'), JSON.stringify(fullMaster, null, 2), 'utf-8');
+        } catch(e) {}
 
     } catch (err) {
         console.error('Erro ao salvar backup completo do banco de dados:', err && err.message ? err.message : err);
@@ -2462,6 +2492,9 @@ async function checkAndSendOrderKeysEmail(clientOrPool, orderId) {
 
 // Ajudante para limpar pedidos pendentes expirados e restaurar seus estoques de chaves com segurança
 async function assignKeysToOrder(client, orderId) {
+    const ordStatusRes = await client.query('SELECT status FROM orders WHERE id = $1', [orderId]);
+    const currentOrderStatus = ordStatusRes.rows[0]?.status || 'pending';
+    const isPendingPixReservation = (currentOrderStatus === 'pending');
     const itemsRes = await client.query('SELECT product_id, quantity FROM order_items WHERE order_id = $1', [orderId]);
     for (let item of itemsRes.rows) {
         const productId = item.product_id;
@@ -2474,7 +2507,11 @@ async function assignKeysToOrder(client, orderId) {
         const prod = prodRes.rows[0];
         let allKeys = (prod.activation_key || '').split('\n').map(k => k.trim()).filter(Boolean);
         
-        // Se o estoque local de chaves for insuficiente, dispara o Robô Web em segundo plano de forma 100% assíncrona!
+        // Se for apenas reserva temporária de PIX ainda não pago e não houver chave manual, aguarda confirmação do pagamento no webhook
+        if (isPendingPixReservation && allKeys.length < qty) {
+            continue;
+        }
+        // Se o estoque local de chaves for insuficiente (e o pedido já estiver pago/em processamento), dispara o Robô Web em segundo plano!
         if (allKeys.length < qty) {
             const neededQty = qty - allKeys.length;
             const targetUrlOrTitle = (prod.eneba_url && prod.eneba_url.trim() !== '') ? prod.eneba_url.trim() : prod.title;
@@ -2541,26 +2578,29 @@ async function assignKeysToOrder(client, orderId) {
         console.log(`[KEYS-ASSIGN] Atribuídas ${soldKeys.length} chaves locais para o Produto ID ${productId} no Pedido #${orderId}. Restantes no estoque: ${remainingKeys.length}`);
     }
 
-    // Atualiza o status do pedido: 'approved' se TODAS as chaves foram entregues, 'processing' se alguma continuar em liberação
-    const checkKeysRes = await client.query('SELECT activation_key FROM order_items WHERE order_id = $1', [orderId]);
-    let allKeysReady = checkKeysRes.rows.length > 0;
-    for (let row of checkKeysRes.rows) {
-        const k = (row.activation_key || '').trim();
-        if (!k || k.includes('Chave em liberação') || k.includes('Liberação em andamento')) {
-            allKeysReady = false;
-            break;
+    if (!isPendingPixReservation) {
+        // Atualiza o status do pedido: 'approved' se TODAS as chaves foram entregues, 'processing' se alguma continuar em liberação
+        const checkKeysRes = await client.query('SELECT activation_key FROM order_items WHERE order_id = $1', [orderId]);
+        let allKeysReady = checkKeysRes.rows.length > 0;
+        for (let row of checkKeysRes.rows) {
+            const k = (row.activation_key || '').trim();
+            if (!k || k.includes('Chave em liberação') || k.includes('Liberação em andamento')) {
+                allKeysReady = false;
+                break;
+            }
+        }
+        const finalStatus = allKeysReady ? 'approved' : 'processing';
+        await client.query("UPDATE orders SET status = $1 WHERE id = $2 AND status != 'cancelled'", [finalStatus, orderId]);
+        console.log(`[KEYS-ASSIGN] Status do Pedido #${orderId} atualizado para '${finalStatus}' (Chaves entregues: ${allKeysReady ? 'SIM' : 'NÃO - Em Liberação'}).`);
+
+        // Envia o e-mail de chaves APENAS se todas as chaves tiverem sido atribuídas com sucesso!
+        try {
+            await checkAndSendOrderKeysEmail(client, orderId);
+        } catch (e) {
+            console.error(`[KEYS-ASSIGN] Erro não-crítico ao enviar e-mail no assignKeysToOrder:`, e.message || e);
         }
     }
-    const finalStatus = allKeysReady ? 'approved' : 'processing';
-    await client.query("UPDATE orders SET status = $1 WHERE id = $2 AND status != 'cancelled'", [finalStatus, orderId]);
-    console.log(`[KEYS-ASSIGN] Status do Pedido #${orderId} atualizado para '${finalStatus}' (Chaves entregues: ${allKeysReady ? 'SIM' : 'NÃO - Em Liberação'}).`);
-
-    // Envia o e-mail de chaves APENAS se todas as chaves tiverem sido atribuídas com sucesso!
-    try {
-        await checkAndSendOrderKeysEmail(client, orderId);
-    } catch (e) {
-        console.error(`[KEYS-ASSIGN] Erro não-crítico ao enviar e-mail no assignKeysToOrder:`, e.message || e);
-    }
+    syncFullDatabaseBackup().catch(() => {});
 }
 
 async function restoreKeysFromExpiredOrders(client, expiredIds) {
@@ -3222,8 +3262,26 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
             }
         }
         
-        const result = await pool.query('SELECT * FROM products WHERE id = ANY($1::int[])', [ids]);
-        const realProducts = result.rows;
+        let result = await pool.query('SELECT * FROM products WHERE id = ANY($1::int[])', [ids]);
+        let realProducts = result.rows || [];
+        if (realProducts.length < items.length) {
+            const allProdsRes = await pool.query('SELECT * FROM products');
+            const allProds = allProdsRes.rows || [];
+            items.forEach(cartItem => {
+                let found = allProds.find(p => Number(p.id) === Number(cartItem.id));
+                if (!found && cartItem.title) {
+                    const cleanTitle = String(cartItem.title).toLowerCase().trim();
+                    found = allProds.find(p => String(p.title || '').toLowerCase().trim() === cleanTitle);
+                }
+                if (found) {
+                    cartItem.id = found.id;
+                    if (!realProducts.some(rp => Number(rp.id) === Number(found.id))) {
+                        realProducts.push(found);
+                    }
+                }
+            });
+        }
+        const resolvedIds = items.map(i => parseInt(i.id));
         if(realProducts.length === 0) return res.status(400).json({ error: 'Produtos não encontrados' });
         
         // Verifica se algum produto está fora de estoque
@@ -3234,7 +3292,7 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
         
         let totalAmount = 0;
         items.forEach(cartItem => {
-            const dbProduct = realProducts.find(p => p.id === parseInt(cartItem.id));
+            const dbProduct = realProducts.find(p => Number(p.id) === parseInt(cartItem.id));
             if(dbProduct) {
                 totalAmount += parseFloat(dbProduct.price);
             }
@@ -3272,7 +3330,7 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
                 
                 // Salvar os itens do pedido
                 for (let item of items) {
-                    const dbProduct = realProducts.find(p => p.id === parseInt(item.id));
+                    const dbProduct = realProducts.find(p => Number(p.id) === parseInt(item.id));
                     if(dbProduct) {
                         await client.query(
                             'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)',
@@ -3411,7 +3469,7 @@ app.post('/create-checkout', requireAuth, async (req, res) => {
                 
                 // Salvar os itens do pedido com status inicial 'Chave em liberação...'
                 for (let item of items) {
-                    const dbProduct = realProducts.find(p => p.id === parseInt(item.id));
+                    const dbProduct = realProducts.find(p => Number(p.id) === parseInt(item.id));
                     if(dbProduct) {
                         await client.query(
                             'INSERT INTO order_items (order_id, product_id, quantity, price, activation_key) VALUES ($1, $2, $3, $4, $5)',
@@ -3518,7 +3576,7 @@ app.post('/create-checkout/paypal', requireAuth, async (req, res) => {
         
         let totalAmount = 0;
         items.forEach(cartItem => {
-            const dbProduct = realProducts.find(p => p.id === parseInt(cartItem.id));
+            const dbProduct = realProducts.find(p => Number(p.id) === parseInt(cartItem.id));
             if(dbProduct) {
                 totalAmount += parseFloat(dbProduct.price);
             }
@@ -3553,7 +3611,7 @@ app.post('/create-checkout/paypal', requireAuth, async (req, res) => {
             
             // Salvar os itens do pedido
             for (let item of items) {
-                const dbProduct = realProducts.find(p => p.id === parseInt(item.id));
+                const dbProduct = realProducts.find(p => Number(p.id) === parseInt(item.id));
                 if(dbProduct) {
                     await client.query(
                         'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)',
@@ -5122,6 +5180,7 @@ app.post('/register', async (req, res) => {
                </div>`
         );
         
+        syncFullDatabaseBackup().catch(() => {});
         res.status(200).json({ message: 'verify your email, confery your spam too' });
         
     } catch(e) {
@@ -6645,6 +6704,71 @@ async function runSweepstakeDraw() {
 setInterval(runSweepstakeDraw, 60 * 1000);
 // E roda uma verificação no início do servidor
 setTimeout(runSweepstakeDraw, 5000);
+
+// Exportar Backup Completo (Usuários, Jogos, Keys, Produtos, Pedidos e Tickets)
+app.get('/api/admin/backup/full', requireAdmin, async (req, res) => {
+    try {
+        await syncFullDatabaseBackup();
+        const [usersRes, prodsRes, ordersRes, itemsRes, ticketsRes] = await Promise.all([
+            pool.query('SELECT * FROM users ORDER BY id ASC'),
+            pool.query('SELECT * FROM products ORDER BY COALESCE(display_order, 0) ASC, id ASC'),
+            pool.query('SELECT * FROM orders ORDER BY id ASC'),
+            pool.query('SELECT * FROM order_items ORDER BY id ASC'),
+            pool.query('SELECT * FROM support_tickets ORDER BY id ASC')
+        ]);
+        res.json({
+            success: true,
+            backup_date: new Date().toISOString(),
+            users: usersRes.rows || [],
+            products: prodsRes.rows || [],
+            orders: { orders: ordersRes.rows || [], order_items: itemsRes.rows || [] },
+            tickets: { tickets: ticketsRes.rows || [] }
+        });
+    } catch (e) {
+        console.error("Erro ao exportar backup completo:", e);
+        res.status(500).json({ error: "Erro ao gerar backup completo." });
+    }
+});
+
+// Restaurar / Sincronizar Backup Completo (Usuários, Jogos, Keys, Produtos)
+app.post('/api/admin/backup/restore', requireAdmin, async (req, res) => {
+    try {
+        const { users, products, orders, replaceProducts } = req.body || {};
+        const dataDir = path.join(__dirname, 'data');
+        if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+
+        if (Array.isArray(users) && users.length > 0) {
+            fs.writeFileSync(path.join(dataDir, 'users_backup.json'), JSON.stringify(users, null, 2), 'utf-8');
+        }
+        if (Array.isArray(products) && products.length > 0) {
+            fs.writeFileSync(path.join(dataDir, 'products_backup.json'), JSON.stringify(products, null, 2), 'utf-8');
+            if (replaceProducts) {
+                for (let idx = 0; idx < products.length; idx++) {
+                    const p = products[idx];
+                    const existing = await pool.query('SELECT id FROM products WHERE id = $1 OR title = $2', [p.id || -1, p.title]);
+                    if (existing.rows.length > 0) {
+                        const targetId = existing.rows[0].id;
+                        await pool.query(
+                            'UPDATE products SET title=$1, description=$2, price=$3, old_price=$4, image=$5, category=$6, activation_key=COALESCE(NULLIF($7, \x27\x27), activation_key), in_stock=$8, is_global=$9, restricted_countries=$10, genres=$11, gallery=$12, display_order=$13 WHERE id=$14',
+                            [p.title, p.description || '', parseFloat(p.price) || 0, p.old_price ? parseFloat(p.old_price) : null, p.image || '', p.category || 'STEAM KEY', p.activation_key || '', p.in_stock !== false, p.is_global !== false, p.restricted_countries || '', p.genres || '', typeof p.gallery === 'string' ? p.gallery : JSON.stringify(p.gallery || []), p.display_order !== undefined ? p.display_order : idx, targetId]
+                        );
+                    }
+                }
+            }
+        }
+        if (orders && typeof orders === 'object') {
+            fs.writeFileSync(path.join(dataDir, 'orders_backup.json'), JSON.stringify(orders, null, 2), 'utf-8');
+        }
+
+        await restoreFullDatabaseFromBackup();
+        await syncFullDatabaseBackup();
+        productsCache = null;
+        res.json({ success: true, message: "Backup completo restaurado e sincronizado com sucesso!" });
+    } catch (e) {
+        console.error("Erro ao restaurar backup:", e);
+        res.status(500).json({ error: "Erro ao restaurar backup: " + (e.message || e) });
+    }
+});
 
 // Listar todos os usuários com seus saldos (Admin)
 app.get('/api/admin/users', requireAdmin, async (req, res) => {
