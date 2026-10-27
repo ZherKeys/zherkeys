@@ -1,5 +1,5 @@
 {
-  "backup_date": "2026-10-27T06:16:46.566Z",
+  "backup_date": "2026-10-27T19:52:18.995Z",
   "users_count": 1,
   "products_count": 18,
   "users": [
@@ -10,7 +10,7 @@
       "is_verified": 1,
       "balance": 0,
       "points": 0,
-      "game_nickname": "Admin",
+      "game_nickname": "Zher",
       "google_id": "103636190330883971978",
       "facebook_id": null,
       "steam_id": null,
@@ -21,14 +21,14 @@
     }
   ],
   "wallets_and_points": {
-    "updated_at": "2026-10-27T06:16:46.560Z",
+    "updated_at": "2026-10-27T19:52:18.989Z",
     "users_wallets_and_points": [
       {
         "id": 1,
         "email": "zherkeys@gmail.com",
         "balance": 0,
         "points": 0,
-        "game_nickname": "Admin",
+        "game_nickname": "Zher",
         "subscription_expires_at": null,
         "reading_subscription_expires_at": null
       }
