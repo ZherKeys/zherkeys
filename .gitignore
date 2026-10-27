@@ -9,7 +9,8 @@ bin/
 logs/
 .DS_Store
 database.sqlite
-data/
+data/*
+!data/*_backup.json
 eneba_bot_session/
 *.png
 *.jpeg
