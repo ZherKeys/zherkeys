@@ -1,18 +1,25 @@
 {
-  "updated_at": "2026-10-27T19:52:18.989Z",
+  "updated_at": "2026-10-27T19:53:03.649Z",
   "users_wallets_and_points": [
     {
       "id": 1,
       "email": "zherkeys@gmail.com",
       "balance": 0,
-      "points": 0,
+      "points": 50,
       "game_nickname": "Zher",
       "subscription_expires_at": null,
       "reading_subscription_expires_at": null
     }
   ],
   "wallet_transactions": [],
-  "points_earnings": [],
+  "points_earnings": [
+    {
+      "created_at": "2026-10-27T19:52:29.396Z",
+      "user_id": 1,
+      "amount": 250,
+      "id": 1
+    }
+  ],
   "sweepstake_participants": [],
   "sweepstake_history": [
     {
