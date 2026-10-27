@@ -1,35 +1,40 @@
 @echo off
-title Zher Keys - Sincronizacao
+title Zher Keys - Sincronizacao Segura Bidirecional
 color 0A
 
 echo ========================================================
-echo   1. SINCRONIZANDO SITE COM GITHUB E RENDER
+echo   1. SINCRONIZANDO SITE AO VIVO + GITHUB COM SEU PC
 echo ========================================================
 echo.
-cd "C:\Users\convidado 1\Documents\zherkeysite"
+cd /d "C:\Users\convidado 1\Documents\zherkeysite"
 
-echo [1/3] Preparando arquivos modificados...
+echo [1/4] Baixando novidades do GitHub e do Site Ao Vivo (Usuarios, Carteiras, Z-Points e Produtos)...
+git pull --rebase --autostash origin main
+node scripts/auto-sync-pc.js --once --stage
+
+echo.
+echo [2/4] Preparando arquivos modificados...
 git add .
 
 echo.
-echo [2/3] Salvando alteracoes localmente...
+echo [3/4] Salvando alteracoes localmente...
 git commit -m "Atualizacao automatica Zher Keys"
 
 echo.
-echo [3/3] Enviando para o GitHub...
-echo (Se pedir para fazer login, confirme na janela que abrir)
+echo [4/4] Enviando para o GitHub e Render...
+git pull --rebase --autostash origin main
 git push origin main
 
 echo.
 if %errorlevel% equ 0 (
     echo ========================================================
-    echo  SUCESSO! O codigo foi enviado!
-    echo  A Render vai atualizar o site sozinha em 1 minuto.
+    echo  SUCESSO! O codigo e os backups foram sincronizados!
+    echo  Nenhuma alteracao do site foi sobrescrita.
     echo ========================================================
 ) else (
     color 0C
     echo ========================================================
-    echo  ERRO! Falha ao sincronizar. Verifique o aviso acima.
+    echo  AVISO: Verifique a mensagem acima.
     echo ========================================================
 )
 pause

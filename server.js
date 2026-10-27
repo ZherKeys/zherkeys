@@ -592,11 +592,35 @@ function isConnectionError(err) {
     );
 }
 
+let isAutoBackupReady = false;
+let isInsideBackupSync = false;
+let autoBackupDebounceTimer = null;
+
+function maybeScheduleAutoBackupForSql(sqlText) {
+    if (!isAutoBackupReady || isInsideBackupSync) return;
+    const s = String(sqlText || '').trim();
+    if (/^(INSERT\s+INTO|UPDATE|DELETE\s+FROM)\s+(users|wallet_transactions|points_earnings|products|orders|order_items|support_tickets|support_ticket_messages|sweepstake_participants|sweepstake_history|site_music_settings)\b/i.test(s)) {
+        if (autoBackupDebounceTimer) clearTimeout(autoBackupDebounceTimer);
+        autoBackupDebounceTimer = setTimeout(() => {
+            autoBackupDebounceTimer = null;
+            if (typeof syncFullDatabaseBackup === 'function' && !isInsideBackupSync) {
+                isInsideBackupSync = true;
+                syncFullDatabaseBackup()
+                    .catch(() => {})
+                    .finally(() => { isInsideBackupSync = false; });
+            }
+        }, 600);
+    }
+}
+
 const pool = {
     async query(text, params) {
+        let res;
         if (!useLocalFallback && pgPool) {
             try {
-                return await pgPool.query(text, params);
+                res = await pgPool.query(text, params);
+                maybeScheduleAutoBackupForSql(text);
+                return res;
             } catch (err) {
                 if (isConnectionError(err)) {
                     console.warn(`⚠️ [DATABASE] Conexão externa indisponível (${err.message || err.code}). Alternando para banco local em memória/JSON!`);
@@ -606,12 +630,23 @@ const pool = {
                 }
             }
         }
-        return execLocalJsQuery(text, params);
+        res = await execLocalJsQuery(text, params);
+        maybeScheduleAutoBackupForSql(text);
+        return res;
     },
     async connect() {
         if (!useLocalFallback && pgPool) {
             try {
-                return await pgPool.connect();
+                const pgClient = await pgPool.connect();
+                const origQuery = pgClient.query.bind(pgClient);
+                return {
+                    query: async (text, params) => {
+                        const r = await origQuery(text, params);
+                        maybeScheduleAutoBackupForSql(text);
+                        return r;
+                    },
+                    release: () => pgClient.release()
+                };
             } catch (err) {
                 if (isConnectionError(err)) {
                     console.warn(`⚠️ [DATABASE] Pool externo indisponível (${err.message || err.code}). Alternando para banco local em memória/JSON!`);
@@ -622,7 +657,11 @@ const pool = {
             }
         }
         return {
-            query: (text, params) => execLocalJsQuery(text, params),
+            query: async (text, params) => {
+                const r = await execLocalJsQuery(text, params);
+                maybeScheduleAutoBackupForSql(text);
+                return r;
+            },
             release: () => {}
         };
     },
@@ -2336,6 +2375,7 @@ async function initDB() {
 
         // Salva cópia de backup do estado atual de todas as tabelas no disco para inclusão no Git/GitHub
         await syncFullDatabaseBackup();
+        isAutoBackupReady = true;
 
         // Agenda backup completo periódico a cada 10 minutos
         setInterval(syncFullDatabaseBackup, 10 * 60 * 1000);
@@ -2558,6 +2598,58 @@ async function autoPurchaseEnebaKeys(productTitleOrUrl, quantity = 1, orderId = 
 // =========================================================================
 
 const BOT_API_SECRET = process.env.BOT_API_SECRET || 'zherkeys-secret-bot-token-2026';
+
+// 0. Endpoint de Sincronização Automática em Tempo Real (Servidor Nuvem <-> PC Local & GitHub)
+app.get('/api/bot/live-backup-sync', async (req, res) => {
+    const authHeader = req.headers['x-bot-token'] || req.query.token;
+    if (authHeader !== BOT_API_SECRET) {
+        return res.status(401).json({ error: 'Não autorizado. Token inválido.' });
+    }
+    try {
+        await syncFullDatabaseBackup();
+        const [usersRes, prodsRes, ordersRes, itemsRes, ticketsRes, tMsgsRes, wTxRes, pEarnRes, swPartRes, swHistRes, musicRes] = await Promise.all([
+            pool.query('SELECT * FROM users ORDER BY id ASC'),
+            pool.query('SELECT * FROM products ORDER BY COALESCE(display_order, 0) ASC, id ASC'),
+            pool.query('SELECT * FROM orders ORDER BY id ASC'),
+            pool.query('SELECT * FROM order_items ORDER BY id ASC'),
+            pool.query('SELECT * FROM support_tickets ORDER BY id ASC'),
+            pool.query('SELECT * FROM support_ticket_messages ORDER BY id ASC'),
+            pool.query('SELECT * FROM wallet_transactions ORDER BY id ASC'),
+            pool.query('SELECT * FROM points_earnings ORDER BY id ASC'),
+            pool.query('SELECT * FROM sweepstake_participants ORDER BY id ASC'),
+            pool.query('SELECT * FROM sweepstake_history ORDER BY id ASC'),
+            pool.query('SELECT enabled, shuffle, playlist FROM site_music_settings WHERE id = 1')
+        ]);
+        const mRow = musicRes.rows && musicRes.rows[0] ? musicRes.rows[0] : null;
+        res.json({
+            success: true,
+            backup_date: new Date().toISOString(),
+            users: usersRes.rows || [],
+            wallets_and_points: {
+                updated_at: new Date().toISOString(),
+                users_wallets_and_points: (usersRes.rows || []).map(u => ({
+                    id: u.id,
+                    email: u.email,
+                    balance: parseFloat(u.balance) || 0,
+                    points: parseInt(u.points) || 0,
+                    game_nickname: u.game_nickname || null,
+                    subscription_expires_at: u.subscription_expires_at || null,
+                    reading_subscription_expires_at: u.reading_subscription_expires_at || null
+                })),
+                wallet_transactions: wTxRes.rows || [],
+                points_earnings: pEarnRes.rows || [],
+                sweepstake_participants: swPartRes.rows || [],
+                sweepstake_history: swHistRes.rows || []
+            },
+            products: prodsRes.rows || [],
+            orders: { orders: ordersRes.rows || [], order_items: itemsRes.rows || [] },
+            tickets: { tickets: ticketsRes.rows || [], messages: tMsgsRes.rows || [] },
+            music_settings: mRow ? { enabled: mRow.enabled === true, shuffle: mRow.shuffle !== false, playlist: parsePlaylist(mRow.playlist) } : null
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // 1. Endpoint para o Robô no PC consultar pedidos pendentes de auto-estoque
 app.get('/api/bot/pending-orders', async (req, res) => {
@@ -5504,6 +5596,7 @@ app.get('/verify-email', async (req, res) => {
     try {
         const result = await pool.query('UPDATE users SET is_verified = 1 WHERE verification_token = $1', [token]);
         if (result.rowCount === 0) return res.status(400).send('<h1>Token inválido ou já verificado.</h1>');
+        syncFullDatabaseBackup().catch(() => {});
         
         res.send(`
             <body style="background:#020617;color:white;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;">
@@ -5567,6 +5660,7 @@ app.post('/reset-password', async (req, res) => {
         const hash = await bcrypt.hash(newPassword, salt);
         
         await pool.query('UPDATE users SET password_hash = $1, reset_token = NULL, reset_expires = NULL WHERE id = $2', [hash, user.id]);
+        syncFullDatabaseBackup().catch(() => {});
         
         res.status(200).json({ message: 'Senha alterada com sucesso! Faça login.' });
     } catch(err) {
@@ -6000,6 +6094,7 @@ app.get('/auth/facebook/callback', async (req, res) => {
         }
 
         req.session.userId = user.id;
+        syncFullDatabaseBackup().catch(() => {});
         res.redirect('/');
     } catch(err) {
         console.error("Erro na autenticação Facebook:", err);
@@ -6080,6 +6175,7 @@ app.get('/auth/steam/callback', async (req, res) => {
         }
 
         req.session.userId = user.id;
+        syncFullDatabaseBackup().catch(() => {});
         res.redirect('/');
     } catch(err) {
         console.error("Erro na autenticação Steam:", err);
