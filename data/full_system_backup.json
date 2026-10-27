@@ -1,5 +1,5 @@
 {
-  "backup_date": "2026-10-27T23:02:14.680Z",
+  "backup_date": "2026-10-27T23:02:55.929Z",
   "users_count": 1,
   "products_count": 18,
   "users": [
@@ -21,7 +21,7 @@
     }
   ],
   "wallets_and_points": {
-    "updated_at": "2026-10-27T23:02:14.674Z",
+    "updated_at": "2026-10-27T23:02:55.925Z",
     "users_wallets_and_points": [
       {
         "id": 1,
@@ -107,7 +107,7 @@
       "id": 4,
       "title": "LEGO® The Incredibles",
       "description": "Viva as aventuras eletrizantes da família Parr na luta contra o crime e por uma vida mais caseira nos dois filmes de longa-metragem da Disney-Pixar, Os Incríveis e Os Incríveis 2, em um mundo LEGO® cheio de diversão e humor.\n\n<!-- STEAM_METADATA_START -->\n<div class=\"mt-8 border-t border-slate-900 pt-6\">\n    <div class=\"grid grid-cols-1 md:grid-cols-2 gap-6\">\n        <div class=\"bg-slate-950/40 border border-slate-900 p-5 rounded-xl text-left\">\n            <h4 class=\"font-orbitron font-bold text-xs tracking-wider text-electricblue uppercase mb-4\">// FICHA TECNICA</h4>\n            <ul class=\"space-y-2.5 font-inter text-xs text-slate-400\">\n                <li><strong class=\"text-slate-300\">Desenvolvedor:</strong> TT Games, Feral Interactive (Mac)</li>\n                <li><strong class=\"text-slate-300\">Distribuidora:</strong> Warner Bros. Interactive Entertainment, Feral Interactive (Mac)</li>\n                <li><strong class=\"text-slate-300\">Data de Lancamento:</strong> 15 jun. 2018</li>\n                <li><strong class=\"text-slate-300\">Idiomas:</strong> Inglês, Francês, Italiano, Alemão, Espanhol (Espanha), Árabe, Dinamarquês, Holandês, Coreano, Polaco, Português (Brasil), Russo, Chinês tradicional</li>\n                <li><strong class=\"text-slate-300\">Classificacao:</strong> Livre</li>\n            </ul>\n        </div>\n        <div class=\"bg-slate-950/40 border border-slate-900 p-5 rounded-xl text-left\">\n            <h4 class=\"font-orbitron font-bold text-xs tracking-wider text-cyberrose uppercase mb-4\">// REQUISITOS MINIMOS</h4>\n            <div class=\"font-inter text-xs text-slate-400 leading-relaxed steam-requirements\">\n                <strong>Mínimos:</strong><br><ul ><li><strong>Sistema Operativo :</strong> Windows 7/8/8.1/10 x64<br></li><li><strong>Processador:</strong> Intel Core i3-3240 (2  3400) or equivalent, AMD Athlon X4 740 (2  3200) or equivalent<br></li><li><strong>Memória:</strong> 4 GB de RAM<br></li><li><strong>Placa gráfica:</strong> GeForce GTX 560 (1024 MB), Intel Iris Pro 5200 (shared), Radeon HD 5850 (1024 MB)<br></li><li><strong>DirectX:</strong> Versão 11<br></li><li><strong>Rede:</strong> Ligação à Internet de banda larga<br></li><li><strong>Espaço no disco:</strong> Requer 16 GB de espaço livre<br></li><li><strong>Notas adicionais:</strong> Requires a 64-bit processor and operating system</li></ul>\n            </div>\n        </div>\n    </div>\n</div>\n<!-- STEAM_METADATA_END -->",
-      "price": 39.9,
+      "price": 19.9,
       "old_price": 179.99,
       "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/818320/header.jpg?t=1780600400",
       "category": "STEAM KEY",
