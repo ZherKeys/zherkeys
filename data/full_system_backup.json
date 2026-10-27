@@ -1,5 +1,5 @@
 {
-  "backup_date": "2026-10-27T23:04:25.611Z",
+  "backup_date": "2026-10-27T23:06:42.862Z",
   "users_count": 1,
   "products_count": 18,
   "users": [
@@ -21,7 +21,7 @@
     }
   ],
   "wallets_and_points": {
-    "updated_at": "2026-10-27T23:04:25.606Z",
+    "updated_at": "2026-10-27T23:06:42.858Z",
     "users_wallets_and_points": [
       {
         "id": 1,
@@ -149,7 +149,7 @@
       "old_price": 279.99,
       "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/356190/header_brazilian.jpg?t=1780594801",
       "category": "STEAM KEY",
-      "activation_key": "MKOI-JNBH-UYGV-CFTX",
+      "activation_key": "N3PVL-TDPQR-WNIDX",
       "in_stock": true,
       "is_global": true,
       "restricted_countries": "",
@@ -157,7 +157,7 @@
       "gameflip_listing_id": "",
       "gallery": "[\"https://video.akamai.steamstatic.com/store_trailers/256727084/movie_max.mp4\",\"https://video.akamai.steamstatic.com/store_trailers/256680977/movie_max.mp4\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/356190/ss_d085a6cd49ed5bf4dcc67dfe0bba72ffc7ad6290.1920x1080.jpg?t=1780594801\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/356190/ss_10afae02830aee12600b55fedf05a10af070187c.1920x1080.jpg?t=1780594801\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/356190/ss_73e44d2d2282e0035beed3b78f565aa1f0f5f5b6.1920x1080.jpg?t=1780594801\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/356190/ss_096538495a348e1bff5432353cbee8e28fb3cee8.1920x1080.jpg?t=1780594801\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/356190/ss_7d15a8c0d67cd3853d2632f494bcc02fb2ae6392.1920x1080.jpg?t=1780594801\"]",
       "display_order": 4,
-      "auto_stock_provider": "eneba",
+      "auto_stock_provider": "none",
       "eneba_url": ""
     },
     {
