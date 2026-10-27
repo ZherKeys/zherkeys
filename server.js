@@ -96,7 +96,7 @@ app.get('/api/cj/my-products', async (req, res) => {
     }
 });
 
-// Setup Database (PostgreSQL com Fallback Automático em Memória/JSON via pg-mem)
+// Setup Database (PostgreSQL com Fallback Automático em JavaScript Puro - Zero Dependências)
 const isExpiredRenderDb = !process.env.DATABASE_URL || process.env.DATABASE_URL.includes('dpg-d9lj2erl550s73cb0bk0-a');
 let useLocalFallback = isExpiredRenderDb;
 
@@ -111,52 +111,394 @@ if (pgPool) {
     });
 }
 
-let memPoolInstance = null;
-function getMemPool() {
-    if (memPoolInstance) return memPoolInstance;
-    const { newDb, DataType } = require('pg-mem');
-    const mem = newDb();
-    mem.public.registerFunction({
-        name: 'split_part',
-        args: [DataType.text, DataType.text, DataType.integer],
-        returns: DataType.text,
-        implementation: (str, delim, idx) => {
-            if (!str) return '';
-            const parts = String(str).split(String(delim));
-            return parts[(idx || 1) - 1] || '';
-        }
-    });
-    mem.public.registerFunction({
-        name: 'pg_get_serial_sequence',
-        args: [DataType.text, DataType.text],
-        returns: DataType.text,
-        implementation: (tbl, col) => `${tbl}_${col}_seq`
-    });
-    mem.public.registerFunction({
-        name: 'setval',
-        args: [DataType.text, DataType.integer],
-        returns: DataType.integer,
-        implementation: (seq, val) => val || 1
-    });
-    mem.public.registerFunction({
-        name: 'trim',
-        args: [DataType.text],
-        returns: DataType.text,
-        implementation: (str) => (str == null ? null : String(str).trim())
-    });
-    const { Pool: MemPool } = mem.adapters.createPg();
-    memPoolInstance = new MemPool();
-    console.log('✅ [DATABASE] Motor PostgreSQL local (pg-mem + Backup JSON) ativo!');
-    return memPoolInstance;
+const localStore = {
+    users: [],
+    products: [],
+    orders: [],
+    order_items: [],
+    wallet_transactions: [],
+    notifications: [],
+    order_chats: [],
+    support_chats: [],
+    points_earnings: [],
+    sweepstake_participants: [],
+    sweepstake_history: [],
+    streaming_media: [],
+    streaming_episodes: [],
+    reading_media: [],
+    reading_chapters: [],
+    site_music_settings: [],
+    uploaded_files: [],
+    support_tickets: [],
+    support_ticket_messages: [],
+    product_reviews: [],
+    product_comments: [],
+    product_questions: [],
+    bot_order_logs: []
+};
+
+const localSeq = {};
+function nextId(table) {
+    const arr = localStore[table] || [];
+    let max = localSeq[table] || 0;
+    for (const r of arr) {
+        if (r && typeof r.id === 'number' && r.id > max) max = r.id;
+    }
+    localSeq[table] = max + 1;
+    return localSeq[table];
 }
 
-function sanitizeSqlForMem(sql) {
-    return String(sql || '')
-        .replace(/\bFOR\s+UPDATE\b/gi, '')
-        .replace(/NOW\(\)\s*-\s*INTERVAL\s*'(\d+)\s*minutes?'/gi, (_, mins) => {
-            const iso = new Date(Date.now() - parseInt(mins, 10) * 60 * 1000).toISOString();
-            return `'${iso}'::timestamp`;
-        });
+function resolveSqlVal(token, params) {
+    const t = String(token || '').trim();
+    const paramMatch = t.match(/^\$(\d+)/);
+    if (paramMatch) {
+        const idx = parseInt(paramMatch[1], 10) - 1;
+        return params && idx < params.length ? params[idx] : null;
+    }
+    if (/^'(.*)'$/s.test(t)) return t.slice(1, -1).replace(/''/g, "'");
+    if (/^true$/i.test(t)) return true;
+    if (/^false$/i.test(t)) return false;
+    if (/^null$/i.test(t)) return null;
+    if (/^(CURRENT_TIMESTAMP|NOW\(\)|CURRENT_DATE)$/i.test(t)) return new Date().toISOString();
+    if (!isNaN(Number(t)) && t !== '') return Number(t);
+    return t;
+}
+
+function splitTopLevelCommas(str) {
+    const res = [];
+    let cur = '';
+    let depth = 0;
+    let inQuote = false;
+    for (let i = 0; i < str.length; i++) {
+        const ch = str[i];
+        if (ch === "'" && str[i - 1] !== '\\') inQuote = !inQuote;
+        else if (!inQuote) {
+            if (ch === '(') depth++;
+            else if (ch === ')') depth = Math.max(0, depth - 1);
+            else if (ch === ',' && depth === 0) {
+                res.push(cur.trim());
+                cur = '';
+                continue;
+            }
+        }
+        cur += ch;
+    }
+    if (cur.trim()) res.push(cur.trim());
+    return res;
+}
+
+function matchSimpleCondition(row, condStr, params) {
+    const c = condStr.trim().replace(/^\(+|\)+$/g, '').trim();
+    if (!c) return true;
+
+    let m;
+    if ((m = c.match(/^([\w.]+)\s+IS\s+NOT\s+NULL$/i))) {
+        const col = m[1].split('.').pop();
+        return row[col] !== null && row[col] !== undefined;
+    }
+    if ((m = c.match(/^([\w.]+)\s+IS\s+NULL$/i))) {
+        const col = m[1].split('.').pop();
+        return row[col] === null || row[col] === undefined;
+    }
+    if ((m = c.match(/^([\w.]+)\s*=\s*ANY\s*\(\s*\$(\d+)(?:::\w+\[\])?\s*\)$/i))) {
+        const col = m[1].split('.').pop();
+        const arr = params[parseInt(m[2], 10) - 1] || [];
+        return Array.isArray(arr) && arr.map(String).includes(String(row[col]));
+    }
+    if ((m = c.match(/^([\w.]+)\s+(ILIKE|LIKE)\s+(.+)$/i))) {
+        const col = m[1].split('.').pop();
+        const pat = String(resolveSqlVal(m[3], params) || '');
+        const regexStr = '^' + pat.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/%/g, '.*').replace(/_/g, '.') + '$';
+        const re = new RegExp(regexStr, 'i');
+        return re.test(String(row[col] || ''));
+    }
+    if ((m = c.match(/^([\w.]+)\s*(!=|<>|>=|<=|=|>|<)\s*(.+)$/i))) {
+        const col = m[1].split('.').pop();
+        const op = m[2];
+        const rhsRaw = m[3].trim();
+        let rhs;
+        const intervalMatch = rhsRaw.match(/NOW\(\)\s*-\s*INTERVAL\s*'(\d+)\s*minutes?'/i);
+        if (intervalMatch) {
+            rhs = new Date(Date.now() - parseInt(intervalMatch[1], 10) * 60 * 1000);
+        } else if (/^CURRENT_DATE$/i.test(rhsRaw)) {
+            const d = new Date();
+            d.setHours(0, 0, 0, 0);
+            rhs = d;
+        } else {
+            rhs = resolveSqlVal(rhsRaw, params);
+        }
+        const lhs = row[col];
+        if (op === '=') {
+            if (typeof lhs === 'boolean' || typeof rhs === 'boolean') return Boolean(lhs) === Boolean(rhs);
+            return String(lhs ?? '') === String(rhs ?? '');
+        }
+        if (op === '!=' || op === '<>') return String(lhs ?? '') !== String(rhs ?? '');
+        if (rhs instanceof Date || /_at$|expires/i.test(col)) {
+            const dL = new Date(lhs).getTime();
+            const dR = new Date(rhs).getTime();
+            if (op === '>=') return dL >= dR;
+            if (op === '<=') return dL <= dR;
+            if (op === '>') return dL > dR;
+            if (op === '<') return dL < dR;
+        }
+        const nL = Number(lhs);
+        const nR = Number(rhs);
+        if (op === '>=') return nL >= nR;
+        if (op === '<=') return nL <= nR;
+        if (op === '>') return nL > nR;
+        if (op === '<') return nL < nR;
+    }
+    return true;
+}
+
+function evalWhere(row, whereClause, params) {
+    if (!whereClause) return true;
+    const clean = whereClause.replace(/\bFOR\s+UPDATE\b/gi, '').trim();
+    if (!clean) return true;
+    // Check top-level OR when not mixed with complex parens
+    if (/\s+OR\s+/i.test(clean) && !/\s+AND\s+/i.test(clean)) {
+        return clean.split(/\s+OR\s+/i).some(part => matchSimpleCondition(row, part, params));
+    }
+    const andParts = clean.split(/\s+AND\s+(?![^()]*\))/i);
+    return andParts.every(part => {
+        const stripped = part.trim().replace(/^\(|\)$/g, '');
+        if (/\s+OR\s+/i.test(stripped)) {
+            return stripped.split(/\s+OR\s+/i).some(sp => matchSimpleCondition(row, sp, params));
+        }
+        return matchSimpleCondition(row, stripped, params);
+    });
+}
+
+async function execLocalJsQuery(sqlText, params = []) {
+    const s = String(sqlText || '').replace(/\s+/g, ' ').trim();
+    if (!s) return { rows: [], rowCount: 0 };
+
+    // 1. Ignore DDL / Transactions / Sequences
+    if (/^(CREATE\s+TABLE|ALTER\s+TABLE|BEGIN|COMMIT|ROLLBACK|SELECT\s+setval)/i.test(s)) {
+        return { rows: [], rowCount: 0 };
+    }
+
+    // 2. INSERT INTO
+    const insMatch = s.match(/^INSERT\s+INTO\s+(\w+)\s*\(([^)]+)\)\s*VALUES\s*\((.+?)\)(?:\s+ON\s+CONFLICT[\s\S]*?)?(?:\s+RETURNING\s+(.+))?$/i);
+    if (insMatch) {
+        const table = insMatch[1].toLowerCase();
+        if (!localStore[table]) localStore[table] = [];
+        const cols = insMatch[2].split(',').map(c => c.trim());
+        const vals = splitTopLevelCommas(insMatch[3]).map(v => resolveSqlVal(v, params));
+
+        const defaults = {
+            users: { is_verified: 0, balance: 0.0, points: 0, game_nickname: null, google_id: null, facebook_id: null, steam_id: null, avatar: null, is_admin: 0, subscription_expires_at: null, reading_subscription_expires_at: null },
+            products: { old_price: null, activation_key: '', in_stock: true, is_global: true, restricted_countries: '[]', genres: '[]', gameflip_listing_id: '', gallery: '[]', display_order: 0, auto_stock_provider: 'eneba', eneba_url: '' },
+            orders: { status: 'pending', total_amount: 0, total: 0, payment_method: 'PIX', is_deposit: false, is_subscription: false, is_reading_subscription: false, pix_qr_code: '', pix_qr_code_base64: '', created_at: new Date().toISOString() },
+            order_items: { quantity: 1, price: 0, activation_key: '', key_viewed: false },
+            notifications: { is_read: false, order_id: null, created_at: new Date().toISOString() },
+            wallet_transactions: { created_at: new Date().toISOString() },
+            support_tickets: { status: 'open', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+            support_ticket_messages: { created_at: new Date().toISOString() },
+            sweepstake_history: { drawn_at: new Date().toISOString(), prize_amount: 10000000 },
+            sweepstake_participants: { created_at: new Date().toISOString() }
+        };
+
+        const row = { ...(defaults[table] || {}) };
+        cols.forEach((col, i) => { row[col] = vals[i]; });
+        if (row.id === undefined || row.id === null) {
+            row.id = nextId(table);
+        } else if (typeof row.id === 'number' && row.id > (localSeq[table] || 0)) {
+            localSeq[table] = row.id;
+        }
+        if (table === 'orders') {
+            if (row.total && !row.total_amount) row.total_amount = row.total;
+            if (row.total_amount && !row.total) row.total = row.total_amount;
+        }
+
+        const existingIdx = localStore[table].findIndex(r => String(r.id) === String(row.id));
+        if (/ON\s+CONFLICT/i.test(s) && existingIdx !== -1) {
+            if (/DO\s+UPDATE/i.test(s)) {
+                localStore[table][existingIdx] = { ...localStore[table][existingIdx], ...row };
+            }
+            return { rows: [localStore[table][existingIdx]], rowCount: 1 };
+        }
+        localStore[table].push(row);
+        return { rows: [row], rowCount: 1 };
+    }
+
+    // 3. UPDATE
+    const updMatch = s.match(/^UPDATE\s+(\w+)\s+SET\s+(.+?)(?:\s+WHERE\s+(.+?))?(?:\s+RETURNING\s+(.+))?$/i);
+    if (updMatch) {
+        const table = updMatch[1].toLowerCase();
+        const setPart = updMatch[2].trim();
+        const wherePart = updMatch[3] || '';
+        const rows = localStore[table] || [];
+        const assignments = splitTopLevelCommas(setPart);
+        const updatedRows = [];
+
+        for (const r of rows) {
+            if (evalWhere(r, wherePart, params)) {
+                for (const assign of assignments) {
+                    const eqIdx = assign.indexOf('=');
+                    if (eqIdx === -1) continue;
+                    const col = assign.slice(0, eqIdx).trim();
+                    const expr = assign.slice(eqIdx + 1).trim();
+                    const addMatch = expr.match(/^(\w+)\s*([+-])\s*(.+)$/);
+                    if (addMatch && addMatch[1] === col) {
+                        const delta = Number(resolveSqlVal(addMatch[3], params)) || 0;
+                        r[col] = (Number(r[col]) || 0) + (addMatch[2] === '+' ? delta : -delta);
+                    } else {
+                        r[col] = resolveSqlVal(expr, params);
+                    }
+                }
+                updatedRows.push(r);
+            }
+        }
+        return { rows: updatedRows, rowCount: updatedRows.length };
+    }
+
+    // 4. DELETE
+    const delMatch = s.match(/^DELETE\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+))?$/i);
+    if (delMatch) {
+        const table = delMatch[1].toLowerCase();
+        const wherePart = delMatch[2] || '';
+        const before = (localStore[table] || []).length;
+        if (!wherePart) {
+            localStore[table] = [];
+        } else {
+            localStore[table] = (localStore[table] || []).filter(r => !evalWhere(r, wherePart, params));
+        }
+        return { rows: [], rowCount: before - localStore[table].length };
+    }
+
+    // 5. Specialized JOIN SELECTs
+    if (/FROM\s+sweepstake_history\s+h\s+LEFT\s+JOIN\s+users\s+u/i.test(s)) {
+        const hist = [...localStore.sweepstake_history].sort((a, b) => b.id - a.id);
+        if (hist.length === 0) return { rows: [], rowCount: 0 };
+        const h = hist[0];
+        const u = localStore.users.find(x => String(x.id) === String(h.winner_id));
+        return { rows: [{ drawn_at: h.drawn_at, prize_amount: h.prize_amount, email: u ? u.email : null }], rowCount: 1 };
+    }
+
+    if (/FROM\s+order_items\s+oi\s+JOIN\s+products\s+p\s+ON\s+oi\.product_id\s*=\s*p\.id\s+JOIN\s+orders\s+o/i.test(s)) {
+        const res = [];
+        for (const oi of localStore.order_items) {
+            const o = localStore.orders.find(x => String(x.id) === String(oi.order_id));
+            const p = localStore.products.find(x => String(x.id) === String(oi.product_id));
+            if (!o || !p || o.status === 'cancelled') continue;
+            const k = String(oi.activation_key || '').trim();
+            if (!k || k.includes('Chave em liberação') || k.includes('Liberação em andamento')) {
+                res.push({
+                    order_id: oi.order_id,
+                    product_id: oi.product_id,
+                    quantity: oi.quantity || 1,
+                    title: p.title,
+                    eneba_url: p.eneba_url || '',
+                    auto_stock_provider: p.auto_stock_provider || 'eneba'
+                });
+            }
+        }
+        return { rows: res, rowCount: res.length };
+    }
+
+    if (/FROM\s+orders\s+o\s+JOIN\s+order_items\s+oi\s+ON\s+o\.id\s*=\s*oi\.order_id/i.test(s)) {
+        const fiveMinAgo = Date.now() - 5 * 60 * 1000;
+        const res = [];
+        const seen = new Set();
+        for (const o of localStore.orders) {
+            if (!['approved', 'processing', 'pending'].includes(o.status)) continue;
+            if (new Date(o.created_at).getTime() >= fiveMinAgo) continue;
+            const items = localStore.order_items.filter(oi => String(oi.order_id) === String(o.id));
+            const unfulfilled = items.some(oi => {
+                const k = String(oi.activation_key || '').trim();
+                return !k || k.includes('Chave em liberação') || k.includes('Liberação em andamento');
+            });
+            if (unfulfilled && !seen.has(o.id)) {
+                seen.add(o.id);
+                res.push({ id: o.id, user_id: o.user_id, total_amount: o.total_amount || o.total || 0, status: o.status });
+            }
+        }
+        return { rows: res, rowCount: res.length };
+    }
+
+    if (/FROM\s+(product_reviews|product_comments|product_questions)\s+\w+\s+JOIN\s+users\s+u/i.test(s)) {
+        const tblMatch = s.match(/FROM\s+(product_reviews|product_comments|product_questions)/i);
+        const tbl = tblMatch[1].toLowerCase();
+        const prodId = params[0];
+        const rows = (localStore[tbl] || [])
+            .filter(r => String(r.product_id) === String(prodId))
+            .map(r => {
+                const u = localStore.users.find(x => String(x.id) === String(r.user_id)) || {};
+                const author_name = u.game_nickname || (u.email ? u.email.split('@')[0] : 'Usuário');
+                return { ...r, author_name, avatar: u.avatar || null, admin_name: 'Suporte Zher Keys' };
+            })
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        return { rows, rowCount: rows.length };
+    }
+
+    if (/FROM\s+order_items\s+oi\s+(?:LEFT\s+)?JOIN\s+products\s+p/i.test(s)) {
+        const orderId = params[0];
+        const rows = localStore.order_items
+            .filter(oi => String(oi.order_id) === String(orderId))
+            .map(oi => {
+                const p = localStore.products.find(x => String(x.id) === String(oi.product_id)) || {};
+                return { ...p, ...oi, title: oi.title || p.title || 'Produto', image: p.image || '/logo.png', category: p.category || 'STEAM KEY', eneba_url: p.eneba_url || '' };
+            });
+        return { rows, rowCount: rows.length };
+    }
+
+    // 6. Standard SELECT (including COUNT / SUM)
+    const selMatch = s.match(/^SELECT\s+(.+?)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+?))?(?:\s+ORDER\s+BY\s+(.+?))?(?:\s+LIMIT\s+(\d+))?$/i);
+    if (selMatch) {
+        const selectCols = selMatch[1].trim();
+        const table = selMatch[2].toLowerCase();
+        let wherePart = selMatch[3] || '';
+        let orderPart = selMatch[4] || '';
+        const limitVal = selMatch[5] ? parseInt(selMatch[5], 10) : null;
+
+        // Clean trailing ORDER BY / LIMIT if captured inside wherePart
+        if (wherePart) {
+            const ordSplit = wherePart.split(/\s+ORDER\s+BY\s+/i);
+            if (ordSplit.length > 1) {
+                wherePart = ordSplit[0];
+                orderPart = ordSplit[1];
+            }
+            const limSplit = wherePart.split(/\s+LIMIT\s+/i);
+            if (limSplit.length > 1) {
+                wherePart = limSplit[0];
+            }
+        }
+
+        let matched = (localStore[table] || []).filter(r => evalWhere(r, wherePart, params));
+
+        if (/COUNT\s*\(\*\)/i.test(selectCols)) {
+            const avgMatch = /AVG\s*\(rating\)/i.test(selectCols);
+            if (avgMatch) {
+                const avg = matched.length ? matched.reduce((acc, x) => acc + (Number(x.rating) || 0), 0) / matched.length : 0;
+                return { rows: [{ total_reviews: matched.length, average_rating: avg.toFixed(1), count: String(matched.length) }], rowCount: 1 };
+            }
+            return { rows: [{ count: String(matched.length) }], rowCount: 1 };
+        }
+
+        if (/SUM\s*\(\s*amount\s*\)/i.test(selectCols)) {
+            const sum = matched.reduce((acc, x) => acc + (Number(x.amount) || 0), 0);
+            return { rows: [{ total: sum }], rowCount: 1 };
+        }
+
+        if (orderPart) {
+            if (/display_order/i.test(orderPart)) {
+                matched.sort((a, b) => ((Number(a.display_order) || 0) - (Number(b.display_order) || 0)) || ((a.id || 0) - (b.id || 0)));
+            } else if (/DESC/i.test(orderPart)) {
+                matched.sort((a, b) => (b.id || 0) - (a.id || 0));
+            } else {
+                matched.sort((a, b) => (a.id || 0) - (b.id || 0));
+            }
+        }
+
+        if (limitVal !== null && !isNaN(limitVal)) {
+            matched = matched.slice(0, limitVal);
+        }
+
+        return { rows: matched.map(r => ({ ...r })), rowCount: matched.length };
+    }
+
+    return { rows: [], rowCount: 0 };
 }
 
 function isConnectionError(err) {
@@ -182,15 +524,14 @@ const pool = {
                 return await pgPool.query(text, params);
             } catch (err) {
                 if (isConnectionError(err)) {
-                    console.warn(`⚠️ [DATABASE] Conexão externa indisponível (${err.message || err.code}). Alternando para banco local!`);
+                    console.warn(`⚠️ [DATABASE] Conexão externa indisponível (${err.message || err.code}). Alternando para banco local em memória/JSON!`);
                     useLocalFallback = true;
                 } else {
                     throw err;
                 }
             }
         }
-        const mp = getMemPool();
-        return mp.query(sanitizeSqlForMem(text), params);
+        return execLocalJsQuery(text, params);
     },
     async connect() {
         if (!useLocalFallback && pgPool) {
@@ -198,18 +539,17 @@ const pool = {
                 return await pgPool.connect();
             } catch (err) {
                 if (isConnectionError(err)) {
-                    console.warn(`⚠️ [DATABASE] Pool externo indisponível (${err.message || err.code}). Alternando para banco local!`);
+                    console.warn(`⚠️ [DATABASE] Pool externo indisponível (${err.message || err.code}). Alternando para banco local em memória/JSON!`);
                     useLocalFallback = true;
                 } else {
                     throw err;
                 }
             }
         }
-        const mp = getMemPool();
-        const client = await mp.connect();
-        const origQuery = client.query.bind(client);
-        client.query = (text, params) => origQuery(sanitizeSqlForMem(text), params);
-        return client;
+        return {
+            query: (text, params) => execLocalJsQuery(text, params),
+            release: () => {}
+        };
     },
     on(event, handler) {
         if (pgPool) pgPool.on(event, handler);
@@ -1203,9 +1543,6 @@ async function initDB() {
             ALTER TABLE products ADD COLUMN IF NOT EXISTS gallery TEXT DEFAULT '[]';
             ALTER TABLE products ADD COLUMN IF NOT EXISTS display_order INTEGER DEFAULT 0;
             ALTER TABLE products ADD COLUMN IF NOT EXISTS auto_stock_provider TEXT DEFAULT 'eneba';
-            ALTER TABLE products ADD COLUMN IF NOT EXISTS eneba_url TEXT;
-            ALTER TABLE orders ADD COLUMN IF NOT EXISTS total NUMERIC(10, 2);
-            ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method TEXT;
             
             ALTER TABLE users ADD COLUMN IF NOT EXISTS balance NUMERIC(10, 2) DEFAULT 0.00;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS points INTEGER DEFAULT 0;
