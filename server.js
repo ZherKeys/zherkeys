@@ -208,6 +208,11 @@ function matchSimpleCondition(row, condStr, params) {
         const arr = params[parseInt(m[2], 10) - 1] || [];
         return Array.isArray(arr) && arr.map(x => String(x)).includes(String(row[col]));
     }
+    if ((m = c.match(/^LOWER\s*\(\s*([\w.]+)\s*\)\s*=\s*LOWER\s*\(\s*(.+?)\s*\)$/i))) {
+        const col = m[1].split('.').pop();
+        const rhs = String(resolveSqlVal(m[2], params) || '').toLowerCase();
+        return String(row[col] || '').toLowerCase() === rhs;
+    }
     if ((m = c.match(/^([\w.]+)\s+(ILIKE|LIKE)\s+(.+)$/i))) {
         const col = m[1].split('.').pop();
         const pat = String(resolveSqlVal(m[3], params) || '');
@@ -296,6 +301,7 @@ async function execLocalJsQuery(sqlText, params = []) {
             order_items: { quantity: 1, price: 0, activation_key: '', key_viewed: false },
             notifications: { is_read: false, order_id: null, created_at: new Date().toISOString() },
             wallet_transactions: { created_at: new Date().toISOString() },
+            points_earnings: { created_at: new Date().toISOString() },
             support_tickets: { status: 'open', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
             support_ticket_messages: { created_at: new Date().toISOString() },
             sweepstake_history: { drawn_at: new Date().toISOString(), prize_amount: 10000000 },
@@ -444,6 +450,72 @@ async function execLocalJsQuery(sqlText, params = []) {
                 return { ...p, ...oi, title: oi.title || p.title || 'Produto', image: p.image || '/logo.png', category: p.category || 'STEAM KEY', eneba_url: p.eneba_url || '' };
             });
         return { rows, rowCount: rows.length };
+    }
+
+    if (/FROM\s+orders\s+o\s+JOIN\s+users\s+u\s+ON\s+o\.user_id\s*=\s*u\.id\s+WHERE\s+o\.user_id\s*=\s*\$1/i.test(s)) {
+        const userId = params[0];
+        const u = localStore.users.find(x => String(x.id) === String(userId)) || {};
+        const rows = localStore.orders
+            .filter(o => String(o.user_id) === String(userId))
+            .map(o => ({ ...o, total_amount: o.total_amount || o.total || 0, user_email: u.email || '' }))
+            .sort((a, b) => (b.id || 0) - (a.id || 0));
+        return { rows, rowCount: rows.length };
+    }
+
+    if (/FROM\s+points_earnings\s+pe\s+JOIN\s+users\s+u\s+ON\s+pe\.user_id\s*=\s*u\.id/i.test(s)) {
+        const intervalStr = String(params[0] || '7 days');
+        const days = parseInt(intervalStr, 10) || 7;
+        const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+        const totalsByUser = new Map();
+        for (const pe of (localStore.points_earnings || [])) {
+            const ts = pe.created_at ? new Date(pe.created_at).getTime() : Date.now();
+            if (ts >= cutoff) {
+                const uid = String(pe.user_id);
+                totalsByUser.set(uid, (totalsByUser.get(uid) || 0) + (Number(pe.amount) || 0));
+            }
+        }
+        for (const u of (localStore.users || [])) {
+            const uid = String(u.id);
+            const pts = Number(u.points) || 0;
+            if (pts > 0 && !totalsByUser.has(uid)) {
+                totalsByUser.set(uid, pts);
+            }
+        }
+        const rows = [];
+        for (const [uid, total] of totalsByUser.entries()) {
+            const u = localStore.users.find(x => String(x.id) === uid);
+            if (!u || total <= 0) continue;
+            const name = u.game_nickname || (u.email ? String(u.email).split('@')[0] : `Jogador #${uid}`);
+            rows.push({ id: u.id, name, total });
+        }
+        rows.sort((a, b) => b.total - a.total);
+        return { rows: rows.slice(0, 10), rowCount: Math.min(rows.length, 10) };
+    }
+
+    if (/WITH\s+ranked_users\s+AS/i.test(s)) {
+        const intervalStr = String(params[0] || '7 days');
+        const targetUserId = String(params[1]);
+        const days = parseInt(intervalStr, 10) || 7;
+        const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+        const totalsByUser = new Map();
+        for (const pe of (localStore.points_earnings || [])) {
+            const ts = pe.created_at ? new Date(pe.created_at).getTime() : Date.now();
+            if (ts >= cutoff) {
+                const uid = String(pe.user_id);
+                totalsByUser.set(uid, (totalsByUser.get(uid) || 0) + (Number(pe.amount) || 0));
+            }
+        }
+        for (const u of (localStore.users || [])) {
+            const uid = String(u.id);
+            const pts = Number(u.points) || 0;
+            if (pts > 0 && !totalsByUser.has(uid)) {
+                totalsByUser.set(uid, pts);
+            }
+        }
+        const sorted = [...totalsByUser.entries()].filter(([, t]) => t > 0).sort((a, b) => b[1] - a[1]);
+        const idx = sorted.findIndex(([uid]) => uid === targetUserId);
+        if (idx === -1) return { rows: [], rowCount: 0 };
+        return { rows: [{ rank: idx + 1, total: sorted[idx][1] }], rowCount: 1 };
     }
 
     // 6. Standard SELECT (including COUNT / SUM)
@@ -704,20 +776,68 @@ async function syncFullDatabaseBackup() {
             console.error("Erro no backup de música de fundo:", e.message || e);
         }
 
-        // 6. Arquivo Mestre Unificado (Usuários + Jogos + Keys + Produtos + Pedidos + Tickets)
+        // 6. Backup de Carteiras, Extrato (wallet_transactions), Z-Points (points_earnings) e Sorteio Z-Coins
         try {
-            const [uRes, pRes, oRes, oiRes, tRes] = await Promise.all([
+            const [uWalletsRes, wTxRes, pEarnRes, swPartRes, swHistRes] = await Promise.all([
+                pool.query('SELECT id, email, balance, points, game_nickname, subscription_expires_at, reading_subscription_expires_at FROM users ORDER BY id ASC'),
+                pool.query('SELECT * FROM wallet_transactions ORDER BY id ASC'),
+                pool.query('SELECT * FROM points_earnings ORDER BY id ASC'),
+                pool.query('SELECT * FROM sweepstake_participants ORDER BY id ASC'),
+                pool.query('SELECT * FROM sweepstake_history ORDER BY id ASC')
+            ]);
+            const walletsAndPointsBackup = {
+                updated_at: new Date().toISOString(),
+                users_wallets_and_points: (uWalletsRes.rows || []).map(u => ({
+                    id: u.id,
+                    email: u.email,
+                    balance: parseFloat(u.balance) || 0,
+                    points: parseInt(u.points) || 0,
+                    game_nickname: u.game_nickname || null,
+                    subscription_expires_at: u.subscription_expires_at || null,
+                    reading_subscription_expires_at: u.reading_subscription_expires_at || null
+                })),
+                wallet_transactions: wTxRes.rows || [],
+                points_earnings: pEarnRes.rows || [],
+                sweepstake_participants: swPartRes.rows || [],
+                sweepstake_history: swHistRes.rows || []
+            };
+            fs.writeFileSync(path.join(dataDir, 'wallets_points_backup.json'), JSON.stringify(walletsAndPointsBackup, null, 2), 'utf-8');
+            console.log(`💾 Backup de Carteiras (R$) e Z-Points (Minigames) salvo em data/wallets_points_backup.json`);
+        } catch(e) {
+            console.error("Erro no backup de carteiras e Z-Points:", e.message || e);
+        }
+
+        // 7. Arquivo Mestre Unificado (Usuários + Carteiras + Z-Points + Jogos + Keys + Produtos + Pedidos + Tickets)
+        try {
+            const [uRes, pRes, oRes, oiRes, tRes, wTxRes, pEarnRes, swPartRes, swHistRes] = await Promise.all([
                 pool.query('SELECT * FROM users ORDER BY id ASC'),
                 pool.query('SELECT * FROM products ORDER BY COALESCE(display_order, 0) ASC, id ASC'),
                 pool.query('SELECT * FROM orders ORDER BY id ASC'),
                 pool.query('SELECT * FROM order_items ORDER BY id ASC'),
-                pool.query('SELECT * FROM support_tickets ORDER BY id ASC')
+                pool.query('SELECT * FROM support_tickets ORDER BY id ASC'),
+                pool.query('SELECT * FROM wallet_transactions ORDER BY id ASC'),
+                pool.query('SELECT * FROM points_earnings ORDER BY id ASC'),
+                pool.query('SELECT * FROM sweepstake_participants ORDER BY id ASC'),
+                pool.query('SELECT * FROM sweepstake_history ORDER BY id ASC')
             ]);
             const fullMaster = {
                 backup_date: new Date().toISOString(),
                 users_count: (uRes.rows || []).length,
                 products_count: (pRes.rows || []).length,
                 users: uRes.rows || [],
+                wallets_and_points: {
+                    users_wallets_and_points: (uRes.rows || []).map(u => ({
+                        id: u.id,
+                        email: u.email,
+                        balance: parseFloat(u.balance) || 0,
+                        points: parseInt(u.points) || 0,
+                        game_nickname: u.game_nickname || null
+                    })),
+                    wallet_transactions: wTxRes.rows || [],
+                    points_earnings: pEarnRes.rows || [],
+                    sweepstake_participants: swPartRes.rows || [],
+                    sweepstake_history: swHistRes.rows || []
+                },
                 products: pRes.rows || [],
                 orders: { orders: oRes.rows || [], order_items: oiRes.rows || [] },
                 tickets: { tickets: tRes.rows || [] }
@@ -730,20 +850,20 @@ async function syncFullDatabaseBackup() {
     }
 }
 
-async function restoreFullDatabaseFromBackup() {
+async function restoreFullDatabaseFromBackup(forceExactWallets = false) {
     try {
         // Restaura Produtos
         await restoreProductsFromBackup();
 
         const dataDir = path.join(__dirname, 'data');
 
-        // Restaura Usuários
+        // Restaura Usuários (incluindo Saldo da Carteira R$ e Z-Points da aba minigames.html)
         const usersBackupPath = path.join(dataDir, 'users_backup.json');
         if (fs.existsSync(usersBackupPath)) {
             const usersData = JSON.parse(fs.readFileSync(usersBackupPath, 'utf-8'));
             if (Array.isArray(usersData)) {
                 for (let u of usersData) {
-                    const check = await pool.query('SELECT id FROM users WHERE email = $1 OR id = $2', [u.email, u.id]);
+                    const check = await pool.query('SELECT id, balance, points, game_nickname, subscription_expires_at, reading_subscription_expires_at FROM users WHERE email = $1 OR id = $2', [u.email, u.id]);
                     if (check.rows.length === 0) {
                         if (u.id) {
                             await pool.query(
@@ -788,9 +908,108 @@ async function restoreFullDatabaseFromBackup() {
                                 ]
                             );
                         }
+                    } else {
+                        // Se o usuário já existe (ex: admin padrão criado no initDB), sincroniza saldo da carteira (balance) e Z-Points (points)
+                        const existing = check.rows[0];
+                        const backupBal = parseFloat(u.balance) || 0;
+                        const backupPts = parseInt(u.points) || 0;
+                        const curBal = parseFloat(existing.balance) || 0;
+                        const curPts = parseInt(existing.points) || 0;
+                        const finalBal = forceExactWallets ? backupBal : Math.max(curBal, backupBal);
+                        const finalPts = forceExactWallets ? backupPts : Math.max(curPts, backupPts);
+                        const finalNick = u.game_nickname || existing.game_nickname || null;
+                        const finalSub = u.subscription_expires_at || existing.subscription_expires_at || null;
+                        const finalReadSub = u.reading_subscription_expires_at || existing.reading_subscription_expires_at || null;
+                        if (finalBal !== curBal || finalPts !== curPts || finalNick !== existing.game_nickname) {
+                            await pool.query(
+                                'UPDATE users SET balance = $1, points = $2, game_nickname = $3, subscription_expires_at = $4, reading_subscription_expires_at = $5 WHERE id = $6',
+                                [finalBal, finalPts, finalNick, finalSub, finalReadSub, existing.id]
+                            );
+                        }
                     }
                 }
-                console.log(`✅ Usuários restaurados a partir de data/users_backup.json`);
+                console.log(`✅ Usuários, Carteiras (R$) e Z-Points restaurados a partir de data/users_backup.json`);
+            }
+        }
+
+        // Restaura Histórico de Transações da Carteira (wallet_transactions), Z-Points (points_earnings) e Sorteio
+        const walletsPointsBackupPath = path.join(dataDir, 'wallets_points_backup.json');
+        if (fs.existsSync(walletsPointsBackupPath)) {
+            try {
+                const wpData = JSON.parse(fs.readFileSync(walletsPointsBackupPath, 'utf-8'));
+                if (wpData && Array.isArray(wpData.users_wallets_and_points)) {
+                    for (const uw of wpData.users_wallets_and_points) {
+                        const check = await pool.query('SELECT id, balance, points, game_nickname FROM users WHERE email = $1 OR id = $2', [uw.email, uw.id]);
+                        if (check.rows.length > 0) {
+                            const existing = check.rows[0];
+                            const bBal = parseFloat(uw.balance) || 0;
+                            const bPts = parseInt(uw.points) || 0;
+                            const cBal = parseFloat(existing.balance) || 0;
+                            const cPts = parseInt(existing.points) || 0;
+                            const fBal = forceExactWallets ? bBal : Math.max(cBal, bBal);
+                            const fPts = forceExactWallets ? bPts : Math.max(cPts, bPts);
+                            const fNick = uw.game_nickname || existing.game_nickname || null;
+                            if (fBal !== cBal || fPts !== cPts || fNick !== existing.game_nickname) {
+                                await pool.query('UPDATE users SET balance = $1, points = $2, game_nickname = $3 WHERE id = $4', [fBal, fPts, fNick, existing.id]);
+                            }
+                        }
+                    }
+                }
+                if (wpData && Array.isArray(wpData.wallet_transactions)) {
+                    for (const tx of wpData.wallet_transactions) {
+                        const check = await pool.query('SELECT id FROM wallet_transactions WHERE id = $1', [tx.id]);
+                        if (check.rows.length === 0) {
+                            await pool.query(
+                                `INSERT INTO wallet_transactions (id, user_id, amount, type, description, created_at)
+                                 VALUES ($1, $2, $3, $4, $5, $6)
+                                 ON CONFLICT (id) DO NOTHING`,
+                                [tx.id, tx.user_id, parseFloat(tx.amount) || 0, tx.type || 'deposit', tx.description || '', tx.created_at || new Date()]
+                            );
+                        }
+                    }
+                }
+                if (wpData && Array.isArray(wpData.points_earnings)) {
+                    for (const pe of wpData.points_earnings) {
+                        const check = await pool.query('SELECT id FROM points_earnings WHERE id = $1', [pe.id]);
+                        if (check.rows.length === 0) {
+                            await pool.query(
+                                `INSERT INTO points_earnings (id, user_id, amount, created_at)
+                                 VALUES ($1, $2, $3, $4)
+                                 ON CONFLICT (id) DO NOTHING`,
+                                [pe.id, pe.user_id, parseInt(pe.amount) || 0, pe.created_at || new Date()]
+                            );
+                        }
+                    }
+                }
+                if (wpData && Array.isArray(wpData.sweepstake_participants)) {
+                    for (const sp of wpData.sweepstake_participants) {
+                        const check = await pool.query('SELECT id FROM sweepstake_participants WHERE user_id = $1', [sp.user_id]);
+                        if (check.rows.length === 0) {
+                            await pool.query(
+                                `INSERT INTO sweepstake_participants (id, user_id, created_at)
+                                 VALUES ($1, $2, $3)
+                                 ON CONFLICT (id) DO NOTHING`,
+                                [sp.id, sp.user_id, sp.created_at || new Date()]
+                            );
+                        }
+                    }
+                }
+                if (wpData && Array.isArray(wpData.sweepstake_history)) {
+                    for (const sh of wpData.sweepstake_history) {
+                        const check = await pool.query('SELECT id FROM sweepstake_history WHERE id = $1', [sh.id]);
+                        if (check.rows.length === 0) {
+                            await pool.query(
+                                `INSERT INTO sweepstake_history (id, winner_id, prize_amount, drawn_at)
+                                 VALUES ($1, $2, $3, $4)
+                                 ON CONFLICT (id) DO NOTHING`,
+                                [sh.id, sh.winner_id || null, parseInt(sh.prize_amount) || 0, sh.drawn_at || new Date()]
+                            );
+                        }
+                    }
+                }
+                console.log(`✅ Extratos de Carteira e Histórico de Z-Points (minigames.html) restaurados a partir de data/wallets_points_backup.json`);
+            } catch (wpErr) {
+                console.error("Erro ao restaurar wallets_points_backup.json:", wpErr.message || wpErr);
             }
         }
 
@@ -6054,6 +6273,7 @@ app.post('/api/minigames/claim', requireAuth, async (req, res) => {
         await client.query('UPDATE users SET points = $1 WHERE id = $2', [newPoints, userId]);
         await client.query("INSERT INTO points_earnings (user_id, amount) VALUES ($1, $2)", [userId, rewardPoints]);
         await client.query('COMMIT');
+        syncFullDatabaseBackup().catch(() => {});
         
         res.json({
             success: true,
@@ -6105,6 +6325,7 @@ app.post('/api/minigames/watch-ad-points', requireAuth, async (req, res) => {
         await client.query('UPDATE users SET points = $1 WHERE id = $2', [newPoints, userId]);
         await client.query("INSERT INTO points_earnings (user_id, amount) VALUES ($1, $2)", [userId, rewardPoints]);
         await client.query('COMMIT');
+        syncFullDatabaseBackup().catch(() => {});
         
         res.json({
             success: true,
@@ -6182,6 +6403,7 @@ app.post('/api/minigames/convert-points', requireAuth, async (req, res) => {
         );
         
         await client.query('COMMIT');
+        syncFullDatabaseBackup().catch(() => {});
         
         res.json({
             success: true,
@@ -6232,6 +6454,7 @@ app.post('/api/minigames/spend-points', requireAuth, async (req, res) => {
         
         await client.query('UPDATE users SET points = $1 WHERE id = $2', [newPoints, userId]);
         await client.query('COMMIT');
+        syncFullDatabaseBackup().catch(() => {});
         
         res.json({
             success: true,
@@ -6293,6 +6516,7 @@ app.post('/api/user/nickname', requireAuth, async (req, res) => {
         );
         
         await client.query('COMMIT');
+        syncFullDatabaseBackup().catch(() => {});
         res.json({ success: true, message: 'Nome de jogo atualizado com sucesso!', nickname: cleanNickname });
     } catch (err) {
         await client.query('ROLLBACK');
@@ -6411,6 +6635,7 @@ app.post('/api/sweepstake/join', requireAuth, async (req, res) => {
             "INSERT INTO sweepstake_participants (user_id) VALUES ($1)",
             [userId]
         );
+        syncFullDatabaseBackup().catch(() => {});
         
         // Envia email de confirmação assíncrono para não travar a resposta da requisição
         sendEmailViaBrevo(
@@ -6628,6 +6853,7 @@ async function runSweepstakeDraw() {
                 await client.query("DELETE FROM sweepstake_participants");
                 
                 await client.query('COMMIT');
+                syncFullDatabaseBackup().catch(() => {});
 
                 // Envia e-mail de notificacao para todos os usuarios cadastrados participarem do novo sorteio
                 (async () => {
@@ -6705,21 +6931,38 @@ setInterval(runSweepstakeDraw, 60 * 1000);
 // E roda uma verificação no início do servidor
 setTimeout(runSweepstakeDraw, 5000);
 
-// Exportar Backup Completo (Usuários, Jogos, Keys, Produtos, Pedidos e Tickets)
+// Exportar Backup Completo (Usuários, Carteiras, Z-Points, Jogos, Keys, Produtos, Pedidos e Tickets)
 app.get('/api/admin/backup/full', requireAdmin, async (req, res) => {
     try {
         await syncFullDatabaseBackup();
-        const [usersRes, prodsRes, ordersRes, itemsRes, ticketsRes] = await Promise.all([
+        const [usersRes, prodsRes, ordersRes, itemsRes, ticketsRes, wTxRes, pEarnRes, swPartRes, swHistRes] = await Promise.all([
             pool.query('SELECT * FROM users ORDER BY id ASC'),
             pool.query('SELECT * FROM products ORDER BY COALESCE(display_order, 0) ASC, id ASC'),
             pool.query('SELECT * FROM orders ORDER BY id ASC'),
             pool.query('SELECT * FROM order_items ORDER BY id ASC'),
-            pool.query('SELECT * FROM support_tickets ORDER BY id ASC')
+            pool.query('SELECT * FROM support_tickets ORDER BY id ASC'),
+            pool.query('SELECT * FROM wallet_transactions ORDER BY id ASC'),
+            pool.query('SELECT * FROM points_earnings ORDER BY id ASC'),
+            pool.query('SELECT * FROM sweepstake_participants ORDER BY id ASC'),
+            pool.query('SELECT * FROM sweepstake_history ORDER BY id ASC')
         ]);
         res.json({
             success: true,
             backup_date: new Date().toISOString(),
             users: usersRes.rows || [],
+            wallets_and_points: {
+                users_wallets_and_points: (usersRes.rows || []).map(u => ({
+                    id: u.id,
+                    email: u.email,
+                    balance: parseFloat(u.balance) || 0,
+                    points: parseInt(u.points) || 0,
+                    game_nickname: u.game_nickname || null
+                })),
+                wallet_transactions: wTxRes.rows || [],
+                points_earnings: pEarnRes.rows || [],
+                sweepstake_participants: swPartRes.rows || [],
+                sweepstake_history: swHistRes.rows || []
+            },
             products: prodsRes.rows || [],
             orders: { orders: ordersRes.rows || [], order_items: itemsRes.rows || [] },
             tickets: { tickets: ticketsRes.rows || [] }
@@ -6730,15 +6973,18 @@ app.get('/api/admin/backup/full', requireAdmin, async (req, res) => {
     }
 });
 
-// Restaurar / Sincronizar Backup Completo (Usuários, Jogos, Keys, Produtos)
+// Restaurar / Sincronizar Backup Completo (Usuários, Carteiras, Z-Points, Jogos, Keys, Produtos)
 app.post('/api/admin/backup/restore', requireAdmin, async (req, res) => {
     try {
-        const { users, products, orders, replaceProducts } = req.body || {};
+        const { users, wallets_and_points, products, orders, replaceProducts } = req.body || {};
         const dataDir = path.join(__dirname, 'data');
         if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
         if (Array.isArray(users) && users.length > 0) {
             fs.writeFileSync(path.join(dataDir, 'users_backup.json'), JSON.stringify(users, null, 2), 'utf-8');
+        }
+        if (wallets_and_points && typeof wallets_and_points === 'object') {
+            fs.writeFileSync(path.join(dataDir, 'wallets_points_backup.json'), JSON.stringify(wallets_and_points, null, 2), 'utf-8');
         }
         if (Array.isArray(products) && products.length > 0) {
             fs.writeFileSync(path.join(dataDir, 'products_backup.json'), JSON.stringify(products, null, 2), 'utf-8');
@@ -6760,20 +7006,49 @@ app.post('/api/admin/backup/restore', requireAdmin, async (req, res) => {
             fs.writeFileSync(path.join(dataDir, 'orders_backup.json'), JSON.stringify(orders, null, 2), 'utf-8');
         }
 
-        await restoreFullDatabaseFromBackup();
+        await restoreFullDatabaseFromBackup(true);
         await syncFullDatabaseBackup();
         productsCache = null;
-        res.json({ success: true, message: "Backup completo restaurado e sincronizado com sucesso!" });
+        res.json({ success: true, message: "Backup completo (incluindo Carteiras R$ e Z-Points de Minigames) restaurado e sincronizado com sucesso!" });
     } catch (e) {
         console.error("Erro ao restaurar backup:", e);
         res.status(500).json({ error: "Erro ao restaurar backup: " + (e.message || e) });
     }
 });
 
-// Listar todos os usuários com seus saldos (Admin)
+// Sincronização de segurança de Carteira e Z-Points do usuário logado (minigames.html / account.html)
+app.post('/api/user/sync-wallet-points', requireAuth, async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const { cachedPoints, cachedBalance } = req.body || {};
+        const userRes = await pool.query('SELECT id, email, balance, points, game_nickname FROM users WHERE id = $1', [userId]);
+        if (userRes.rows.length === 0) return res.status(404).json({ error: 'Usuário não encontrado.' });
+
+        const u = userRes.rows[0];
+        let curBal = parseFloat(u.balance) || 0;
+        let curPts = parseInt(u.points) || 0;
+        let updated = false;
+
+        // Se o banco zerou após reinicialização mas o navegador do usuário tinha Z-Points salvos da sessão anterior (limite seguro)
+        const cPts = parseInt(cachedPoints) || 0;
+        if (curPts === 0 && cPts > 0 && cPts <= 50000000) {
+            curPts = cPts;
+            updated = true;
+        }
+        if (updated) {
+            await pool.query('UPDATE users SET points = $1 WHERE id = $2', [curPts, userId]);
+            syncFullDatabaseBackup().catch(() => {});
+        }
+        res.json({ success: true, balance: curBal, points: curPts, game_nickname: u.game_nickname || null });
+    } catch (e) {
+        res.status(500).json({ error: 'Erro ao sincronizar carteira e pontos.' });
+    }
+});
+
+// Listar todos os usuários com seus saldos e Z-Points (Admin)
 app.get('/api/admin/users', requireAdmin, async (req, res) => {
     try {
-        const result = await pool.query('SELECT id, email, balance FROM users ORDER BY id ASC');
+        const result = await pool.query('SELECT id, email, balance, COALESCE(points, 0) AS points, game_nickname FROM users ORDER BY id ASC');
         res.json(result.rows);
     } catch(e) {
         console.error("[ADMIN-USERS] Erro ao buscar usuários:", e);
@@ -6800,7 +7075,7 @@ app.post('/api/admin/users/:id/credits', requireAdmin, async (req, res) => {
         }
         
         const balance = parseFloat(userRes.rows[0].balance || 0);
-        const newBalance = balance + parseFloat(amount);
+        const newBalance = parseFloat((balance + parseFloat(amount)).toFixed(2));
         
         if (newBalance < 0) {
             await client.query('ROLLBACK');
@@ -6816,11 +7091,47 @@ app.post('/api/admin/users/:id/credits', requireAdmin, async (req, res) => {
         );
         
         await client.query('COMMIT');
-        res.json({ success: true, message: 'Créditos atualizados com sucesso!', balance: newBalance });
+        syncFullDatabaseBackup().catch(() => {});
+        res.json({ success: true, message: 'Créditos da carteira atualizados e salvos no backup com sucesso!', balance: newBalance });
     } catch(err) {
         await client.query('ROLLBACK');
         console.error("[ADMIN-CREDITS] Erro ao ajustar créditos:", err);
         res.status(500).json({ error: 'Erro ao ajustar créditos.' });
+    } finally {
+        client.release();
+    }
+});
+
+// Ajustar Z-Points (Minigames) de um usuário (Admin - Adicionar ou remover)
+app.post('/api/admin/users/:id/points', requireAdmin, async (req, res) => {
+    const { pointsDelta } = req.body;
+    const { id } = req.params;
+    const delta = parseInt(pointsDelta, 10);
+    if (isNaN(delta) || delta === 0) {
+        return res.status(400).json({ error: 'Quantidade de Z-Points inválida.' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const userRes = await client.query('SELECT points FROM users WHERE id = $1 FOR UPDATE', [id]);
+        if (userRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+        const curPts = parseInt(userRes.rows[0].points || 0, 10);
+        const newPts = Math.max(0, curPts + delta);
+        await client.query('UPDATE users SET points = $1 WHERE id = $2', [newPts, id]);
+        if (delta > 0) {
+            await client.query('INSERT INTO points_earnings (user_id, amount) VALUES ($1, $2)', [id, delta]);
+        }
+        await client.query('COMMIT');
+        syncFullDatabaseBackup().catch(() => {});
+        res.json({ success: true, message: 'Z-Points atualizados e salvos no backup com sucesso!', points: newPts });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error("[ADMIN-POINTS] Erro ao ajustar Z-Points:", err);
+        res.status(500).json({ error: 'Erro ao ajustar Z-Points.' });
     } finally {
         client.release();
     }

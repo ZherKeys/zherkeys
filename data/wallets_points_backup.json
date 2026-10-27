@@ -1,0 +1,18 @@
+{
+  "updated_at": "2026-10-27T05:22:42.000Z",
+  "users_wallets_and_points": [
+    {
+      "id": 1,
+      "email": "zherkeys@gmail.com",
+      "balance": 0,
+      "points": 0,
+      "game_nickname": "Admin",
+      "subscription_expires_at": null,
+      "reading_subscription_expires_at": null
+    }
+  ],
+  "wallet_transactions": [],
+  "points_earnings": [],
+  "sweepstake_participants": [],
+  "sweepstake_history": []
+}

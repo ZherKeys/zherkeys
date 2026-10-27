@@ -1545,14 +1545,52 @@ gtag('config', 'AW-18202657831');
         let treasureStatusText = '';
         let treasureResultColor = '';
         
+        let currentUserEmail = '';
+
+        function saveLocalWalletAndPointsSnapshot(balance, points, email) {
+            try {
+                const targetEmail = email || currentUserEmail || 'logged_user';
+                const snap = {
+                    email: targetEmail,
+                    balance: parseFloat(balance) || 0,
+                    points: parseInt(points) || 0,
+                    updated_at: new Date().toISOString()
+                };
+                localStorage.setItem('zher_user_wallet_points_backup', JSON.stringify(snap));
+            } catch (e) {}
+        }
+
         // --- FETCH USER LIVE BALANCE AND POINTS ---
         async function fetchMe() {
             try {
                 const res = await fetch('/api/me');
                 if (res.ok) {
                     const data = await res.json();
+                    currentUserEmail = data.email || '';
                     userBalance = parseFloat(data.balance || 0);
                     userPoints = parseInt(data.points || 0);
+
+                    // Caso o servidor tenha reiniciado do zero mas o navegador tenha o backup local de Z-Points do usuário, sincroniza automaticamente
+                    try {
+                        const rawSnap = localStorage.getItem('zher_user_wallet_points_backup');
+                        if (rawSnap && userPoints === 0) {
+                            const snap = JSON.parse(rawSnap);
+                            if (snap && snap.email === currentUserEmail && parseInt(snap.points) > 0) {
+                                const syncRes = await fetch('/api/user/sync-wallet-points', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ cachedPoints: parseInt(snap.points), cachedBalance: parseFloat(snap.balance) })
+                                });
+                                if (syncRes.ok) {
+                                    const syncData = await syncRes.json();
+                                    if (syncData.points !== undefined) userPoints = parseInt(syncData.points);
+                                    if (syncData.balance !== undefined) userBalance = parseFloat(syncData.balance);
+                                }
+                            }
+                        }
+                    } catch (e) {}
+
+                    saveLocalWalletAndPointsSnapshot(userBalance, userPoints, currentUserEmail);
                     document.getElementById('nav-balance').innerText = formatPrice(userBalance);
                     document.getElementById('nav-points').innerText = `${userPoints} Pts`;
                 } else {
@@ -3846,6 +3884,7 @@ gtag('config', 'AW-18202657831');
                     
                     userBalance = parseFloat(data.newBalance);
                     document.getElementById('nav-balance').innerText = formatPrice(userBalance);
+                    saveLocalWalletAndPointsSnapshot(userBalance, userPoints);
                     
                     // Recarrega informações do limite diário
                     updateDailyLimitUI(data.dailyTotal);
@@ -3940,6 +3979,7 @@ gtag('config', 'AW-18202657831');
                     alert(`🎉 Sucesso! Você recebeu +250 Z-Points em sua conta por visualizar o patrocinador!`);
                     userPoints = parseInt(data.newPoints);
                     document.getElementById('nav-points').innerText = `${userPoints} Pts`;
+                    saveLocalWalletAndPointsSnapshot(userBalance, userPoints);
                 } else {
                     alert(`⚠️ Erro ao reivindicar: ${data.error || 'Erro desconhecido'}`);
                 }
@@ -3990,6 +4030,7 @@ gtag('config', 'AW-18202657831');
                     
                     userBalance = parseFloat(data.newBalance);
                     document.getElementById('nav-balance').innerText = formatPrice(userBalance);
+                    saveLocalWalletAndPointsSnapshot(userBalance, userPoints);
                     
                     // Atualiza o limite diário restante
                     updateDailyLimitUI(data.dailyTotal);

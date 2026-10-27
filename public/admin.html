@@ -447,9 +447,10 @@ gtag('config', 'AW-18202657831');
                         <thead class="text-xs font-orbitron tracking-widest text-slate-500 uppercase border-b border-slate-800">
                             <tr>
                                 <th class="py-3 px-4">ID</th>
-                                <th class="py-3 px-4">E-mail</th>
-                                <th class="py-3 px-4">Saldo Atual</th>
-                                <th class="py-3 px-4 text-center">Ações de Crédito (Adicionar/Remover)</th>
+                                <th class="py-3 px-4">E-mail / Nickname</th>
+                                <th class="py-3 px-4">Saldo Carteira (R$)</th>
+                                <th class="py-3 px-4">Z-Points (Minigames)</th>
+                                <th class="py-3 px-4 text-center">Ajustar Carteira (R$) / Z-Points</th>
                                 <th class="py-3 px-4 text-center">Compras</th>
                             </tr>
                         </thead>
@@ -1498,7 +1499,7 @@ gtag('config', 'AW-18202657831');
             }
         };
 
-        // --- CARTEIRA DE CLIENTES LOGIC ---
+        // --- CARTEIRA DE CLIENTES E Z-POINTS LOGIC ---
         async function loadAdminUsers() {
             try {
                 const res = await fetch('/api/admin/users');
@@ -1506,23 +1507,34 @@ gtag('config', 'AW-18202657831');
                 
                 const container = document.getElementById('admin-users-list');
                 if (users.length === 0) {
-                    container.innerHTML = '<tr><td colspan="5" class="text-center py-10 text-slate-500 font-orbitron text-xs">Nenhum usuário cadastrado.</td></tr>';
+                    container.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-slate-500 font-orbitron text-xs">Nenhum usuário cadastrado.</td></tr>';
                     return;
                 }
                 
                 let html = '';
                 users.forEach(u => {
+                    const pts = parseInt(u.points || 0, 10);
+                    const nickBadge = u.game_nickname ? `<span class="block text-[10px] text-electricblue font-orbitron mt-0.5">🎮 ${u.game_nickname}</span>` : '';
                     html += `
                         <tr class="border-b border-slate-800 hover:bg-slate-900/10 transition-colors">
                             <td class="py-4 px-4 font-mono text-xs text-slate-500">#${u.id}</td>
-                            <td class="py-4 px-4 font-semibold text-slate-300 font-inter">${u.email}</td>
+                            <td class="py-4 px-4 font-semibold text-slate-300 font-inter">${u.email}${nickBadge}</td>
                             <td class="py-4 px-4 font-black text-emerald-400 font-orbitron text-base">R$ ${parseFloat(u.balance || 0).toFixed(2).replace('.', ',')}</td>
+                            <td class="py-4 px-4 font-black text-electricblue font-orbitron text-base">${pts.toLocaleString('pt-BR')} Pts</td>
                             <td class="py-4 px-4">
-                                <div class="flex items-center justify-center gap-2">
-                                    <input type="number" step="0.01" placeholder="Ex: 50.00 ou -20.00" id="credits-input-${u.id}" class="w-36 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-inter placeholder-slate-700">
-                                    <button onclick="adjustCredits(${u.id})" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-obsidian text-xs font-orbitron font-bold rounded-lg transition-colors shadow">
-                                        AJUSTAR CRÉDITO
-                                    </button>
+                                <div class="flex flex-col gap-2 items-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <input type="number" step="0.01" placeholder="R$ Ex: 50 ou -20" id="credits-input-${u.id}" class="w-36 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500 font-inter placeholder-slate-700">
+                                        <button onclick="adjustCredits(${u.id})" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-obsidian text-[10px] font-orbitron font-bold rounded-lg transition-colors shadow">
+                                            SALDO R$
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center justify-center gap-2">
+                                        <input type="number" step="100" placeholder="Pts Ex: 5000 ou -1000" id="points-input-${u.id}" class="w-36 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-electricblue font-inter placeholder-slate-700">
+                                        <button onclick="adjustUserPoints(${u.id})" class="px-3 py-1.5 bg-electricblue hover:bg-blue-400 text-white text-[10px] font-orbitron font-bold rounded-lg transition-colors shadow">
+                                            Z-POINTS
+                                        </button>
+                                    </div>
                                 </div>
                             </td>
                             <td class="py-4 px-4 text-center">
@@ -1534,8 +1546,39 @@ gtag('config', 'AW-18202657831');
                     `;
                 });
                 container.innerHTML = html;
+                if (typeof window.autoSyncAdminLocalBackup === 'function') {
+                    window.autoSyncAdminLocalBackup();
+                }
             } catch(e) {
                 console.error("Erro ao carregar usuários da carteira:", e);
+            }
+        }
+
+        async function adjustUserPoints(userId) {
+            const input = document.getElementById(`points-input-${userId}`);
+            const pointsDelta = parseInt(input.value, 10);
+            if (isNaN(pointsDelta) || pointsDelta === 0) {
+                alert("Por favor, digite uma quantidade válida de Z-Points (Ex: 5000 ou -1000).");
+                return;
+            }
+            const actionText = pointsDelta > 0 ? `ADICIONAR +${pointsDelta.toLocaleString('pt-BR')} Z-Points` : `REMOVER ${Math.abs(pointsDelta).toLocaleString('pt-BR')} Z-Points`;
+            if (!confirm(`Deseja realmente ${actionText} para este usuário?`)) return;
+            try {
+                const res = await fetch(`/api/admin/users/${userId}/points`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pointsDelta })
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    alert(data.message);
+                    input.value = '';
+                    loadAdminUsers();
+                } else {
+                    alert("Erro ao ajustar Z-Points: " + (data.error || "Desconhecido"));
+                }
+            } catch (err) {
+                alert("Erro de rede ao ajustar Z-Points.");
             }
         }
 
@@ -1779,6 +1822,7 @@ gtag('config', 'AW-18202657831');
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         users: parsed.users || [],
+                        wallets_and_points: parsed.wallets_and_points || null,
                         products: parsed.products || (Array.isArray(parsed) ? parsed : []),
                         orders: parsed.orders || null,
                         replaceProducts: true
@@ -1786,8 +1830,9 @@ gtag('config', 'AW-18202657831');
                 });
                 const resData = await res.json();
                 if (res.ok && resData.success) {
-                    alert("✅ Backup de usuários, jogos, keys e produtos restaurado com sucesso!");
+                    alert("✅ Backup de usuários, carteiras (R$), Z-Points (minigames), jogos, keys e produtos restaurado com sucesso!");
                     loadProducts();
+                    if (typeof loadAdminUsers === 'function') loadAdminUsers();
                 } else {
                     alert(resData.error || "Erro ao restaurar arquivo de backup.");
                 }
