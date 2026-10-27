@@ -16,3 +16,4 @@ eneba_bot_session/
 *.jpg
 zherplay/
 *.mkv
+.cache/
