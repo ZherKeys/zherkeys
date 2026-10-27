@@ -117,11 +117,11 @@
     "id": 9,
     "title": "Minecraft Legends",
     "description": "Descubra os mistérios de Minecraft Legends. Explore uma terra com muitos recursos e biomas exuberantes à beira da destruição. Os Piglins chegaram devastando tudo, e cabe a você inspirar seus aliados e liderá-los em batalhas estratégicas para salvar o Mundo Superior!\n\n<!-- STEAM_METADATA_START -->\n<div class=\"mt-8 border-t border-slate-900 pt-6\">\n    <div class=\"grid grid-cols-1 md:grid-cols-2 gap-6\">\n        <div class=\"bg-slate-950/40 border border-slate-900 p-5 rounded-xl text-left\">\n            <h4 class=\"font-orbitron font-bold text-xs tracking-wider text-electricblue uppercase mb-4\">// FICHA TECNICA</h4>\n            <ul class=\"space-y-2.5 font-inter text-xs text-slate-400\">\n                <li><strong class=\"text-slate-300\">Desenvolvedor:</strong> Mojang Studios, Blackbird Interactive</li>\n                <li><strong class=\"text-slate-300\">Distribuidora:</strong> Xbox Game Studios</li>\n                <li><strong class=\"text-slate-300\">Data de Lancamento:</strong> 18 abr. 2023</li>\n                <li><strong class=\"text-slate-300\">Idiomas:</strong> Inglês, Francês, Italiano, Alemão, Espanhol (Espanha), Árabe, Búlgaro, Checo, Dinamarquês, Holandês, Finlandês, Grego, Húngaro, Japonês, Coreano, Norueguês, Polaco, Português (Portugal), Português (Brasil), Russo, Chinês simplificado, Espanhol (América Latina), Sueco, Chinês tradicional, Turco, Ucraniano</li>\n                <li><strong class=\"text-slate-300\">Classificacao:</strong> 10 anos</li>\n            </ul>\n        </div>\n        <div class=\"bg-slate-950/40 border border-slate-900 p-5 rounded-xl text-left\">\n            <h4 class=\"font-orbitron font-bold text-xs tracking-wider text-cyberrose uppercase mb-4\">// REQUISITOS MINIMOS</h4>\n            <div class=\"font-inter text-xs text-slate-400 leading-relaxed steam-requirements\">\n                <strong>Mínimos:</strong><br><ul ><li>Requer um sistema operativo e processador de 64 bits<br></li><li><strong>Sistema Operativo:</strong> Windows 10 (May 2020 Update or higher) or Windows 11<br></li><li><strong>Processador:</strong> Core i5 2.8GHz or equivalent<br></li><li><strong>Memória:</strong> 8 GB de RAM<br></li><li><strong>Placa gráfica:</strong> NVIDIA GeForce GTX 780 or AMD Radeon 285 or Intel HD 520 or equivalent DX12 GPU<br></li><li><strong>DirectX:</strong> Versão 12<br></li><li><strong>Espaço no disco:</strong> Requer 24 GB de espaço livre<br></li><li><strong>Notas adicionais:</strong> Performance increases with higher-end systems. Not supported on Windows 10S.</li></ul>\n            </div>\n        </div>\n    </div>\n</div>\n<!-- STEAM_METADATA_END -->",
-    "price": 199,
+    "price": 29.9,
     "old_price": 199,
     "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1928870/header.jpg?t=1746133966",
     "category": "MICROSOFT STORE",
-    "activation_key": "MINE-LEG1-WIN-KEY",
+    "activation_key": "2PTV6-Y32PM-TGX9X-VVXQW-6FWKZ\n7QFWM-FRPW3-R6R49-H6JV9-CJVGZ",
     "in_stock": true,
     "is_global": true,
     "restricted_countries": "",
@@ -129,7 +129,7 @@
     "gameflip_listing_id": "",
     "gallery": "[\"https://video.akamai.steamstatic.com/store_trailers/256942886/movie_max.mp4\",\"https://video.akamai.steamstatic.com/store_trailers/256927135/movie_max.mp4\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1928870/ss_65720eb73a2dd8fc993172cfbfcdc8fe40ec44c2.1920x1080.jpg?t=1746133966\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1928870/ss_87b5f26fd65475c2605013fae8f17c5085cbd024.1920x1080.jpg?t=1746133966\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1928870/ss_4dba4e59eabcf5c3631e5c28b52ffcae46d3bad8.1920x1080.jpg?t=1746133966\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1928870/ss_edc777c7f4d3e0ecfdf26d0cd975017a0f98cb8f.1920x1080.jpg?t=1746133966\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1928870/ss_07751f1c6d097298907a6be7df2cf21ad795acc4.1920x1080.jpg?t=1746133966\"]",
     "display_order": 6,
-    "auto_stock_provider": "eneba",
+    "auto_stock_provider": "none",
     "eneba_url": ""
   },
   {
