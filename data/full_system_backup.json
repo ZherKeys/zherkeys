@@ -1,5 +1,5 @@
 {
-  "backup_date": "2026-10-27T21:20:51.626Z",
+  "backup_date": "2026-10-27T21:22:21.533Z",
   "users_count": 1,
   "products_count": 18,
   "users": [
@@ -21,7 +21,7 @@
     }
   ],
   "wallets_and_points": {
-    "updated_at": "2026-10-27T21:20:51.622Z",
+    "updated_at": "2026-10-27T21:22:21.530Z",
     "users_wallets_and_points": [
       {
         "id": 1,
@@ -259,11 +259,11 @@
       "id": 16,
       "title": "Metal Slug Tactics",
       "description": "O retorno explosivo de METAL SLUG! Embarque nesse RPG tático e dinâmico com um empolgante estilo roguelite e corra com suas armas ao estilo da emblemática ação da série original, mas redefinida. Pegue suas armas, monte seu esquadrão e derrote o infame Exército Rebelde.\n\n<!-- STEAM_METADATA_START -->\n<div class=\"mt-8 border-t border-slate-900 pt-6\">\n    <div class=\"grid grid-cols-1 md:grid-cols-2 gap-6\">\n        <div class=\"bg-slate-950/40 border border-slate-900 p-5 rounded-xl text-left\">\n            <h4 class=\"font-orbitron font-bold text-xs tracking-wider text-electricblue uppercase mb-4\">// FICHA TECNICA</h4>\n            <ul class=\"space-y-2.5 font-inter text-xs text-slate-400\">\n                <li><strong class=\"text-slate-300\">Desenvolvedor:</strong> Leikir Studio</li>\n                <li><strong class=\"text-slate-300\">Distribuidora:</strong> Dotemu, Gamirror Games</li>\n                <li><strong class=\"text-slate-300\">Data de Lancamento:</strong> 5 nov. 2024</li>\n                <li><strong class=\"text-slate-300\">Idiomas:</strong> Inglês, Francês, Alemão, Espanhol (Espanha), Japonês, Coreano, Português (Brasil), Chinês simplificado, Chinês tradicional</li>\n                <li><strong class=\"text-slate-300\">Classificacao:</strong> 10 anos</li>\n            </ul>\n        </div>\n        <div class=\"bg-slate-950/40 border border-slate-900 p-5 rounded-xl text-left\">\n            <h4 class=\"font-orbitron font-bold text-xs tracking-wider text-cyberrose uppercase mb-4\">// REQUISITOS MINIMOS</h4>\n            <div class=\"font-inter text-xs text-slate-400 leading-relaxed steam-requirements\">\n                <strong>Mínimos:</strong><br><ul ><li>Requer um sistema operativo e processador de 64 bits<br></li><li><strong>Sistema Operativo:</strong> Windows 10<br></li><li><strong>Processador:</strong> Intel Core i5-2550k or AMD FX-6300<br></li><li><strong>Memória:</strong> 8 GB de RAM<br></li><li><strong>Placa gráfica:</strong> NVIDIA GeForce GT 730, 2GB or AMD Radeon HD 7570, 1GB<br></li><li><strong>DirectX:</strong> Versão 11<br></li><li><strong>Espaço no disco:</strong> Requer 4 GB de espaço livre</li></ul>\n            </div>\n        </div>\n    </div>\n</div>\n<!-- STEAM_METADATA_END -->",
-      "price": 73.99,
+      "price": 11.99,
       "old_price": 73.99,
       "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1590760/header.jpg?t=1791877230",
       "category": "STEAM KEY",
-      "activation_key": "META-LSLU-GTAC-KEY1",
+      "activation_key": "KJIK7-JXG85-YR098",
       "in_stock": true,
       "is_global": true,
       "restricted_countries": "",
@@ -271,7 +271,7 @@
       "gameflip_listing_id": "",
       "gallery": "[\"https://video.akamai.steamstatic.com/store_trailers/257070054/movie_max.mp4\",\"https://video.akamai.steamstatic.com/store_trailers/257065468/movie_max.mp4\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1590760/ss_cd8c2ee59083568f7c3ece55334fa0a48360fb35.1920x1080.jpg?t=1791877230\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1590760/ss_8831a90d23b6d1c7bf782db2520a687d9c1646ad.1920x1080.jpg?t=1791877230\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1590760/ss_f0d2af4840d254b6b7520f539ee6db382c841ec5.1920x1080.jpg?t=1791877230\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1590760/ss_98d2f118fc73603e0339adbeb3f8050d4da7e68b.1920x1080.jpg?t=1791877230\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1590760/ss_93bbd1c6eb0ea9f3dcafd47507d0226b32a3a02d.1920x1080.jpg?t=1791877230\"]",
       "display_order": 10,
-      "auto_stock_provider": "eneba",
+      "auto_stock_provider": "none",
       "eneba_url": ""
     },
     {
