@@ -96,134 +96,15 @@ app.get('/api/cj/my-products', async (req, res) => {
     }
 });
 
-// Setup Database (PostgreSQL com Fallback Automático para PGlite Local)
+// Setup Database (PostgreSQL)
 const poolConfig = process.env.DATABASE_URL
-    ? { connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false }, connectionTimeoutMillis: 5000 }
-    : { host: 'localhost', port: 5432, user: 'postgres', database: 'zherkeys', connectionTimeoutMillis: 3000 };
+    ? { connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } }
+    : { host: 'localhost', port: 5432, user: 'postgres', database: 'zherkeys' };
 
-const pgPool = new Pool(poolConfig);
-pgPool.on('error', (err) => {
+const pool = new Pool(poolConfig);
+pool.on('error', (err) => {
     console.warn('[POSTGRES-POOL] Aviso de conexão no banco:', err && err.message ? err.message : err);
 });
-
-let useLocalFallback = false;
-let pgliteInstance = null;
-let pgliteInitPromise = null;
-let localDbSchemaReady = false;
-let isInsideInitDB = false;
-
-function isConnectionError(err) {
-    if (!err) return false;
-    const msg = String(err.message || err.code || err);
-    return (
-        err.code === 'ENOTFOUND' ||
-        err.code === 'ECONNREFUSED' ||
-        err.code === 'ETIMEDOUT' ||
-        err.code === 'EAI_AGAIN' ||
-        err.code === 'ECONNRESET' ||
-        err.code === '28P01' ||
-        err.code === '3D000' ||
-        err.code === '57P01' ||
-        /ENOTFOUND|ECONNREFUSED|ETIMEDOUT|EAI_AGAIN|ECONNRESET|Connection terminated|connect ECONN|getaddrinfo|password authentication failed|does not exist|no pg_hba\.conf/i.test(msg)
-    );
-}
-
-async function getPglite() {
-    if (pgliteInstance) return pgliteInstance;
-    if (!pgliteInitPromise) {
-        pgliteInitPromise = (async () => {
-            const { PGlite } = require('@electric-sql/pglite');
-            const pgliteDir = path.join(__dirname, 'data', 'pglite_db');
-            if (!fs.existsSync(pgliteDir)) {
-                fs.mkdirSync(pgliteDir, { recursive: true });
-            }
-            const db = new PGlite(pgliteDir);
-            await db.waitReady;
-            pgliteInstance = db;
-            console.log('✅ [POSTGRES-FALLBACK] Banco PostgreSQL embarcado local (PGlite) ativo em data/pglite_db');
-            return db;
-        })();
-    }
-    return pgliteInitPromise;
-}
-
-async function executePglite(text, params) {
-    const db = await getPglite();
-    if (!localDbSchemaReady && !isInsideInitDB && typeof initDB === 'function') {
-        localDbSchemaReady = true;
-        await initDB().catch(e => console.error('[POSTGRES-FALLBACK] Erro ao inicializar schema no PGlite:', e));
-    }
-    try {
-        if (!params || params.length === 0) {
-            const trimmed = String(text || '').trim();
-            if (trimmed.includes(';') && trimmed.replace(/;+\s*$/, '').includes(';')) {
-                const resList = await db.exec(trimmed);
-                const last = Array.isArray(resList) && resList.length > 0 ? resList[resList.length - 1] : { rows: [] };
-                return { rows: last.rows || [], rowCount: last.affectedRows || (last.rows ? last.rows.length : 0) };
-            }
-        }
-        const res = await db.query(text, params || []);
-        return { rows: res.rows || [], rowCount: res.affectedRows ?? (res.rows ? res.rows.length : 0) };
-    } catch (err) {
-        if ((!params || params.length === 0) && /cannot insert multiple commands/i.test(String(err.message))) {
-            const resList = await db.exec(text);
-            const last = Array.isArray(resList) && resList.length > 0 ? resList[resList.length - 1] : { rows: [] };
-            return { rows: last.rows || [], rowCount: last.affectedRows || (last.rows ? last.rows.length : 0) };
-        }
-        throw err;
-    }
-}
-
-let pgliteTxChain = Promise.resolve();
-
-const pool = {
-    async query(text, params) {
-        if (!useLocalFallback) {
-            try {
-                return await pgPool.query(text, params);
-            } catch (err) {
-                if (isConnectionError(err)) {
-                    console.warn(`⚠️ [POSTGRES-FALLBACK] Falha na conexão externa (${err.message || err.code}). Alternando automaticamente para banco local PGlite!`);
-                    useLocalFallback = true;
-                } else {
-                    throw err;
-                }
-            }
-        }
-        return executePglite(text, params);
-    },
-    async connect() {
-        if (!useLocalFallback) {
-            try {
-                return await pgPool.connect();
-            } catch (err) {
-                if (isConnectionError(err)) {
-                    console.warn(`⚠️ [POSTGRES-FALLBACK] Falha ao conectar no pool externo (${err.message || err.code}). Alternando automaticamente para banco local PGlite!`);
-                    useLocalFallback = true;
-                } else {
-                    throw err;
-                }
-            }
-        }
-        let releaseLock;
-        const prevLock = pgliteTxChain;
-        pgliteTxChain = new Promise(resolve => { releaseLock = resolve; });
-        await prevLock;
-        let released = false;
-        return {
-            query: (text, params) => executePglite(text, params),
-            release: () => {
-                if (!released) {
-                    released = true;
-                    releaseLock();
-                }
-            }
-        };
-    },
-    on(event, handler) {
-        pgPool.on(event, handler);
-    }
-};
 
 // Sistema de Backup de Segurança de Produtos em Arquivo JSON Local (Gravado no Git/GitHub)
 async function syncProductsBackup() {
@@ -997,7 +878,6 @@ async function syncAllProductsSteamInfo() {
 
 
 async function initDB() {
-    isInsideInitDB = true;
     try {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
@@ -1213,9 +1093,6 @@ async function initDB() {
             ALTER TABLE products ADD COLUMN IF NOT EXISTS gallery TEXT DEFAULT '[]';
             ALTER TABLE products ADD COLUMN IF NOT EXISTS display_order INTEGER DEFAULT 0;
             ALTER TABLE products ADD COLUMN IF NOT EXISTS auto_stock_provider TEXT DEFAULT 'eneba';
-            ALTER TABLE products ADD COLUMN IF NOT EXISTS eneba_url TEXT;
-            ALTER TABLE orders ADD COLUMN IF NOT EXISTS total NUMERIC(10, 2);
-            ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method TEXT;
             
             ALTER TABLE users ADD COLUMN IF NOT EXISTS balance NUMERIC(10, 2) DEFAULT 0.00;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS points INTEGER DEFAULT 0;
@@ -1659,11 +1536,8 @@ async function initDB() {
         // Inicia a verificação e reembolso automático de pedidos sem chave de 5 minutos
         setTimeout(cancelAndRefundUnfulfilledOrders, 3000);
         setInterval(cancelAndRefundUnfulfilledOrders, 30 * 1000);
-        if (useLocalFallback) localDbSchemaReady = true;
     } catch(err) {
         console.error('Error in initDB:', err);
-    } finally {
-        isInsideInitDB = false;
     }
 }
 initDB().catch(e => console.warn('[INITDB] Modo Backup JSON Ativo:', e.message || e));
@@ -5206,7 +5080,6 @@ app.get('/auth/google/callback', async (req, res) => {
         }
 
         req.session.userId = user.id;
-        syncFullDatabaseBackup().catch(() => {});
         res.redirect('/');
     } catch(err) {
         console.error("Erro na autenticação Google:", err);
