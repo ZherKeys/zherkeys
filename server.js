@@ -96,15 +96,125 @@ app.get('/api/cj/my-products', async (req, res) => {
     }
 });
 
-// Setup Database (PostgreSQL)
-const poolConfig = process.env.DATABASE_URL
-    ? { connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } }
-    : { host: 'localhost', port: 5432, user: 'postgres', database: 'zherkeys' };
+// Setup Database (PostgreSQL com Fallback Automático em Memória/JSON via pg-mem)
+const isExpiredRenderDb = !process.env.DATABASE_URL || process.env.DATABASE_URL.includes('dpg-d9lj2erl550s73cb0bk0-a');
+let useLocalFallback = isExpiredRenderDb;
 
-const pool = new Pool(poolConfig);
-pool.on('error', (err) => {
-    console.warn('[POSTGRES-POOL] Aviso de conexão no banco:', err && err.message ? err.message : err);
-});
+const poolConfig = process.env.DATABASE_URL
+    ? { connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false }, connectionTimeoutMillis: 4000 }
+    : { host: 'localhost', port: 5432, user: 'postgres', database: 'zherkeys', connectionTimeoutMillis: 2000 };
+
+const pgPool = isExpiredRenderDb ? null : new Pool(poolConfig);
+if (pgPool) {
+    pgPool.on('error', (err) => {
+        console.warn('[POSTGRES-POOL] Aviso de conexão no banco:', err && err.message ? err.message : err);
+    });
+}
+
+let memPoolInstance = null;
+function getMemPool() {
+    if (memPoolInstance) return memPoolInstance;
+    const { newDb, DataType } = require('pg-mem');
+    const mem = newDb();
+    mem.public.registerFunction({
+        name: 'split_part',
+        args: [DataType.text, DataType.text, DataType.integer],
+        returns: DataType.text,
+        implementation: (str, delim, idx) => {
+            if (!str) return '';
+            const parts = String(str).split(String(delim));
+            return parts[(idx || 1) - 1] || '';
+        }
+    });
+    mem.public.registerFunction({
+        name: 'pg_get_serial_sequence',
+        args: [DataType.text, DataType.text],
+        returns: DataType.text,
+        implementation: (tbl, col) => `${tbl}_${col}_seq`
+    });
+    mem.public.registerFunction({
+        name: 'setval',
+        args: [DataType.text, DataType.integer],
+        returns: DataType.integer,
+        implementation: (seq, val) => val || 1
+    });
+    mem.public.registerFunction({
+        name: 'trim',
+        args: [DataType.text],
+        returns: DataType.text,
+        implementation: (str) => (str == null ? null : String(str).trim())
+    });
+    const { Pool: MemPool } = mem.adapters.createPg();
+    memPoolInstance = new MemPool();
+    console.log('✅ [DATABASE] Motor PostgreSQL local (pg-mem + Backup JSON) ativo!');
+    return memPoolInstance;
+}
+
+function sanitizeSqlForMem(sql) {
+    return String(sql || '')
+        .replace(/\bFOR\s+UPDATE\b/gi, '')
+        .replace(/NOW\(\)\s*-\s*INTERVAL\s*'(\d+)\s*minutes?'/gi, (_, mins) => {
+            const iso = new Date(Date.now() - parseInt(mins, 10) * 60 * 1000).toISOString();
+            return `'${iso}'::timestamp`;
+        });
+}
+
+function isConnectionError(err) {
+    if (!err) return false;
+    const msg = String(err.message || err.code || err);
+    return (
+        err.code === 'ENOTFOUND' ||
+        err.code === 'ECONNREFUSED' ||
+        err.code === 'ETIMEDOUT' ||
+        err.code === 'EAI_AGAIN' ||
+        err.code === 'ECONNRESET' ||
+        err.code === '28P01' ||
+        err.code === '3D000' ||
+        err.code === '57P01' ||
+        /ENOTFOUND|ECONNREFUSED|ETIMEDOUT|EAI_AGAIN|ECONNRESET|Connection terminated|connect ECONN|getaddrinfo|password authentication failed|does not exist|no pg_hba\.conf/i.test(msg)
+    );
+}
+
+const pool = {
+    async query(text, params) {
+        if (!useLocalFallback && pgPool) {
+            try {
+                return await pgPool.query(text, params);
+            } catch (err) {
+                if (isConnectionError(err)) {
+                    console.warn(`⚠️ [DATABASE] Conexão externa indisponível (${err.message || err.code}). Alternando para banco local!`);
+                    useLocalFallback = true;
+                } else {
+                    throw err;
+                }
+            }
+        }
+        const mp = getMemPool();
+        return mp.query(sanitizeSqlForMem(text), params);
+    },
+    async connect() {
+        if (!useLocalFallback && pgPool) {
+            try {
+                return await pgPool.connect();
+            } catch (err) {
+                if (isConnectionError(err)) {
+                    console.warn(`⚠️ [DATABASE] Pool externo indisponível (${err.message || err.code}). Alternando para banco local!`);
+                    useLocalFallback = true;
+                } else {
+                    throw err;
+                }
+            }
+        }
+        const mp = getMemPool();
+        const client = await mp.connect();
+        const origQuery = client.query.bind(client);
+        client.query = (text, params) => origQuery(sanitizeSqlForMem(text), params);
+        return client;
+    },
+    on(event, handler) {
+        if (pgPool) pgPool.on(event, handler);
+    }
+};
 
 // Sistema de Backup de Segurança de Produtos em Arquivo JSON Local (Gravado no Git/GitHub)
 async function syncProductsBackup() {
@@ -1093,6 +1203,9 @@ async function initDB() {
             ALTER TABLE products ADD COLUMN IF NOT EXISTS gallery TEXT DEFAULT '[]';
             ALTER TABLE products ADD COLUMN IF NOT EXISTS display_order INTEGER DEFAULT 0;
             ALTER TABLE products ADD COLUMN IF NOT EXISTS auto_stock_provider TEXT DEFAULT 'eneba';
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS eneba_url TEXT;
+            ALTER TABLE orders ADD COLUMN IF NOT EXISTS total NUMERIC(10, 2);
+            ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method TEXT;
             
             ALTER TABLE users ADD COLUMN IF NOT EXISTS balance NUMERIC(10, 2) DEFAULT 0.00;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS points INTEGER DEFAULT 0;
@@ -5080,6 +5193,7 @@ app.get('/auth/google/callback', async (req, res) => {
         }
 
         req.session.userId = user.id;
+        syncFullDatabaseBackup().catch(() => {});
         res.redirect('/');
     } catch(err) {
         console.error("Erro na autenticação Google:", err);
