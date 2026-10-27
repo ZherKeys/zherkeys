@@ -234,28 +234,69 @@ async function syncFromLiveSite() {
     return anyChanged;
 }
 
-async function runSyncCycle({ stageChanges = false, autoPushData = false } = {}) {
-    syncFromGitHub();
-    const dataChanged = await syncFromLiveSite();
+let wasOffline = false;
+let isSyncRunning = false;
 
-    if (stageChanges) {
-        runGit('git add data/');
+async function checkInternetConnection() {
+    try {
+        const res = await fetch(`${LIVE_URL}/api/bot/live-backup-sync`, {
+            method: 'HEAD',
+            headers: { 'x-bot-token': BOT_TOKEN },
+            signal: AbortSignal.timeout(5000)
+        });
+        return res.status > 0;
+    } catch (e) {
+        try {
+            const gh = await fetch('https://api.github.com', { method: 'HEAD', signal: AbortSignal.timeout(4000) });
+            return gh.status > 0;
+        } catch (err) {
+            return false;
+        }
     }
+}
 
-    if (autoPushData && dataChanged) {
-        // Verifica se apenas arquivos dentro de data/ foram modificados para fazer push automático seguro
-        const statusOut = runGit('git status --porcelain') || '';
-        const lines = statusOut.split('\n').map(l => l.trim()).filter(Boolean);
-        const onlyDataModified = lines.length > 0 && lines.every(l => l.includes('data/'));
-        if (onlyDataModified) {
+async function runSyncCycle({ stageChanges = false, autoPushData = false } = {}) {
+    if (isSyncRunning) return;
+    isSyncRunning = true;
+    try {
+        const online = await checkInternetConnection();
+        if (!online) {
+            if (!wasOffline) {
+                console.log('⚠️ [AUTO-SYNC] Sem conexão com a internet no momento. Aguardando internet voltar para sincronizar imediatamente...');
+            }
+            wasOffline = true;
+            return;
+        }
+
+        if (wasOffline) {
+            console.log('🌐 [AUTO-SYNC] Internet detectada! Sincronizando imediatamente novidades do Site e do GitHub com o PC...');
+            wasOffline = false;
+        }
+
+        syncFromGitHub();
+        const dataChanged = await syncFromLiveSite();
+
+        if (stageChanges) {
             runGit('git add data/');
-            const committed = runGit('git commit -m "chore(backup): sincronizacao automatica de usuarios, carteiras e produtos"');
-            if (committed !== null) {
-                runGit('git pull --rebase --autostash origin main');
-                runGit('git push origin main');
-                console.log('🚀 [AUTO-SYNC] Novos dados do site salvos automaticamente no GitHub e no PC local!');
+        }
+
+        if (autoPushData && dataChanged) {
+            // Verifica se apenas arquivos dentro de data/ foram modificados para fazer push automático seguro
+            const statusOut = runGit('git status --porcelain') || '';
+            const lines = statusOut.split('\n').map(l => l.trim()).filter(Boolean);
+            const onlyDataModified = lines.length > 0 && lines.every(l => l.includes('data/'));
+            if (onlyDataModified) {
+                runGit('git add data/');
+                const committed = runGit('git commit -m "chore(backup): sincronizacao automatica de usuarios, carteiras e produtos"');
+                if (committed !== null) {
+                    runGit('git pull --rebase --autostash origin main');
+                    runGit('git push origin main');
+                    console.log('🚀 [AUTO-SYNC] Novos dados do site salvos automaticamente no GitHub e no PC local!');
+                }
             }
         }
+    } finally {
+        isSyncRunning = false;
     }
 }
 
@@ -264,11 +305,16 @@ const isDaemon = args.includes('--daemon');
 const isStage = args.includes('--stage');
 
 if (isDaemon) {
-    console.log('🛡️ [AUTO-SYNC] Monitor de Sincronização Automática Zher Keys iniciado em segundo plano (intervalo: 45s)...');
+    console.log('🛡️ [AUTO-SYNC] Monitor de Sincronização Automática Zher Keys iniciado em segundo plano...');
     runSyncCycle({ autoPushData: true });
+    // Verifica a cada 15 segundos: se estava sem internet e reconectou, sincroniza no mesmo instante!
+    let tickCount = 0;
     setInterval(() => {
-        runSyncCycle({ autoPushData: true });
-    }, 45 * 1000);
+        tickCount++;
+        if (wasOffline || tickCount % 3 === 0) {
+            runSyncCycle({ autoPushData: true });
+        }
+    }, 15 * 1000);
 } else {
     runSyncCycle({ stageChanges: isStage, autoPushData: false }).then(() => {
         process.exit(0);
