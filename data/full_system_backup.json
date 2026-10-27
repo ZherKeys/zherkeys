@@ -1,5 +1,5 @@
 {
-  "backup_date": "2026-10-27T21:17:51.206Z",
+  "backup_date": "2026-10-27T21:20:51.626Z",
   "users_count": 1,
   "products_count": 18,
   "users": [
@@ -21,7 +21,7 @@
     }
   ],
   "wallets_and_points": {
-    "updated_at": "2026-10-27T21:17:51.203Z",
+    "updated_at": "2026-10-27T21:20:51.622Z",
     "users_wallets_and_points": [
       {
         "id": 1,
@@ -221,11 +221,11 @@
       "id": 14,
       "title": "Esquadrão Suicida: Mate a Liga da Justiça",
       "description": "Dos criadores de Batman: Arkham, Esquadrão Suicida: Mate a Liga da Justiça é um jogo de tiro em terceira pessoa que desafia o gênero, onde os vilões mais sem caráter devem fazer o impossível: Matar a Liga da Justiça.",
-      "price": 49.9,
+      "price": 27.99,
       "old_price": 279.99,
       "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/315210/header.jpg?t=1777940046",
       "category": "STEAM KEY",
-      "activation_key": "SUIC-IDES-QUAD-KEY1",
+      "activation_key": "TRFB5-FKXGX-WX8XW",
       "in_stock": true,
       "is_global": true,
       "restricted_countries": "",
