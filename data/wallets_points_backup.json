@@ -1,11 +1,11 @@
 {
-  "updated_at": "2026-10-27T19:54:33.543Z",
+  "updated_at": "2026-10-27T19:56:04.333Z",
   "users_wallets_and_points": [
     {
       "id": 1,
       "email": "zherkeys@gmail.com",
       "balance": 0,
-      "points": 345,
+      "points": 45,
       "game_nickname": "Zher",
       "subscription_expires_at": null,
       "reading_subscription_expires_at": null
