@@ -288,7 +288,7 @@ async function execLocalJsQuery(sqlText, params = []) {
 
         const defaults = {
             users: { is_verified: 0, balance: 0.0, points: 0, game_nickname: null, google_id: null, facebook_id: null, steam_id: null, avatar: null, is_admin: 0, subscription_expires_at: null, reading_subscription_expires_at: null },
-            products: { old_price: null, activation_key: '', in_stock: true, is_global: true, restricted_countries: '[]', genres: '[]', gameflip_listing_id: '', gallery: '[]', display_order: 0, auto_stock_provider: 'eneba', eneba_url: '' },
+            products: { old_price: null, activation_key: '', in_stock: true, is_global: true, restricted_countries: '', genres: '', gameflip_listing_id: '', gallery: '[]', display_order: 0, auto_stock_provider: 'eneba', eneba_url: '' },
             orders: { status: 'pending', total_amount: 0, total: 0, payment_method: 'PIX', is_deposit: false, is_subscription: false, is_reading_subscription: false, pix_qr_code: '', pix_qr_code_base64: '', created_at: new Date().toISOString() },
             order_items: { quantity: 1, price: 0, activation_key: '', key_viewed: false },
             notifications: { is_read: false, order_id: null, created_at: new Date().toISOString() },
@@ -906,6 +906,131 @@ async function migrateExistingBase64Images() {
     return;
 }
 
+// Mapa completo de todas as tags e gêneros da Steam (Inglês, PT-PT e PT-BR -> Nome Canônico)
+const STEAM_TAG_MAP = {"indie":"Indie","ação":"Ação","aventura":"Aventura","casual":"Casual","um jogador":"Um Jogador","simulação":"Simulação","estratégia":"Estratégia","rpg":"RPG","2d":"2D","3d":"3D","acesso antecipado":"Acesso Antecipado","gratuito para jogar":"Gratuito para Jogar","atmosférico":"Atmosférico","colorido":"Colorido","boa trama":"Boa Trama","exploração":"Exploração","multijogador":"Multiplayer","multiplayer":"Multiplayer","fantasia":"Fantasia","fofo":"Fofo","gráficos pixelados":"Gráficos Pixelados","primeira pessoa":"Primeira Pessoa","combate":"Combate","quebra-cabeça":"Quebra-Cabeça","estilizado":"Estilizado","relaxante":"Relaxante","engraçado":"Engraçado","ação / aventura":"Ação / Aventura","arcade":"Arcade","controle":"Controle","jogador x ambiente (pve)":"Jogador X Ambiente (PvE)","anime":"Anime","terror":"Terror","cooperativo":"Co-op","co-op":"Co-op","ficção científica":"Ficção Científica","esportes":"Esportes","você decide":"Você Decide","terceira pessoa":"Terceira Pessoa","visão superior":"Visão Superior","multijogador massivo":"Multijogador Massivo","retrô":"Retrô","para toda a família":"Para Toda a Família","violento":"Violento","tiro":"Tiro","jogador x jogador (pvp)":"Jogador X Jogador (PvP)","protagonista mulher":"Protagonista Mulher","sombrio":"Sombrio","cooperativo on-line":"Cooperativo Online","conteúdo sexual":"Conteúdo Sexual","realístico":"Realístico","mistério":"Mistério","personalização de personagem":"Personalização de Personagem","vários finais":"Vários Finais","corrida":"Corrida","linear":"Linear","física":"Física","sobrevivência":"Sobrevivência","mundo aberto":"Mundo Aberto","comédia":"Comédia","nudez":"Nudez","cartunizado":"Cartunizado","romance visual":"Romance Visual","terror psicológico":"Terror Psicológico","roguelike":"Roguelike","sangue":"Sangue","gerenciamento de recursos":"Gerenciamento de Recursos","mágica":"Mágica","roguelite":"Roguelite","plataforma":"Plataforma","gerenciamento":"Gerenciamento","faça o que quiser":"Faça o que Quiser","plataforma 2d":"Plataforma 2D","tático":"Tático","velha-guarda":"Velha-Guarda","medieval":"Medieval","desenhado à mão":"Desenhado à Mão","tiro em primeira pessoa (fps)":"FPS","fps":"FPS","minimalista":"Minimalista","simulador imersivo":"Simulador Imersivo","combate em turnos":"Combate em Turnos","rpg de ação":"RPG de Ação","fabricação":"Fabricação","construção":"Construção","estratégia em turnos":"Estratégia em Turnos","futurista":"Futurista","fantasia sombria":"Fantasia Sombria","apontar e clicar":"Apontar e Clicar","comovente":"Comovente","geração procedural":"Geração Procedural","roguelike de ação":"Roguelike de Ação","desenho animado":"Desenho Animado","espacial":"Espacial","impiedoso":"Impiedoso","natureza":"Natureza","ficção interativa":"Ficção Interativa","plataforma 3d":"Plataforma 3D","lógica":"Lógica","tática por turnos":"Tática por Turnos","romance":"Romance","escolha a sua aventura":"Escolha a sua Aventura","terror de sobrevivência":"Terror de Sobrevivência","incremental":"Incremental","utilitários":"Utilitários","multijogador local":"Multijogador Local","construção de bases":"Construção de Bases","anos 90":"Anos 90","hentai":"Hentai","surrealista":"Surrealista","hack and slash":"Hack and Slash","objetos ocultos":"Objetos Ocultos","simulador de encontros":"Simulador de Encontros","economia":"Economia","inferno de balas":"Inferno de Balas","enredo rico":"Enredo Rico","pós-apocalíptico":"Pós-Apocalíptico","simulador de vida real":"Simulador de Vida Real","rpg de estratégia":"RPG de Estratégia","gerenciamento de inventário":"Gerenciamento de Inventário","explorador de calabouços":"Explorador de Calabouços","câmera lateral":"Câmera Lateral","pontos, pontos, pontos!":"Pontos, Pontos, Pontos!","rv":"RV","cartas":"Cartas","simulador de caminhada":"Simulador de Caminhada","progressão ociosa":"Progressão Ociosa","educativo":"Educativo","plataforma com quebra-cabeça":"Plataforma com Quebra-Cabeça","jogo de mesa":"Jogo de Mesa","cinematográfico":"Cinematográfico","rico em diálogos":"Rico em Diálogos","guerra":"Guerra","baseado em texto":"Baseado em Texto","psicológico":"Psicológico","mandando bala":"Mandando Bala","furtivo":"Furtivo","zumbis":"Zumbis","investigação":"Investigação","lgbtqia+":"LGBTQIA+","jrpg":"JRPG","aconchegante":"Aconchegante","sobrenatural":"Sobrenatural","cooperativo local":"Cooperativo Local","2,5d":"2,5D","histórico":"Histórico","design e ilustração":"Design e Ilustração","thriller":"Thriller","anos 80":"Anos 80","trilha sonora boa":"Trilha Sonora Boa","montagem de decks":"Montagem de Decks","rpg de grupos":"RPG de Grupos","inteligência artificial":"Inteligência Artificial","gerenciamento de tempo":"Gerenciamento de Tempo","isométrico":"Isométrico","tutorial":"Tutorial","humor ácido":"Humor Ácido","alta rejogabilidade":"Alta Rejogabilidade","saques":"Saques","não linear":"Não Linear","baseado em equipes":"Baseado em Equipes","militar":"Militar","shmup com visão superior":"SHMUP com Visão Superior","colete tudo":"Colete Tudo","em turnos":"Em Turnos","tiro em terceira pessoa":"Tiro em Terceira Pessoa","demônios":"Demônios","alienígenas":"Alienígenas","rpg tático":"RPG Tático","cyberpunk":"Cyberpunk","detetive":"Detetive","robôs":"Robôs","moderno":"Moderno","defesa de torres":"Defesa de Torres","tática em tempo real":"Tática em Tempo Real","software":"Software","distópico":"Distópico","morte permanente":"Morte Permanente","automação":"Automação","abstrato":"Abstrato","direção":"Direção","jogo de tabuleiro":"Jogo de Tabuleiro","batalha com cartas":"Batalha com Cartas","estratégia em tempo real (rts)":"Estratégia em Tempo Real (RTS)","crpg":"CRPG","tiro em arena":"Tiro em Arena","plataforma de precisão":"Plataforma de Precisão","história em quadrinhos":"História em Quadrinhos","construção de cidades":"Construção de Cidades","soulslike":"Soulslike","psicodélico":"Psicodélico","capitalismo":"Capitalismo","gatos":"Gatos","campanha cooperativa":"Campanha Cooperativa","mitologia":"Mitologia","jogo de guerra":"Jogo de Guerra","memes":"Memes","história alternativa":"História Alternativa","coleção de criaturas":"Coleção de Criaturas","reúna a galera":"Reúna a Galera","destruição":"Destruição","local para 4 jogadores":"Local para 4 Jogadores","movimento em grade":"Movimento em Grade","crime":"Crime","dragões":"Dragões","desenvolvimento de jogos":"Desenvolvimento de Jogos","baseado em classes":"Baseado em Classes","editor de níveis":"Editor de Níveis","ritmo rápido":"Ritmo Rápido","curta-metragem":"Curta-Metragem","compatível com mods":"Compatível com Mods","parkour":"Parkour","voo":"Voo","troca":"Troca","batalha automática":"Batalha Automática","porradaria":"Porradaria","animação e modelagem":"Animação e Modelagem","metroidvania":"Metroidvania","música":"Música","filosófico":"Filosófico","humor pesado":"Humor Pesado","culinária":"Culinária","corredor":"Corredor","simulador rural":"Simulador Rural","luta 2d":"Luta 2D","do bem":"Do Bem","simulador automobilístico":"Simulador Automobilístico","ritmo":"Ritmo","personalização de armas":"Personalização de Armas","competitivo":"Competitivo","luta 3d":"Luta 3D","trilha sonora":"Trilha Sonora","combate com veículos":"Combate com Veículos","espada":"Espada","narrativa":"Narrativa","esports":"eSports","luta":"Luta","simulador de colônias":"Simulador de Colônias","conspiração":"Conspiração","ciência":"Ciência","noir":"Noir","mmorpg":"MMORPG","eventos rápidos":"Eventos Rápidos","lovecraftiano":"Lovecraftiano","jogo de palavras":"Jogo de Palavras","mineração":"Mineração","sátira":"Sátira","controle com alavanca dupla":"Controle com Alavanca Dupla","gótico":"Gótico","simulador espacial":"Simulador Espacial","montagem de decks roguelike":"Montagem de Decks Roguelike","grande estratégia":"Grande Estratégia","paródia":"Paródia","gerenciamento de lojas":"Gerenciamento de Lojas","subterrâneo":"Subterrâneo","narração dinâmica":"Narração Dinâmica","tiro com saques":"Tiro com Saques","produção de vídeo":"Produção de Vídeo","pesca":"Pesca","agricultura":"Agricultura","experimental":"Experimental","produção de áudio":"Produção de Áudio","simulador de emprego":"Simulador de Emprego","tela dividida":"Tela Dividida","jogos de azar":"Jogos de Azar","battle royale":"Battle Royale","seis graus de liberdade":"Seis Graus de Liberdade","calabouço misterioso":"Calabouço Misterioso","animais":"Animais","clássico":"Clássico","parar o tempo":"Parar o Tempo","imersivo":"Imersivo","segunda guerra mundial":"Segunda Guerra Mundial","manipulação de tempo":"Manipulação de Tempo","artes marciais":"Artes Marciais","multijogador assíncrono":"Multijogador Assíncrono","voxel":"Voxel","luta espetacular":"Luta Espetacular","transportes":"Transportes","mechas":"Mechas","cachorros":"Cachorros","corrida com combate":"Corrida com Combate","combinar 3":"Combinar 3","estratégia em tempo real com ação":"Estratégia em Tempo Real com Ação","paraíso de balas":"Paraíso de Balas","fmv":"FMV","tiro de heróis":"Tiro de Heróis","bonito":"Bonito","jogo de cartas":"Cartas","sobrevivência em mundo aberto":"Sobrevivência em Mundo Aberto","viagem no tempo":"Viagem no Tempo","ninja":"Ninja","vampiros":"Vampiros","jogo de divindade":"Jogo de Divindade","subaquático":"Subaquático","solitário":"Solitário","piratas":"Piratas","steampunk":"Steampunk","grade hexagonal":"Grade Hexagonal","simulador político":"Simulador Político","otome":"Otome","tiro de tiozão":"Tiro de Tiozão","hacker":"Hacker","caça":"Caça","trens":"Trens","digitação":"Digitação","software de treinamento":"Software de Treinamento","fé":"Fé","em grupos":"Em Grupos","tanques":"Tanques","programação":"Programação","4x":"4X","diplomacia":"Diplomacia","moba":"MOBA","sokoban":"Sokoban","assassinos":"Assassinos","minijogos":"Minijogos","remake":"Remake","super-heróis":"Super-Heróis","velho oeste":"Velho Oeste","edição de fotos":"Edição de Fotos","assalto":"Assalto","só mouse":"Só Mouse","dinossauros":"Dinossauros","neve":"Neve","roguelike tradicional":"Roguelike Tradicional","naval":"Naval","jogo de ação focado em personagem":"Jogo de Ação Focado em Personagem","guerra fria":"Guerra Fria","fuja da sala":"Fuja da Sala","nostalgia":"Nostalgia","navegação":"Navegação","transumanismo":"Transumanismo","combate naval":"Combate Naval","musical procedural":"Musical Procedural","companheiro de área de trabalho":"Companheiro de Área de Trabalho","rural":"Rural","organização":"Organização","arco e flecha":"Arco e Flecha","cavalos":"Cavalos","tempo real":"Tempo Real","futebol":"Futebol","viciante":"Viciante","perguntas e respostas":"Perguntas e Respostas","limpeza":"Limpeza","lobisomens":"Lobisomens","corrida contra o tempo":"Corrida Contra o Tempo","episódico":"Episódico","estrada de terra":"Estrada de Terra","protagonista vilão":"Protagonista Vilão","jump scare":"Jump Scare","tempo real com pausa":"Tempo Real com Pausa","decoração":"Decoração","naves espaciais":"Naves Espaciais","épico":"Épico","franco-atirador":"Franco-Atirador","tiro sobre trilhos":"Tiro sobre Trilhos","soletração":"Soletração","dados":"Dados","anões":"Anões","sequência":"Sequência","simulador de epidemias":"Simulador de Epidemias","xadrez":"Xadrez","tiro de extração":"Tiro de Extração","primeira guerra mundial":"Primeira Guerra Mundial","marte":"Marte","simulador de passatempo":"Simulador de Passatempo","dedução social":"Dedução Social","boxe":"Boxe","duelo contra chefões":"Duelo contra Chefões","simulador médico":"Simulador Médico","basquete":"Basquete","golfe":"Golfe","mod":"Mod","submarino":"Submarino","controle por toque":"Controle por Toque","motocicletas":"Motocicletas","elfos":"Elfos","pinball":"Pinball","jogos":"Jogos","roma":"Roma","beisebol":"Beisebol","vídeo em 360°":"Vídeo em 360°","bicicletas (e motocicletas)":"Bicicletas (e Motocicletas)","xianxia":"Xianxia","música eletrônica":"Música Eletrônica","cultos":"Cultos","rv assimétrico":"RV Assimétrico","wuxia":"Wuxia","luta livre":"Luta Livre","skate":"Skate","vikings":"Vikings","sinuca":"Sinuca","pôquer":"Pôquer","música instrumental":"Música Instrumental","protagonista mudo":"Protagonista Mudo","minigolfe":"Minigolfe","espionagem":"Espionagem","futebol americano":"Futebol Americano","blocos que caem":"Blocos que Caem","aves":"Aves","patinação (e skate)":"Patinação (e Skate)","rock":"Rock","ciclismo":"Ciclismo","samurai":"Samurai","mahjong":"Mahjong","raposas":"Raposas","tênis":"Tênis","controles intencionalmente bizarros":"Controles Intencionalmente Bizarros","motocross":"Motocross","trackir":"TrackIR","aprendizado de idiomas":"Aprendizado de Idiomas","hardware":"Hardware","controle por voz":"Controle por Voz","hóquei":"Hóquei","boliche":"Boliche","esqui":"Esqui","snowboard":"Snowboard","lemmings":"Lemmings","atv":"ATV","baseado em um romance":"Baseado em um Romance","música estilo 8 bits":"Música Estilo 8 Bits","lobos":"Lobos","musou":"Musou","bmx":"BMX","capivaras":"Capivaras","teste de desempenho":"Teste de Desempenho","zoológico":"Zoológico","vôlei":"Vôlei","críquete":"Críquete","rugby":"Rugby","remontagem":"Remontagem","action":"Ação","adventure":"Aventura","singleplayer":"Um Jogador","simulation":"Simulação","strategy":"Estratégia","early access":"Acesso Antecipado","free to play":"Gratuito para Jogar","atmospheric":"Atmosférico","colorful":"Colorido","story rich":"Boa Trama","exploration":"Exploração","fantasy":"Fantasia","cute":"Fofo","pixel graphics":"Gráficos Pixelados","first-person":"Primeira Pessoa","combat":"Combate","puzzle":"Quebra-Cabeça","stylized":"Estilizado","relaxing":"Relaxante","funny":"Engraçado","action-adventure":"Ação / Aventura","controller":"Controle","pve":"Jogador X Ambiente (PvE)","horror":"Terror","sci-fi":"Ficção Científica","sports":"Esportes","choices matter":"Você Decide","third person":"Terceira Pessoa","top-down":"Visão Superior","massively multiplayer":"Multijogador Massivo","retro":"Retrô","family friendly":"Para Toda a Família","violent":"Violento","shooter":"Tiro","pvp":"Jogador X Jogador (PvP)","female protagonist":"Protagonista Mulher","dark":"Sombrio","online co-op":"Cooperativo Online","sexual content":"Conteúdo Sexual","realistic":"Realístico","mystery":"Mistério","character customization":"Personalização de Personagem","multiple endings":"Vários Finais","racing":"Corrida","physics":"Física","survival":"Sobrevivência","open world":"Mundo Aberto","comedy":"Comédia","nudity":"Nudez","cartoony":"Cartunizado","visual novel":"Romance Visual","psychological horror":"Terror Psicológico","gore":"Sangue","resource management":"Gerenciamento de Recursos","magic":"Mágica","platformer":"Plataforma","management":"Gerenciamento","sandbox":"Faça o que Quiser","2d platformer":"Plataforma 2D","tactical":"Tático","old school":"Velha-Guarda","hand-drawn":"Desenhado à Mão","minimalist":"Minimalista","immersive sim":"Simulador Imersivo","turn-based combat":"Combate em Turnos","action rpg":"RPG de Ação","crafting":"Fabricação","building":"Construção","turn-based strategy":"Estratégia em Turnos","futuristic":"Futurista","dark fantasy":"Fantasia Sombria","point & click":"Apontar e Clicar","emotional":"Comovente","procedural generation":"Geração Procedural","action roguelike":"Roguelike de Ação","cartoon":"Desenho Animado","space":"Espacial","difficult":"Impiedoso","nature":"Natureza","interactive fiction":"Ficção Interativa","3d platformer":"Plataforma 3D","logic":"Lógica","turn-based tactics":"Tática por Turnos","choose your own adventure":"Escolha a sua Aventura","survival horror":"Terror de Sobrevivência","utilities":"Utilitários","local multiplayer":"Multijogador Local","base building":"Construção de Bases","1990's":"Anos 90","surreal":"Surrealista","hidden object":"Objetos Ocultos","dating sim":"Simulador de Encontros","economy":"Economia","bullet hell":"Inferno de Balas","lore-rich":"Enredo Rico","post-apocalyptic":"Pós-Apocalíptico","life sim":"Simulador de Vida Real","strategy rpg":"RPG de Estratégia","inventory management":"Gerenciamento de Inventário","dungeon crawler":"Explorador de Calabouços","side scroller":"Câmera Lateral","score attack":"Pontos, Pontos, Pontos!","vr":"RV","card game":"Cartas","walking simulator":"Simulador de Caminhada","idler":"Progressão Ociosa","education":"Educativo","puzzle platformer":"Plataforma com Quebra-Cabeça","tabletop":"Jogo de Mesa","cinematic":"Cinematográfico","dialogue heavy":"Rico em Diálogos","war":"Guerra","text-based":"Baseado em Texto","psychological":"Psicológico","shoot 'em up":"Mandando Bala","stealth":"Furtivo","zombies":"Zumbis","investigation":"Investigação","lgbtq+":"LGBTQIA+","cozy":"Aconchegante","supernatural":"Sobrenatural","local co-op":"Cooperativo Local","2.5d":"2,5D","historical":"Histórico","design & illustration":"Design e Ilustração","1980s":"Anos 80","great soundtrack":"Trilha Sonora Boa","deckbuilding":"Montagem de Decks","party-based rpg":"RPG de Grupos","artificial intelligence":"Inteligência Artificial","time management":"Gerenciamento de Tempo","isometric":"Isométrico","dark humor":"Humor Ácido","replay value":"Alta Rejogabilidade","loot":"Saques","nonlinear":"Não Linear","team-based":"Baseado em Equipes","military":"Militar","top-down shooter":"SHMUP com Visão Superior","collectathon":"Colete Tudo","turn-based":"Em Turnos","third-person shooter":"Tiro em Terceira Pessoa","demons":"Demônios","aliens":"Alienígenas","tactical rpg":"RPG Tático","detective":"Detetive","robots":"Robôs","modern":"Moderno","tower defense":"Defesa de Torres","real time tactics":"Tática em Tempo Real","dystopian":"Distópico","perma death":"Morte Permanente","automation":"Automação","abstract":"Abstrato","driving":"Direção","board game":"Jogo de Tabuleiro","card battler":"Batalha com Cartas","rts":"Estratégia em Tempo Real (RTS)","arena shooter":"Tiro em Arena","precision platformer":"Plataforma de Precisão","comic book":"História em Quadrinhos","city builder":"Construção de Cidades","souls-like":"Soulslike","psychedelic":"Psicodélico","capitalism":"Capitalismo","cats":"Gatos","co-op campaign":"Campanha Cooperativa","mythology":"Mitologia","wargame":"Jogo de Guerra","alternate history":"História Alternativa","creature collector":"Coleção de Criaturas","party game":"Reúna a Galera","destruction":"Destruição","4 player local":"Local para 4 Jogadores","grid-based movement":"Movimento em Grade","dragons":"Dragões","game development":"Desenvolvimento de Jogos","class-based":"Baseado em Classes","level editor":"Editor de Níveis","fast-paced":"Ritmo Rápido","short":"Curta-Metragem","moddable":"Compatível com Mods","flight":"Voo","trading":"Troca","auto battler":"Batalha Automática","beat 'em up":"Porradaria","animation & modeling":"Animação e Modelagem","music":"Música","philosophical":"Filosófico","dark comedy":"Humor Pesado","cooking":"Culinária","runner":"Corredor","farming sim":"Simulador Rural","2d fighter":"Luta 2D","wholesome":"Do Bem","automobile sim":"Simulador Automobilístico","rhythm":"Ritmo","gun customization":"Personalização de Armas","competitive":"Competitivo","3d fighter":"Luta 3D","soundtrack":"Trilha Sonora","vehicular combat":"Combate com Veículos","swordplay":"Espada","narrative":"Narrativa","fighting":"Luta","colony sim":"Simulador de Colônias","conspiracy":"Conspiração","science":"Ciência","quick-time events":"Eventos Rápidos","lovecraftian":"Lovecraftiano","word game":"Jogo de Palavras","mining":"Mineração","satire":"Sátira","twin stick shooter":"Controle com Alavanca Dupla","gothic":"Gótico","space sim":"Simulador Espacial","roguelike deckbuilder":"Montagem de Decks Roguelike","grand strategy":"Grande Estratégia","parody":"Paródia","shop keeper":"Gerenciamento de Lojas","underground":"Subterrâneo","dynamic narration":"Narração Dinâmica","looter shooter":"Tiro com Saques","video production":"Produção de Vídeo","fishing":"Pesca","agriculture":"Agricultura","audio production":"Produção de Áudio","job simulator":"Simulador de Emprego","split screen":"Tela Dividida","gambling":"Jogos de Azar","6dof":"Seis Graus de Liberdade","mystery dungeon":"Calabouço Misterioso","animals":"Animais","classic":"Clássico","bullet time":"Parar o Tempo","immersive":"Imersivo","world war ii":"Segunda Guerra Mundial","time manipulation":"Manipulação de Tempo","martial arts":"Artes Marciais","asynchronous multiplayer":"Multijogador Assíncrono","spectacle fighter":"Luta Espetacular","transportation":"Transportes","mechs":"Mechas","dogs":"Cachorros","combat racing":"Corrida com Combate","match 3":"Combinar 3","action rts":"Estratégia em Tempo Real com Ação","bullet heaven":"Paraíso de Balas","hero shooter":"Tiro de Heróis","beautiful":"Bonito","trading card game":"Jogo de Cartas","open world survival craft":"Sobrevivência em Mundo Aberto","time travel":"Viagem no Tempo","vampires":"Vampiros","god game":"Jogo de Divindade","underwater":"Subaquático","solitaire":"Solitário","pirates":"Piratas","hex grid":"Grade Hexagonal","political sim":"Simulador Político","boomer shooter":"Tiro de Tiozão","hacking":"Hacker","hunting":"Caça","trains":"Trens","typing":"Digitação","software training":"Software de Treinamento","faith":"Fé","party":"Em Grupos","tanks":"Tanques","programming":"Programação","diplomacy":"Diplomacia","assassins":"Assassinos","minigames":"Minijogos","superhero":"Super-Heróis","western":"Velho Oeste","photo editing":"Edição de Fotos","heist":"Assalto","mouse only":"Só Mouse","dinosaurs":"Dinossauros","snow":"Neve","traditional roguelike":"Roguelike Tradicional","character action game":"Jogo de Ação Focado em Personagem","cold war":"Guerra Fria","escape room":"Fuja da Sala","sailing":"Navegação","transhumanism":"Transumanismo","naval combat":"Combate Naval","music-based procedural generation":"Musical Procedural","desktop companion":"Companheiro de Área de Trabalho","farming":"Rural","organizing":"Organização","archery":"Arco e Flecha","horses":"Cavalos","real-time":"Tempo Real","football (soccer)":"Futebol","addictive":"Viciante","trivia":"Perguntas e Respostas","cleaning":"Limpeza","werewolves":"Lobisomens","time attack":"Corrida Contra o Tempo","episodic":"Episódico","offroad":"Estrada de Terra","villain protagonist":"Protagonista Vilão","real-time with pause":"Tempo Real com Pausa","decorating":"Decoração","spaceships":"Naves Espaciais","epic":"Épico","sniper":"Franco-Atirador","on-rails shooter":"Tiro sobre Trilhos","spelling":"Soletração","dice":"Dados","dwarves":"Anões","sequel":"Sequência","outbreak sim":"Simulador de Epidemias","chess":"Xadrez","extraction shooter":"Tiro de Extração","world war i":"Primeira Guerra Mundial","mars":"Marte","hobby sim":"Simulador de Passatempo","social deduction":"Dedução Social","boxing":"Boxe","boss rush":"Duelo contra Chefões","medical sim":"Simulador Médico","basketball":"Basquete","golf":"Golfe","submarine":"Submarino","touch-friendly":"Controle por Toque","motorbike":"Motocicletas","elves":"Elfos","gaming":"Jogos","rome":"Roma","baseball":"Beisebol","360 video":"Vídeo em 360°","bikes":"Bicicletas (e Motocicletas)","electronic music":"Música Eletrônica","cult":"Cultos","asymmetric vr":"RV Assimétrico","wrestling":"Luta Livre","skateboarding":"Skate","billiards":"Sinuca","poker":"Pôquer","instrumental music":"Música Instrumental","silent protagonist":"Protagonista Mudo","mini golf":"Minigolfe","espionage":"Espionagem","football (american)":"Futebol Americano","falling blocks":"Blocos que Caem","birds":"Aves","skating":"Patinação (e Skate)","rock music":"Rock","cycling":"Ciclismo","foxes":"Raposas","tennis":"Tênis","intentionally awkward controls":"Controles Intencionalmente Bizarros","language learning":"Aprendizado de Idiomas","voice control":"Controle por Voz","hockey":"Hóquei","bowling":"Boliche","skiing":"Esqui","snowboarding":"Snowboard","based on a novel":"Baseado em um Romance","8-bit music":"Música Estilo 8 Bits","wolves":"Lobos","capybaras":"Capivaras","benchmark":"Teste de Desempenho","zoo":"Zoológico","volleyball":"Vôlei","cricket":"Críquete","reboot":"Remontagem","um só jogador":"Um Jogador","grátis para jogar":"Gratuito para Jogar","boa atmosfera":"Atmosférico","história excelente":"Boa Trama","pixels":"Gráficos Pixelados","quebra-cabeças":"Quebra-Cabeça","ação e aventura":"Ação / Aventura","comando":"Controle","desporto":"Esportes","escolhas importantes":"Você Decide","visto de cima":"Visão Superior","multijogador em massa":"Multijogador Massivo","jogo de tiros":"Tiro","protagonista feminina":"Protagonista Mulher","sinistro":"Sombrio","co-op online":"Cooperativo Online","realista":"Realístico","personalização de personagens":"Personalização de Personagem","corridas":"Corrida","estilo cartoon":"Cartunizado","violência explícita":"Sangue","gestão de recursos":"Gerenciamento de Recursos","magia":"Mágica","plataformas":"Plataforma","gestão":"Gerenciamento","plataformas 2d":"Plataforma 2D","tiros em primeira pessoa":"FPS","combate baseado em turnos":"Combate em Turnos","estratégia por turnos":"Estratégia em Turnos","emocional":"Comovente","geração processual":"Geração Procedural","desenhos animados":"Desenho Animado","espaço":"Espacial","imperdoável":"Impiedoso","plataformas 3d":"Plataforma 3D","táticas por turnos":"Tática por Turnos","escolhe a tua aventura":"Escolha a sua Aventura","utilidades":"Utilitários","hack & slash":"Hack and Slash","objetos escondidos":"Objetos Ocultos","rico em história":"Enredo Rico","simulador de vida":"Simulador de Vida Real","gestão de inventário":"Gerenciamento de Inventário","sidescroller":"Câmera Lateral","realidade virtual":"RV","simulador de caminhadas":"Simulador de Caminhada","ensino":"Educativo","plataformas com quebra-cabeças":"Plataforma com Quebra-Cabeça","rico em diálogo":"Rico em Diálogos","guerras":"Guerra","confortável":"Aconchegante","co-op local":"Cooperativo Local","suspense":"Thriller","banda sonora excelente":"Trilha Sonora Boa","construção de baralhos de cartas":"Montagem de Decks","gestão de tempo":"Gerenciamento de Tempo","humor negro":"Humor Ácido","repetibilidade":"Alta Rejogabilidade","baseado em equipas":"Baseado em Equipes","jogo de tiros visto por cima":"SHMUP com Visão Superior","baseado em turnos":"Em Turnos","tiros em terceira pessoa":"Tiro em Terceira Pessoa","demónios":"Demônios","extraterrestres":"Alienígenas","detetives":"Detetive","defesa por torres":"Defesa de Torres","táticas em tempo real":"Tática em Tempo Real","condução":"Direção","estratégia em tempo real":"Estratégia em Tempo Real (RTS)","plataformas e precisão":"Plataforma de Precisão","banda desenhada":"História em Quadrinhos","gestão de cidades":"Construção de Cidades","psicadélico":"Psicodélico","campanha co-op":"Campanha Cooperativa","colecionador de criaturas":"Coleção de Criaturas","jogos de grupo":"Reúna a Galera","4 jogadores locais":"Local para 4 Jogadores","movimento por grelha":"Movimento em Grade","classes":"Baseado em Classes","frenético":"Ritmo Rápido","curto":"Curta-Metragem","modificável":"Compatível com Mods","jatos":"Voo","comércio":"Troca","animação e modelação":"Animação e Modelagem","comédia negra":"Humor Pesado","simulador de agricultura":"Simulador Rural","reconfortantes":"Do Bem","simulador de automobilismo":"Simulador Automobilístico","banda sonora":"Trilha Sonora","combate de veículos":"Combate com Veículos","lutas de espadas":"Espada","simulador de colónias":"Simulador de Colônias","eventos interativos rápidos":"Eventos Rápidos","inspirado em lovecraft":"Lovecraftiano","construção de baralhos de cartas roguelike":"Montagem de Decks Roguelike","gestão de lojas":"Gerenciamento de Lojas","simulador de profissões":"Simulador de Emprego","ecrã dividido":"Tela Dividida","6 graus de liberdade":"Seis Graus de Liberdade","câmara lenta":"Parar o Tempo","2.ª guerra mundial":"Segunda Guerra Mundial","manipulação do tempo":"Manipulação de Tempo","cães":"Cachorros","corridas e combate":"Corrida com Combate","deslumbrante":"Bonito","jogo de cartas colecionáveis":"Jogo de Cartas","mundo aberto, sobrevivência e craft":"Sobrevivência em Mundo Aberto","viagens no tempo":"Viagem no Tempo","ninjas":"Ninja","poderes divinos":"Jogo de Divindade","grelha hexagonal":"Grade Hexagonal","comboios":"Trens","dactilografia":"Digitação","software para treino":"Software de Treinamento","grupos":"Em Grupos","tanques de guerra":"Tanques","super heróis":"Super-Heróis","cowboys":"Velho Oeste","edição de fotografias":"Edição de Fotos","assaltos":"Assalto","só rato":"Só Mouse","ação em terceira pessoa":"Jogo de Ação Focado em Personagem","trans-humanismo":"Transumanismo","geração processual baseada em música":"Musical Procedural","jogo de perguntas":"Perguntas e Respostas","limpezas":"Limpeza","contra-relógio":"Corrida Contra o Tempo","todo-o-terreno":"Estrada de Terra","morrer de susto":"Jump Scare","on rails":"Tiro sobre Trilhos","soletrar":"Soletração","sequela":"Sequência","1.ª guerra mundial":"Primeira Guerra Mundial","simuladores de hobbies":"Simulador de Passatempo","basquetebol":"Basquete","submarinos":"Submarino","ecrã táctil":"Controle por Toque","motociclismo":"Motocicletas","flippers":"Pinball","romanos":"Roma","basebol":"Beisebol","vídeo de 360º":"Vídeo em 360°","motas e bicicletas":"Bicicletas (e Motocicletas)","música eletrónica":"Música Eletrônica","culto":"Cultos","r.v. assimétrica":"RV Assimétrico","snooker":"Sinuca","póquer":"Pôquer","protagonista silencioso(a)":"Protagonista Mudo","mini golfe":"Minigolfe","blocos a cair":"Blocos que Caem","pássaros":"Aves","skate e patinagem":"Patinação (e Skate)","música rock":"Rock","samurais":"Samurai","ténis":"Tênis","controlos intencionalmente estranhos":"Controles Intencionalmente Bizarros","motocrosse":"Motocross","aprendizagem de línguas":"Aprendizado de Idiomas","controlo por voz":"Controle por Voz","moto-quatro":"ATV","baseado num livro":"Baseado em um Romance","música de 8 bits":"Música Estilo 8 Bits","voleibol":"Vôlei","multi-player":"Multiplayer","online multiplayer":"Multiplayer","multijogador online":"Multiplayer","single-player":"Um Jogador","coop":"Co-op","cooperative":"Co-op","co-op on-line":"Cooperativo Online","lan co-op":"Cooperativo Local","jcj":"Jogador X Jogador (PvP)","jogador x jogador":"Jogador X Jogador (PvP)","online pvp":"Jogador X Jogador (PvP)","jcj on-line":"Jogador X Jogador (PvP)","jcj online":"Jogador X Jogador (PvP)","jca":"Jogador X Ambiente (PvE)","first-person shooter":"FPS","tiro em primeira pessoa":"FPS","acao":"Ação","estrategia":"Estratégia","sobrevivencia":"Sobrevivência","simulacao":"Simulação","simulador":"Simulação","mmo":"Multijogador Massivo","full controller support":"Controle","partial controller support":"Controle","compatibilidade total com controle":"Controle","compatibilidade parcial com controle":"Controle","compatibilidade total com comando":"Controle","compatibilidade parcial com comando":"Controle","vr supported":"RV","vr only":"RV","gratuitos para jogar":"Gratuito para Jogar","compat. total com controle":"Controle","compat. parcial com controle":"Controle","jxj":"Jogador X Jogador (PvP)","jxj on-line":"Jogador X Jogador (PvP)","jxj online":"Jogador X Jogador (PvP)","jxj local":"Jogador X Jogador (PvP)","cooperativo lan":"Cooperativo Local","multijogador multiplataforma":"Multijogador Multiplataforma","cross-platform multiplayer":"Multijogador Multiplataforma","tela compartilhada/dividida":"Tela Dividida"};
+
+function normalizeSteamTag(raw) {
+    if (!raw || typeof raw !== "string") return null;
+    const clean = raw
+        .replace(/&amp;/gi, "&")
+        .replace(/&quot;/gi, '"')
+        .replace(/&#39;/gi, "'")
+        .replace(/<[^>]*>/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    if (!clean || clean === "+" || clean === "(?)" || clean.length > 55 || clean.includes("Análises")) return null;
+    const lower = clean.toLowerCase();
+    return STEAM_TAG_MAP[lower] || clean;
+}
+
+async function extractSteamTags(appid, gameData, preFetchedHtml = null) {
+    const tagsSet = new Set();
+    const addTag = (t) => {
+        const norm = normalizeSteamTag(t);
+        if (!norm) return;
+        tagsSet.add(norm);
+        if (norm === "FPS" || norm === "Tiro em Terceira Pessoa" || norm === "Tiro em Arena" || norm === "Shoot 'Em Up" || norm === "Hero Shooter" || norm === "Looter Shooter") {
+            tagsSet.add("Tiro");
+        }
+        if (norm === "Cooperativo Online" || norm === "Cooperativo Local") {
+            tagsSet.add("Co-op");
+        }
+        if (norm === "Multijogador Massivo" || norm === "Multijogador Local" || norm === "Multijogador Multiplataforma") {
+            tagsSet.add("Multiplayer");
+        }
+    };
+
+    if (gameData && Array.isArray(gameData.genres)) {
+        gameData.genres.forEach(g => addTag(g.description));
+    }
+
+    const allowedCatIds = new Set([1, 2, 9, 20, 24, 27, 28, 36, 37, 38, 39, 44, 47, 48, 49, 52, 53, 54]);
+    if (gameData && Array.isArray(gameData.categories)) {
+        gameData.categories.forEach(c => {
+            if (allowedCatIds.has(Number(c.id))) addTag(c.description);
+        });
+    }
+
+    let html = preFetchedHtml;
+    if (!html && appid) {
+        try {
+            const storeRes = await fetch(`https://store.steampowered.com/app/${appid}/?l=brazilian`, {
+                headers: {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                    "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+                    "Cookie": "birthtime=0; mature_content=1; lastagecheckage=1-0-1990; wants_mature_content=1"
+                }
+            });
+            if (storeRes.ok) {
+                html = await storeRes.text();
+            }
+        } catch (e) {}
+    }
+
+    if (html) {
+        const tagRegex = /<a[^>]*class=["'][^"']*\bapp_tag\b[^"']*["'][^>]*>([^<]+)<\/a>/gi;
+        let match;
+        while ((match = tagRegex.exec(html)) !== null) {
+            addTag(match[1]);
+        }
+    }
+
+    return Array.from(tagsSet);
+}
+
+async function extractSteamMovies(moviesList, storeHtml = null) {
+    const mp4Movies = [];
+    const hlsMovies = [];
+    if (Array.isArray(moviesList) && moviesList.length > 0) {
+        const subset = moviesList.slice(0, 6);
+        await Promise.all(subset.map(async (m, idx) => {
+            if (!m) return;
+            const directMp4 = m.mp4 ? (m.mp4.max || m.mp4["480"] || m.mp4["360"]) : null;
+            const directWebm = m.webm ? (m.webm.max || m.webm["480"] || m.webm["360"]) : null;
+            if (directMp4) {
+                mp4Movies.push({ idx, url: directMp4 });
+                return;
+            }
+            if (directWebm) {
+                mp4Movies.push({ idx, url: directWebm });
+                return;
+            }
+            if (m.id) {
+                const candidateMp4 = `https://video.akamai.steamstatic.com/store_trailers/${m.id}/movie_max.mp4`;
+                try {
+                    const ctrl = new AbortController();
+                    const timer = setTimeout(() => ctrl.abort(), 2500);
+                    const headRes = await fetch(candidateMp4, { method: "HEAD", signal: ctrl.signal });
+                    clearTimeout(timer);
+                    if (headRes.ok) {
+                        mp4Movies.push({ idx, url: candidateMp4 });
+                        return;
+                    }
+                } catch (e) {}
+            }
+            if (m.hls_h264) {
+                hlsMovies.push({ idx, url: m.hls_h264 });
+            } else if (m.dash_h264) {
+                hlsMovies.push({ idx, url: m.dash_h264 });
+            }
+        }));
+    }
+
+    mp4Movies.sort((a, b) => a.idx - b.idx);
+    hlsMovies.sort((a, b) => a.idx - b.idx);
+    const combined = [...mp4Movies.map(x => x.url), ...hlsMovies.map(x => x.url)];
+
+    if (combined.length === 0 && storeHtml) {
+        const m3u8Matches = storeHtml.match(/https:(?:\\\/|\/)[^"'&\s]*\.m3u8(?:\?[^"'&\s]*)?/gi) || [];
+        for (const rawUrl of m3u8Matches.slice(0, 2)) {
+            const cleanUrl = rawUrl.replace(/\\\//g, "/");
+            if (!combined.includes(cleanUrl)) combined.push(cleanUrl);
+        }
+    }
+
+    return combined.slice(0, 2);
+}
+
 // Ajudante interno para buscar detalhes no Steam
 async function querySteamAPI(cleanTitle) {
     try {
@@ -948,15 +1073,8 @@ async function querySteamAPI(cleanTitle) {
         }
         const screenshots = (gameData.screenshots || []).map(s => s.path_full).slice(0, 5);
         
-        let movies = [];
-        if (gameData.movies && gameData.movies.length > 0) {
-            gameData.movies.forEach(m => {
-                const mp4Url = m.mp4 ? (m.mp4.max || m.mp4['480'] || m.mp4['360']) : null;
-                const webmUrl = m.webm ? (m.webm.max || m.webm['480'] || m.webm['360']) : null;
-                if (mp4Url) movies.push(mp4Url);
-                else if (webmUrl) movies.push(webmUrl);
-            });
-        }
+        const movies = await extractSteamMovies(gameData.movies);
+        const tagsList = await extractSteamTags(appid, gameData);
 
         let ageRating = 'Livre';
         const ratings = gameData.ratings;
@@ -1003,6 +1121,7 @@ async function querySteamAPI(cleanTitle) {
             libraryImage,
             screenshots,
             movies,
+            genres: tagsList.join(', '),
             ageRating,
             originalPrice
         };
@@ -2611,8 +2730,8 @@ app.get('/api/products', async (req, res) => {
                     category: row.category || 'STEAM KEY',
                     in_stock: row.in_stock !== false,
                     is_global: row.is_global !== false,
-                    restricted_countries: row.restricted_countries || '[]',
-                    genres: row.genres || '[]',
+                    restricted_countries: row.restricted_countries || '',
+                    genres: (row.genres && row.genres !== '[]') ? row.genres : '',
                     gallery: row.gallery || '[]'
                 }));
                 productsCacheTime = now;
@@ -4525,8 +4644,8 @@ app.get('/produto/:id', async (req, res) => {
         const regionBadge = product.is_global === false 
             ? `<div class="inline-flex items-center gap-1.5 bg-rose-950/40 text-rose-400 border border-rose-900/50 font-orbitron text-xs tracking-widest px-3 py-1.5 rounded uppercase" title="Restrito a alguns países"><i data-lucide="globe" class="w-4 h-4"></i> RESTRIÇÃO REGIONAL</div>` 
             : `<div class="inline-flex items-center gap-1.5 bg-emerald-950/40 text-emerald-400 border border-emerald-900/50 font-orbitron text-xs tracking-widest px-3 py-1.5 rounded uppercase"><i data-lucide="globe" class="w-4 h-4"></i> GLOBAL</div>`;
-        const genresTags = product.genres 
-            ? product.genres.split(',').map(g => `<span class="bg-slate-800 border border-slate-700 text-slate-300 font-orbitron text-[10px] tracking-widest px-2.5 py-1 rounded uppercase">${g.trim()}</span>`).join(' ') 
+        const genresTags = (product.genres && product.genres !== '[]') 
+            ? product.genres.split(',').filter(g => g.trim() && g.trim() !== '[]').map(g => `<span class="bg-slate-800 border border-slate-700 text-slate-300 font-orbitron text-[10px] tracking-widest px-2.5 py-1 rounded uppercase">${g.trim()}</span>`).join(' ') 
             : '';
             
         const schemaJson = JSON.stringify({
@@ -7497,7 +7616,7 @@ app.post('/api/admin/scrape-steam', requireAdmin, async (req, res) => {
                     price: 0,
                     old_price: fallbackInfo.originalPrice || 0,
                     description: 'Jogo disponível na Steam.',
-                    genres: 'Ação, Aventura',
+                    genres: fallbackInfo.genres || 'Ação, Aventura',
                     image: fallbackInfo.headerImage || fallbackInfo.libraryImage || '',
                     gallery: [...(fallbackInfo.movies || []), ...(fallbackInfo.screenshots || [])]
                 });
@@ -7505,8 +7624,16 @@ app.post('/api/admin/scrape-steam', requireAdmin, async (req, res) => {
             return res.status(404).json({ error: 'Jogo não encontrado na Steam com este link ou termo.' });
         }
 
-        const detailsUrl = `https://store.steampowered.com/api/appdetails?appids=${appid}&l=portuguese&cc=BR`;
-        const detailsRes = await fetch(detailsUrl, { headers: steamHeaders });
+        const storeHeaders = {
+            ...steamHeaders,
+            'Cookie': 'birthtime=0; mature_content=1; lastagecheckage=1-0-1990; wants_mature_content=1'
+        };
+        const detailsUrl = `https://store.steampowered.com/api/appdetails?appids=${appid}&l=brazilian&cc=BR`;
+        const storePageUrl = `https://store.steampowered.com/app/${appid}/?l=brazilian`;
+        const [detailsRes, storePageRes] = await Promise.all([
+            fetch(detailsUrl, { headers: storeHeaders }),
+            fetch(storePageUrl, { headers: storeHeaders }).catch(() => null)
+        ]);
         if (!detailsRes.ok) {
             return res.status(500).json({ error: 'Não foi possível se conectar aos servidores da Steam no momento.' });
         }
@@ -7517,6 +7644,7 @@ app.post('/api/admin/scrape-steam', requireAdmin, async (req, res) => {
         }
 
         const game = detailsData[appid].data;
+        const storeHtml = (storePageRes && storePageRes.ok) ? await storePageRes.text().catch(() => null) : null;
 
         let price = 0;
         let oldPrice = 0;
@@ -7526,19 +7654,11 @@ app.post('/api/admin/scrape-steam', requireAdmin, async (req, res) => {
             if (oldPrice <= price) oldPrice = 0;
         }
 
-        const genres = (game.genres || []).map(g => g.description).join(', ');
+        const allExtractedTags = await extractSteamTags(appid, game, storeHtml);
+        const genres = allExtractedTags.join(', ');
         const headerImage = game.header_image || `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appid}/header.jpg`;
         const screenshots = (game.screenshots || []).map(s => s.path_full).slice(0, 5);
-
-        let movies = [];
-        if (game.movies && game.movies.length > 0) {
-            game.movies.forEach(m => {
-                const mp4Url = m.mp4 ? (m.mp4.max || m.mp4['480']) : null;
-                const webmUrl = m.webm ? (m.webm.max || m.webm['480']) : null;
-                if (mp4Url) movies.push(mp4Url);
-                else if (webmUrl) movies.push(webmUrl);
-            });
-        }
+        const movies = await extractSteamMovies(game.movies, storeHtml);
 
         const gallery = [...movies, ...screenshots];
 

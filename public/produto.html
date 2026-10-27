@@ -36,6 +36,7 @@
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
 
     <!-- YouTube IFrame Player API -->
     <script src="https://www.youtube.com/iframe_api"></script>
@@ -720,7 +721,7 @@ gtag('config', 'AW-18202657831');
         function getMediaType(url) {
             if (!url) return 'image';
             const cleanUrl = url.split('?')[0].toLowerCase();
-            if (url.startsWith('data:video/') || cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.webm') || cleanUrl.endsWith('.ogg') || url.includes('video.akamai.steamstatic.com') || url.includes('store_trailers')) {
+            if (url.startsWith('data:video/') || cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.webm') || cleanUrl.endsWith('.ogg') || cleanUrl.endsWith('.m3u8') || url.includes('video.akamai.steamstatic.com') || url.includes('video.fastly.steamstatic.com') || url.includes('store_trailers')) {
                 return 'video';
             }
             if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('youtube-nocookie.com')) {
@@ -786,7 +787,14 @@ gtag('config', 'AW-18202657831');
                 
                 if (type === 'video') {
                     const video = document.createElement('video');
-                    video.src = mediaSrc;
+                    const isHls = mediaSrc.split('?')[0].toLowerCase().endsWith('.m3u8');
+                    if (isHls && window.Hls && window.Hls.isSupported()) {
+                        const hls = new window.Hls();
+                        hls.loadSource(mediaSrc);
+                        hls.attachMedia(video);
+                    } else {
+                        video.src = mediaSrc;
+                    }
                     video.controls = true;
                     video.muted = false; // Tenta reproduzir com SOM por padrão!
                     video.loop = false;
