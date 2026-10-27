@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-27T05:22:42.000Z",
+  "updated_at": "2026-10-27T06:07:34.902Z",
   "users_wallets_and_points": [
     {
       "id": 1,
@@ -14,5 +14,12 @@
   "wallet_transactions": [],
   "points_earnings": [],
   "sweepstake_participants": [],
-  "sweepstake_history": []
+  "sweepstake_history": [
+    {
+      "drawn_at": "2026-10-27T05:49:11.426Z",
+      "prize_amount": 0,
+      "winner_id": null,
+      "id": 1
+    }
+  ]
 }

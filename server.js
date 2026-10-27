@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
 const express = require('express');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
@@ -37,13 +37,62 @@ const APP_URL = process.env.APP_URL || ('http://localhost:' + port);
 // Setup MercadoPago
 const mpClient = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN || 'TEST-12345' });
 
-// Setup Middleware
+// Setup Middleware & Pruned Session Store (evita vazamento de memória e remove aviso de MemoryStore em produção)
+class PrunedSessionStore extends session.Store {
+    constructor() {
+        super();
+        this.sessions = new Map();
+        const interval = setInterval(() => this.prune(), 15 * 60 * 1000);
+        if (interval.unref) interval.unref();
+    }
+    prune() {
+        const now = Date.now();
+        for (const [sid, entry] of this.sessions.entries()) {
+            if (entry.expires && entry.expires <= now) {
+                this.sessions.delete(sid);
+            }
+        }
+    }
+    get(sid, cb) {
+        const entry = this.sessions.get(sid);
+        if (!entry) return cb(null, null);
+        if (entry.expires && entry.expires <= Date.now()) {
+            this.sessions.delete(sid);
+            return cb(null, null);
+        }
+        try {
+            cb(null, JSON.parse(entry.data));
+        } catch (e) {
+            cb(e);
+        }
+    }
+    set(sid, sess, cb) {
+        try {
+            const maxAge = sess && sess.cookie && sess.cookie.maxAge ? sess.cookie.maxAge : 7 * 24 * 60 * 60 * 1000;
+            const expires = sess && sess.cookie && sess.cookie.expires ? new Date(sess.cookie.expires).getTime() : (Date.now() + maxAge);
+            this.sessions.set(sid, { data: JSON.stringify(sess), expires });
+            if (cb) cb(null);
+        } catch (e) {
+            if (cb) cb(e);
+        }
+    }
+    destroy(sid, cb) {
+        this.sessions.delete(sid);
+        if (cb) cb(null);
+    }
+    touch(sid, sess, cb) {
+        this.set(sid, sess, cb);
+    }
+}
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(session({
-    secret: 'zher-keys-secret',
+    store: new PrunedSessionStore(),
+    secret: process.env.SESSION_SECRET || 'zher-keys-secret',
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 }
 }));
 
 // Rotas da API CJ Dropshipping v2
@@ -6852,20 +6901,19 @@ async function runSweepstakeDraw() {
         targetSunday.setUTCHours(23, 0, 0, 0);
         
         if (now >= targetSunday) {
-            console.log('[SWEEPSTAKE] Horario do sorteio atingido! Sorteando ganhador...');
-            
             // Busca todos os participantes
             const participantsRes = await pool.query("SELECT user_id FROM sweepstake_participants");
             const participants = participantsRes.rows;
             
             if (participants.length === 0) {
-                console.log('[SWEEPSTAKE] Nenhum participante inscrito esta semana. Sorteio vazio registrado.');
                 await pool.query(
                     "INSERT INTO sweepstake_history (winner_id, prize_amount) VALUES ($1, $2)",
                     [null, 0]
                 );
                 return;
             }
+            
+            console.log('[SWEEPSTAKE] Horario do sorteio atingido! Sorteando ganhador...');
             
             // Sorteia um participante
             const randomIndex = Math.floor(Math.random() * participants.length);
