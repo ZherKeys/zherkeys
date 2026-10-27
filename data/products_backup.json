@@ -22,11 +22,11 @@
     "id": 3,
     "title": "Batman™: Arkham Origins",
     "description": "Em 4 de dezembro de 2016, os serviços online de Batman: Arkham Origins foram descontinuados. Agradecemos a todos que se juntaram a nós para batalhar. A campanha para um jogador ainda pode ser jogada e aproveitada offline.\n\n<!-- STEAM_METADATA_START -->\n<div class=\"mt-8 border-t border-slate-900 pt-6\">\n    <div class=\"grid grid-cols-1 md:grid-cols-2 gap-6\">\n        <div class=\"bg-slate-950/40 border border-slate-900 p-5 rounded-xl text-left\">\n            <h4 class=\"font-orbitron font-bold text-xs tracking-wider text-electricblue uppercase mb-4\">// FICHA TECNICA</h4>\n            <ul class=\"space-y-2.5 font-inter text-xs text-slate-400\">\n                <li><strong class=\"text-slate-300\">Desenvolvedor:</strong> WB Games Montreal, Splash Damage</li>\n                <li><strong class=\"text-slate-300\">Distribuidora:</strong> Warner Bros. Interactive Entertainment</li>\n                <li><strong class=\"text-slate-300\">Data de Lancamento:</strong> 24 out. 2013</li>\n                <li><strong class=\"text-slate-300\">Idiomas:</strong> Inglês, Alemão, Francês, Italiano, Coreano, Espanhol (Espanha), Russo, Polaco, Português (Brasil)</li>\n                <li><strong class=\"text-slate-300\">Classificacao:</strong> 14 anos</li>\n            </ul>\n        </div>\n        <div class=\"bg-slate-950/40 border border-slate-900 p-5 rounded-xl text-left\">\n            <h4 class=\"font-orbitron font-bold text-xs tracking-wider text-cyberrose uppercase mb-4\">// REQUISITOS MINIMOS</h4>\n            <div class=\"font-inter text-xs text-slate-400 leading-relaxed steam-requirements\">\n                :</strong><br><ul ><li><strong>OS :</strong>32-bit:  Vista, Win 7, Win 8<br>\t</li><li><strong>Processor:</strong>Intel Core 2 Duo, 2.4 GHz / AMD Athlon X2, 2.8 GHz<br>\t</li><li><strong>Memory:</strong>2 GB RAM<br>\t</li><li><strong>Graphics:</strong>NVIDIA GeForce 8800 GTS / AMD Radeon HD 3850 or better with 512 MB of VRAM<br>\t</li><li><strong>DirectX®:</strong>9.0c<br>        </li><li><strong>Hard Drive Space:</strong>20 GB<br>        </li><li><strong>Other Requirements:</strong>Broadband Internet connection<br>        </li><li><strong>Additional Notes:</strong>Windows XP and DirectX® 9.0b and below not supported</li></ul>\n            </div>\n        </div>\n    </div>\n</div>\n<!-- STEAM_METADATA_END -->",
-    "price": 39.99,
+    "price": 22.9,
     "old_price": 89.99,
     "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/209000/header.jpg?t=1746562474",
     "category": "STEAM KEY",
-    "activation_key": "WXYZ-9876-QWER-TYUI",
+    "activation_key": "7ITTA-G0VLQ-PD37F",
     "in_stock": true,
     "is_global": true,
     "restricted_countries": "",
@@ -34,7 +34,7 @@
     "gameflip_listing_id": "",
     "gallery": "[\"https://video.akamai.steamstatic.com/store_trailers/2028808/movie_max.mp4\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/209000/ss_41f68844251c4acbf5d8b68899b212705c6afc0e.1920x1080.jpg?t=1746562474\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/209000/ss_1f444402878ebdef6d54386d2a0cdfacbc7b4ee4.1920x1080.jpg?t=1746562474\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/209000/ss_462c48dd9fa9e76d1f3f8159eeadea3da6b0e43e.1920x1080.jpg?t=1746562474\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/209000/ss_c627d2ffac1be5b846af610342ea99a0d2891434.1920x1080.jpg?t=1746562474\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/209000/ss_16fcb3b8bdc21baa947adba5dced4f4cef398cfd.1920x1080.jpg?t=1746562474\"]",
     "display_order": 1,
-    "auto_stock_provider": "eneba",
+    "auto_stock_provider": "none",
     "eneba_url": ""
   },
   {
