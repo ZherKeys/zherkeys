@@ -231,11 +231,11 @@
     "id": 19,
     "title": "Injustice: Gods Among Us Ultimate Edition",
     "description": "Injustice: Edição Ultimate Gods Among Us aprimora a nova e ousada franquia do gênero de jogos de luta da NetherRealm Studios. Com seis novos personagens jogáveis, mais de 30 novas skins e 60 novas missões dos Laboratórios S.T.A.R., esta edição é incrível.\n\n<!-- STEAM_METADATA_START -->\n<div class=\"mt-8 border-t border-slate-900 pt-6\">\n    <div class=\"grid grid-cols-1 md:grid-cols-2 gap-6\">\n        <div class=\"bg-slate-950/40 border border-slate-900 p-5 rounded-xl text-left\">\n            <h4 class=\"font-orbitron font-bold text-xs tracking-wider text-electricblue uppercase mb-4\">// FICHA TECNICA</h4>\n            <ul class=\"space-y-2.5 font-inter text-xs text-slate-400\">\n                <li><strong class=\"text-slate-300\">Desenvolvedor:</strong> NetherRealm Studios, High Voltage Software</li>\n                <li><strong class=\"text-slate-300\">Distribuidora:</strong> Warner Bros. Interactive Entertainment</li>\n                <li><strong class=\"text-slate-300\">Data de Lancamento:</strong> 12 nov. 2013</li>\n                <li><strong class=\"text-slate-300\">Idiomas:</strong> Inglês, Francês, Italiano, Alemão, Espanhol (Espanha), Polaco, Português (Brasil), Russo, Japonês</li>\n                <li><strong class=\"text-slate-300\">Classificacao:</strong> 12 anos</li>\n            </ul>\n        </div>\n        <div class=\"bg-slate-950/40 border border-slate-900 p-5 rounded-xl text-left\">\n            <h4 class=\"font-orbitron font-bold text-xs tracking-wider text-cyberrose uppercase mb-4\">// REQUISITOS MINIMOS</h4>\n            <div class=\"font-inter text-xs text-slate-400 leading-relaxed steam-requirements\">\n                <strong>Mínimos:</strong><br><ul ><li><strong>Sistema Operativo :</strong> 32-bit Windows 7 / Windows 8 / Vista<br></li><li><strong>Processador:</strong> Intel® Core™ 2 Duo 2.4 GHz or AMD Athlon X2 2.8 GHz<br></li><li><strong>Memória:</strong> 2 GB de RAM<br></li><li><strong>Placa gráfica:</strong> NVIDIA® GeForce™ 8800 GTS or AMD® Radeon™ HD 3850<br></li><li><strong>DirectX:</strong> Versão 10<br></li><li><strong>Rede:</strong> Ligação à Internet de banda larga<br></li><li><strong>Espaço no disco:</strong> Requer 21 GB de espaço livre<br></li><li><strong>Notas adicionais:</strong> Windows XP and DirectX® 9.0b and below not supported</li></ul>\n            </div>\n        </div>\n    </div>\n</div>\n<!-- STEAM_METADATA_END -->",
-    "price": 89.99,
+    "price": 24.9,
     "old_price": 89.99,
     "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/242700/header.jpg?t=1780595192",
     "category": "STEAM KEY",
-    "activation_key": "INJU-STIC-EULT-KEY1",
+    "activation_key": "NHT5T-VZNPJ-N59WI",
     "in_stock": true,
     "is_global": true,
     "restricted_countries": "",
@@ -243,7 +243,7 @@
     "gameflip_listing_id": "",
     "gallery": "[\"https://video.akamai.steamstatic.com/store_trailers/2029906/movie_max.mp4\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/242700/ss_7384337f4885916ed88f4260ca259fdd0718e72c.1920x1080.jpg?t=1780595192\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/242700/ss_7c0dbb126a7098f43d716df45e214a86c6cab6ae.1920x1080.jpg?t=1780595192\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/242700/ss_0015f0630ed74f9520f134ee43fb3df3b49c7d13.1920x1080.jpg?t=1780595192\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/242700/ss_cbc852f97ab877f12d6f55357b3b9afec3a5155f.1920x1080.jpg?t=1780595192\",\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/242700/ss_a22c001f1b3068354415c7d53041d92e06c10dde.1920x1080.jpg?t=1780595192\"]",
     "display_order": 12,
-    "auto_stock_provider": "eneba",
+    "auto_stock_provider": "none",
     "eneba_url": ""
   },
   {
