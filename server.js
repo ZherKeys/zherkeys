@@ -2100,27 +2100,13 @@ async function initDB() {
             console.error("Erro ao inicializar site_music_settings:", e);
         }
 
-        // Popular gêneros antigos automaticamente
+        // Popular gêneros antigos automaticamente (apenas se genres for nulo)
         pool.query("UPDATE products SET genres = 'Multiplayer, Ação, FPS' WHERE (title ILIKE '%CS:GO%' OR title ILIKE '%Counter%' OR title ILIKE '%Valorant%') AND genres IS NULL").catch(()=>{});
         pool.query("UPDATE products SET genres = 'Aventura, RPG, Ação' WHERE (title ILIKE '%Elden Ring%' OR title ILIKE '%Witcher%' OR title ILIKE '%Cyberpunk%') AND genres IS NULL").catch(()=>{});
         pool.query("UPDATE products SET genres = 'Ação, Aventura, Sandbox' WHERE (title ILIKE '%GTA%' OR title ILIKE '%Red Dead%' OR title ILIKE '%Minecraft%') AND genres IS NULL").catch(()=>{});
         pool.query("UPDATE products SET genres = 'Esportes, Multiplayer' WHERE (title ILIKE '%FIFA%' OR title ILIKE '%FC 24%' OR title ILIKE '%NBA%') AND genres IS NULL").catch(()=>{});
         pool.query("UPDATE products SET genres = 'Terror, Sobrevivência' WHERE (title ILIKE '%Resident Evil%' OR title ILIKE '%Silent Hill%') AND genres IS NULL").catch(()=>{});
         pool.query("UPDATE products SET genres = 'Streaming' WHERE (category = 'GIFT CARD' OR title ILIKE '%Netflix%' OR title ILIKE '%Spotify%') AND genres IS NULL").catch(()=>{});
-
-        // Atualizar imagens de baixa resolução para posters de alta resolução (600x900) e locais automaticamente
-        pool.query("UPDATE products SET image = '/human_fall_flat.jpg' WHERE title = 'Human: Fall Flat'").catch(()=>{});
-        pool.query("UPDATE products SET image = '/batman_arkham_origins.jpg' WHERE title = 'Batman: Arkham Origins'").catch(()=>{});
-        pool.query("UPDATE products SET image = '/lego_the_incredibles.jpg' WHERE title = 'LEGO The Incredibles'").catch(()=>{});
-        pool.query("UPDATE products SET image = '/lego_dc_super_villains.jpg' WHERE title = 'LEGO DC Super-Villains Deluxe'").catch(()=>{});
-        pool.query("UPDATE products SET image = '/shadow_of_war.jpg' WHERE title = 'Middle-earth: Shadow of War Definitive'").catch(()=>{});
-        pool.query("UPDATE products SET image = '/lego_movie.jpg' WHERE title = 'The LEGO Movie Videogame'").catch(()=>{});
-        pool.query("UPDATE products SET title = 'The LEGO Movie 2 Videogame', image = '/lego_movie_2.jpg', old_price = 129.99 WHERE title ILIKE '%LEGO Movie 2%' OR title = 'The LEGO Movie Videogame'").catch(()=>{});
-        pool.query("UPDATE products SET image = '/lego_movie_2.jpg', old_price = 129.99 WHERE title ILIKE '%LEGO Movie 2%'").catch(()=>{});
-        pool.query("UPDATE products SET image = '/postal_2.jpg', old_price = 32.99 WHERE title ILIKE '%POSTAL 2%'").catch(()=>{});
-        pool.query("UPDATE products SET image = '/amnesia_the_bunker.jpg', old_price = 73.99 WHERE title ILIKE '%Amnesia%Bunker%'").catch(()=>{});
-        pool.query("DELETE FROM products WHERE title = 'The Incredible Adventures of Van Helsing'").catch(()=>{});
-        pool.query("UPDATE products SET image = 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/272470/header.jpg' WHERE title ILIKE '%Van Helsing II%'").catch(()=>{});
 
         // Popular produtos se estiverem ausentes no Banco de Dados
         const defaultProducts = [

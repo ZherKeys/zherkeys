@@ -3505,8 +3505,29 @@ gtag('config', 'AW-18202657831');
         let currentSteamImageSubIndex = 0;
         let steamSlideTimer = null;
 
+        function isCarouselVideoUrl(url) {
+            if (!url || typeof url !== 'string') return true;
+            const lower = url.toLowerCase();
+            const clean = lower.split('?')[0].split('#')[0];
+            return (
+                lower.startsWith('data:video/') ||
+                clean.endsWith('.mp4') ||
+                clean.endsWith('.webm') ||
+                clean.endsWith('.ogg') ||
+                clean.endsWith('.m3u8') ||
+                clean.endsWith('.mov') ||
+                lower.includes('youtube.com') ||
+                lower.includes('youtu.be') ||
+                lower.includes('video.akamai.steamstatic.com') ||
+                lower.includes('video.fastly.steamstatic.com') ||
+                lower.includes('store_trailers') ||
+                lower.includes('/trailers/')
+            );
+        }
+
         function getFeaturedPromoProducts() {
-            const all = (window.produtos || []).filter(p => p.in_stock !== false);
+            const sourceList = (window.produtos && window.produtos.length > 0) ? window.produtos : (typeof produtos !== 'undefined' ? produtos : []);
+            const all = (sourceList || []).filter(p => p && p.in_stock !== false);
             if (all.length === 0) return [];
 
             return all.map(p => {
@@ -3521,7 +3542,7 @@ gtag('config', 'AW-18202657831');
                     calculated_old_price: oldPriceNum,
                     discount_pct: discountPct > 0 ? discountPct : 25
                 };
-            }).slice(0, 8);
+            });
         }
 
         function getProductImages(p) {
@@ -3539,15 +3560,14 @@ gtag('config', 'AW-18202657831');
             if (Array.isArray(rawGallery) && rawGallery.length > 0) {
                 const galleryImages = rawGallery.filter(url => 
                     typeof url === 'string' && 
-                    !url.includes('youtube.com') && 
-                    !url.includes('youtu.be') &&
-                    (url.startsWith('http') || url.startsWith('/'))
+                    !isCarouselVideoUrl(url) &&
+                    (url.startsWith('http') || url.startsWith('/') || url.startsWith('data:image/'))
                 );
                 images = images.concat(galleryImages);
             }
 
             // Apenas adiciona a imagem de capa se a galeria de screenshots estiver vazia
-            if (images.length === 0 && p.image) {
+            if (images.length === 0 && p.image && !isCarouselVideoUrl(p.image)) {
                 images.push(p.image);
             }
 
@@ -3609,7 +3629,8 @@ gtag('config', 'AW-18202657831');
             platformEl.innerText = p.category || 'PC GAME';
             globalEl.innerText = p.is_global === false ? 'REGIONAL' : 'GLOBAL KEY';
             titleEl.innerText = p.title;
-            descEl.innerText = p.description || 'Chave de ativação digital 100% original com envio automático e suporte garantido.';
+            const cleanSlideDesc = (p.description || '').split('<!-- STEAM_METADATA_START -->')[0].replace(/<[^>]*>?/gm, '').trim();
+            descEl.innerText = cleanSlideDesc || 'Chave de ativação digital 100% original com envio automático e suporte garantido.';
 
             const priceNum = parseFloat(p.price);
             const oldPriceNum = p.calculated_old_price || (priceNum * 1.35);
