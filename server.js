@@ -1743,11 +1743,14 @@ async function autoUpdateProductSteamInfo(productId, title, currentDescription) 
 async function syncAllProductsSteamInfo() {
     try {
         console.log('[STEAM-SYNC] Iniciando sincronizacao de requisitos de jogos...');
-        const result = await pool.query("SELECT id, title, description, image FROM products");
+        const result = await pool.query("SELECT id, title, description, image, category FROM products");
         const products = result.rows;
         
         let count = 0;
         for (const p of products) {
+            if (p.category && p.category.toUpperCase().includes('CURSO')) {
+                continue; // Cursos & Guias PDF nao precisam de sincronizacao com a Steam
+            }
             let isImageBroken = !p.image || p.image.trim() === '' || p.image === '/logo.png';
             if (!isImageBroken && p.image && p.image.includes('steamstatic.com')) {
                 try {
@@ -2847,10 +2850,28 @@ async function assignKeysToOrder(client, orderId) {
         const qty = item.quantity || 1;
         
         await client.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS eneba_url TEXT;').catch(() => {});
-        const prodRes = await client.query('SELECT title, COALESCE(eneba_url, \'\') AS eneba_url, activation_key, in_stock, auto_stock_provider FROM products WHERE id = $1 FOR UPDATE', [productId]);
+        const prodRes = await client.query('SELECT title, category, COALESCE(eneba_url, \'\') AS eneba_url, activation_key, in_stock, auto_stock_provider FROM products WHERE id = $1 FOR UPDATE', [productId]);
         if (prodRes.rows.length === 0) continue;
         
         const prod = prodRes.rows[0];
+        const isCourseProduct = (prod.category && prod.category.toUpperCase().includes('CURSO')) || prod.auto_stock_provider === 'course' || (productId >= 101 && productId <= 108);
+        if (isCourseProduct) {
+            if (!isPendingPixReservation) {
+                const courseAccessKey = (prod.activation_key && prod.activation_key.trim())
+                    ? prod.activation_key.split('\n')[0].trim()
+                    : `ACESSO-VITALICIO-CURSO-${productId} | Sala de Aula + Guia PDF: /cursos?curso=${productId}`;
+                await client.query(
+                    'UPDATE order_items SET activation_key = $1 WHERE order_id = $2 AND product_id = $3',
+                    [courseAccessKey, orderId, productId]
+                );
+                await client.query(
+                    'UPDATE products SET in_stock = true WHERE id = $1',
+                    [productId]
+                );
+                console.log(`[KEYS-ASSIGN] Acesso vitalício ao Curso/Guia ID ${productId} liberado para o Pedido #${orderId}.`);
+            }
+            continue;
+        }
         let allKeys = (prod.activation_key || '').split('\n').map(k => k.trim()).filter(Boolean);
         
         // Se for apenas reserva temporária de PIX ainda não pago e não houver chave manual, aguarda confirmação do pagamento no webhook
@@ -3093,7 +3114,19 @@ app.get('/api/products', async (req, res) => {
         await cleanupExpiredOrders().catch(e => null);
 
         const result = await pool.query('SELECT id, title, description, price, old_price, image, category, in_stock, is_global, restricted_countries, genres, display_order, gallery FROM products ORDER BY COALESCE(display_order, 0) ASC, id ASC');
-        productsCache = result.rows.map(row => ({
+        const rows = [...result.rows];
+        const coursesBackupPath = path.join(__dirname, 'data', 'products_backup.json');
+        if (fs.existsSync(coursesBackupPath)) {
+            try {
+                const backupItems = JSON.parse(fs.readFileSync(coursesBackupPath, 'utf-8'));
+                backupItems.forEach(item => {
+                    if (item.category && item.category.toUpperCase().includes('CURSO') && !rows.some(r => Number(r.id) === Number(item.id))) {
+                        rows.push(item);
+                    }
+                });
+            } catch (err) {}
+        }
+        productsCache = rows.map(row => ({
             ...row,
             description: formatProductDescription(row.description, row.is_global, row.restricted_countries)
         }));
@@ -5006,13 +5039,27 @@ app.get('/produto/:id', async (req, res) => {
             return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
         }
         
-        const result = await pool.query('SELECT id, title, description, price, old_price, image, category, in_stock, is_global, restricted_countries, genres, gallery FROM products WHERE id = $1', [id]);
-        
-        if (result.rows.length === 0) {
+        let product = null;
+        try {
+            const result = await pool.query('SELECT id, title, description, price, old_price, image, category, in_stock, is_global, restricted_countries, genres, gallery FROM products WHERE id = $1', [id]);
+            if (result.rows.length > 0) {
+                product = result.rows[0];
+            }
+        } catch (dbErr) {}
+
+        if (!product) {
+            const backupPath = path.join(__dirname, 'data', 'products_backup.json');
+            if (fs.existsSync(backupPath)) {
+                try {
+                    const backupProducts = JSON.parse(fs.readFileSync(backupPath, 'utf-8'));
+                    product = backupProducts.find(p => Number(p.id) === Number(id)) || null;
+                } catch (e) {}
+            }
+        }
+
+        if (!product) {
             return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
         }
-        
-        const product = result.rows[0];
         
         const templatePath = path.join(__dirname, 'public', 'produto.html');
         let html = await fs.promises.readFile(templatePath, 'utf8');
@@ -5252,6 +5299,16 @@ app.get(['/contact', '/contato', '/fale-conosco'], (req, res) => {
 });
 app.get(['/guias', '/guias.html', '/artigos', '/blog', '/tutoriais'], (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'guias.html'));
+});
+app.get(['/cursos', '/cursos.html', '/academy', '/aulas'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'cursos.html'));
+});
+app.get('/api/courses', (req, res) => {
+    const coursesPath = path.join(__dirname, 'data', 'courses_catalog.json');
+    if (fs.existsSync(coursesPath)) {
+        return res.sendFile(coursesPath);
+    }
+    res.json([]);
 });
 app.get('/artigos/:slug', (req, res) => {
     let slug = req.params.slug;

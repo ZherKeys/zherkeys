@@ -1,0 +1,206 @@
+%PDF-1.4
+%âãÏÓ
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [5 0 R 7 0 R 9 0 R 11 0 R 13 0 R] /Count 5 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 3307 >>
+stream
+0.01 0.03 0.09 rg 0 710 612 82 re f
+0.23 0.51 0.96 rg 0 706 612 4 re f
+BT /F2 18 Tf 1 1 1 rg 45 755 Td (ZHER KEYS ACADEMY - GUIA OFICIAL & APOSTILA PDF) Tj ET
+BT /F1 10 Tf 0.7 0.8 0.95 rg 45 732 Td (MATERIAL DIDATICO COMPLETO + ROTEIRO DE VIDEOAULAS DO YOUTUBE) Tj ET
+BT /F2 16 Tf 0.05 0.1 0.25 rg 45 665 Td (Ciberseguranca Gamer, 2FA & Blindagem Digital) Tj ET
+BT /F1 11 Tf 0.95 0.25 0.37 rg 45 643 Td (Categoria: Cibersegurança & Contas  |  Nivel: Essencial para Todos  |  Carga Horaria: 10 Horas \(Vídeo + Apostila PDF\)) Tj ET
+0.95 0.97 1.0 rg 40 535 532 75 re f
+0.23 0.51 0.96 RG 1 w 40 535 532 75 re S
+BT /F2 11 Tf 0.05 0.15 0.35 rg 52 590 Td (RESUMO EXECUTIVO DO GUIA DE INFORMACOES) Tj ET
+BT /F1 9.5 Tf 0.15 0.2 0.3 rg 52 573 Td (Proteja definitivamente suas contas Steam, Epic Games, PSN, Xbox, Discord, e-mails e) Tj ET
+BT /F1 9.5 Tf 0.15 0.2 0.3 rg 52 559 Td (carteiras digitais contra invasões, roubo de sessão \(Session Hijacking\), API Scams e) Tj ET
+BT /F1 9.5 Tf 0.15 0.2 0.3 rg 52 545 Td (Phishing. Aprenda a usar Gerenciadores de Senhas criptografados, 2FA por) Tj ET
+BT /F2 13 Tf 0.05 0.1 0.25 rg 45 505 Td (CRONOGRAMA DE VIDEOAULAS INTEGRADO \(YOUTUBE\)) Tj ET
+BT /F2 9.5 Tf 0.1 0.3 0.7 rg 50 487 Td (Aula 1: Gerenciadores de Senhas, 2FA e Criptografia: O Guia Definitivo de Segurança \(28:15\)) Tj ET
+BT /F1 8.5 Tf 0.3 0.35 0.45 rg 62 474 Td (Link Direto YouTube: https://www.youtube.com/watch?v=s7ldn31OEFc | Canal: Fabio Akita) Tj ET
+BT /F2 9.5 Tf 0.1 0.3 0.7 rg 50 458 Td (Aula 2: Autenticação de Dois Fatores \(2FA\): A Camada que Impede 99% das Invasões \(12:30\)) Tj ET
+BT /F1 8.5 Tf 0.3 0.35 0.45 rg 62 445 Td (Link Direto YouTube: https://www.youtube.com/watch?v=vpCO4M5SfOo | Canal: iTProtect) Tj ET
+BT /F2 9.5 Tf 0.1 0.3 0.7 rg 50 429 Td (Aula 3: Como Proteger Contas Críticas contra Hackers: 2FA e Anti-Phishing na Prática \(16:05\)) Tj ET
+BT /F1 8.5 Tf 0.3 0.35 0.45 rg 62 416 Td (Link Direto YouTube: https://www.youtube.com/watch?v=NRNpfIIHXak | Canal: Diovane Lopes) Tj ET
+BT /F2 9.5 Tf 0.1 0.3 0.7 rg 50 400 Td (Aula 4: Segurança de E-mail Criptografado e Proteção Avançada de Credenciais \(11:40\)) Tj ET
+BT /F1 8.5 Tf 0.3 0.35 0.45 rg 62 387 Td (Link Direto YouTube: https://www.youtube.com/watch?v=BN7l1XAvpnc | Canal: Coach De Osasco) Tj ET
+BT /F2 9.5 Tf 0.1 0.3 0.7 rg 50 371 Td (Aula 5: Alerta Prático: Como Configurar e Fazer Backup dos Códigos de Recuperação 2FA \(06:20\)) Tj ET
+BT /F1 8.5 Tf 0.3 0.35 0.45 rg 62 358 Td (Link Direto YouTube: https://www.youtube.com/watch?v=kAh8K2Oo4dE | Canal: Cyber Alerta) Tj ET
+BT /F2 13 Tf 0.05 0.1 0.25 rg 45 332 Td (ESTRUTURA DOS MODULOS DESTE GUIA PDF) Tj ET
+BT /F2 10 Tf 0.1 0.15 0.25 rg 50 314 Td (Modulo 1: Anatomia dos Golpes em Contas Gamer \(API Scam, Phishing e Stealers\)) Tj ET
+BT /F2 10 Tf 0.1 0.15 0.25 rg 50 299 Td (Modulo 2: Gerenciadores de Senhas Criptografados \(Bitwarden / KeePassXC\)) Tj ET
+BT /F2 10 Tf 0.1 0.15 0.25 rg 50 284 Td (Modulo 3: Domínio da Autenticação em Dois Fatores \(2FA TOTP vs SMS\)) Tj ET
+BT /F2 10 Tf 0.1 0.15 0.25 rg 50 269 Td (Modulo 4: Higiene Digital, DNS Seguro com Filtro de Malware e Blindagem do Windows) Tj ET
+0.85 0.88 0.92 RG 0.5 w 45 45 522 0 re S
+BT /F1 8.5 Tf 0.4 0.45 0.55 rg 45 30 Td (Zher Keys Marketplace & Academy - https://zherkeys.com/cursos - Pagina 1) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 2544 >>
+stream
+0.01 0.03 0.09 rg 0 742 612 50 re f
+0.23 0.51 0.96 rg 0 739 612 3 re f
+BT /F2 11 Tf 1 1 1 rg 45 762 Td (Ciberseguranca Gamer, 2FA & Blindagem Digital - MODULO 1) Tj ET
+BT /F2 15 Tf 0.05 0.12 0.3 rg 45 705 Td (MODULO 1: Anatomia dos Golpes em Contas Gamer \(API Scam, Phishing e Stealers\)) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 681 Td (Mais de 90% dos roubos de contas Steam, Discord e Epic Games não acontecem por "força) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 667 Td (bruta" de senha, mas sim por três vetores modernos: 1\) Sites falsos de) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 653 Td (torneios/sorteios de skins que imitam a janela de login da Steam \(Fake OAuth Popup\);) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 639 Td (2\) Roubo de chave de API Web da Steam \(API Key Scam\); e 3\) Executáveis maliciosos) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 625 Td (\(InfoStealers\) disfarçados de mods, instaladores piratas ou programas de voz.) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 603 Td (Quando um usuário digita seu código Steam Guard em um site falso, o atacante captura o) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 589 Td (token de sessão e pode registrar uma Chave de API Web na conta da vítima para) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 575 Td (monitorar e redirecionar trocas de itens em tempo real.) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 553 Td (Compreender esses vetores permite identificar qualquer tentativa de engenharia social) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 539 Td (em segundos, antes mesmo de clicar em um link suspeito.) Tj ET
+0.94 0.98 0.96 rg 45 70 522 115 re f
+0.06 0.72 0.50 RG 1 w 45 70 522 115 re S
+BT /F2 10.5 Tf 0.04 0.45 0.32 rg 55 168 Td (CHECKLIST PRATICO & COMANDOS CHAVE DO MODULO 1) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 150 Td ([OK] Verifique regularmente a página oficial https://steamcommunity.com/dev/apikey) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 137 Td (- se houver qualquer chave registrada que você não criou, clique em "Revogar Minha) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 124 Td (Chave da Web API" imediatamente!) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 111 Td ([OK] Nunca faça login com a Steam em sites recebidos por mensagens diretas no) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 98 Td (Discord ou chat de desconhecidos.) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 85 Td ([OK] No navegador oficial \(Chrome/Edge/Firefox\), faça login uma única vez em) Tj ET
+0.85 0.88 0.92 RG 0.5 w 45 45 522 0 re S
+BT /F1 8.5 Tf 0.4 0.45 0.55 rg 45 30 Td (Zher Keys Academy - Guia Oficial em PDF | Pagina 2 de 5) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 10 0 R >>
+endobj
+10 0 obj
+<< /Length 2645 >>
+stream
+0.01 0.03 0.09 rg 0 742 612 50 re f
+0.23 0.51 0.96 rg 0 739 612 3 re f
+BT /F2 11 Tf 1 1 1 rg 45 762 Td (Ciberseguranca Gamer, 2FA & Blindagem Digital - MODULO 2) Tj ET
+BT /F2 15 Tf 0.05 0.12 0.3 rg 45 705 Td (MODULO 2: Gerenciadores de Senhas Criptografados \(Bitwarden / KeePassXC\)) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 681 Td (O maior risco à sua vida digital é reutilizar a mesma senha em vários sites. Quando um) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 667 Td (fórum ou loja menor sofre vazamento de banco de dados, robôs automatizados testam essa) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 653 Td (mesma combinação de e-mail e senha na Steam, Epic, Riot, PayPal e Gmail em minutos) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 639 Td (\(ataque conhecido como Credential Stuffing\).) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 617 Td (A solução definitiva é utilizar um Gerenciador de Senhas de código aberto e) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 603 Td (criptografia ponta a ponta \(Zero-Knowledge\), como o Bitwarden ou o KeePassXC.) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 581 Td (Com ele, você precisa memorizar apenas UMA Senha-Mestra forte \(uma frase-senha de 4 ou) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 567 Td (5 palavras aleatórias\), enquanto o cofre gera e preenche senhas únicas de 24) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 553 Td (caracteres aleatórios para cada site. Além disso, o preenchimento automático só) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 539 Td (funciona se o domínio do site for 100% autêntico, bloqueando sites de phishing) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 525 Td (automaticamente!) Tj ET
+0.94 0.98 0.96 rg 45 70 522 115 re f
+0.06 0.72 0.50 RG 1 w 45 70 522 115 re S
+BT /F2 10.5 Tf 0.04 0.45 0.32 rg 55 168 Td (CHECKLIST PRATICO & COMANDOS CHAVE DO MODULO 2) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 150 Td ([OK] Crie uma conta gratuita no Bitwarden \(ou instale o KeePassXC offline\) e) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 137 Td (proteja-o com uma Senha-Mestra única que nunca foi usada em nenhum outro lugar.) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 124 Td ([OK] Substitua as senhas do seu E-mail Principal, Steam, Epic Games, Discord e) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 111 Td (Banco por senhas geradas aleatoriamente com 20+ caracteres.) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 98 Td ([OK] Verifique no site oficial https://haveibeenpwned.com se o seu endereço de) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 85 Td (e-mail já apareceu em vazamentos antigos.) Tj ET
+0.85 0.88 0.92 RG 0.5 w 45 45 522 0 re S
+BT /F1 8.5 Tf 0.4 0.45 0.55 rg 45 30 Td (Zher Keys Academy - Guia Oficial em PDF | Pagina 3 de 5) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 12 0 R >>
+endobj
+12 0 obj
+<< /Length 2544 >>
+stream
+0.01 0.03 0.09 rg 0 742 612 50 re f
+0.23 0.51 0.96 rg 0 739 612 3 re f
+BT /F2 11 Tf 1 1 1 rg 45 762 Td (Ciberseguranca Gamer, 2FA & Blindagem Digital - MODULO 3) Tj ET
+BT /F2 15 Tf 0.05 0.12 0.3 rg 45 705 Td (MODULO 3: Domínio da Autenticação em Dois Fatores \(2FA TOTP vs SMS\)) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 681 Td (A autenticação de dois fatores via SMS é vulnerável ao golpe de "SIM Swap" \(quando) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 667 Td (criminosos transferem seu número de telefone para outro chip\). Por isso, para contas) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 653 Td (de alto valor, você deve sempre usar aplicativos autenticadores baseados no padrão) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 639 Td (TOTP \(Time-based One-Time Password\).) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 617 Td (Aplicativos recomendados como Ente Auth, Aegis Authenticator \(Android\), 2FAS ou) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 603 Td (Microsoft/Google Authenticator geram códigos temporários de 6 dígitos que mudam a cada) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 589 Td (30 segundos diretamente no seu dispositivo, sem depender de sinal de operadora.) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 567 Td (Ao ativar o 2FA e o Steam Guard Mobile Authenticator, o sistema fornece um Código de) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 553 Td (Recuperação \(na Steam, começa com a letra "R" seguida de 5 dígitos\). Anote esse código) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 539 Td (em papel físico e guarde em local seguro!) Tj ET
+0.94 0.98 0.96 rg 45 70 522 115 re f
+0.06 0.72 0.50 RG 1 w 45 70 522 115 re S
+BT /F2 10.5 Tf 0.04 0.45 0.32 rg 55 168 Td (CHECKLIST PRATICO & COMANDOS CHAVE DO MODULO 3) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 150 Td ([OK] Ative o Steam Guard Mobile Authenticator no aplicativo oficial da Steam para) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 137 Td (celular e anote seu código de recuperação R-XXXXX em papel.) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 124 Td ([OK] Ative o 2FA via aplicativo autenticador \(TOTP\) na sua conta Google/Outlook,) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 111 Td (Discord, Epic Games e Xbox/Microsoft.) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 98 Td ([OK] Desative o recebimento de códigos de recuperação por SMS no seu e-mail) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 85 Td (principal, mantendo apenas o autenticador TOTP e códigos de backup impressos.) Tj ET
+0.85 0.88 0.92 RG 0.5 w 45 45 522 0 re S
+BT /F1 8.5 Tf 0.4 0.45 0.55 rg 45 30 Td (Zher Keys Academy - Guia Oficial em PDF | Pagina 4 de 5) Tj ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 14 0 R >>
+endobj
+14 0 obj
+<< /Length 2380 >>
+stream
+0.01 0.03 0.09 rg 0 742 612 50 re f
+0.23 0.51 0.96 rg 0 739 612 3 re f
+BT /F2 11 Tf 1 1 1 rg 45 762 Td (Ciberseguranca Gamer, 2FA & Blindagem Digital - MODULO 4) Tj ET
+BT /F2 15 Tf 0.05 0.12 0.3 rg 45 705 Td (MODULO 4: Higiene Digital, DNS Seguro com Filtro de Malware e Blindagem do Windows) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 681 Td (Um computador seguro começa pela rede e pelo navegador. Ao configurar o DNS do seu) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 667 Td (roteador ou placa de rede para o Cloudflare Security \(1.1.1.2 / 1.0.0.2\) ou Quad9) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 653 Td (\(9.9.9.9\), domínios conhecidos de phishing, malware e roubo de contas são bloqueados) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 639 Td (diretamente na camada de resolução de nomes.) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 617 Td (No navegador, o uso de bloqueadores de conteúdo de código aberto como o uBlock Origin) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 603 Td (impede não apenas propagandas intrusivas, mas também anúncios falsos patrocinados em) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 589 Td (buscadores que levam a sites clones \(malvertising\).) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 567 Td (No Windows, mantenha a exibição de extensões de arquivos ativada no Explorer para) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 553 Td (nunca cair no truque de arquivos "foto.png.exe" ou "mod_traducao.scr".) Tj ET
+0.94 0.98 0.96 rg 45 70 522 115 re f
+0.06 0.72 0.50 RG 1 w 45 70 522 115 re S
+BT /F2 10.5 Tf 0.04 0.45 0.32 rg 55 168 Td (CHECKLIST PRATICO & COMANDOS CHAVE DO MODULO 4) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 150 Td ([OK] No Windows Explorer > Exibir > Mostrar: marque obrigatoriamente a opção) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 137 Td ("Extensões de nomes de arquivos".) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 124 Td ([OK] Instale a extensão uBlock Origin no seu navegador para bloquear domínios de) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 111 Td (phishing e malvertising.) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 98 Td ([OK] Antes de abrir arquivos pequenos baixados da internet, faça a verificação) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 85 Td (gratuita em 70 antivírus simultâneos no site https://www.virustotal.com.) Tj ET
+0.85 0.88 0.92 RG 0.5 w 45 45 522 0 re S
+BT /F1 8.5 Tf 0.4 0.45 0.55 rg 45 30 Td (Zher Keys Academy - Guia Oficial em PDF | Pagina 5 de 5) Tj ET
+endstream
+endobj
+xref
+0 15
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000147 00000 n 
+0000000244 00000 n 
+0000000346 00000 n 
+0000000482 00000 n 
+0000003841 00000 n 
+0000003977 00000 n 
+0000006573 00000 n 
+0000006710 00000 n 
+0000009408 00000 n 
+0000009546 00000 n 
+0000012143 00000 n 
+0000012281 00000 n 
+trailer
+<< /Size 15 /Root 1 0 R >>
+startxref
+14714
+%%EOF

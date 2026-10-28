@@ -172,6 +172,9 @@ gtag('config', 'AW-18202657831');
                     <i data-lucide="shopping-cart" class="w-4 h-4 sm:w-5 sm:h-5 text-slate-300 group-hover:text-white"></i>
                     <span id="cart-badge" class="absolute -top-1 -right-1 flex items-center justify-center w-3.5 h-3.5 sm:w-4 sm:h-4 bg-cyberrose text-white text-[8px] sm:text-[9px] font-bold rounded-full hidden">0</span>
                 </a>
+                <a href="/cursos" class="hidden sm:inline-flex items-center gap-1.5 bg-cyberrose/15 hover:bg-cyberrose text-cyberrose hover:text-white border border-cyberrose/40 px-3 py-1.5 sm:py-2 rounded-lg font-orbitron text-[10px] sm:text-xs font-bold tracking-wider transition-all">
+                    🎓 CURSOS & PDF
+                </a>
                 <a href="/account.html" class="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-electricblue hover:bg-slate-700 transition-all group" title="Minha Conta">
                     <i data-lucide="user" class="w-4 h-4 sm:w-5 sm:h-5 text-slate-300 group-hover:text-white"></i>
                 </a>
@@ -280,6 +283,23 @@ gtag('config', 'AW-18202657831');
                             <i data-lucide="zap" class="w-5 h-5"></i> COMPRAR AGORA
                         </button>
                     </div>
+
+                    <!-- Botão Exclusivo se o Produto for Curso / Guia PDF + Videoaulas -->
+                    <div id="course-classroom-cta" class="hidden">
+                        <a id="course-classroom-link" href="/cursos?curso={{PRODUCT_ID}}" class="w-full bg-gradient-to-r from-cyberrose to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-orbitron text-xs sm:text-sm tracking-widest font-bold py-4 px-5 rounded-xl shadow-lg shadow-rose-500/25 transition-all duration-300 uppercase flex items-center justify-center gap-2">
+                            🎓 ABRIR SALA DE AULA INTERATIVA (VIDEOAULAS YOUTUBE + GUIA + APOSTILA PDF)
+                        </a>
+                    </div>
+                    <script>
+                        (function() {
+                            const cat = "{{PRODUCT_CATEGORY}}".toUpperCase();
+                            const pid = parseInt("{{PRODUCT_ID}}", 10);
+                            if (cat.includes("CURSO") || (pid >= 101 && pid <= 108)) {
+                                const cta = document.getElementById("course-classroom-cta");
+                                if (cta) cta.classList.remove("hidden");
+                            }
+                        })();
+                    </script>
 
                     <a href="/" class="inline-flex items-center gap-1.5 text-xs font-orbitron tracking-widest text-slate-500 hover:text-slate-300 transition-colors py-2">
                         <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> CONTINUAR NAVEGANDO NO CATÁLOGO

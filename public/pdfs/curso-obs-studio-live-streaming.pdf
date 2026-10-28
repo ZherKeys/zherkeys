@@ -1,0 +1,210 @@
+%PDF-1.4
+%âãÏÓ
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [5 0 R 7 0 R 9 0 R 11 0 R 13 0 R] /Count 5 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 3319 >>
+stream
+0.01 0.03 0.09 rg 0 710 612 82 re f
+0.23 0.51 0.96 rg 0 706 612 4 re f
+BT /F2 18 Tf 1 1 1 rg 45 755 Td (ZHER KEYS ACADEMY - GUIA OFICIAL & APOSTILA PDF) Tj ET
+BT /F1 10 Tf 0.7 0.8 0.95 rg 45 732 Td (MATERIAL DIDATICO COMPLETO + ROTEIRO DE VIDEOAULAS DO YOUTUBE) Tj ET
+BT /F2 16 Tf 0.05 0.1 0.25 rg 45 665 Td (OBS Studio Masterclass & Live Streaming Pro) Tj ET
+BT /F1 11 Tf 0.95 0.25 0.37 rg 45 643 Td (Categoria: Streaming & Criação de Conteúdo  |  Nivel: Iniciante ao Avançado  |  Carga Horaria: 16 Horas \(Vídeo + Apostila PDF\)) Tj ET
+0.95 0.97 1.0 rg 40 535 532 75 re f
+0.23 0.51 0.96 RG 1 w 40 535 532 75 re S
+BT /F2 11 Tf 0.05 0.15 0.35 rg 52 590 Td (RESUMO EXECUTIVO DO GUIA DE INFORMACOES) Tj ET
+BT /F1 9.5 Tf 0.15 0.2 0.3 rg 52 573 Td (Aprenda a configurar o OBS Studio como um estúdio de TV profissional! Domine codecs) Tj ET
+BT /F1 9.5 Tf 0.15 0.2 0.3 rg 52 559 Td (NVENC/AMF, taxas de bits \(Bitrate\) para Twitch, YouTube e TikTok sem perder FPS nos) Tj ET
+BT /F1 9.5 Tf 0.15 0.2 0.3 rg 52 545 Td (jogos, tratamento de voz de estúdio com filtros nativos \(Supressão de Ruído,) Tj ET
+BT /F2 13 Tf 0.05 0.1 0.25 rg 45 505 Td (CRONOGRAMA DE VIDEOAULAS INTEGRADO \(YOUTUBE\)) Tj ET
+BT /F2 9.5 Tf 0.1 0.3 0.7 rg 50 487 Td (Aula 1: OBS Studio - Configuração Completa Passo a Passo para Gravação e Live Stream \(29:40\)) Tj ET
+BT /F1 8.5 Tf 0.3 0.35 0.45 rg 62 474 Td (Link Direto YouTube: https://www.youtube.com/watch?v=OXNrUL738as | Canal: Abrigo76) Tj ET
+BT /F2 9.5 Tf 0.1 0.3 0.7 rg 50 458 Td (Aula 2: Como Configurar o OBS Studio para Lives e Gravações com Qualidade Profissional \(24:15\)) Tj ET
+BT /F1 8.5 Tf 0.3 0.35 0.45 rg 62 445 Td (Link Direto YouTube: https://www.youtube.com/watch?v=yqOp9IylR4E | Canal: Ian Worcman | Dicas OBS) Tj ET
+BT /F2 9.5 Tf 0.1 0.3 0.7 rg 50 429 Td (Aula 3: A Melhor Configuração de Codificação e Bitrate do OBS Studio \(15:30\)) Tj ET
+BT /F1 8.5 Tf 0.3 0.35 0.45 rg 62 416 Td (Link Direto YouTube: https://www.youtube.com/watch?v=kOwM7Vi-U1M | Canal: Saimon Oliveira) Tj ET
+BT /F2 9.5 Tf 0.1 0.3 0.7 rg 50 400 Td (Aula 4: Melhor Configuração do OBS Studio para PC Fraco \(Fazer Live Sem Travar\) \(13:10\)) Tj ET
+BT /F1 8.5 Tf 0.3 0.35 0.45 rg 62 387 Td (Link Direto YouTube: https://www.youtube.com/watch?v=XPxqdwxsNQo | Canal: NooB Stream Tech) Tj ET
+BT /F2 9.5 Tf 0.1 0.3 0.7 rg 50 371 Td (Aula 5: Como Fazer Live no TikTok, YouTube e Twitch com OBS Passo a Passo \(11:25\)) Tj ET
+BT /F1 8.5 Tf 0.3 0.35 0.45 rg 62 358 Td (Link Direto YouTube: https://www.youtube.com/watch?v=mQuJmH8o-p4 | Canal: vitinCtrL) Tj ET
+BT /F2 13 Tf 0.05 0.1 0.25 rg 45 332 Td (ESTRUTURA DOS MODULOS DESTE GUIA PDF) Tj ET
+BT /F2 10 Tf 0.1 0.15 0.25 rg 50 314 Td (Modulo 1: Arquitetura de Cenas, Fontes e Captura de Jogo sem Queda de FPS) Tj ET
+BT /F2 10 Tf 0.1 0.15 0.25 rg 50 299 Td (Modulo 2: Engenharia de Vídeo: Encoders NVENC, AMF, QuickSync e Tabelas de Bitrate) Tj ET
+BT /F2 10 Tf 0.1 0.15 0.25 rg 50 284 Td (Modulo 3: Áudio de Estúdio: A Cadeia Perfeita de Filtros de Microfone no OBS) Tj ET
+BT /F2 10 Tf 0.1 0.15 0.25 rg 50 269 Td (Modulo 4: Crescimento Acelerado: Alertas, Multistream, Cortes Virais e Monetização) Tj ET
+0.85 0.88 0.92 RG 0.5 w 45 45 522 0 re S
+BT /F1 8.5 Tf 0.4 0.45 0.55 rg 45 30 Td (Zher Keys Marketplace & Academy - https://zherkeys.com/cursos - Pagina 1) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 2531 >>
+stream
+0.01 0.03 0.09 rg 0 742 612 50 re f
+0.23 0.51 0.96 rg 0 739 612 3 re f
+BT /F2 11 Tf 1 1 1 rg 45 762 Td (OBS Studio Masterclass & Live Streaming Pro - MODULO 1) Tj ET
+BT /F2 15 Tf 0.05 0.12 0.3 rg 45 705 Td (MODULO 1: Arquitetura de Cenas, Fontes e Captura de Jogo sem Queda de FPS) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 681 Td (O erro mais comum de quem começa a fazer lives ou gravar gameplays no OBS Studio é) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 667 Td (usar a "Captura de Tela" \(Display Capture\) na mesma cena em que está a "Captura de) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 653 Td (Jogo" \(Game Capture\). Isso força o Windows a duplicar o buffer de composição \(DWM\),) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 639 Td (derrubando o FPS e causando micro-travamentos.) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 617 Td (A estrutura profissional separa o projeto em 4 Cenas limpas: 1\) "Iniciando Live") Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 603 Td (\(Contagem regressiva + música\); 2\) "Bate-Papo / Just Chatting" \(Webcam em tela cheia +) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 589 Td (Chat\); 3\) "Gameplay Principal" \(Apenas Captura de Jogo + Webcam em moldura + Alertas\);) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 575 Td (e 4\) "Encerramento".) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 553 Td (Sempre execute o OBS Studio como Administrador: isso garante prioridade na fila da GPU) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 539 Td (para que o OBS nunca trave sua transmissão mesmo quando o jogo atingir 99% de uso da) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 525 Td (placa de vídeo.) Tj ET
+0.94 0.98 0.96 rg 45 70 522 115 re f
+0.06 0.72 0.50 RG 1 w 45 70 522 115 re S
+BT /F2 10.5 Tf 0.04 0.45 0.32 rg 55 168 Td (CHECKLIST PRATICO & COMANDOS CHAVE DO MODULO 1) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 150 Td ([OK] Clique com o botão direito no ícone do OBS Studio > Propriedades >) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 137 Td (Compatibilidade > Marque "Executar este programa como administrador".) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 124 Td ([OK] Nunca coloque "Captura de Tela" e "Captura de Jogo" dentro da mesma Cena!) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 111 Td ([OK] Desative a pré-visualização \(Preview\) do OBS durante jogos muito pesados) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 98 Td (clicando com o botão direito no palco se precisar economizar 2% a 4% de GPU.) Tj ET
+0.85 0.88 0.92 RG 0.5 w 45 45 522 0 re S
+BT /F1 8.5 Tf 0.4 0.45 0.55 rg 45 30 Td (Zher Keys Academy - Guia Oficial em PDF | Pagina 2 de 5) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 10 0 R >>
+endobj
+10 0 obj
+<< /Length 2871 >>
+stream
+0.01 0.03 0.09 rg 0 742 612 50 re f
+0.23 0.51 0.96 rg 0 739 612 3 re f
+BT /F2 11 Tf 1 1 1 rg 45 762 Td (OBS Studio Masterclass & Live Streaming Pro - MODULO 2) Tj ET
+BT /F2 15 Tf 0.05 0.12 0.3 rg 45 705 Td (MODULO 2: Engenharia de Vídeo: Encoders NVENC, AMF, QuickSync e Tabelas de Bitrate) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 681 Td (Para transmitir ao vivo \(Live Streaming\), o controle de taxa de bits deve ser) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 667 Td (obrigatoriamente CBR \(Constant Bitrate - Taxa de Bits Constante\). Já para gravação) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 653 Td (local no seu SSD para editar depois no Premiere/CapCut/DaVinci, utilize CQP \(Constant) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 639 Td (Quantization Parameter, nível 18 a 22\), que adapta a taxa de bits dinamicamente sem) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 625 Td (desperdiçar espaço em cenas paradas.) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 603 Td (Se você possui placa NVIDIA GTX 1650 Super ou qualquer RTX \(série 20, 30, 40 ou 50\),) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 589 Td (selecione o encoder "NVIDIA NVENC H.264" \(ou AV1/HEVC para YouTube\). Ele utiliza um) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 575 Td (chip dedicado separado na placa de vídeo, gerando impacto praticamente ZERO no FPS do) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 561 Td (jogo.) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 539 Td (Na Twitch, o limite oficial de bitrate é 6000 Kbps \(para 1080p60 ou 936p60 - 1664x936) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 525 Td (é a resolução secreta dos grandes streamers de FPS por evitar pixelização em) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 511 Td (movimentos rápidos!\). No YouTube, você pode enviar de 10.000 a 18.000 Kbps em 1080p60) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 497 Td (ou 1440p60.) Tj ET
+0.94 0.98 0.96 rg 45 70 522 115 re f
+0.06 0.72 0.50 RG 1 w 45 70 522 115 re S
+BT /F2 10.5 Tf 0.04 0.45 0.32 rg 55 168 Td (CHECKLIST PRATICO & COMANDOS CHAVE DO MODULO 2) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 150 Td ([OK] Twitch \(Jogos de Movimento Rápido/FPS\): Resolução de Saída 1664x936 ou) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 137 Td (1920x1080 a 60 FPS | Controle CBR | 6000 Kbps | Keyframe Interval: 2 s.) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 124 Td ([OK] YouTube Live: Resolução 1920x1080 ou 2560x1440 a 60 FPS | Encoder NVENC) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 111 Td (HEVC/AV1 ou H.264 | Controle CBR | 12.000 Kbps.) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 98 Td ([OK] Gravação Local no PC: Formato MKV \(ou MP4 Fragmentado\) | Controle de Taxa CQP) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 85 Td (\(Nível 20\) | Áudio em faixas separadas \(Faixa 1: Tudo, Faixa 2: Só Microfone,) Tj ET
+0.85 0.88 0.92 RG 0.5 w 45 45 522 0 re S
+BT /F1 8.5 Tf 0.4 0.45 0.55 rg 45 30 Td (Zher Keys Academy - Guia Oficial em PDF | Pagina 3 de 5) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 12 0 R >>
+endobj
+12 0 obj
+<< /Length 2530 >>
+stream
+0.01 0.03 0.09 rg 0 742 612 50 re f
+0.23 0.51 0.96 rg 0 739 612 3 re f
+BT /F2 11 Tf 1 1 1 rg 45 762 Td (OBS Studio Masterclass & Live Streaming Pro - MODULO 3) Tj ET
+BT /F2 15 Tf 0.05 0.12 0.3 rg 45 705 Td (MODULO 3: Áudio de Estúdio: A Cadeia Perfeita de Filtros de Microfone no OBS) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 681 Td (O público perdoa uma webcam simples ou um jogo em 720p, mas fecha a live em 5 segundos) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 667 Td (se o áudio estiver chiando, estourando ou mais baixo que o som do tiro do jogo. Com os) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 653 Td (filtros nativos gratuitos do OBS Studio, qualquer microfone USB ou headset pode soar) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 639 Td (como um estúdio de rádio.) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 617 Td (A ordem exata dos filtros no microfone é fundamental, pois o áudio passa de cima para) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 603 Td (baixo na lista: 1º Supressão de Ruído; 2º Filtro de Ruído \(Noise Gate\); 3º Equalizador) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 589 Td (de 3 Bandas; 4º Compressor; e 5º Limitador.) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 567 Td (Além disso, usamos o recurso "Sidechain / Redução de Áudio \(Ducking\)" no Compressor do) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 553 Td (Áudio do Desktop: toda vez que você fala no microfone, o volume do jogo/música abaixa) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 539 Td (suavemente em 4dB e volta ao normal quando você termina a frase!) Tj ET
+0.94 0.98 0.96 rg 45 70 522 115 re f
+0.06 0.72 0.50 RG 1 w 45 70 522 115 re S
+BT /F2 10.5 Tf 0.04 0.45 0.32 rg 55 168 Td (CHECKLIST PRATICO & COMANDOS CHAVE DO MODULO 3) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 150 Td ([OK] 1º Filtro - Supressão de Ruído: Método RNNoise \(IA de boa qualidade que) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 137 Td (remove barulho de ventilador e ar-condicionado\).) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 124 Td ([OK] 2º Filtro - Filtro de Ruído \(Noise Gate\): Limite de Fechamento -32 dB /) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 111 Td (Limite de Abertura -26 dB \(corta barulhos de teclado quando você está calado\).) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 98 Td ([OK] 3º Filtro - Compressor: Razão 4:1 | Limiar -18 dB | Ataque 6 ms | Liberação) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 85 Td (60 ms \(iguala sussurros e falas altas\).) Tj ET
+0.85 0.88 0.92 RG 0.5 w 45 45 522 0 re S
+BT /F1 8.5 Tf 0.4 0.45 0.55 rg 45 30 Td (Zher Keys Academy - Guia Oficial em PDF | Pagina 4 de 5) Tj ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 14 0 R >>
+endobj
+14 0 obj
+<< /Length 2651 >>
+stream
+0.01 0.03 0.09 rg 0 742 612 50 re f
+0.23 0.51 0.96 rg 0 739 612 3 re f
+BT /F2 11 Tf 1 1 1 rg 45 762 Td (OBS Studio Masterclass & Live Streaming Pro - MODULO 4) Tj ET
+BT /F2 15 Tf 0.05 0.12 0.3 rg 45 705 Td (MODULO 4: Crescimento Acelerado: Alertas, Multistream, Cortes Virais e Monetização) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 681 Td (Fazer apenas lives longas sem distribuir cortes curtos é o maior obstáculo para novos) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 667 Td (criadores. A estratégia moderna de crescimento baseia-se no "Ecossistema de Conteúdo":) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 653 Td (enquanto você transmite ao vivo, utilize o Buffer deRepetição \(Replay Buffer\) do OBS) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 639 Td (com uma tecla de atalho para salvar os últimos 60 segundos sempre que acontecer uma) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 625 Td (jogada épica ou momento engraçado.) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 603 Td (Com o plugin gratuito Aitum Vertical no OBS, o próprio programa já grava a versão) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 589 Td (vertical \(9:16 com câmera no topo e gameplay centralizada\) pronta para postar no) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 575 Td (TikTok, YouTube Shorts e Instagram Reels em 2 minutos após encerrar a live.) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 553 Td (Configure seus alertas gratuitos no StreamElements \(que roda em nuvem e consome apenas) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 539 Td (1 fonte de navegador no OBS\) para agradecer novos seguidores, inscritos e doações via) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 525 Td (LivePix na tela.) Tj ET
+0.94 0.98 0.96 rg 45 70 522 115 re f
+0.06 0.72 0.50 RG 1 w 45 70 522 115 re S
+BT /F2 10.5 Tf 0.04 0.45 0.32 rg 55 168 Td (CHECKLIST PRATICO & COMANDOS CHAVE DO MODULO 4) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 150 Td ([OK] Ative o "Buffer de Reprodução" \(Replay Buffer\) em Configurações > Saída com) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 137 Td (tempo máximo de 60s e defina a tecla F9 para salvar clipes instantâneos.) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 124 Td ([OK] Use o StreamElements para unificar todos os alertas \(Follower, Sub,Pix\) em) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 111 Td (uma única Browser Source 1920x1080.) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 98 Td ([OK] Publique de 1 a 2 cortes verticais por dia das melhores jogadas da sua live) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 85 Td (no Shorts, Reels e TikTok apontando para o seu canal.) Tj ET
+0.85 0.88 0.92 RG 0.5 w 45 45 522 0 re S
+BT /F1 8.5 Tf 0.4 0.45 0.55 rg 45 30 Td (Zher Keys Academy - Guia Oficial em PDF | Pagina 5 de 5) Tj ET
+endstream
+endobj
+xref
+0 15
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000147 00000 n 
+0000000244 00000 n 
+0000000346 00000 n 
+0000000482 00000 n 
+0000003853 00000 n 
+0000003989 00000 n 
+0000006572 00000 n 
+0000006709 00000 n 
+0000009633 00000 n 
+0000009771 00000 n 
+0000012354 00000 n 
+0000012492 00000 n 
+trailer
+<< /Size 15 /Root 1 0 R >>
+startxref
+15196
+%%EOF

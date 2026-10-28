@@ -129,6 +129,7 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'AW-18202657831');
 </script>
+<script src="/courses-data.js"></script>
 </head>
 <body class="text-slate-200 antialiased mesh-bg scanline">
     <!-- Google AdSense Auto Ads Body Tag -->
@@ -149,6 +150,11 @@ gtag('config', 'AW-18202657831');
                 <a href="#catalogo" data-i18n="nav_catalog" class="relative py-2 transition-colors hover:text-white group">
                     CATÁLOGO
                     <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-electricblue transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="/cursos" class="relative py-2 transition-colors text-cyberrose hover:text-pink-400 font-bold group flex items-center gap-1">
+                    🎓 CURSOS & GUIAS
+                    <span class="bg-cyberrose/20 border border-cyberrose/40 text-cyberrose text-[8px] px-1.5 py-0.5 rounded font-black">PDF+VÍDEO</span>
+                    <span class="absolute bottom-0 left-0 w-0 h-[2px] bg-cyberrose transition-all duration-300 group-hover:w-full"></span>
                 </a>
                 <a href="/guias" class="relative py-2 transition-colors text-blue-400 hover:text-blue-300 font-bold group flex items-center gap-1">
                     📚 GUIAS & ARTIGOS
@@ -226,6 +232,7 @@ gtag('config', 'AW-18202657831');
     <div id="mobile-menu" class="lg:hidden hidden bg-slate-950/98 border-t border-slate-800/80 fixed top-16 sm:top-20 left-0 right-0 z-40 backdrop-blur-md shadow-2xl">
         <div class="px-5 py-4 space-y-3 font-orbitron text-xs tracking-wider">
             <a href="#catalogo" class="block text-white hover:text-electricblue py-2 border-b border-slate-900">📦 CATÁLOGO DE JOGOS</a>
+            <a href="/cursos" class="block text-cyberrose hover:text-white py-2 border-b border-slate-900 font-bold">🎓 CURSOS, GUIAS PDF & VIDEOAULAS</a>
             <a href="/guias" class="block text-blue-400 hover:text-white py-2 border-b border-slate-900 font-bold">📚 GUIAS & ARTIGOS GAMER</a>
             <a href="#vantagens" class="block text-white hover:text-electricblue py-2 border-b border-slate-900">⚡ RECURSOS DA LOJA</a>
             <a href="/account.html" class="block text-electricblue hover:text-white py-2 border-b border-slate-900 font-bold">👤 MINHA CONTA / LOGIN</a>
@@ -526,9 +533,24 @@ gtag('config', 'AW-18202657831');
 
     <!-- VITRINE DE PRODUTOS -->
     <section id="vitrine" class="py-24 px-4 max-w-7xl mx-auto scroll-mt-20">
-        <div class="text-center mb-16">
+        <div class="text-center mb-10">
             <span data-i18n="catalog_subtitle" class="font-orbitron text-xs tracking-widest text-electricblue font-bold block mb-2 uppercase">// DESTAQUES DA LOJA</span>
-            <h2 data-i18n="catalog_title" class="font-orbitron font-black text-3xl sm:text-4xl text-white uppercase tracking-tight">JOGOS EM PROMOÇÃO</h2>
+            <h2 data-i18n="catalog_title" class="font-orbitron font-black text-3xl sm:text-4xl text-white uppercase tracking-tight">CATÁLOGO DE JOGOS, CURSOS & GUIAS</h2>
+            <!-- ABAS RÁPIDAS DO CATÁLOGO (JOGOS vs CURSOS & GUIAS PDF + VÍDEO) -->
+            <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-6">
+                <button id="cat-tab-all" onclick="switchCatalogMode('all')" class="bg-electricblue text-white border border-electricblue font-orbitron font-bold text-[10px] sm:text-xs tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-lg">
+                    🌐 TODOS DO CATÁLOGO
+                </button>
+                <button id="cat-tab-games" onclick="switchCatalogMode('games')" class="bg-slate-900/90 hover:bg-slate-800 text-slate-300 border border-slate-800 font-orbitron font-bold text-[10px] sm:text-xs tracking-wider px-4 py-2.5 rounded-xl transition-all">
+                    🎮 JOGOS & KEYS DIGITAIS
+                </button>
+                <button id="cat-tab-courses" onclick="switchCatalogMode('courses')" class="bg-cyberrose/15 hover:bg-cyberrose text-cyberrose hover:text-white border border-cyberrose/50 font-orbitron font-bold text-[10px] sm:text-xs tracking-wider px-4 py-2.5 rounded-xl transition-all flex items-center gap-1.5">
+                    🎓 CURSOS & GUIAS (PDF + VIDEOAULAS)
+                </button>
+                <a href="/cursos" class="bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 border border-emerald-500/40 font-orbitron font-bold text-[10px] sm:text-xs tracking-wider px-4 py-2.5 rounded-xl transition-all flex items-center gap-1.5">
+                    📺 IR PARA ABA DE CURSOS & SALA DE AULA →
+                </a>
+            </div>
         </div>
         
         <!-- SEARCH & FILTER BAR -->
@@ -536,12 +558,13 @@ gtag('config', 'AW-18202657831');
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="lg:col-span-2 relative">
                     <i data-lucide="search" class="w-5 h-5 absolute left-3 top-3 text-slate-500"></i>
-                    <input type="text" id="filter-search" oninput="renderGrid()" data-i18n="catalog_search" data-i18n-attr="placeholder" placeholder="Buscar jogos, contas..." class="w-full bg-slate-950 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-electricblue transition-colors text-sm font-inter">
+                    <input type="text" id="filter-search" oninput="renderGrid()" data-i18n="catalog_search" data-i18n-attr="placeholder" placeholder="Buscar jogos, cursos PDF, videoaulas, contas..." class="w-full bg-slate-950 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-electricblue transition-colors text-sm font-inter">
                 </div>
                 
                 <div>
                     <select id="filter-category" onchange="renderGrid()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-300 focus:outline-none focus:border-electricblue transition-colors text-sm font-inter appearance-none">
                         <option value="" data-i18n="cat_all">Todas as Categorias</option>
+                        <option value="CURSO & GUIA PDF">🎓 Cursos & Guias (PDF + Vídeo)</option>
                         <option value="STEAM KEY" data-i18n="cat_steam">Steam Key</option>
                         <option value="XBOX KEY" data-i18n="cat_xbox">Xbox Key / Conta</option>
                         <option value="MICROSOFT STORE" data-i18n="cat_microsoft">Microsoft Store</option>
@@ -740,6 +763,34 @@ gtag('config', 'AW-18202657831');
                     <div class="absolute bottom-0 left-0 h-[2px] w-0 bg-purple-500 transition-all duration-300 group-hover:w-full"></div>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- SEÇÃO / ABA DEDICADA: CURSOS, GUIAS DE INFORMAÇÕES EM PDF & VIDEOAULAS DO YOUTUBE -->
+    <section id="aba-cursos" class="py-24 bg-gradient-to-b from-slate-950 via-slate-900/60 to-slate-950 border-t border-slate-800/80 relative scroll-mt-20">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center mb-14">
+                <div class="inline-flex items-center gap-2 bg-cyberrose/15 border border-cyberrose/40 text-cyberrose font-orbitron text-[10px] tracking-widest px-4 py-1.5 rounded-full uppercase font-bold mb-4">
+                    🎓 ZHER ACADEMY — GUIAS DE INFORMAÇÕES COMPLETOS + PDF + VIDEOAULAS
+                </div>
+                <h2 class="font-orbitron font-black text-3xl sm:text-5xl text-white uppercase tracking-tight">
+                    CURSOS, APOSTILAS <span class="text-cyberrose">PDF</span> & <span class="text-electricblue">VIDEOAULAS</span>
+                </h2>
+                <p class="font-inter text-slate-400 text-xs sm:text-base max-w-3xl mx-auto mt-3 font-light leading-relaxed">
+                    Adquira <strong class="text-white">Guias de Informações Técnicos Completos</strong> com preço acessível no catálogo, incluindo <strong class="text-emerald-400">Apostila em PDF para baixar</strong>, checklists práticos de comandos e <strong class="text-cyberrose">Videoaulas do YouTube</strong> organizadas passo a passo em nossa Sala de Aula Interativa.
+                </p>
+                <div class="flex flex-wrap items-center justify-center gap-3 mt-6">
+                    <a href="/cursos" class="inline-flex items-center gap-2 bg-cyberrose hover:bg-rose-600 text-white font-orbitron text-xs tracking-wider px-6 py-3 rounded-xl transition-all font-bold shadow-lg shadow-rose-500/20">
+                        🎓 ABRIR CENTRAL COMPLETA DE CURSOS & SALA DE AULA <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </a>
+                    <button onclick="switchCatalogMode('courses'); document.getElementById('vitrine').scrollIntoView({behavior:'smooth'});" class="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-orbitron text-xs tracking-wider px-5 py-3 rounded-xl transition-all font-bold">
+                        📦 FILTRAR CURSOS NO CATÁLOGO ACIMA
+                    </button>
+                </div>
+            </div>
+
+            <!-- Grid de Cursos Renderizado via JS (window.ZHER_COURSES_DATA) -->
+            <div id="home-courses-showcase-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
         </div>
     </section>
 
@@ -1419,15 +1470,105 @@ gtag('config', 'AW-18202657831');
                 const res = await fetch('/api/products');
                 if(!res.ok) throw new Error("Falha ao buscar produtos");
                 produtos = await res.json();
+                if (Array.isArray(window.ZHER_COURSES_DATA)) {
+                    window.ZHER_COURSES_DATA.forEach(course => {
+                        if (!produtos.some(p => Number(p.id) === Number(course.id))) {
+                            produtos.push({
+                                id: course.id,
+                                title: course.title,
+                                description: course.guideOverview || course.subtitle,
+                                price: course.price,
+                                old_price: course.old_price,
+                                image: course.image,
+                                category: course.category || 'CURSO & GUIA PDF',
+                                in_stock: true,
+                                is_global: true,
+                                genres: course.genres || 'Curso, Guia PDF, Videoaulas'
+                            });
+                        }
+                    });
+                }
                 window.produtos = produtos;
                 populateCategoryFilter();
                 populateGenreFilter();
                 renderGrid();
+                renderHomeCoursesShowcase();
                 if (typeof initSteamSlider === 'function') initSteamSlider();
             } catch(e) {
                 console.error("Erro ao carregar produtos:", e);
-                document.getElementById('product-grid').innerHTML = '<div class="col-span-full text-center text-slate-400">Nenhum produto disponível no momento.</div>';
+                if (Array.isArray(window.ZHER_COURSES_DATA) && window.ZHER_COURSES_DATA.length > 0) {
+                    produtos = window.ZHER_COURSES_DATA.map(c => ({ ...c, in_stock: true, is_global: true }));
+                    window.produtos = produtos;
+                    renderGrid();
+                    renderHomeCoursesShowcase();
+                } else {
+                    document.getElementById('product-grid').innerHTML = '<div class="col-span-full text-center text-slate-400">Nenhum produto disponível no momento.</div>';
+                }
             }
+        }
+
+        function renderHomeCoursesShowcase() {
+            const container = document.getElementById('home-courses-showcase-grid');
+            if (!container || !Array.isArray(window.ZHER_COURSES_DATA)) return;
+            container.innerHTML = window.ZHER_COURSES_DATA.map(c => {
+                const videoCount = Array.isArray(c.videos) ? c.videos.length : 5;
+                const modulesCount = Array.isArray(c.modules) ? c.modules.length : 4;
+                const priceStr = formatPrice(c.price);
+                const oldPriceStr = c.old_price ? formatPrice(c.old_price) : '';
+                return `
+                    <div class="bg-slate-900/80 border border-slate-800 hover:border-cyberrose/60 rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-300 group shadow-xl">
+                        <div>
+                            <div class="h-44 w-full relative overflow-hidden cursor-pointer" onclick="window.location.href='/cursos?curso=${c.id}'">
+                                <img src="${c.image}" alt="${c.title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent"></div>
+                                <span class="absolute top-3 left-3 bg-cyberrose/90 text-white font-orbitron font-bold text-[9px] tracking-widest px-2.5 py-1 rounded-md shadow">
+                                    ${c.badge || 'CURSO + PDF + VÍDEO'}
+                                </span>
+                                <span class="absolute top-3 right-3 bg-slate-950/90 border border-emerald-500/40 text-emerald-400 font-orbitron font-bold text-[9px] px-2 py-0.5 rounded">
+                                    📄 ${c.pages || 45} PÁGINAS PDF
+                                </span>
+                                <div class="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-[10px] font-orbitron text-slate-200">
+                                    <span class="bg-slate-950/85 border border-slate-700 px-2 py-0.5 rounded flex items-center gap-1 text-red-400">
+                                        ▶ ${videoCount} Videoaulas YouTube
+                                    </span>
+                                    <span class="bg-slate-950/85 border border-slate-700 px-2 py-0.5 rounded text-electricblue">
+                                        📚 ${modulesCount} Módulos
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <div class="text-[10px] font-orbitron text-slate-400 uppercase tracking-wider mb-1">${c.level || 'Iniciante ao Avançado'} • ${c.duration || '6h'}</div>
+                                <h3 class="font-orbitron font-bold text-sm sm:text-base text-white group-hover:text-cyberrose transition-colors line-clamp-2 mb-2 cursor-pointer" onclick="window.location.href='/cursos?curso=${c.id}'">
+                                    ${c.title}
+                                </h3>
+                                <p class="text-slate-400 text-xs line-clamp-2 mb-4 leading-relaxed">${c.subtitle}</p>
+                                <div class="flex flex-wrap gap-1.5 mb-3 text-[10px]">
+                                    <a href="${c.pdfUrl}" target="_blank" class="bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-2.5 py-1 rounded font-orbitron font-bold transition-colors">
+                                        📥 Apostila PDF Inclusa
+                                    </a>
+                                    <a href="/cursos?curso=${c.id}" class="bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 px-2.5 py-1 rounded font-orbitron font-bold transition-colors">
+                                        📺 Ver Videoaulas & Guia
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-5 pb-5 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                            <div>
+                                ${oldPriceStr ? `<del class="text-[10px] text-rose-400 font-orbitron block -mb-1">${oldPriceStr}</del>` : ''}
+                                <span class="font-orbitron font-black text-lg sm:text-xl text-emerald-400">${priceStr}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <a href="/cursos?curso=${c.id}" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-orbitron font-bold text-[10px] px-2.5 py-2 rounded-lg transition-colors" title="Abrir Guia de Informações, Vídeos e PDF">
+                                    🎓 AULAS + PDF
+                                </a>
+                                <button onclick="addAndShowCart(event, ${c.id})" class="bg-cyberrose hover:bg-rose-600 text-white font-orbitron font-bold text-[10px] px-3 py-2 rounded-lg transition-colors flex items-center gap-1 shadow-lg">
+                                    🛒 COMPRAR
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         // --- TRANSLATIONS LOGIC ---
@@ -1921,6 +2062,36 @@ gtag('config', 'AW-18202657831');
             renderGrid();
         };
 
+        window.catalogTabMode = 'all';
+        window.switchCatalogMode = (mode) => {
+            window.catalogTabMode = mode || 'all';
+            const catSelect = document.getElementById('filter-category');
+            if (catSelect) {
+                if (mode === 'courses') {
+                    catSelect.value = 'CURSO & GUIA PDF';
+                } else if (mode === 'games' && catSelect.value === 'CURSO & GUIA PDF') {
+                    catSelect.value = '';
+                } else if (mode === 'all') {
+                    catSelect.value = '';
+                }
+            }
+            const btnAll = document.getElementById('cat-tab-all');
+            const btnGames = document.getElementById('cat-tab-games');
+            const btnCourses = document.getElementById('cat-tab-courses');
+            if (btnAll && btnGames && btnCourses) {
+                btnAll.className = mode === 'all'
+                    ? 'bg-electricblue text-white border border-electricblue font-orbitron font-bold text-[10px] sm:text-xs tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-lg'
+                    : 'bg-slate-900/90 hover:bg-slate-800 text-slate-300 border border-slate-800 font-orbitron font-bold text-[10px] sm:text-xs tracking-wider px-4 py-2.5 rounded-xl transition-all';
+                btnGames.className = mode === 'games'
+                    ? 'bg-electricblue text-white border border-electricblue font-orbitron font-bold text-[10px] sm:text-xs tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-lg'
+                    : 'bg-slate-900/90 hover:bg-slate-800 text-slate-300 border border-slate-800 font-orbitron font-bold text-[10px] sm:text-xs tracking-wider px-4 py-2.5 rounded-xl transition-all';
+                btnCourses.className = mode === 'courses'
+                    ? 'bg-cyberrose text-white border border-cyberrose font-orbitron font-bold text-[10px] sm:text-xs tracking-wider px-4 py-2.5 rounded-xl transition-all shadow-lg flex items-center gap-1.5'
+                    : 'bg-cyberrose/15 hover:bg-cyberrose text-cyberrose hover:text-white border border-cyberrose/50 font-orbitron font-bold text-[10px] sm:text-xs tracking-wider px-4 py-2.5 rounded-xl transition-all flex items-center gap-1.5';
+            }
+            renderGrid();
+        };
+
         function getFilteredProducts() {
             const search = document.getElementById('filter-search')?.value.toLowerCase() || '';
             const category = document.getElementById('filter-category')?.value || '';
@@ -1933,7 +2104,10 @@ gtag('config', 'AW-18202657831');
 
             let filtered = produtos.filter(p => {
                 let match = true;
-                if(search && !p.title.toLowerCase().includes(search) && !p.description.toLowerCase().includes(search)) match = false;
+                const isCourse = (p.category && p.category.toUpperCase().includes('CURSO')) || (p.id >= 101 && p.id <= 108);
+                if (window.catalogTabMode === 'games' && isCourse) match = false;
+                if (window.catalogTabMode === 'courses' && !isCourse) match = false;
+                if(search && !p.title.toLowerCase().includes(search) && !(p.description || '').toLowerCase().includes(search)) match = false;
                 if(category && p.category !== category) match = false;
                 if(genre && !(p.genres || '').toLowerCase().includes(genre)) match = false;
                 if(!isNaN(minPrice) && parseFloat(p.price) < minPrice) match = false;
@@ -2043,7 +2217,20 @@ gtag('config', 'AW-18202657831');
                             EPIC GAMES
                         </div>
                     `;
+                } else if (catUpper.includes('CURSO')) {
+                    badgeOverlay = `
+                        <div class="absolute top-3 left-3 bg-cyberrose/90 border border-rose-400/60 px-2.5 py-1 rounded backdrop-blur-md flex items-center gap-1.5 z-10 text-[9px] font-orbitron text-white font-bold tracking-widest uppercase shadow-lg">
+                            🎓 CURSO + PDF + VÍDEO
+                        </div>
+                    `;
                 }
+
+                const isCourseCard = catUpper.includes('CURSO') || (p.id >= 101 && p.id <= 108);
+                const courseActionBtn = isCourseCard ? `
+                    <a href="/cursos?curso=${p.id}" onclick="event.stopPropagation();" class="px-2.5 py-1.5 rounded bg-cyberrose/20 border border-cyberrose/50 text-cyberrose hover:bg-cyberrose hover:text-white font-orbitron font-bold text-[9px] tracking-wider transition-colors z-10 relative flex items-center gap-1" title="Acessar Guia de Informações, Apostila PDF e Videoaulas">
+                        🎓 AULAS + PDF
+                    </a>
+                ` : '';
 
                 // Favorites button in top right
                 const favActive = isFavorite(p.id);
@@ -2077,9 +2264,12 @@ gtag('config', 'AW-18202657831');
                                 ${regionIcon.replace('mt-1 mb-2', '')}
                                 ${getAgeRatingMiniBadgeHtml(p.description)}
                             </div>
-                            <div class="mt-auto flex items-center justify-between pt-2 sm:pt-4">
+                            <div class="mt-auto flex items-center justify-between pt-2 sm:pt-4 gap-1.5">
                                 ${precoFormatado}
-                                ${cartBtn}
+                                <div class="flex items-center gap-1.5">
+                                    ${courseActionBtn}
+                                    ${cartBtn}
+                                </div>
                             </div>
                         </div>
                         <div class="absolute bottom-0 left-0 h-[2px] w-0 bg-electricblue transition-all duration-300 group-hover:w-full"></div>

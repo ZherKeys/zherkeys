@@ -1,0 +1,202 @@
+%PDF-1.4
+%âãÏÓ
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [5 0 R 7 0 R 9 0 R 11 0 R 13 0 R] /Count 5 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 3233 >>
+stream
+0.01 0.03 0.09 rg 0 710 612 82 re f
+0.23 0.51 0.96 rg 0 706 612 4 re f
+BT /F2 18 Tf 1 1 1 rg 45 755 Td (ZHER KEYS ACADEMY - GUIA OFICIAL & APOSTILA PDF) Tj ET
+BT /F1 10 Tf 0.7 0.8 0.95 rg 45 732 Td (MATERIAL DIDATICO COMPLETO + ROTEIRO DE VIDEOAULAS DO YOUTUBE) Tj ET
+BT /F2 16 Tf 0.05 0.1 0.25 rg 45 665 Td (Criacao e Desenvolvimento de Jogos 2D e 3D) Tj ET
+BT /F1 11 Tf 0.95 0.25 0.37 rg 45 643 Td (Categoria: Game Dev & Engines  |  Nivel: Iniciante ao Intermediário  |  Carga Horaria: 24 Horas \(Vídeo + Apostila PDF\)) Tj ET
+0.95 0.97 1.0 rg 40 535 532 75 re f
+0.23 0.51 0.96 RG 1 w 40 535 532 75 re S
+BT /F2 11 Tf 0.05 0.15 0.35 rg 52 590 Td (RESUMO EXECUTIVO DO GUIA DE INFORMACOES) Tj ET
+BT /F1 9.5 Tf 0.15 0.2 0.3 rg 52 573 Td (Descubra como transformar suas ideias em jogos reais 2D e 3D! Aprenda os fundamentos) Tj ET
+BT /F1 9.5 Tf 0.15 0.2 0.3 rg 52 559 Td (de Game Design, escolha a engine ideal \(Godot 4, Unity ou Unreal Engine 5\), programe) Tj ET
+BT /F1 9.5 Tf 0.15 0.2 0.3 rg 52 545 Td (movimentação, física, colisão, inteligência artificial de inimigos, interface de) Tj ET
+BT /F2 13 Tf 0.05 0.1 0.25 rg 45 505 Td (CRONOGRAMA DE VIDEOAULAS INTEGRADO \(YOUTUBE\)) Tj ET
+BT /F2 9.5 Tf 0.1 0.3 0.7 rg 50 487 Td (Aula 1: O Único Guia que Você Precisa para Começar a Criar Jogos do Zero \(21:10\)) Tj ET
+BT /F1 8.5 Tf 0.3 0.35 0.45 rg 62 474 Td (Link Direto YouTube: https://www.youtube.com/watch?v=YttotvHX_TU | Canal: Lua Lúdica) Tj ET
+BT /F2 9.5 Tf 0.1 0.3 0.7 rg 50 458 Td (Aula 2: Os 3 Passos Fundamentais para Criar e Finalizar seu Primeiro Jogo \(12:45\)) Tj ET
+BT /F1 8.5 Tf 0.3 0.35 0.45 rg 62 445 Td (Link Direto YouTube: https://www.youtube.com/watch?v=gY3bUNnj6bo | Canal: RodDev) Tj ET
+BT /F2 9.5 Tf 0.1 0.3 0.7 rg 50 429 Td (Aula 3: Godot Engine vs Unity: Entenda o Ecossistema Atual de Game Engines \(14:30\)) Tj ET
+BT /F1 8.5 Tf 0.3 0.35 0.45 rg 62 416 Td (Link Direto YouTube: https://www.youtube.com/watch?v=4bsHCDtnmS8 | Canal: Spacelaxy) Tj ET
+BT /F2 9.5 Tf 0.1 0.3 0.7 rg 50 400 Td (Aula 4: Bastidores e Arquitetura de um Jogo FPS Estilizado na Godot Engine \(16:20\)) Tj ET
+BT /F1 8.5 Tf 0.3 0.35 0.45 rg 62 387 Td (Link Direto YouTube: https://www.youtube.com/watch?v=Yerl68tLGNA | Canal: Sembask) Tj ET
+BT /F2 9.5 Tf 0.1 0.3 0.7 rg 50 371 Td (Aula 5: Primeiros Passos Rápidos Criando um Jogo 2D na Godot \(05:00\)) Tj ET
+BT /F1 8.5 Tf 0.3 0.35 0.45 rg 62 358 Td (Link Direto YouTube: https://www.youtube.com/watch?v=ENde5kN8-S4 | Canal: CorteBruto) Tj ET
+BT /F2 13 Tf 0.05 0.1 0.25 rg 45 332 Td (ESTRUTURA DOS MODULOS DESTE GUIA PDF) Tj ET
+BT /F2 10 Tf 0.1 0.15 0.25 rg 50 314 Td (Modulo 1: Fundamentos de Game Design, Core Loop e Escolha da Engine) Tj ET
+BT /F2 10 Tf 0.1 0.15 0.25 rg 50 299 Td (Modulo 2: O Game Loop \(Process, Delta Time\) e Física de Movimentação) Tj ET
+BT /F2 10 Tf 0.1 0.15 0.25 rg 50 284 Td (Modulo 3: Arte 2D/3D, Tilemaps, Animações, Shaders e Efeitos Sonoros \(Game Feel\)) Tj ET
+BT /F2 10 Tf 0.1 0.15 0.25 rg 50 269 Td (Modulo 4: Exportação, Polimento, Página da Loja e Publicação \(Itch.io e Steam\)) Tj ET
+0.85 0.88 0.92 RG 0.5 w 45 45 522 0 re S
+BT /F1 8.5 Tf 0.4 0.45 0.55 rg 45 30 Td (Zher Keys Marketplace & Academy - https://zherkeys.com/cursos - Pagina 1) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 2411 >>
+stream
+0.01 0.03 0.09 rg 0 742 612 50 re f
+0.23 0.51 0.96 rg 0 739 612 3 re f
+BT /F2 11 Tf 1 1 1 rg 45 762 Td (Criacao e Desenvolvimento de Jogos 2D e 3D - MODULO 1) Tj ET
+BT /F2 15 Tf 0.05 0.12 0.3 rg 45 705 Td (MODULO 1: Fundamentos de Game Design, Core Loop e Escolha da Engine) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 681 Td (Todo grande jogo nasce de um "Core Loop" \(Ciclo Principal de Gameplay\): a sequência de) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 667 Td (ações que o jogador repete a cada 30 segundos \(ex: Explorar -> Combater/Coletar ->) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 653 Td (Evoluir Personagem -> Enfrentar Desafio Maior\). Antes de abrir qualquer código, defina) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 639 Td (seu GDD \(Game Design Document\) de 1 página.) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 617 Td (A escolha da Game Engine depende do seu objetivo: a Godot Engine 4 é hoje a melhor) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 603 Td (escolha leve, 100% gratuita e sem royalties para jogos 2D e 3D indie \(usando GDScript,) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 589 Td (muito parecido com Python, ou C#\).) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 567 Td (Já a Unity domina o mercado mobile e multiplataforma com C#, enquanto a Unreal Engine) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 553 Td (5 \(C++ e Blueprints visuais\) é o padrão da indústria para gráficos 3D fotorrealistas) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 539 Td (com Nanite e Lumen.) Tj ET
+0.94 0.98 0.96 rg 45 70 522 115 re f
+0.06 0.72 0.50 RG 1 w 45 70 522 115 re S
+BT /F2 10.5 Tf 0.04 0.45 0.32 rg 55 168 Td (CHECKLIST PRATICO & COMANDOS CHAVE DO MODULO 1) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 150 Td ([OK] Regra de Ouro do Primeiro Jogo: Comece pequeno! Recrie mecânicas clássicas) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 137 Td (\(Plataforma 2D, Top-Down Shooter ou Roguelike de 1 tela\) antes de tentar um) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 124 Td (MMORPG.) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 111 Td ([OK] Baixe a Godot Engine 4 \(menos de 100MB, não requer instalação pesada\) ou o) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 98 Td (Unity Hub.) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 85 Td ([OK] Separe sua pasta de projeto em: /scenes, /scripts, /sprites, /audio e /ui.) Tj ET
+0.85 0.88 0.92 RG 0.5 w 45 45 522 0 re S
+BT /F1 8.5 Tf 0.4 0.45 0.55 rg 45 30 Td (Zher Keys Academy - Guia Oficial em PDF | Pagina 2 de 5) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 10 0 R >>
+endobj
+10 0 obj
+<< /Length 2402 >>
+stream
+0.01 0.03 0.09 rg 0 742 612 50 re f
+0.23 0.51 0.96 rg 0 739 612 3 re f
+BT /F2 11 Tf 1 1 1 rg 45 762 Td (Criacao e Desenvolvimento de Jogos 2D e 3D - MODULO 2) Tj ET
+BT /F2 15 Tf 0.05 0.12 0.3 rg 45 705 Td (MODULO 2: O Game Loop \(Process, Delta Time\) e Física de Movimentação) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 681 Td (Um jogo nada mais é do que um loop infinito que roda 60 ou mais vezes por segundo: lê) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 667 Td (a entrada do jogador \(Input\), atualiza a lógica e a física \(Update / Physics Process\)) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 653 Td (e desenha a cena na tela \(Render\).) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 631 Td (Para que o seu personagem se mova na mesma velocidade tanto em um PC a 30 FPS quanto) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 617 Td (em um monitor de 240 FPS, toda velocidade deve ser multiplicada pelo "delta" \(Delta) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 603 Td (Time - o tempo exato transcorrido entre o quadro anterior e o atual\).) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 581 Td (Em jogos 2D e 3D, utilizamos corpos físicos especializados \(como CharacterBody2D/3D na) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 567 Td (Godot ou CharacterController/Rigidbody na Unity\) que calculam automaticamente) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 553 Td (deslizamento em rampas e resposta a colisões \(move_and_slide\).) Tj ET
+0.94 0.98 0.96 rg 45 70 522 115 re f
+0.06 0.72 0.50 RG 1 w 45 70 522 115 re S
+BT /F2 10.5 Tf 0.04 0.45 0.32 rg 55 168 Td (CHECKLIST PRATICO & COMANDOS CHAVE DO MODULO 2) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 150 Td ([OK] Sempre processe física e movimentação dentro do _physics_process\(delta\)) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 137 Td (\(Godot\) ou FixedUpdate\(\) \(Unity\).) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 124 Td ([OK] Normalize vetores diagonais \(input_vector.normalized\(\)\) para evitar que o) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 111 Td (personagem ande 41% mais rápido na diagonal!) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 98 Td ([OK] Implemente "Coyote Time" \(permitir pular 0.1s após sair de uma borda\) e "Jump) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 85 Td (Buffering" para deixar os controles responsivos e profissionais.) Tj ET
+0.85 0.88 0.92 RG 0.5 w 45 45 522 0 re S
+BT /F1 8.5 Tf 0.4 0.45 0.55 rg 45 30 Td (Zher Keys Academy - Guia Oficial em PDF | Pagina 3 de 5) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 12 0 R >>
+endobj
+12 0 obj
+<< /Length 2296 >>
+stream
+0.01 0.03 0.09 rg 0 742 612 50 re f
+0.23 0.51 0.96 rg 0 739 612 3 re f
+BT /F2 11 Tf 1 1 1 rg 45 762 Td (Criacao e Desenvolvimento de Jogos 2D e 3D - MODULO 3) Tj ET
+BT /F2 15 Tf 0.05 0.12 0.3 rg 45 705 Td (MODULO 3: Arte 2D/3D, Tilemaps, Animações, Shaders e Efeitos Sonoros \(Game Feel\)) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 681 Td (O que diferencia um jogo amador de um sucesso na Steam é o "Game Feel" \(também chamado) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 667 Td (de "Juice"\): o feedback visual e sonoro imediato para cada ação do jogador.) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 645 Td (Quando o jogador atinge um inimigo, combine 4 elementos em menos de 100 milissegundos:) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 631 Td (1\) Um leve tremor de câmera \(Screen Shake\); 2\) Um flash branco no sprite do inimigo) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 617 Td (\(Hit Flash\); 3\) Partículas de impacto; e 4\) Um efeito sonoro com leve variação) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 603 Td (aleatória de tom \(Pitch entre 0.9 e 1.1\) para não cansar o ouvido.) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 581 Td (Para criação de fases, utilize sistemas de TileMap com Auto-Tiling \(Terrain Sets\) para) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 567 Td (desenhar cenários inteiros em minutos.) Tj ET
+0.94 0.98 0.96 rg 45 70 522 115 re f
+0.06 0.72 0.50 RG 1 w 45 70 522 115 re S
+BT /F2 10.5 Tf 0.04 0.45 0.32 rg 55 168 Td (CHECKLIST PRATICO & COMANDOS CHAVE DO MODULO 3) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 150 Td ([OK] Ferramentas gratuitas essenciais de Arte: Aseprite / LibreSprite \(Pixel Art\),) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 137 Td (Blender \(Modelagem 3D\), Kenney.nl \(Pacotes de Assets gratuitos CC0\).) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 124 Td ([OK] Ferramentas gratuitas de Áudio: Jsfxr / Bfxr \(efeitos retrô e impactos) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 111 Td (instantâneos\), Audacity e Bosca Ceoil / LMMS \(trilha sonora\).) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 98 Td ([OK] Adicione variação de Pitch \(0.92 a 1.08\) nos sons de passos e tiros para soar) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 85 Td (natural.) Tj ET
+0.85 0.88 0.92 RG 0.5 w 45 45 522 0 re S
+BT /F1 8.5 Tf 0.4 0.45 0.55 rg 45 30 Td (Zher Keys Academy - Guia Oficial em PDF | Pagina 4 de 5) Tj ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 14 0 R >>
+endobj
+14 0 obj
+<< /Length 2347 >>
+stream
+0.01 0.03 0.09 rg 0 742 612 50 re f
+0.23 0.51 0.96 rg 0 739 612 3 re f
+BT /F2 11 Tf 1 1 1 rg 45 762 Td (Criacao e Desenvolvimento de Jogos 2D e 3D - MODULO 4) Tj ET
+BT /F2 15 Tf 0.05 0.12 0.3 rg 45 705 Td (MODULO 4: Exportação, Polimento, Página da Loja e Publicação \(Itch.io e Steam\)) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 681 Td (Com o protótipo jogável do início ao fim \(Menu Principal -> Gameplay -> Tela de) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 667 Td (Vitória/Game Over -> Sistema de Save em JSON\), chega a hora de empacotar o executável) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 653 Td (para Windows, Linux e Web \(HTML5/WebAssembly\).) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 631 Td (Publicar uma versão gratuita ou demo no Itch.io no formato Web \(jogável direto no) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 617 Td (navegador\) multiplica por 10 o número de jogadores que testam seu jogo e deixam) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 603 Td (feedbacks valiosos.) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 581 Td (Para lançar comercialmente na Steam \(via Steamworks Direct\), o segredo de vendas está) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 567 Td (na criação antecipada da sua página para acumular Wishlists \(Listas de Desejos\), com) Tj ET
+BT /F1 10 Tf 0.12 0.16 0.22 rg 45 553 Td (um trailer de 45 segundos que mostre ação imediata nos primeiros 3 segundos.) Tj ET
+0.94 0.98 0.96 rg 45 70 522 115 re f
+0.06 0.72 0.50 RG 1 w 45 70 522 115 re S
+BT /F2 10.5 Tf 0.04 0.45 0.32 rg 55 168 Td (CHECKLIST PRATICO & COMANDOS CHAVE DO MODULO 4) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 150 Td ([OK] Implemente salvamento de dados \(Save/Load\) serializando um dicionário em) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 137 Td (arquivo JSON criptografado ou binário.) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 124 Td ([OK] Teste seu jogo com amigos sem dar instruções verbais: observe onde eles têm) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 111 Td (dificuldade para ajustar o Level Design.) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 98 Td ([OK] Exporte o pacote final com os templates de exportação oficiais da engine e) Tj ET
+BT /F1 9 Tf 0.1 0.25 0.2 rg 55 85 Td (publique seu portfólio no Itch.io e GitHub.) Tj ET
+0.85 0.88 0.92 RG 0.5 w 45 45 522 0 re S
+BT /F1 8.5 Tf 0.4 0.45 0.55 rg 45 30 Td (Zher Keys Academy - Guia Oficial em PDF | Pagina 5 de 5) Tj ET
+endstream
+endobj
+xref
+0 15
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000147 00000 n 
+0000000244 00000 n 
+0000000346 00000 n 
+0000000482 00000 n 
+0000003767 00000 n 
+0000003903 00000 n 
+0000006366 00000 n 
+0000006503 00000 n 
+0000008958 00000 n 
+0000009096 00000 n 
+0000011445 00000 n 
+0000011583 00000 n 
+trailer
+<< /Size 15 /Root 1 0 R >>
+startxref
+13983
+%%EOF

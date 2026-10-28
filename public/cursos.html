@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Google AdSense -->
+    <meta name="google-adsense-account" content="ca-pub-3654713194554139">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3654713194554139" crossorigin="anonymous"></script>
+
+    <title>ZHER ACADEMY | Catálogo de Cursos, Guias PDF & Videoaulas Gamer</title>
+    <meta name="description" content="Catálogo oficial de Cursos, Guias de Informações passo a passo, Apostilas em PDF para download e Videoaulas selecionadas do YouTube na Zher Keys.">
+    <link rel="canonical" href="https://zherkeys.com/cursos" />
+
+    <!-- Tailwind CSS -->
+    <script src="/tailwind.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+
+    <!-- Dados Estruturados dos Cursos (PDFs + Videoaulas YouTube + Módulos) -->
+    <script src="/courses-data.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        obsidian: '#020617',
+                        cyberrose: '#F43F5E',
+                        electricblue: '#3B82F6',
+                        surface: 'rgba(15, 23, 42, 0.8)',
+                    },
+                    boxShadow: {
+                        cyber: '0 0 20px rgba(59, 130, 246, 0.4)',
+                        roseGlow: '0 0 20px rgba(244, 63, 94, 0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            overflow-x: hidden;
+        }
+        .scanline::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 99999;
+            opacity: 0.14;
+            pointer-events: none;
+            background-size: 100% 4px, 6px 100%;
+        }
+        .mesh-bg {
+            background-color: #020617;
+            background-image:
+                radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.18) 0px, transparent 50%),
+                radial-gradient(at 90% 10%, rgba(244, 63, 94, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 80%, rgba(16, 185, 129, 0.12) 0px, transparent 50%);
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
+    </style>
+</head>
+<body class="text-slate-200 antialiased mesh-bg scanline flex flex-col min-h-screen">
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-slate-950/85 backdrop-blur-xl border-b border-slate-800/70 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 group cursor-pointer shrink-0" onclick="window.location.href='/'">
+                <img src="/logo.png" alt="Zher Keys Logo" class="w-10 h-10 object-contain rounded-lg shadow-cyber border border-slate-700/50 bg-slate-950/40 p-1 group-hover:scale-105 transition-transform duration-300">
+                <div>
+                    <span class="font-orbitron font-black text-lg sm:text-xl tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">ZHER <span class="text-electricblue">KEYS</span></span>
+                    <span class="hidden sm:inline-block ml-1.5 bg-purple-500/20 border border-purple-500/40 text-purple-300 font-orbitron text-[9px] px-2 py-0.5 rounded-full font-bold tracking-widest uppercase">ACADEMY</span>
+                </div>
+            </div>
+
+            <div class="hidden lg:flex items-center gap-6 font-orbitron text-xs tracking-widest text-slate-400">
+                <a href="/" class="hover:text-white transition-colors">INÍCIO</a>
+                <a href="/#vitrine" class="hover:text-white transition-colors">CATÁLOGO DE JOGOS</a>
+                <a href="/cursos" class="text-purple-400 font-bold hover:text-purple-300 transition-colors flex items-center gap-1.5 border-b-2 border-purple-500 py-2">
+                    🎓 CURSOS & GUIAS (PDF + VÍDEO)
+                </a>
+                <a href="/guias" class="text-blue-400 hover:text-blue-300 font-bold transition-colors">📚 ARTIGOS</a>
+                <a href="/minigames.html" class="text-emerald-400 hover:text-emerald-300 font-bold transition-colors">🕹️ JOGUE E GANHE</a>
+            </div>
+
+            <div class="flex items-center gap-2.5 shrink-0">
+                <!-- Seletor de Moedas -->
+                <select id="currency-select" onchange="changeCurrency(this.value)" class="bg-slate-950 border border-slate-800 text-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-orbitron tracking-wider focus:outline-none focus:border-electricblue cursor-pointer">
+                    <option value="BRL">🇧🇷 BRL</option>
+                    <option value="USD">🇺🇸 USD</option>
+                    <option value="EUR">🇪🇺 EUR</option>
+                </select>
+
+                <!-- Botão Carrinho -->
+                <button onclick="openMiniCart(event)" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-cyberrose hover:bg-slate-700 transition-all group" title="Carrinho">
+                    <i data-lucide="shopping-cart" class="w-5 h-5 text-slate-300 group-hover:text-white"></i>
+                    <span id="cart-badge" class="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 bg-cyberrose text-white text-[9px] font-bold rounded-full hidden">0</span>
+                </button>
+
+                <!-- Minha Conta -->
+                <a href="/account.html" class="flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 border border-slate-700 hover:border-electricblue hover:bg-slate-700 transition-all group" title="Minha Conta">
+                    <i data-lucide="user" class="w-5 h-5 text-slate-300 group-hover:text-white"></i>
+                </a>
+
+                <a href="/" class="hidden sm:inline-flex items-center gap-1.5 bg-slate-900 border border-slate-700/80 hover:border-electricblue text-white px-4 py-2 rounded-lg font-orbitron text-xs tracking-widest transition-all">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5 text-electricblue"></i> LOJA
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="pt-28 pb-24 px-4 max-w-7xl mx-auto flex-grow w-full">
+
+        <!-- HERO HEADER -->
+        <div class="relative bg-slate-950/80 border border-slate-800/90 rounded-3xl p-6 sm:p-12 mb-12 overflow-hidden shadow-2xl">
+            <div class="absolute -top-24 -left-24 w-96 h-96 bg-purple-600/15 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-electricblue/15 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-8">
+                    <div class="inline-flex items-center gap-2 bg-purple-500/15 border border-purple-500/40 text-purple-300 font-orbitron text-[10px] tracking-widest px-4 py-1.5 rounded-full uppercase font-bold mb-4">
+                        🎓 ZHER KEYS ACADEMY • GUIAS DE INFORMAÇÕES + APOSTILAS PDF + VIDEOAULAS
+                    </div>
+                    <h1 class="font-orbitron font-black text-2xl sm:text-4xl lg:text-5xl text-white uppercase tracking-tight mb-4 leading-tight">
+                        CURSOS, <span class="text-transparent bg-clip-text bg-gradient-to-r from-electricblue via-purple-400 to-cyberrose">APOSTILAS PDF</span> & VIDEOAULAS PRÁTICAS
+                    </h1>
+                    <p class="font-inter text-slate-300 text-sm sm:text-base max-w-3xl font-light leading-relaxed mb-6">
+                        Mais do que simples aulas: cada curso do catálogo funciona como um <strong class="text-white font-semibold">Guia Completo de Informações Técnicas</strong> com <strong class="text-emerald-400 font-semibold">Apostila em PDF para Download</strong>, checklists passo a passo e <strong class="text-cyberrose font-semibold">Videoaulas Selecionadas do YouTube</strong> integradas diretamente na plataforma.
+                    </p>
+
+                    <div class="flex flex-wrap items-center gap-3">
+                        <a href="#cursos-grid-section" class="bg-gradient-to-r from-electricblue to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-orbitron text-xs font-bold tracking-widest px-6 py-3.5 rounded-xl shadow-cyber uppercase flex items-center gap-2 transition-all">
+                            <i data-lucide="book-open" class="w-4 h-4"></i> EXPLORAR CURSOS & GUIAS
+                        </a>
+                        <button onclick="openClassroom(101, 'video')" class="bg-slate-900/90 hover:bg-slate-800 border border-slate-700 hover:border-emerald-400 text-emerald-400 font-orbitron text-xs font-bold tracking-widest px-6 py-3.5 rounded-xl uppercase flex items-center gap-2 transition-all">
+                            <i data-lucide="play-circle" class="w-4 h-4"></i> TESTAR SALA DE AULA E PDF AGORA
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Box -->
+                <div class="lg:col-span-4 grid grid-cols-2 gap-3">
+                    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl text-center">
+                        <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center mx-auto mb-2 text-purple-400">
+                            <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+                        </div>
+                        <div class="font-orbitron font-black text-2xl text-white">8</div>
+                        <div class="font-orbitron text-[10px] text-slate-400 tracking-wider uppercase">Cursos & Guias Pro</div>
+                    </div>
+                    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl text-center">
+                        <div class="w-10 h-10 rounded-xl bg-cyberrose/10 border border-cyberrose/30 flex items-center justify-center mx-auto mb-2 text-cyberrose">
+                            <i data-lucide="youtube" class="w-5 h-5"></i>
+                        </div>
+                        <div class="font-orbitron font-black text-2xl text-white">40+</div>
+                        <div class="font-orbitron text-[10px] text-slate-400 tracking-wider uppercase">Videoaulas YouTube</div>
+                    </div>
+                    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl text-center">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto mb-2 text-emerald-400">
+                            <i data-lucide="file-text" class="w-5 h-5"></i>
+                        </div>
+                        <div class="font-orbitron font-black text-2xl text-white">100%</div>
+                        <div class="font-orbitron text-[10px] text-slate-400 tracking-wider uppercase">Apostilas em PDF</div>
+                    </div>
+                    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl text-center">
+                        <div class="w-10 h-10 rounded-xl bg-electricblue/10 border border-electricblue/30 flex items-center justify-center mx-auto mb-2 text-electricblue">
+                            <i data-lucide="zap" class="w-5 h-5"></i>
+                        </div>
+                        <div class="font-orbitron font-black text-2xl text-white">IMEDIATO</div>
+                        <div class="font-orbitron text-[10px] text-slate-400 tracking-wider uppercase">Acesso Vitalício</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COMO FUNCIONA O GUIA DE INFORMAÇÕES + VIDEOAULAS -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-6 flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                    <i data-lucide="file-down" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="font-orbitron font-bold text-sm text-white uppercase mb-1">1. Apostila & Guia em PDF</h3>
+                    <p class="font-inter text-xs text-slate-400 leading-relaxed">Cada curso acompanha um guia técnico estruturado em módulos com checklists práticos, comandos e arquivo PDF real para baixar e estudar no PC ou celular.</p>
+                </div>
+            </div>
+            <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-6 flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-cyberrose/10 border border-cyberrose/30 flex items-center justify-center text-cyberrose shrink-0">
+                    <i data-lucide="tv" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="font-orbitron font-bold text-sm text-white uppercase mb-1">2. Videoaulas do YouTube</h3>
+                    <p class="font-inter text-xs text-slate-400 leading-relaxed">Curadoria das melhores videoaulas práticas do YouTube organizadas por módulo dentro do nosso Player Sala de Aula, sem precisar garimpar vídeos soltos.</p>
+                </div>
+            </div>
+            <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-6 flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-electricblue/10 border border-electricblue/30 flex items-center justify-center text-electricblue shrink-0">
+                    <i data-lucide="shield-check" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="font-orbitron font-bold text-sm text-white uppercase mb-1">3. Compra & Entrega no Catálogo</h3>
+                    <p class="font-inter text-xs text-slate-400 leading-relaxed">Adicione ao carrinho como qualquer produto da loja ou acesse diretamente a Sala de Aula para ler o guia completo, assistir às aulas e baixar o PDF.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTROS E BUSCA -->
+        <section id="cursos-grid-section" class="scroll-mt-24">
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 sm:p-6 mb-8 backdrop-blur-md">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-5">
+                    <!-- Category Pills -->
+                    <div class="flex flex-wrap items-center gap-2" id="course-category-pills">
+                        <button onclick="setCourseCategory('')" data-cat="" class="course-pill bg-gradient-to-r from-electricblue to-purple-600 text-white font-orbitron text-[11px] font-bold px-4 py-2 rounded-xl uppercase tracking-wider transition-all shadow-cyber">
+                            🌐 TODOS OS CURSOS (8)
+                        </button>
+                        <button onclick="setCourseCategory('hardware')" data-cat="hardware" class="course-pill bg-slate-950 border border-slate-800 hover:border-electricblue text-slate-300 font-orbitron text-[11px] px-4 py-2 rounded-xl uppercase tracking-wider transition-all">
+                            ⚡ HARDWARE, MONTAGEM & FPS
+                        </button>
+                        <button onclick="setCourseCategory('dev')" data-cat="dev" class="course-pill bg-slate-950 border border-slate-800 hover:border-electricblue text-slate-300 font-orbitron text-[11px] px-4 py-2 rounded-xl uppercase tracking-wider transition-all">
+                            💻 PROGRAMAÇÃO & GAME DEV
+                        </button>
+                        <button onclick="setCourseCategory('esports')" data-cat="esports" class="course-pill bg-slate-950 border border-slate-800 hover:border-electricblue text-slate-300 font-orbitron text-[11px] px-4 py-2 rounded-xl uppercase tracking-wider transition-all">
+                            🎯 E-SPORTS, MIRA & OBS LIVE
+                        </button>
+                        <button onclick="setCourseCategory('seguranca')" data-cat="seguranca" class="course-pill bg-slate-950 border border-slate-800 hover:border-electricblue text-slate-300 font-orbitron text-[11px] px-4 py-2 rounded-xl uppercase tracking-wider transition-all">
+                            🛡️ CIBERSEGURANÇA & 2FA
+                        </button>
+                    </div>
+
+                    <!-- Search & Sort -->
+                    <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                        <div class="relative flex-grow sm:w-64">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3 text-slate-500"></i>
+                            <input type="text" id="course-search" oninput="renderCoursesCatalog()" placeholder="Buscar curso, PDF ou aula..." class="w-full bg-slate-950 border border-slate-700 rounded-xl py-2 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-electricblue">
+                        </div>
+                        <select id="course-sort" onchange="renderCoursesCatalog()" class="bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-300 font-orbitron focus:outline-none focus:border-electricblue">
+                            <option value="featured">Destaques</option>
+                            <option value="lowest">Menor Preço</option>
+                            <option value="highest">Maior Preço</option>
+                            <option value="az">Ordem A-Z</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COURSES GRID -->
+            <div id="courses-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+                <!-- Preenchido via JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- SALA DE AULA INTERATIVA MODAL (VIDEOAULAS YOUTUBE + GUIA COMPLETO + PDF VIEWER) -->
+    <div id="classroom-modal" class="fixed inset-0 z-[120] hidden items-center justify-center p-2 sm:p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-950/95 backdrop-blur-xl" onclick="closeClassroom()"></div>
+        <div id="classroom-modal-content" class="relative w-full max-w-6xl bg-slate-900 border border-slate-700/90 rounded-3xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 max-h-[94vh] flex flex-col z-10">
+
+            <!-- Modal Header -->
+            <div class="p-4 sm:p-6 bg-slate-950 border-b border-slate-800 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-400 shrink-0">
+                        <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span id="classroom-badge" class="text-[9px] font-orbitron font-bold uppercase tracking-widest bg-electricblue/20 text-electricblue border border-electricblue/30 px-2.5 py-0.5 rounded-full">CURSO & GUIA PDF</span>
+                            <span id="classroom-meta" class="text-[10px] font-orbitron text-emerald-400"></span>
+                        </div>
+                        <h2 id="classroom-title" class="font-orbitron font-black text-sm sm:text-lg text-white truncate mt-0.5"></h2>
+                    </div>
+                </div>
+
+                <!-- Classroom Mode Switcher Tabs -->
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="switchClassroomTab('video')" id="tab-btn-video" class="px-3.5 py-2 rounded-xl font-orbitron text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 bg-cyberrose text-white shadow-roseGlow transition-all">
+                        <i data-lucide="youtube" class="w-4 h-4"></i> VIDEOAULAS YOUTUBE
+                    </button>
+                    <button onclick="switchClassroomTab('guide')" id="tab-btn-guide" class="px-3.5 py-2 rounded-xl font-orbitron text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
+                        <i data-lucide="book-open" class="w-4 h-4"></i> GUIA DE INFORMAÇÕES
+                    </button>
+                    <button onclick="switchClassroomTab('pdf')" id="tab-btn-pdf" class="px-3.5 py-2 rounded-xl font-orbitron text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 transition-all">
+                        <i data-lucide="file-text" class="w-4 h-4"></i> APOSTILA PDF
+                    </button>
+                    <button onclick="closeClassroom()" class="w-9 h-9 rounded-full bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white flex items-center justify-center border border-slate-700 transition-colors ml-1" title="Fechar Sala de Aula">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="flex-grow overflow-y-auto grid grid-cols-1 lg:grid-cols-12 min-h-[500px]">
+
+                <!-- Left / Center Stage (8 cols) -->
+                <div class="lg:col-span-8 p-4 sm:p-6 bg-slate-950/60 border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col">
+
+                    <!-- VIEW 1: YOUTUBE VIDEO PLAYER -->
+                    <div id="classroom-view-video" class="flex flex-col flex-grow">
+                        <div class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-slate-800 shadow-2xl mb-4">
+                            <iframe id="classroom-yt-iframe" class="w-full h-full border-0" src="" title="Aula em Vídeo YouTube" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                        </div>
+
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5">
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                <span id="current-lesson-badge" class="text-[10px] font-orbitron font-bold text-cyberrose uppercase tracking-widest">AULA 1</span>
+                                <div class="flex items-center gap-2">
+                                    <a id="current-lesson-yt-link" href="#" target="_blank" class="text-[10px] font-orbitron text-slate-300 hover:text-white bg-slate-800 hover:bg-red-600/80 border border-slate-700 px-3 py-1 rounded-lg flex items-center gap-1.5 transition-all">
+                                        <i data-lucide="external-link" class="w-3 h-3"></i> ASSISTIR NO YOUTUBE
+                                    </a>
+                                    <button onclick="prevLesson()" class="text-[10px] font-orbitron bg-slate-800 hover:bg-slate-700 text-white px-3 py-1 rounded-lg border border-slate-700">◀ ANTERIOR</button>
+                                    <button onclick="nextLesson()" class="text-[10px] font-orbitron bg-electricblue hover:bg-blue-600 text-white px-3 py-1 rounded-lg font-bold">PRÓXIMA AULA ▶</button>
+                                </div>
+                            </div>
+                            <h3 id="current-lesson-title" class="font-orbitron font-bold text-base sm:text-lg text-white mb-2"></h3>
+                            <p id="current-lesson-summary" class="font-inter text-xs sm:text-sm text-slate-300 leading-relaxed"></p>
+                        </div>
+                    </div>
+
+                    <!-- VIEW 2: WRITTEN INFORMATION GUIDE (MODULOS DETALHADOS) -->
+                    <div id="classroom-view-guide" class="hidden flex-col flex-grow space-y-6">
+                        <div class="bg-gradient-to-r from-blue-950/60 via-slate-900 to-purple-950/60 border border-electricblue/30 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <span class="text-[10px] font-orbitron text-electricblue font-bold uppercase tracking-widest block mb-1">📖 GUIA DE INFORMAÇÕES COMPLETO</span>
+                                <h3 class="font-orbitron font-bold text-base text-white">Manual Técnico Passo a Passo & Checklists Operacionais</h3>
+                                <p class="font-inter text-xs text-slate-300 mt-1">Leia todos os módulos abaixo ou baixe a versão diagramada em PDF para consulta offline.</p>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <button onclick="printCurrentCourseGuide()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-orbitron text-[10px] font-bold px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 uppercase">
+                                    <i data-lucide="printer" class="w-4 h-4 text-electricblue"></i> IMPRIMIR GUIA
+                                </button>
+                                <a id="guide-download-pdf-btn" href="#" download class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-orbitron text-[10px] font-bold px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 uppercase">
+                                    <i data-lucide="download" class="w-4 h-4"></i> BAIXAR PDF
+                                </a>
+                            </div>
+                        </div>
+
+                        <div id="classroom-guide-modules" class="space-y-6">
+                            <!-- Módulos injetados via JS -->
+                        </div>
+                    </div>
+
+                    <!-- VIEW 3: EMBEDDED PDF VIEWER -->
+                    <div id="classroom-view-pdf" class="hidden flex-col flex-grow">
+                        <div class="bg-slate-900 border border-emerald-500/30 rounded-2xl p-4 mb-4 flex flex-wrap items-center justify-between gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                                    <i data-lucide="file-check" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-orbitron font-bold text-xs sm:text-sm text-white uppercase">Apostila Oficial em PDF Pronta para Download</h4>
+                                    <p class="font-inter text-xs text-slate-400">Visualize o documento PDF abaixo ou salve o arquivo completo no seu dispositivo.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <a id="pdf-viewer-open-tab" href="#" target="_blank" class="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 font-orbitron text-[10px] font-bold px-3.5 py-2.5 rounded-xl uppercase flex items-center gap-1.5">
+                                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i> ABRIR EM NOVA ABA
+                                </a>
+                                <a id="pdf-viewer-download-btn" href="#" download class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-orbitron text-[10px] font-bold px-4 py-2.5 rounded-xl uppercase flex items-center gap-1.5 shadow-lg">
+                                    <i data-lucide="download" class="w-4 h-4"></i> BAIXAR ARQUIVO .PDF
+                                </a>
+                            </div>
+                        </div>
+                        <div class="flex-grow bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden min-h-[420px]">
+                            <iframe id="classroom-pdf-iframe" src="" class="w-full h-[460px] border-0"></iframe>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Sidebar: Playlist de Videoaulas + Módulos do PDF + Compra (4 cols) -->
+                <div class="lg:col-span-4 p-4 sm:p-6 bg-slate-900 flex flex-col justify-between space-y-6">
+                    <div class="space-y-6">
+                        <!-- Playlist YouTube -->
+                        <div>
+                            <h4 class="font-orbitron font-bold text-xs text-white uppercase tracking-wider mb-3 flex items-center justify-between">
+                                <span class="flex items-center gap-2"><i data-lucide="list-video" class="w-4 h-4 text-cyberrose"></i> VIDEOAULAS DO CURSO</span>
+                                <span id="playlist-count-badge" class="text-[10px] text-slate-400"></span>
+                            </h4>
+                            <div id="classroom-playlist" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                                <!-- Injetado via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Módulos do Guia PDF -->
+                        <div>
+                            <h4 class="font-orbitron font-bold text-xs text-white uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <i data-lucide="book-marked" class="w-4 h-4 text-emerald-400"></i> CAPÍTULOS DA APOSTILA PDF
+                            </h4>
+                            <div id="classroom-sidebar-modules" class="space-y-2 max-h-52 overflow-y-auto pr-1">
+                                <!-- Injetado via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Box de Compra / Download Rápido -->
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-[9px] font-orbitron text-slate-500 uppercase block">PACOTE COMPLETO NO CATÁLOGO</span>
+                                <div class="flex items-baseline gap-2">
+                                    <del id="classroom-old-price" class="text-xs text-rose-500 font-orbitron"></del>
+                                    <span id="classroom-price" class="font-orbitron font-black text-xl text-cyberrose"></span>
+                                </div>
+                            </div>
+                            <span class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-orbitron text-[9px] font-bold px-2.5 py-1 rounded-full uppercase">EM ESTOQUE</span>
+                        </div>
+
+                        <button id="classroom-buy-btn" class="w-full bg-gradient-to-r from-electricblue to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-orbitron text-xs font-bold py-3.5 rounded-xl shadow-cyber uppercase flex items-center justify-center gap-2 transition-all">
+                            <i data-lucide="shopping-cart" class="w-4 h-4"></i> ADICIONAR CURSO AO CARRINHO
+                        </button>
+                        <a id="classroom-direct-pdf-btn" href="#" download class="w-full bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-orbitron text-[11px] font-bold py-2.5 rounded-xl uppercase flex items-center justify-center gap-2 transition-all">
+                            <i data-lucide="download" class="w-4 h-4"></i> BAIXAR GUIA EM PDF AGORA
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MINI CART MODAL -->
+    <div id="mini-cart-modal" class="fixed inset-0 z-[130] hidden flex items-center justify-end opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onclick="closeMiniCart()"></div>
+        <div class="relative w-full max-w-md bg-slate-900 border-l border-slate-800 h-full flex flex-col justify-between p-6 z-10 transform scale-95 transition-transform duration-300" id="mini-cart-content">
+            <div>
+                <div class="flex justify-between items-center border-b border-slate-800 pb-4 mb-6">
+                    <h3 class="font-orbitron font-bold text-lg text-white flex items-center gap-2">
+                        <i data-lucide="shopping-cart" class="text-cyberrose w-5 h-5"></i> SEU CARRINHO
+                    </h3>
+                    <button onclick="closeMiniCart()" class="text-slate-400 hover:text-white bg-slate-800 p-1.5 rounded-full">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div id="mini-cart-items" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2"></div>
+            </div>
+            <div class="border-t border-slate-800 pt-4">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="font-orbitron text-xs text-slate-400">TOTAL</span>
+                    <span id="mini-cart-total" class="font-orbitron font-black text-2xl text-cyberrose">R$ 0,00</span>
+                </div>
+                <a href="/carrinho.html" class="w-full bg-gradient-to-r from-cyberrose to-purple-600 hover:from-rose-500 hover:to-purple-500 text-white font-orbitron text-sm tracking-widest font-bold py-4 rounded-xl shadow-roseGlow transition-all duration-300 uppercase flex items-center justify-center gap-2">
+                    FINALIZAR COMPRA <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 border-t border-slate-900 py-12 px-4 text-center text-slate-500 text-xs font-inter mt-auto">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <img src="/logo.png" alt="Zher Keys" class="w-6 h-6 rounded">
+                <span class="font-orbitron font-bold text-white">ZHER KEYS ACADEMY</span>
+            </div>
+            <div class="flex flex-wrap gap-6 justify-center font-orbitron text-[10px] tracking-widest">
+                <a href="/" class="hover:text-white">LOJA PRINCIPAL</a>
+                <a href="/cursos" class="text-purple-400 font-bold">CURSOS & PDFS</a>
+                <a href="/guias" class="hover:text-white">ARTIGOS</a>
+                <a href="/termos-de-servico" class="hover:text-white">TERMOS</a>
+                <a href="/politica-de-privacidade" class="hover:text-white">PRIVACIDADE</a>
+            </div>
+            <p>© 2026 Zher Keys Marketplace. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        window.currentCurrency = localStorage.getItem('zher_currency') || 'BRL';
+        window.exchangeRates = { BRL: 1.0, USD: 0.19, EUR: 0.17 };
+        let selectedCourseCategory = '';
+        let activeCourse = null;
+        let activeLessonIndex = 0;
+
+        function formatPrice(priceBRL) {
+            const rate = window.exchangeRates[window.currentCurrency] || 1.0;
+            const converted = parseFloat(priceBRL) * rate;
+            if (window.currentCurrency === 'USD') return `$ ${converted.toFixed(2)}`;
+            if (window.currentCurrency === 'EUR') return `€ ${converted.toFixed(2)}`;
+            return `R$ ${converted.toFixed(2).replace('.', ',')}`;
+        }
+
+        window.changeCurrency = (cur) => {
+            window.currentCurrency = cur;
+            localStorage.setItem('zher_currency', cur);
+            renderCoursesCatalog();
+            renderMiniCart();
+        };
+
+        function setCourseCategory(cat) {
+            selectedCourseCategory = cat;
+            document.querySelectorAll('.course-pill').forEach(btn => {
+                if (btn.getAttribute('data-cat') === cat) {
+                    btn.className = 'course-pill bg-gradient-to-r from-electricblue to-purple-600 text-white font-orbitron text-[11px] font-bold px-4 py-2 rounded-xl uppercase tracking-wider transition-all shadow-cyber';
+                } else {
+                    btn.className = 'course-pill bg-slate-950 border border-slate-800 hover:border-electricblue text-slate-300 font-orbitron text-[11px] px-4 py-2 rounded-xl uppercase tracking-wider transition-all';
+                }
+            });
+            renderCoursesCatalog();
+        }
+
+        function renderCoursesCatalog() {
+            const grid = document.getElementById('courses-grid');
+            if (!grid) return;
+            const courses = window.ZHER_COURSES_DATA || [];
+            const search = (document.getElementById('course-search')?.value || '').toLowerCase().trim();
+            const sort = document.getElementById('course-sort')?.value || 'featured';
+
+            let filtered = courses.filter(c => {
+                if (selectedCourseCategory && c.categoryFilter !== selectedCourseCategory) return false;
+                if (search) {
+                    const hay = `${c.title} ${c.summary} ${c.categoryLabel} ${c.genres}`.toLowerCase();
+                    if (!hay.includes(search)) return false;
+                }
+                return true;
+            });
+
+            if (sort === 'lowest') filtered.sort((a, b) => a.price - b.price);
+            else if (sort === 'highest') filtered.sort((a, b) => b.price - a.price);
+            else if (sort === 'az') filtered.sort((a, b) => a.title.localeCompare(b.title));
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 bg-slate-900/40 border border-slate-800 rounded-2xl text-slate-400 font-orbitron text-xs">Nenhum curso encontrado para este filtro.</div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(c => {
+                const discountPct = Math.round((1 - (c.price / c.old_price)) * 100);
+                const lessonsPreview = c.lessons.slice(0, 3).map(l => `
+                    <div onclick="event.stopPropagation(); openClassroom(${c.id}, 'video', ${l.number - 1})" class="flex items-center justify-between gap-2 text-[11px] text-slate-300 hover:text-white bg-slate-900/80 hover:bg-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-800/80 cursor-pointer transition-colors">
+                        <span class="truncate flex items-center gap-1.5"><i data-lucide="play-circle" class="w-3.5 h-3.5 text-cyberrose shrink-0"></i> Aula ${l.number}: ${l.title}</span>
+                        <span class="text-[9px] font-mono text-slate-500 shrink-0">${l.duration}</span>
+                    </div>
+                `).join('');
+
+                return `
+                    <article class="bg-slate-950/85 border border-slate-800/90 hover:border-purple-500/60 rounded-3xl overflow-hidden flex flex-col justify-between transition-all duration-300 group hover:-translate-y-1 shadow-xl">
+                        <div>
+                            <!-- Cover Image -->
+                            <div class="relative h-48 overflow-hidden cursor-pointer" onclick="openClassroom(${c.id}, 'video', 0)">
+                                <img src="${c.image}" alt="${c.title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+
+                                <div class="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                                    <span class="bg-purple-600/90 text-white font-orbitron text-[9px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider backdrop-blur-md flex items-center gap-1">
+                                        🎓 ${c.categoryLabel}
+                                    </span>
+                                    <span class="bg-emerald-600/90 text-white font-orbitron text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-wider backdrop-blur-md">
+                                        -${discountPct}% OFF
+                                    </span>
+                                </div>
+
+                                <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[10px] font-orbitron">
+                                    <span class="bg-black/80 border border-slate-700 text-cyberrose px-2.5 py-1 rounded-lg flex items-center gap-1 font-bold">
+                                        <i data-lucide="youtube" class="w-3.5 h-3.5"></i> ${c.lessons.length} Videoaulas
+                                    </span>
+                                    <span class="bg-black/80 border border-emerald-700/60 text-emerald-400 px-2.5 py-1 rounded-lg flex items-center gap-1 font-bold">
+                                        <i data-lucide="file-text" class="w-3.5 h-3.5"></i> PDF (${c.pdfPages} págs)
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="p-6">
+                                <div class="flex items-center justify-between text-[11px] text-slate-400 mb-2 font-inter">
+                                    <span class="text-amber-400 font-bold flex items-center gap-1">★ ${c.rating.toFixed(1)} <span class="text-slate-500 font-normal">(${c.studentsCount} alunos)</span></span>
+                                    <span class="text-slate-400 font-orbitron text-[9px] uppercase">${c.workload}</span>
+                                </div>
+
+                                <h3 onclick="openClassroom(${c.id}, 'video', 0)" class="font-orbitron font-bold text-base sm:text-lg text-white group-hover:text-electricblue transition-colors leading-snug mb-2.5 cursor-pointer">
+                                    ${c.title}
+                                </h3>
+
+                                <p class="font-inter text-xs text-slate-400 leading-relaxed mb-4 line-clamp-3">
+                                    ${c.summary}
+                                </p>
+
+                                <!-- Mini Preview of Video Lessons -->
+                                <div class="space-y-1.5 mb-4">
+                                    <div class="text-[9px] font-orbitron text-slate-500 uppercase tracking-widest mb-1">AULAS DO YOUTUBE & GUIA INCLUSOS:</div>
+                                    ${lessonsPreview}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Footer: Price & Actions -->
+                        <div class="p-6 pt-0 space-y-3">
+                            <div class="flex items-center justify-between pt-4 border-t border-slate-900">
+                                <div>
+                                    <del class="text-[11px] text-rose-500 font-orbitron block -mb-1">${formatPrice(c.old_price)}</del>
+                                    <span class="font-orbitron font-black text-2xl text-cyberrose">${formatPrice(c.price)}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <a href="${c.pdfUrl}" download title="Baixar Apostila PDF" class="p-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 transition-colors">
+                                        <i data-lucide="file-down" class="w-4 h-4"></i>
+                                    </a>
+                                    <button onclick="addCourseToCart(${c.id})" class="bg-gradient-to-r from-electricblue to-blue-600 hover:from-blue-500 hover:to-blue-600 text-white font-orbitron text-[10px] font-bold px-4 py-2.5 rounded-xl shadow-cyber uppercase flex items-center gap-1.5 transition-all">
+                                        <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> COMPRAR GUIA
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="openClassroom(${c.id}, 'video', 0)" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-cyberrose text-white font-orbitron text-[10px] font-bold py-2.5 rounded-xl uppercase flex items-center justify-center gap-1.5 transition-all">
+                                    <i data-lucide="play" class="w-3.5 h-3.5 text-cyberrose"></i> VER VIDEOAULAS
+                                </button>
+                                <button onclick="openClassroom(${c.id}, 'guide', 0)" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-emerald-400 text-emerald-400 font-orbitron text-[10px] font-bold py-2.5 rounded-xl uppercase flex items-center justify-center gap-1.5 transition-all">
+                                    <i data-lucide="book-open" class="w-3.5 h-3.5"></i> LER GUIA & PDF
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        // ==========================================
+        // CLASSROOM / PLAYER / PDF VIEWER LOGIC
+        // ==========================================
+        window.openClassroom = (courseId, initialTab = 'video', lessonIdx = 0) => {
+            const courses = window.ZHER_COURSES_DATA || [];
+            const course = courses.find(c => Number(c.id) === Number(courseId));
+            if (!course) return;
+
+            activeCourse = course;
+            activeLessonIndex = lessonIdx || 0;
+
+            document.getElementById('classroom-title').innerText = course.title;
+            document.getElementById('classroom-badge').innerText = course.categoryLabel;
+            document.getElementById('classroom-meta').innerText = `${course.lessons.length} Videoaulas + Apostila PDF (${course.pdfPages} págs)`;
+            document.getElementById('classroom-old-price').innerText = formatPrice(course.old_price);
+            document.getElementById('classroom-price').innerText = formatPrice(course.price);
+            document.getElementById('playlist-count-badge').innerText = `${course.lessons.length} aulas`;
+
+            // Links de PDF
+            document.getElementById('guide-download-pdf-btn').href = course.pdfUrl;
+            document.getElementById('pdf-viewer-open-tab').href = course.pdfUrl;
+            document.getElementById('pdf-viewer-download-btn').href = course.pdfUrl;
+            document.getElementById('classroom-direct-pdf-btn').href = course.pdfUrl;
+            document.getElementById('classroom-pdf-iframe').src = course.pdfUrl;
+
+            const buyBtn = document.getElementById('classroom-buy-btn');
+            buyBtn.onclick = () => addCourseToCart(course.id);
+
+            // Render Modules in Guide Tab & Sidebar
+            const guideContainer = document.getElementById('classroom-guide-modules');
+            guideContainer.innerHTML = course.modules.map(m => `
+                <div id="guide-mod-${m.number}" class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <span class="bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-orbitron text-[10px] font-bold px-3 py-1 rounded-full uppercase">
+                            MÓDULO ${m.number} DA APOSTILA
+                        </span>
+                        <span class="text-[10px] font-orbitron text-slate-500">GUIA TÉCNICO</span>
+                    </div>
+                    <h4 class="font-orbitron font-bold text-base sm:text-lg text-white">${m.title}</h4>
+                    <div class="space-y-3 font-inter text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        ${m.paragraphs.map(p => `<p>${p}</p>`).join('')}
+                    </div>
+                    <div class="bg-emerald-950/30 border border-emerald-500/30 rounded-xl p-4 mt-4">
+                        <div class="font-orbitron font-bold text-[10px] text-emerald-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                            <i data-lucide="check-square" class="w-4 h-4"></i> CHECKLIST PRÁTICO & INSTRUÇÕES DO MÓDULO ${m.number}:
+                        </div>
+                        <ul class="space-y-2 font-inter text-xs text-slate-200">
+                            ${(m.checklist || []).map(item => `
+                                <li class="flex items-start gap-2">
+                                    <span class="text-emerald-400 font-bold mt-0.5">✓</span>
+                                    <span>${item}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `).join('');
+
+            const sidebarModules = document.getElementById('classroom-sidebar-modules');
+            sidebarModules.innerHTML = course.modules.map(m => `
+                <button onclick="switchClassroomTab('guide'); document.getElementById('guide-mod-${m.number}')?.scrollIntoView({behavior:'smooth'})" class="w-full text-left p-2.5 rounded-xl bg-slate-950/70 hover:bg-slate-800 border border-slate-800 transition-colors flex items-center gap-2.5">
+                    <span class="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-orbitron font-bold text-[10px] flex items-center justify-center shrink-0">M${m.number}</span>
+                    <span class="font-inter text-xs text-slate-300 truncate">${m.title}</span>
+                </button>
+            `).join('');
+
+            renderClassroomLesson();
+            switchClassroomTab(initialTab);
+
+            const modal = document.getElementById('classroom-modal');
+            const content = document.getElementById('classroom-modal-content');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+            if (window.lucide) lucide.createIcons();
+        };
+
+        function renderClassroomLesson() {
+            if (!activeCourse) return;
+            const lesson = activeCourse.lessons[activeLessonIndex] || activeCourse.lessons[0];
+            if (!lesson) return;
+
+            const iframe = document.getElementById('classroom-yt-iframe');
+            iframe.src = `https://www.youtube.com/embed/${lesson.youtubeId}?rel=0&modestbranding=1`;
+
+            document.getElementById('current-lesson-badge').innerText = `VIDEOAULA ${lesson.number} DE ${activeCourse.lessons.length} • CANAL: ${lesson.channel.toUpperCase()} (${lesson.duration})`;
+            document.getElementById('current-lesson-title').innerText = lesson.title;
+            document.getElementById('current-lesson-summary').innerText = lesson.summary;
+            document.getElementById('current-lesson-yt-link').href = `https://www.youtube.com/watch?v=${lesson.youtubeId}`;
+
+            const playlistEl = document.getElementById('classroom-playlist');
+            playlistEl.innerHTML = activeCourse.lessons.map((l, idx) => {
+                const isCurrent = idx === activeLessonIndex;
+                return `
+                    <button onclick="selectLesson(${idx})" class="w-full text-left p-2.5 rounded-xl border transition-all flex items-start gap-2.5 ${isCurrent ? 'bg-cyberrose/15 border-cyberrose text-white' : 'bg-slate-950/70 hover:bg-slate-800 border-slate-800 text-slate-300'}">
+                        <span class="w-6 h-6 rounded-lg ${isCurrent ? 'bg-cyberrose text-white' : 'bg-slate-800 text-slate-400'} font-orbitron font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">${l.number}</span>
+                        <div class="min-w-0 flex-grow">
+                            <div class="font-inter text-xs font-semibold truncate">${l.title}</div>
+                            <div class="text-[10px] text-slate-500 flex items-center justify-between mt-0.5">
+                                <span>${l.channel}</span>
+                                <span class="font-mono">${l.duration}</span>
+                            </div>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        window.selectLesson = (idx) => {
+            activeLessonIndex = idx;
+            switchClassroomTab('video');
+            renderClassroomLesson();
+        };
+
+        window.prevLesson = () => {
+            if (!activeCourse) return;
+            activeLessonIndex = (activeLessonIndex - 1 + activeCourse.lessons.length) % activeCourse.lessons.length;
+            renderClassroomLesson();
+        };
+
+        window.nextLesson = () => {
+            if (!activeCourse) return;
+            activeLessonIndex = (activeLessonIndex + 1) % activeCourse.lessons.length;
+            renderClassroomLesson();
+        };
+
+        window.switchClassroomTab = (tab) => {
+            const vVideo = document.getElementById('classroom-view-video');
+            const vGuide = document.getElementById('classroom-view-guide');
+            const vPdf = document.getElementById('classroom-view-pdf');
+
+            const bVideo = document.getElementById('tab-btn-video');
+            const bGuide = document.getElementById('tab-btn-guide');
+            const bPdf = document.getElementById('tab-btn-pdf');
+
+            vVideo.classList.add('hidden');
+            vGuide.classList.add('hidden');
+            vPdf.classList.add('hidden');
+
+            bVideo.className = 'px-3.5 py-2 rounded-xl font-orbitron text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all';
+            bGuide.className = 'px-3.5 py-2 rounded-xl font-orbitron text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all';
+            bPdf.className = 'px-3.5 py-2 rounded-xl font-orbitron text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 transition-all';
+
+            if (tab === 'guide') {
+                // Pause youtube video when switching away
+                const iframe = document.getElementById('classroom-yt-iframe');
+                if (iframe) iframe.src = iframe.src;
+                vGuide.classList.remove('hidden');
+                vGuide.classList.add('flex');
+                bGuide.className = 'px-3.5 py-2 rounded-xl font-orbitron text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 bg-electricblue text-white shadow-cyber transition-all';
+            } else if (tab === 'pdf') {
+                const iframe = document.getElementById('classroom-yt-iframe');
+                if (iframe) iframe.src = iframe.src;
+                vPdf.classList.remove('hidden');
+                vPdf.classList.add('flex');
+                bPdf.className = 'px-3.5 py-2 rounded-xl font-orbitron text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 bg-emerald-500 text-slate-950 font-black transition-all';
+            } else {
+                vVideo.classList.remove('hidden');
+                vVideo.classList.add('flex');
+                bVideo.className = 'px-3.5 py-2 rounded-xl font-orbitron text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 bg-cyberrose text-white shadow-roseGlow transition-all';
+            }
+            if (window.lucide) lucide.createIcons();
+        };
+
+        window.closeClassroom = () => {
+            const modal = document.getElementById('classroom-modal');
+            const content = document.getElementById('classroom-modal-content');
+            const iframe = document.getElementById('classroom-yt-iframe');
+            if (iframe) iframe.src = '';
+
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.style.overflow = '';
+            }, 300);
+        };
+
+        window.printCurrentCourseGuide = () => {
+            if (!activeCourse) return;
+            const win = window.open('', '_blank', 'width=900,height=700');
+            const modsHtml = activeCourse.modules.map(m => `
+                <div style="margin-bottom: 28px; page-break-inside: avoid; border: 1px solid #cbd5e1; border-radius: 10px; padding: 18px;">
+                    <h2 style="margin: 0 0 10px 0; color: #0f172a; font-size: 18px;">Módulo ${m.number}: ${m.title}</h2>
+                    ${m.paragraphs.map(p => `<p style="color: #334155; font-size: 13px; line-height: 1.6;">${p}</p>`).join('')}
+                    <div style="background: #f0fdf4; border: 1px solid #86efac; padding: 12px; border-radius: 8px; margin-top: 12px;">
+                        <strong style="color: #166534; font-size: 12px; display: block; margin-bottom: 6px;">CHECKLIST PRÁTICO DO MÓDULO ${m.number}:</strong>
+                        <ul style="margin: 0; padding-left: 18px; color: #14532d; font-size: 12px; line-height: 1.5;">
+                            ${(m.checklist || []).map(c => `<li>${c}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `).join('');
+
+            const lessonsHtml = activeCourse.lessons.map(l => `
+                <li style="margin-bottom: 6px; font-size: 12px;">
+                    <strong>Aula ${l.number}: ${l.title}</strong> (${l.duration} - Canal: ${l.channel}) — 
+                    <a href="https://www.youtube.com/watch?v=${l.youtubeId}">https://www.youtube.com/watch?v=${l.youtubeId}</a>
+                </li>
+            `).join('');
+
+            win.document.write(`
+                <html>
+                <head>
+                    <title>${activeCourse.title} - Apostila Oficial Zher Keys</title>
+                    <style>body { font-family: Arial, sans-serif; padding: 32px; color: #1e293b; }</style>
+                </head>
+                <body>
+                    <div style="border-bottom: 3px solid #2563eb; padding-bottom: 16px; margin-bottom: 24px;">
+                        <div style="font-size: 11px; color: #2563eb; font-weight: bold; letter-spacing: 1px;">ZHER KEYS ACADEMY - GUIA OFICIAL DE INFORMAÇÕES</div>
+                        <h1 style="margin: 6px 0; font-size: 24px; color: #0f172a;">${activeCourse.title}</h1>
+                        <p style="margin: 4px 0; font-size: 13px; color: #475569;">${activeCourse.summary}</p>
+                    </div>
+                    <div style="margin-bottom: 24px; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <h3 style="margin-top: 0; font-size: 15px;">Videoaulas do YouTube Integrada ao Curso:</h3>
+                        <ul>${lessonsHtml}</ul>
+                    </div>
+                    ${modsHtml}
+                    <script>window.onload = function(){ window.print(); }<\/script>
+                </body>
+                </html>
+            `);
+            win.document.close();
+        };
+
+        // ==========================================
+        // CART LOGIC (SHARED WITH ZHER KEYS STORE)
+        // ==========================================
+        let cart = JSON.parse(localStorage.getItem('zher_cart') || '[]');
+
+        function updateCartBadge() {
+            const badge = document.getElementById('cart-badge');
+            if (!badge) return;
+            if (cart.length > 0) {
+                badge.innerText = cart.length;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        window.addCourseToCart = (courseId) => {
+            const courses = window.ZHER_COURSES_DATA || [];
+            const course = courses.find(c => Number(c.id) === Number(courseId));
+            if (!course) return;
+
+            cart = JSON.parse(localStorage.getItem('zher_cart') || '[]');
+            const exists = cart.some(item => Number(item.id) === Number(course.id));
+            if (!exists) {
+                cart.push({
+                    id: course.id,
+                    title: course.title,
+                    price: course.price,
+                    old_price: course.old_price,
+                    image: course.image,
+                    category: 'CURSO & GUIA PDF',
+                    in_stock: true
+                });
+                localStorage.setItem('zher_cart', JSON.stringify(cart));
+                updateCartBadge();
+            }
+            renderMiniCart();
+            openMiniCart();
+        };
+
+        window.openMiniCart = (e) => {
+            if (e) e.preventDefault();
+            renderMiniCart();
+            const modal = document.getElementById('mini-cart-modal');
+            const content = document.getElementById('mini-cart-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        };
+
+        window.closeMiniCart = () => {
+            const modal = document.getElementById('mini-cart-modal');
+            const content = document.getElementById('mini-cart-content');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        };
+
+        window.removeFromMiniCart = (index) => {
+            cart.splice(index, 1);
+            localStorage.setItem('zher_cart', JSON.stringify(cart));
+            updateCartBadge();
+            renderMiniCart();
+        };
+
+        function renderMiniCart() {
+            const container = document.getElementById('mini-cart-items');
+            const totalEl = document.getElementById('mini-cart-total');
+            if (!container || !totalEl) return;
+
+            cart = JSON.parse(localStorage.getItem('zher_cart') || '[]');
+            if (cart.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-500 font-inter text-sm">Seu carrinho está vazio.</div>`;
+                totalEl.innerText = formatPrice(0);
+                return;
+            }
+
+            let total = 0;
+            container.innerHTML = cart.map((item, idx) => {
+                const p = parseFloat(item.price) || 0;
+                total += p;
+                return `
+                    <div class="flex items-center gap-3 bg-slate-800/60 p-3 rounded-xl border border-slate-700/60">
+                        <img src="${item.image}" class="w-12 h-12 object-cover rounded-lg shrink-0">
+                        <div class="flex-grow min-w-0">
+                            <h4 class="text-white text-xs font-bold truncate">${item.title}</h4>
+                            <span class="text-cyberrose text-xs font-bold font-orbitron">${formatPrice(p)}</span>
+                        </div>
+                        <button onclick="removeFromMiniCart(${idx})" class="p-2 text-slate-400 hover:text-rose-400 bg-slate-900 rounded-lg border border-slate-700">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+            totalEl.innerText = formatPrice(total);
+            if (window.lucide) lucide.createIcons();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const curSelect = document.getElementById('currency-select');
+            if (curSelect) curSelect.value = window.currentCurrency;
+            updateCartBadge();
+            renderCoursesCatalog();
+
+            // Check if URL has ?curso=ID or ?tab=pdf
+            const params = new URLSearchParams(window.location.search);
+            const cursoParam = params.get('curso') || params.get('course');
+            const tabParam = params.get('tab') || 'video';
+            if (cursoParam) {
+                setTimeout(() => openClassroom(parseInt(cursoParam, 10), tabParam, 0), 200);
+            }
+        });
+    </script>
+</body>
+</html>
