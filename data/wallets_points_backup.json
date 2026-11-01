@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-27T19:59:03.680Z",
+  "updated_at": "2026-11-01T23:00:55.855Z",
   "users_wallets_and_points": [
     {
       "id": 1,
@@ -39,6 +39,12 @@
       "prize_amount": 0,
       "winner_id": null,
       "id": 1
+    },
+    {
+      "drawn_at": "2026-11-01T23:00:37.383Z",
+      "prize_amount": 0,
+      "winner_id": null,
+      "id": 2
     }
   ]
 }
