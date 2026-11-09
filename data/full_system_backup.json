@@ -1,5 +1,5 @@
 {
-  "backup_date": "2026-11-01T23:00:55.860Z",
+  "backup_date": "2026-11-09T14:35:19.579Z",
   "users_count": 1,
   "products_count": 18,
   "users": [
@@ -21,7 +21,7 @@
     }
   ],
   "wallets_and_points": {
-    "updated_at": "2026-11-01T23:00:55.855Z",
+    "updated_at": "2026-11-09T14:35:19.548Z",
     "users_wallets_and_points": [
       {
         "id": 1,
@@ -67,6 +67,12 @@
         "prize_amount": 0,
         "winner_id": null,
         "id": 2
+      },
+      {
+        "drawn_at": "2026-11-08T23:00:52.018Z",
+        "prize_amount": 0,
+        "winner_id": null,
+        "id": 3
       }
     ]
   },
